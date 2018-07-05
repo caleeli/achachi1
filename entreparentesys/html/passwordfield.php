@@ -1,0 +1,1 @@
+<?php $DATA['type']='password';Router::resolveRoute('html/input.php', $DATA, $CONTENT ); ?>

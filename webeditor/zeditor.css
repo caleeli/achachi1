@@ -1,0 +1,215 @@
+body{padding:0px;margin:0px;font-family:arial,sans-serif}
+#toolbar{background-color:menu;height:100%;}
+.hSpacer{
+border:1px outset black !important;
+width:4px !important;
+background-color:menu;
+height:39px;
+}
+.imgW8{
+visibility:hidden !important;width:8px !important;height:32px;z-index:0;margin-bottom:8px;
+}
+#toolbar h {
+width:34px;overflow:hidden;border:none;display:inline;position:absolute;background-color:menu;
+z-index:2;
+}
+#toolbar img {
+visibility:hidden;width:34px;height:32px;z-index:0;margin-bottom:8px;
+}
+#toolbar h a img {
+visibility:visible;
+}
+#toolbar a img {
+visibility:visible;
+}
+#toolbar a {
+  width:32px;
+  margin:0px;
+  padding:0px;
+  border:1px solid menu;
+  display:inline-block;
+  text-align:center;
+  text-decoration:none;
+  font-family:sans-serif;
+  font-size:9px; 
+}
+#toolbar a img{
+  width:32px;
+  height:31px;
+  margin:0px;
+  padding:0px;
+  border:none;
+}
+#toolbar a:hover {
+  display:inline-block;
+  width:32px;
+  margin:0px;
+  padding:0px;
+  border:1px outset;
+}
+.toolbarDropdown{
+width:16px !important;
+}
+.toolbarDropdown img{
+width:16px !important;
+margin-bottom:7px !important;
+}
+.toolbarBlock{
+  font-size:11px;
+  font-weight:bold;
+  height:60px;
+  margin:0px;
+  text-align:center;
+  border:1px outset menu;
+  border-radius: 16px 16px 0px 0px;
+  -moz-border-radius: 16px 16px 0px 0px;
+  color:DarkBlue;
+  position:relative;
+  display:inline;
+  display:inline-block;
+}
+
+.panel{border:1px outset menu}
+.panel th{background-color:buttonface;color:buttontext;text-align:left;border:1px outset black;}
+/*ztree*/
+.treenode{
+  padding-left:16px;
+/*  background-color:menu;
+  border-color: menu menu menu menu;
+  border-style: outset none outset outset;
+  border-width: 1px 0 1px 1px;*/
+}
+.treenodecontent{
+/*  border:1px inset menu;*/
+}
+.treenode a{
+  display:block;
+  white-space:pre;
+}
+.treenode a img{
+  border:none;
+}
+.treenodeselected span{
+  background-color:highlight;
+  color: highlighttext;
+}
+.treenodedragzone{
+  height:4px;
+}
+.dragoverTop{
+  border:1px dashed black;
+}
+.dragoverIn{
+  border:1px dashed black;
+}
+.dragoverBottom{
+  border:1px dashed black;
+}
+.ui-draggable-dragging{
+  filter:alpha(opacity=60);
+  -moz-opacity:0.6;
+  -khtml-opacity: 0.6;
+  opacity: 0.6;
+}
+/**/
+.explorer {
+  border:2px outset LightGrey;
+  width:30%;
+  padding:4px;
+  background-color: LightGrey;
+}
+button.ztab{border-bottom:none;margin:0px;}
+span.ztab{border:1px solid black;border-bottom:none;font-size:10pt;margin:2px;padding:7px 16px;vertical-align:top;background-color:white;}
+.imgbutton img{
+border:none;
+filter:alpha(opacity=60);
+-moz-opacity:0.6;
+-khtml-opacity: 0.6;
+opacity: 0.6;}
+.imgbutton:hover img{
+filter:alpha(opacity=100);
+-moz-opacity:1;
+-khtml-opacity: 1;
+opacity: 1;}
+
+.imgbutton:hover img{
+filter:alpha(opacity=100);
+-moz-opacity:1;
+-khtml-opacity: 1;
+opacity: 1;}
+
+/* ZPAD STYLES */
+.zpadTextArea{
+  position:relative;
+  border:none;
+  background-image:url(codepress/images/line-numbers.png);
+  background-color:transparent;
+  background-repeat:repeat-y;width:100%;
+  padding-left:32px;
+  height:100%;
+  line-height:16px;
+  font-size:13px;
+  padding-top:13px;
+  overflow:hidden;
+}
+.suggest{
+background-color:lightyellow;
+border:1px solid black;
+font-family:monospace;
+font-size:9pt;
+position:absolute;
+z-index:1;
+}
+
+.cdString{
+  background-color:lightyellow;/*#F1F8EB;*/
+  filter:alpha(opacity=80);
+  -moz-opacity:0.8;
+  -khtml-opacity: 0.8;
+  opacity: 0.8;
+}
+.cdComment{
+  background-color:#D1F0E1;
+}
+.cdRegExp{
+  background-color:orange;
+}
+.cdBlock{
+  background-color:lightBlue;
+  border:1px dotted black;
+  filter:alpha(opacity=20);
+  -moz-opacity:0.2;
+  -khtml-opacity: 0.2;
+  opacity: 0.2;
+}
+.cdDecoration{
+  font-family:monospace;
+  line-height:16px;
+  font-size:13px;
+}
+
+.panelButton{
+  display:inline-block;
+  float:right;
+  border:2px ridge menu;
+  cursor:pointer;
+  border-radius: 4px;
+  -moz-border-radius: 4px;
+  padding:0 2;
+  background-color:highlighttext;
+  font-size:10px;
+}
+/*Default Editor*/
+#defaultElement th {
+  background-color:ButtonFace;
+  font-size: 14px;
+  padding: 0 4px;
+  vertical-align: top;
+  white-space:pre;
+}
+#defaultElement td {
+  background-color:white;
+  font-size: 14px;
+  padding: 0 4px;
+  vertical-align: top;
+}

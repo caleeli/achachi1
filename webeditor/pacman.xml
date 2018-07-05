@@ -1,0 +1,356 @@
+<?xml version="1.0" encoding="UTF-8"?><root __ideNodeOpen="true"><package name="components" type="" __ideNodeOpen="true"><php __ideNodeOpen="false">
+function procesaTipo($fields,$names,$defaults=array()){
+	$res = array();
+	$fields=explode("\n",trim($fields));
+	foreach($fields as $f){
+        $f = trim($f);
+        if(empty($f)) continue;
+		if(count($names)&gt;0) {
+			$f = explode(",",$f);
+			$r = new StdClass();
+			foreach($names as $i=&gt;$n){
+				$r-&gt;$n=!isset($f[$i]) || $f[$i]=="" ? @$defaults[$i] : $f[$i];
+                if(@is_numeric($defaults[$i])) $r-&gt;$n = 0 + $r-&gt;$n;
+        if($r-&gt;$n==="false") $r-&gt;$n=false;
+        if($r-&gt;$n==="true") $r-&gt;$n=true;
+			}
+		} else {
+			$r=$f;
+		}
+		$res[]=$r;
+	}
+	return $res;
+}
+
+</php><component name="body" transparent="" precode="" __ideNodeOpen="true">&lt;html&gt;
+&lt;head&gt;
+&lt;meta charset="UTF-8"&gt;
+&lt;meta name="viewport" content="user-scalable=0"&gt;
+&lt;link rel="stylesheet" type="text/css" href="../style/css"&gt;
+&lt;script src="../../jquery-1.11.0.min.js" type="text/javascript"&gt;&lt;/script&gt;
+&lt;script type="text/javascript"&gt;
+  $.fn.autoHeightContent=function(){
+    var fnResize=function(){
+      var $this=$(this);
+      var $content=$this.children(".content");
+      var pos=$content.position();
+      $content.css("height",$this.height()-pos.top);
+    };
+    this.each(fnResize);
+    //this.resize(fnResize);
+  }
+  $.fn.tabpanel=function(){
+    this.each(function(){
+      var $this=$(this);
+      var $panels=$this.children(".content").children(".panel");
+      $panels.hide();
+      var current=$this.attr("panel_current")*1;
+      var $panel=$($panels[current]);
+      var $tabbar=$this.children(".tabbar");
+      $tabbar.html("&lt;tr&gt;&lt;/tr&gt;");
+      $tabbarRow=$tabbar.find("tr");
+      $panels.each(function(index){
+        $tabbarRow.append('&lt;td&gt;&lt;div onclick="var $tabpanel=$(this).parents(\'.tabpanel:first\');$tabpanel.attr(\'panel_current\','+index+');$tabpanel.tabpanel();" class="tabtitle'+(index==current?' tabactive':'')+'"&gt;'+$(this).attr("title")+'&lt;/div&gt;&lt;/td&gt;');
+      });
+      //$this.children(".title").html($panel.attr("title"));
+      $panel.show();
+
+      $this.autoHeightContent();
+      $panel.autoHeightContent();
+//      var pos=$panel.children(".content").position();
+//      $panel.children(".content").css("height",$panel.height()-pos.top);
+      //FACEBOOK
+      if(typeof facebook!="undefined") $(".facebook_connected").addClass("online");
+      $panel.hide();
+      $panel.show("fast",function(){
+        $panel.children(".title").trigger("click");
+      });
+  
+    });
+  }
+
+  $.fn.fillTable=function(data,fnFormat,align){
+    var $this=$(this);
+    var $toolbar=$this.children(".toolbar");
+    $this.html("");
+    $this.append($toolbar);
+    var first=true;
+    var $container;
+    var $header=$("&lt;table cellspacing='0' cellpadding='0' border='0' width='100%'&gt;&lt;/table&gt;");
+    $this.append($header);
+    var $container0=$("&lt;div class='content'&gt;&lt;/div&gt;");
+    $container=$("&lt;table cellspacing='0' cellpadding='0' border='0' width='100%'&gt;&lt;/table&gt;");
+    $container0.append($container);
+    $this.append($container0);
+    $this.autoHeightContent();
+    for(var i in data){
+      var $row=$("&lt;tr&gt;&lt;/tr&gt;");
+      $container.append($row);
+      for(var c in data[i]){
+        var fn=typeof fnFormat[c]=="function"?fnFormat[c]:format.text;
+        var alignCell = typeof align[c]=="undefined" ? "center" : align[c];
+        if(first){
+          $row.append("&lt;th class='grid_header' align='"+alignCell+"'&gt;"+fn(data[i][c])+"&lt;/th&gt;");
+        } else {
+          $row.append("&lt;td class='"+(i%2? 'grid_even': 'grid_odd')+"' align='"+alignCell+"'&gt;"+fn(data[i][c],data[i])+"&lt;/td&gt;");
+        }
+      }
+      first=false;
+    }
+    var h=$this.children("thead").height();
+    var $td=$container.children().find("td");
+    var $th=$container.children().find("th");
+    var thw={};
+//window.thw=thw;
+    $this.find("th").each(function(index){thw[index]=$(this).width();});
+    $this.find("th").each(function(index){this.style.width=thw[index];});
+    $container.find("tr:eq(1) td").each(function(index){this.style.width=thw[index];});
+    $header.append($container.find("tr:eq(0)"));
+    $this.css("opacity","1");
+    //console.log($container.width());
+  }
+
+  $.fn.grid=function(){
+    this.each(function(){
+      var $this=$(this);
+      $this.css("opacity","0.7");
+//      var $table=$this.children("table:first");
+      $.ajax({
+        url:$this.attr("url"),
+        type:"get",
+        success:function(res){
+          try{
+            eval(res);
+          } catch(e){
+            $this.html(e);
+            console.log(e.stack);
+          }
+        }
+      });
+    });
+  };
+
+  $.fn.fillCombo=function(data,fnFormat,align){
+    var $this=$(this);
+    $this.html("");
+    for(var i in data){
+      var option=[];
+      for(var o in data[i]){
+        option.push(data[i][o]);
+      }
+      var $option=$("&lt;option value='"+option[0]+"'&gt;"+option[1]+"&lt;/option&gt;");
+      $this.append($option);
+    }
+    $this.css("opacity","1");
+  }
+
+  $.fn.combo=function(){
+    this.each(function(){
+      var $this=$(this);
+      $this.css("opacity","0.7");
+      $.ajax({
+        url:$this.attr("url"),
+        async:false,
+        type:"get",
+        success:function(res){
+          try{
+            eval(res);
+          } catch(e){
+            $this.html(e);
+            console.log(e.stack);
+          }
+        }
+      });
+    });
+  };
+
+  $.fn.fillForm=function(data,afterLoad){
+    var $this=$(this);
+    for(var a in data){
+      try{
+        $this.find("[name="+a+"]").val(data[a]);
+      } catch(e){
+        console.log(e);
+      }
+    }
+    if(typeof afterLoad=="function") afterLoad();
+    $this.css("opacity","1");
+  };
+
+  $.fn.form=function(afterLoad){
+    this.each(function(){
+      var $this=$(this);
+      $this.css("opacity","0.7");
+      $this.find(".combo").combo();
+      $.ajax({
+        url:$this.attr("url"),
+        type:"get",
+        success:function(res){
+          try{
+            eval(res);
+          } catch(e){
+            console.log(e.stack);
+          }
+        }
+      });
+    });
+  };
+  $.fn.subpanel=function(current,afterRender){
+    this.each(function(){
+      var $this=$(this);
+      $this.attr("current", current);
+      $this.children().hide();
+      $($this.children()[current]).show("fast", afterRender);
+    });
+  }
+
+$(function(){
+  $("body").css("font-size",$("body").width()/80 + "px");
+  $(".tabpanel").tabpanel();
+  //$(".tabpanel").autoHeightContent();
+
+  //$(".panel").autoHeightContent();
+
+
+  //$(".grid").grid();
+
+  $(".form").form();
+
+});
+var format={
+  text:function(txt){
+    return txt?txt:'';
+  },
+  date1:function(sDate) {
+    var inputFormat=new Date(sDate);
+    function pad(s) { return (s &lt; 10) ? '0' + s : s; }
+    var d = new Date(inputFormat);
+    return [pad(d.getDate()), pad(d.getMonth()+1)].join('/') + ' ' + 
+           [pad(d.getHours()), pad(d.getMinutes())].join(':');
+  },
+  apostar:function(value,rec){
+console.log(rec);
+    if(rec.resultado){
+      return "&lt;button type='button' onclick='verDetalles("+(-value)+")'&gt;ver detalles&lt;/button&gt;";
+    } else {
+      return value&lt;0 ? "&lt;button type='button' onclick='verDetalles("+(-value)+")'&gt;ver detalles&lt;/button&gt;" : "&lt;button type='button' onclick='verDetalles("+(-value)+")'&gt;ver detalles&lt;/button&gt;&lt;button type='button' onclick='apostar("+value+")'&gt;apostar&lt;/button&gt;";
+    }
+  }
+};
+function apostar(value){
+  $("#maintabpanel").attr("panel_current",3);
+  $("#maintabpanel").tabpanel();
+  window.nuevaApuesta=(function(value){return function(){
+    var $apuesta=$("#apuesta");
+    var $select=$apuesta.find("[name=partido_id]");
+    $select.val(value);
+    $select.trigger("change");
+  }})(value);
+}
+function verDetalles(partidoId){
+  var $this=$("#partidodetalle");
+  $.ajax({
+    url:"partidodetalle",
+    data:{partidoId:partidoId},
+    success:function(res){
+      eval(res);
+    }
+  });
+}
+&lt;/script&gt;
+&lt;/head&gt;
+&lt;body&gt;&lt;script src="../../facebook.js" type="text/javascript"&gt;&lt;/script&gt;@{node::content($_)}&lt;/body&gt;
+&lt;/html&gt;</component><component name="tabpanel" transparent="" precode="" __ideNodeOpen="true">&lt;div id="@{$name}" class="tabpanel" panel_current="@{@$current}" title="@{$title}"&gt;
+&lt;table class="tabbar" cellspacing="1" cellpadding="0" corder="0"&gt;&lt;tr&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;div class="content"&gt;@{node::content($_nodes["items"])}&lt;/div&gt;
+&lt;/div&gt;</component><component name="panel" transparent="" precode="" __ideNodeOpen="true">&lt;div class="panel" panel_current="@{@$current}" title="@{htmlentities($title,ENT_QUOTES)}"&gt;
+&lt;div class="title" onclick="@{htmlentities($onclick,ENT_QUOTES)}"&gt;@{$title}&lt;/div&gt;
+&lt;div class="content"&gt;@{node::content($_nodes["items"])}&lt;/div&gt;
+&lt;/div&gt;</component><component name="items" transparent="" precode="" __ideNodeOpen="true">@{node::content($_)}</component><component name="toolbar" transparent="" precode="" __ideNodeOpen="true">@{node::content($_)}</component><component name="grid" transparent="" precode="" __ideNodeOpen="true">&lt;div id="@{$name}" class="grid" url="../grid/@{$name}"&gt;
+&lt;div class="toolbar"&gt;@{@node::content($_nodes["toolbar"])}&lt;/div&gt;
+&lt;table cellspacing="0" cellpadding="0" border="0"&gt;&lt;/table&gt;
+&lt;/div&gt;<file name="grid/@{$name}.php" preprocess="" __ideNodeOpen="true">&lt;?php
+try{
+  require_once("myconexion.php");
+  $query="@{$query}";
+  $query = $conexion-&gt;prepare($query);
+  $query-&gt;execute();
+  $res=array();
+  $res[]=@{var_export(explode(",", $headers),true)};
+  while($r=$query-&gt;fetch(PDO::FETCH_OBJ)){
+    $res[]=$r;
+  }
+  echo '$this.fillTable(',json_encode($res),',{@{$format}},{@{$align}});';
+  echo 'console.log('.json_encode($query).');';
+}catch(Exception $e) {
+  $msg="Fail to connect to server. " . $e-&gt;message;
+  echo 'alert(',$msg,');';
+}</file></component><component name="form" transparent="" precode="" __ideNodeOpen="true">&lt;form id="@{$name}" class="form" action="@{$action}" onsubmit="var me=this;$(me).css('opacity',0.7);$(me).find('.error').html('');$.ajax({url:this.action,data:$(this).serialize(),success:function(res){$(me).css('opacity',1);try{eval(res)}catch(e){$(me).find('.error').html(e)}}});return false;" url="../form/@{$name}"&gt;
+&lt;table&gt;
+#{
+  $_fields=procesaTipo(node::content($_), array("name","label","type"), array("","","text"));
+  $_res=array();
+  foreach($_fields as $_f):
+    $_label="&lt;th&gt;".$_f-&gt;label."&lt;/th&gt;";
+    $_controls=array(
+      "text"=&gt;$_label."&lt;td&gt;&lt;input name='".$_f-&gt;name."'&gt;&lt;/td&gt;",
+      "button"=&gt;"&lt;th colspan='2'&gt;&lt;button type='submit' onclick='this.form.action=\"".$action.$_f-&gt;name."\";var me=this;this.form.aftersubmit=function()\x7b\x7d'&gt;".$_f-&gt;label."&lt;/button&gt;&lt;/th&gt;",
+      "bolsa"=&gt;"&lt;th colspan='2'&gt;&lt;input disabled class='bolsa' name='".$_f-&gt;name."'&gt;&lt;/th&gt;",
+      "label"=&gt;"&lt;th&gt;&lt;/th&gt;&lt;td&gt;".$_f-&gt;label."&lt;/td&gt;",
+      "combo"=&gt;$_label.'&lt;td&gt;&lt;select name="'.$_f-&gt;name.'" class="combo" url="../combo/'.$_f-&gt;name.'"&gt;&lt;/select&gt;&lt;/td&gt;',
+    );
+    $_res[]="&lt;tr&gt;".$_controls[$_f-&gt;type]."&lt;/tr&gt;";
+  endforeach;
+  return implode("\n", $_res);
+}
+&lt;/table&gt;
+&lt;div class="error"&gt;&lt;/div&gt;
+&lt;/form&gt;<file name="form/@{$name}.php" preprocess="" __ideNodeOpen="true">&lt;?php
+try{
+  require_once("myconexion.php");
+  $query = $conexion-&gt;prepare("@{$query}");
+  //echo "@{$query}";
+  $query-&gt;execute();
+  $res=$query-&gt;fetch(PDO::FETCH_OBJ);
+  echo '$this.fillForm(',json_encode($res),', afterLoad);';
+}catch(Exception $e) {
+  $msg="Fail to connect to server. " . $e-&gt;message;
+  echo 'throw new Exception(',$msg,');';
+}
+</file></component><component name="combo" transparent="" precode="" __ideNodeOpen="true"><file name="combo/@{$name}.php" preprocess="" __ideNodeOpen="true">&lt;?php
+try{
+  require_once("myconexion.php");
+  $query = $conexion-&gt;prepare("@{$query}");
+  $query-&gt;execute();
+  $res=array();
+  $res[]=array("","");
+  while($r=$query-&gt;fetch(PDO::FETCH_OBJ)){
+    $res[]=$r;
+  }
+  echo '$this.fillCombo(',json_encode($res),');';
+?&gt;
+@{node::content($_)}
+&lt;?php
+}catch(Exception $e) {
+  $msg="Fail to connect to server. " . $e-&gt;message;
+  echo 'alert(',$msg,');';
+}</file></component><component name="subpanel" transparent="" precode="" __ideNodeOpen="true">&lt;div class="subpanel" current="@{$current}"&gt;@{node::content($_)}&lt;/div&gt;</component></package><package name="cordoba" type="" __ideNodeOpen="true"><component name="runscript" transparent="" precode="" __ideNodeOpen="true"><php __ideNodeOpen="true">require_once(ACH_PATH.'/remotecmd.class.php');
+
+$cmd = @{var_export(node::content($_),true)};
+
+DV_RemoteCmd::call(str_replace("\n","\r\n",$cmd));
+</php></component><component name="cordova" transparent="" precode="" __ideNodeOpen="true"><runscript __ideNodeOpen="true">cd @{getcwd()}
+IF EXIST @{$path/*cordova*/} (
+  cd @{$path}
+  GOTO Construir
+)
+REM rmdir @{$path} /S /Q
+call @{$cordova_path} create @{$path} @{$domain_name/*com.example.hello*/} @{$name}
+cd @{$path}
+call @{$cordova_path} platform add android
+call @{$cordova_path} platforms ls
+:Construir
+xcopy "../@{$source/*mobile*/}" "www" /s /e
+call @{$cordova_path} build --release
+call @{$cordova_path} run android
+</runscript></component></package><path path="output/pacman" main="" __ideNodeOpen="true"><cordova domain_name="com.caleeli.suarezman" name="SuarezPacman" cordova_path="C:\Users\david\AppData\Roaming\npm\cordova.cmd" node_path="C:\Program Files\nodejs\node.exe" path="cordova" source="mobile" __ideNodeOpen="false"/></path></root>

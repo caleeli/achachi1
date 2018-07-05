@@ -1,0 +1,3 @@
+var res={"pregunta":"\u00bfCu\u00e1ntos hombres fueron inspirados por Dios para escribir la Biblia? Aproximadamente","respuestas":["20","30","40","50"],"correcta":"2","imagen":"img\/Paul_in_prison_by_Rembrandt.jpg"};
+dibujaPregunta($pregunta,$respuestas,$imagen,res);
+

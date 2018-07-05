@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?><root __ideNodeOpen="true"><include src="$library/tools.xml"/><component name="startEvent" transparent="" precode="" __ideNodeOpen="true">    &lt;startEvent id="_@{$name}" isInterrupting="true" name="@{$name}" parallelMultiple="false"&gt;
+      &lt;outputSet/&gt;
+    &lt;/startEvent&gt;
+</component><print __ideNodeOpen="true"><startEvent name="172.16.128.9"/></print></root>

@@ -1,0 +1,3 @@
+a=html_get("http://www.sicoes.gob.bo/contrat/procesos.php?adodb_next_page=2")
+a=html_get("http://www.sicoes.gob.bo/contrat/procesos.php")
+

@@ -1,0 +1,1247 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root __ideNodeOpen="true"><include src="$library/zend.xml"/><include src="$library/extjslib2.xml" __ideNodeOpen="true"/><include src="$library/googleimages.xml"/><application name="desktop" main="login/index" __ideNodeOpen="true"><package name="integracion open source" type="" __ideNodeOpen="false"><component name="insert" transparent="true" __ideNodeOpen="false">#{
+  //$_u=strpos($_[1][1], "#");
+  //$_[1][1] = substr($_[1][1], $_u+1);
+  //return ext::toExpression(node::content($_));
+  return node::content($_);
+}</component><component name="menu" transparent="" __ideNodeOpen="false"><insert __ideNodeOpen="true">&lt;?php
+global $app;
+require_once("../library/freeness/application.php");
+
+$resA=array();
+$user=json_decode('{"user":"admin","secret":"admin"}');
+foreach(glob("../applications/*") as $f){
+  $applicationName = basename($f, ".php");
+  include($f);
+
+  ob_start();
+
+?&gt;<ext class="Ext.Panel" frame="false" __extid="18" layout="border" __ideNodeOpen="true" width="100" height="64" border="0"><ext class="Ext.Button" text="&lt;?php print $applicationName ?&gt;" __extid="19" region="center" __ideNodeOpen="true" icon="&lt;?php print $app-&gt;icon ?&gt;" scale="large" iconAlign="top" frame="false"><ext.attribute name="handler">function(a,b){
+  var $w;
+  &lt;?php print $app-&gt;createStarter($user); ?&gt;;
+  menu.close();
+}</ext.attribute></ext></ext>&lt;?php
+
+  $res = ob_get_contents();
+  ob_end_clean();
+  $resA[]=$res;
+}
+
+print implode(",", $resA)
+?&gt;</insert></component><component name="menu" transparent="" __ideNodeOpen="true"><insert __ideNodeOpen="true">&lt;?php
+global $app;
+require_once("../library/freeness/application.php");
+
+$resA=array();
+$user=json_decode('{"user":"admin","secret":"admin"}');
+foreach(glob("../applications/*") as $f){
+  $applicationName = basename($f, ".php");
+  include($f);
+
+  ob_start();
+
+?&gt;<ext class="Ext.Panel" frame="true" __extid="18" __ideNodeOpen="true" width="100" height="64" border="0"><ext.attribute name="html" isArray="false" isString="false" __ideNodeOpen="true">&lt;?php 
+  print json_encode('&lt;center&gt;&lt;a href="javascript:void(0)" onclick="freeness.run('.htmlentities($app-&gt;id, ENT_QUOTES, "utf-8").');"&gt;&lt;img src="'. $app-&gt;icon.'" /&gt;&lt;br /&gt;'.$applicationName.'&lt;/a&gt;&lt;/center&gt;');
+?&gt;</ext.attribute></ext>&lt;?php
+
+  $res = ob_get_contents();
+  ob_end_clean();
+  $resA[]=$res;
+}
+
+print implode(",", $resA)
+?&gt;,<ext class="Ext.Panel" frame="true" __extid="18" __ideNodeOpen="true" width="100" height="64" border="0"><ext.attribute name="html" isArray="false" isString="false" __ideNodeOpen="true">&lt;?php 
+  print json_encode('&lt;center&gt;&lt;a href="javascript:void(0)" onclick="freeness.runWindow('.htmlentities(json_encode("auditoria"), ENT_QUOTES, "utf-8").');"&gt;&lt;img src="../../images/auditoria.png" /&gt;&lt;br /&gt;Auditoria&lt;/a&gt;&lt;/center&gt;');
+?&gt;</ext.attribute></ext>,<ext class="Ext.Panel" frame="true" __extid="18" __ideNodeOpen="true" width="100" height="64" border="0"><ext.attribute name="html" isArray="false" isString="false" __ideNodeOpen="true">&lt;?php 
+  print json_encode('&lt;center&gt;&lt;a href="javascript:void(0)" onclick="freeness.runWindow('.htmlentities(json_encode("explorer"), ENT_QUOTES, "utf-8").');"&gt;&lt;img src="../../images/auditoria.png" /&gt;&lt;br /&gt;Auditoria&lt;/a&gt;&lt;/center&gt;');
+?&gt;</ext.attribute></ext></insert></component><component name="ajaxLoad" transparent="true" __ideNodeOpen="false"><ext.attribute name="listeners" __ideNodeOpen="true">{
+  afterrender:function(){
+    var container=this;
+    Ext.onReady(function(){
+      Ext.Ajax.request({
+        url:${$url},
+        method:'GET',
+        success:function(res){
+          eval(res.responseText);
+        }
+      });
+    });
+  }
+}</ext.attribute></component><component name="fn.component" transparent="" __ideNodeOpen="false"><file name="library/freeness/components/@{$name}.class.php" preprocess="">&lt;?php
+require_once("../library/freeness/component.class.php");
+
+class freeness_components_@{$name} extends freeness_component {
+  protected $__constructors=array(
+@{node::content($_nodes["fn.item"])}
+  );
+@{node::content($_nodes["#text"])}
+}
+</file>
+require_once("../library/freeness/components/@{$name}.class.php");
+</component><component name="fn.item" transparent="" __ideNodeOpen="false">    ${$name}=&gt;${node::content($_)},
+</component><file name="library/freeness/application.php" preprocess="" __ideNodeOpen="false">&lt;?php
+
+interface freeness_interface_applicationIF {
+  function login($user, $secret);
+}
+class freeness {
+  public static function factory($class){
+    return freeness_application::singleton($class);
+  }
+}
+
+abstract class freeness_application {
+  public $key = "";
+  private static $instance;
+  private function __construct()
+  {
+  }
+  public function singleton($className)
+  {
+    if (!isset(self::$instance)) {
+      self::$instance = new $className;
+    }
+    return self::$instance;
+  }
+  function createLink($user){
+    $d = freeness_interface_request::encodeData(
+      array("class"=&gt;get_class($this),"function"=&gt;"login","params"=&gt;array(
+        $user-&gt;user,
+        $user-&gt;secret
+      ))
+    , $this-&gt;key);
+    return $this-&gt;url . "?d=" . urlencode($d);
+  }
+  function createStarter($user){
+    $url=$this-&gt;createLink($user);
+    $title=json_encode($this-&gt;title);
+    $icon=json_encode($this-&gt;iconSmall);
+    return &lt;&lt;&lt;EOF
+freeness.appManager.run(function(){
+  var W;
+  W=freeness.desktop.createWindow({
+		width       : 300,
+		height      : 200,
+		maximizable : true,
+                minimizable : true,
+                title       : $title,
+                icon        : $icon,
+                html        : '&lt;iframe src="$url" style="border;none;width:100%;height:100%;position:relative;top:-64px;"&gt;&lt;/iframe&gt;'
+	});
+  return W;
+});
+EOF;
+  }
+  function remoteCall(){
+    if(isset($_GET["d"])){
+      $data = freeness_interface_request::decodeData($_GET["d"], $this-&gt;key);
+      if(isset($data-&gt;class) &amp;&amp; isset($data-&gt;function)){
+        $class = $data-&gt;class;
+        call_user_func_array(array(freeness::factory($class), $data-&gt;function), $data-&gt;params);
+      }
+    }
+  }
+  abstract function login($user, $secret);
+}
+
+class freeness_interface_request{
+  function encodeData($data,$key){
+    $dataEncrypted = base64_encode( mcrypt_encrypt  ( MCRYPT_3DES, $key, json_encode($data) , MCRYPT_MODE_CFB ));
+    return $dataEncrypted;
+  }
+  function decodeData( $dataEncrypted, $key ){
+    $data = mcrypt_decrypt( MCRYPT_3DES, $key, base64_decode( $dataEncrypted ), MCRYPT_MODE_CFB );
+    return json_decode($data);
+  }
+}
+
+if (!function_exists('get_called_class')){
+  function get_called_class(){
+    $bt = debug_backtrace();
+    $lines = file($bt[1]['file']);
+    preg_match('/([a-zA-Z0-9\_]+)::'.$bt[1]['function'].'/', $lines[$bt[1]['line']-1], $matches);
+    return $matches[1];
+  }
+}
+</file><file name="applications/ProcessMaker.php" preprocess="" __ideNodeOpen="false">&lt;?php
+
+class freeness_ProcessMaker extends freeness_application {
+  public $key="pm";
+  public $title="ProcessMaker";
+  public $url = "http://127.0.0.2/sysworkflow/en/green/freeness/freeness";
+  public $icon = "../../images/processmaker.gif";
+  public $iconSmall = "../../images/processmaker16.gif";
+  function login($user, $secret){
+    print '&lt;script src="http://localhost/jquery/js/jquery-1.5.1.min.js"&gt;&lt;/script&gt;';
+    print '&lt;script&gt;$.ajax({
+      url:"../login/authentication.php",
+      type:"POST",
+      data:{"form[USR_USERNAME]":"admin","form[USR_PASSWORD]":"admin"},
+      success:function(d){
+        window.location.href="../processes/main";
+      }
+    })&lt;/script&gt;';
+  }
+}
+
+global $app;
+$app = freeness::factory("freeness_ProcessMaker");
+</file><file name="html/script/freenessOld.js" preprocess="" __ideNodeOpen="false">var menu={
+  close:function(){
+    Ext.ComponentMgr.get("applicationMenu").setHeight(40);
+  }
+}
+
+var F$ = freeness={
+  get:function(g){return Ext.ComponentMgr.get(g);},
+  onloadFn:[],
+  onload:function(fn){
+    for(var i=0,l=this.onloadFn.length;i&lt;l;i++) this.onloadFn[i]();
+  },
+  onReady:function(fn){
+    this.onloadFn.push(fn);
+  },
+  desktop:{
+    createWindow:function(cnf){
+      var W,B;
+      Ext.ComponentMgr.get("desktop").add(W=new Ext.Window(cnf));
+      W.show();
+      F$.get("tasks").add(B=new Ext.Button({icon:cnf.icon,/*text:W.header.title,*/handler:function(){if(W.minimized) freeness.desktop.restoreWindow(W); else freeness.desktop.minimizeWindow(W);}}));
+      W.on({minimize:freeness.desktop.minimizeWindow,destroy:freeness.desktop.onWindowClose(B.getId())});
+      return W;
+    },
+    onWindowClose:function(id){
+      return function(){Ext.ComponentMgr.get(id).destroy();};
+    },
+    minimizeWindow: function(win) {
+        win.minimized = true;
+        win.hide();
+    },
+    restoreWindow: function (win) {
+        if (win.isVisible()) {
+            win.restore();
+            win.toFront();
+        } else {
+            win.show();
+        }
+        win.minimized = false;
+        return win;
+    }
+  },
+  appManager:{
+    run:function(fn){
+      W=fn();
+    }
+  },
+  toolbar:{
+    panel:function(cnf){var o=new Ext.Window({x:cnf.x,y:0,draggable:false,resizable:false,closable:false,minHeight:40,layout:"border",height:40,items:[new Ext.Panel({region:"center",frame:true,padding:0,border:0,layout:{type:"table",columns:cnf.columns},items:cnf.items})]});o.show();return o;}
+  },
+  form:{
+    text:function(cnf){return new Ext.form.TextField(cnf)},
+    label:function(cnf){return new Ext.form.Label(cnf)},
+    button:function(cnf){return new Ext.Button(cnf)}
+  },
+  create:function(arr,dest){
+    if(!dest) dest=[];
+    for(var i=0,l=arr.length;i&lt;l;i++) {
+      var $class=arr[i],$att={};
+      if(this.getType(arr[i+1])=="object") $att=arr[++i];
+      if(this.getType(arr[i+1])=="array") {
+        $att["items"]=freeness.create(arr[++i]);
+      }
+      if($class.substr(0,4)=="Ext.") dest.push(eval("new "+$class+"($att)"));
+      else dest.push(eval("freeness."+$class+"($att)"));
+    }
+    return dest;
+  },
+  getType:function(o){
+    var $class = Object.prototype.toString.call(o).split(" ")[1].split("]")[0];
+    return $class=="Array"?"array":typeof(o);
+  }
+}
+//------------------------
+freeness.onReady(function() {
+  Ext.ComponentMgr.get("desktopStatusSpace").add($w=new Ext.Window({
+		width       : 300,
+		height      : 200,
+                draggable   : false,
+                resizable   : false,
+		closable    : false,
+		minHeight   : 40,
+                maximized   : true,
+                layout      : "border",
+                items       : freeness.create(["Ext.Panel",{region:"center",layout:"border",border:0},["Ext.Panel",{region:"center",id:"tasks",frame:true,border:0,padding:0}]])
+	}));
+  $w.show();
+
+  freeness.create([
+    "toolbar.panel",{x:312,columns:5},[
+      "Ext.Panel",{width:32,border:0},
+      "form.text",{width:250},
+      "Ext.Panel",{width:8,border:0},
+      "form.button",{icon:"../../images/search.gif"},
+      "Ext.Panel",{width:8,border:0}
+    ]
+  ]);
+});
+
+</file><controller name="index" descripcion="" author="" __ideNodeOpen="false" script=""><action name="index" noRender="false" descripcion="" loadParams="" __ideNodeOpen="true"><ext.fragment language="php" outputType="print" variable="$this-&gt;view-&gt;apps"/></action><phtml name="index" __ideNodeOpen="true"><ext.document style="../../freeness.css" script="/ext/bootstrap.js;../../script/freeness.js" __ideNodeOpen="true"><ext layout="border" __extid="0" __ideNodeOpen="true" class="Ext.Viewport"><ext class="Ext.Panel" __extid="1" region="north" frame="false" height="40" __ideNodeOpen="true" border="0" padding="0" layout="border"><ext class="Ext.Panel" frame="false" width="646" __extid="2" region="west" border="0" bodyStyle="background-color:#DFE9F6;" __ideNodeOpen="true"/><ext class="Ext.Panel" region="center" frame="false" __extid="3" id="desktopStatusSpace" padding="0" __ideNodeOpen="true" border="0" bodyStyle="background-color:#DFE9F6;"/></ext><ext class="Ext.Panel" region="center" frame="true" __extid="4" id="desktop" padding="0" __ideNodeOpen="false"/><ext __extid="5" x="0" y="0" draggable="false" resizable="false" closable="false" __ideNodeOpen="true" minHeight="40" layout="border" border="0" height="40" id="applicationMenu" class="Ext.Window" autoShow="true"><ext class="Ext.Panel" region="center" frame="true" __extid="6" padding="0" border="0" __ideNodeOpen="true"><ext.attribute name="layout" __ideNodeOpen="false">{"type":"table","columns":"3"}</ext.attribute><ext class="Ext.Button" text="Aplicaciones" __extid="7" icon="../../images/application_view_tile.png" height="28" colspan="3" __ideNodeOpen="true" width="300"><ext.attribute name="handler">function(a,b){
+  if(this.ownerCt.ownerCt.getHeight()==40){
+    this.ownerCt.ownerCt.setHeight(40+3*60);
+  } else {
+    this.ownerCt.ownerCt.setHeight(40);
+  }
+}</ext.attribute></ext><menu __ideNodeOpen="true"/></ext><ext.attribute name="listeners">{deactivate:function(){menu.close()}}</ext.attribute></ext></ext></ext.document></phtml></controller></package><package name="estilos" transparent="" __ideNodeOpen="true"><file name="html/freeness.css" preprocess="" __ideNodeOpen="true">.homeButton{
+  background-image:url(images/homeButton.gif);
+}
+.desktop{
+  background-image:url(images/fondo2.jpg);
+}
+div.thumb-wrap{
+    float: left;
+    margin: 4px 0 4px 4px;
+    padding: 5px;
+    border:1px solid white;
+}
+.thumb{
+    background: none repeat scroll 0 0 #DDDDDD;
+    padding: 3px 3px 0;
+}
+.thumb img {
+    height: 64px;
+    width: 64px;
+}
+.thumb-wrap span{
+    display: block;
+    overflow: hidden;
+    text-align: center;
+    width: 86px;
+}
+.x-item-over{
+    background: none repeat scroll 0 0 #DDDDDD;
+    border:1px solid gray!important;
+}</file><images path="freenessImages" folder="html/images"/></package><package name="controllers" type="" __ideNodeOpen="true"><controller name="desktop" descripcion="" author="" __ideNodeOpen="true"><action name="index" noRender="false" descripcion="" loadParams="" __ideNodeOpen="false"/><phtml name="index" __ideNodeOpen="true"><ext.document style="../../freeness.css;/ext/examples/shared/example.css" script="../../script/freeness.js;/ext/bootstrap.js;/ext/examples/shared/examples.js" name="index" __ideNodeOpen="false"><ext class="Ext.Viewport" layout="border" __ideNodeOpen="true"><ext class="Ext.Panel" region="north" frame="false"><ext.attribute name="tbar" isArray="false" isString="false" type="array"><ext class="Object" text="Aplicaciones" iconCls="homeButton" __ideNodeOpen="true" scale="medium"><ext.attribute name="handler" __ideNodeOpen="true">function(){
+  if(!Ext.ComponentMgr.get("applicationMenu").isVisible()){
+    Ext.ComponentMgr.get("applicationMenu").show();
+  } else {
+    Ext.ComponentMgr.get("applicationMenu").hide();
+  }
+}</ext.attribute></ext></ext.attribute></ext><ext class="Ext.Panel" region="center" frame="true" __ideNodeOpen="true" id="ViewportPanel2" padding="0" border="0"><ajaxLoad url="desktop"/></ext><ext class="Ext.Window" __extid="5" x="0" y="38" draggable="false" resizable="false" closable="false" __ideNodeOpen="true" minHeight="40" layout="border" border="0" id="applicationMenu"><ext class="Ext.Panel" region="center" frame="true" __extid="6" padding="0" border="0" __ideNodeOpen="true"><ext.attribute name="layout" __ideNodeOpen="false">{"type":"table","columns":"3"}</ext.attribute><menu __ideNodeOpen="true"/></ext><ext.attribute name="listeners" isArray="false" isString="false">{deactivate:function(){Ext.ComponentMgr.get("applicationMenu").hide();}}</ext.attribute></ext></ext>&lt;script&gt;
+
+&lt;/script&gt;
+</ext.document></phtml><action name="desktop" noRender="false" descripcion="" loadParams=""/><phtml name="desktop" __ideNodeOpen="false">
+var obj=<ext.fragment __ideNodeOpen="true"><ext class="Ext.Window" __extid="5" __ideNodeOpen="true" maximized="true" autoShow="false" closable="false" draggable="false" border="0" resizable="false" baseCls="desktop" id="desktop"><ext.attribute name="listeners" __ideNodeOpen="true">{
+  contextmenu:function(e,n,b){
+    var contextMenu = new Ext.menu.Menu({
+      items: [{
+        text: 'Edit',
+        iconCls: 'edit'
+      }]
+    });
+    e.preventDefault();
+    contextMenu.showAt(e.getXY());
+  },
+  element: 'body'
+}</ext.attribute></ext></ext.fragment>;
+container.add(obj);
+obj.show();
+</phtml></controller><controller name="login" descripcion="" author="" __ideNodeOpen="false"><action name="index" noRender="false" descripcion="" loadParams="" __ideNodeOpen="false"/><phtml name="index" __ideNodeOpen="true"><ext.document style="../../freeness.css" script="" name="index" __ideNodeOpen="true"><ext class="Ext.Viewport" layout="border" __ideNodeOpen="true"><ext class="Ext.Panel" region="center" frame="true" __ideNodeOpen="true" id="ViewportPanel2" padding="0" border="0"><ajaxLoad url="login"/></ext></ext></ext.document></phtml><action name="login" noRender="true" descripcion="" loadParams="" __ideNodeOpen="true">
+ini_set("DISPLAY_ERRORS", "on");
+error_reporting(E_ALL);
+
+require_once("../library/freeness/modules/login.class.php");
+
+$abc= new freeness_modules_login();
+
+?&gt;var obj=&lt;?=$abc-&gt;render();?&gt;;container.add(obj);obj.show();&lt;?php
+</action><action name="doaction" noRender="true" descripcion="" loadParams="" __ideNodeOpen="true">
+ini_set("DISPLAY_ERRORS", "on");
+error_reporting(E_ALL);
+
+require_once("../library/freeness/modules/login.class.php");
+
+$abc = new freeness_modules_login();
+$abc-&gt;load($_POST);
+
+print call_user_func_array(array($abc, $_GET["action"]), $_POST);
+</action></controller><controller name="run" descripcion="" author="" __ideNodeOpen="false"><action name="window" noRender="true" descripcion="" loadParams="" __ideNodeOpen="true">
+ini_set("DISPLAY_ERRORS", "on");
+error_reporting(E_ALL);
+
+$__class = $_GET["c"];
+
+require_once("../library/freeness/modules/".$__class.".class.php");
+$__class = "freeness_modules_" . $__class;
+
+$abc= new $__class();
+
+?&gt;var obj=&lt;?=$abc-&gt;render();?&gt;;if(typeof(container)=="undefined")var container=Ext.ComponentMgr.get("desktop");container.add(obj);obj.show();&lt;?php
+</action><action name="doaction" noRender="true" descripcion="" loadParams="" __ideNodeOpen="true">
+ini_set("DISPLAY_ERRORS", "on");
+error_reporting(E_ALL);
+
+$__class = $_GET["c"];
+
+require_once("../library/freeness/modules/".$__class.".class.php");
+$__class = "freeness_modules_" . $__class;
+$abc= new $__class();
+
+//var_dump($_POST);
+$abc-&gt;load($_POST);
+
+print call_user_func_array(array($abc, $_GET["action"]), $_POST);
+</action></controller><controller name="install" descripcion="" author="" __ideNodeOpen="false"><action name="index" noRender="true" descripcion="" loadParams="" __ideNodeOpen="true">
+  require("../model/connection.php");
+  $db = Zend_Db_Table_Abstract::getDefaultAdapter();
+  $q = &lt;&lt;&lt;EOF
+DROP TABLE IF EXISTS `auhis`;
+CREATE TABLE IF NOT EXISTS `auhis` (
+  `auhiscorr` int(11) DEFAULT NULL,
+  `auhisfech` date DEFAULT NULL,
+  `auhisnpre` int(11) DEFAULT NULL,
+  `auhisuser` char(3) DEFAULT NULL,
+  `auhismarc` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+DROP TABLE IF EXISTS `aumau`;
+CREATE TABLE IF NOT EXISTS `aumau` (
+  `aumaucorr` int(11) DEFAULT NULL,
+  `aumautipo` char(1) DEFAULT NULL,
+  `aumaudesc` char(100) DEFAULT NULL,
+  `aumauayda` char(200) DEFAULT NULL,
+  `aumautegn` char(3) DEFAULT NULL,
+  `aumaumrcd` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+INSERT INTO `aumau` (`aumaucorr`, `aumautipo`, `aumaudesc`, `aumauayda`, `aumautegn`, `aumaumrcd`) VALUES(1, 'N', 'Cumple con las politicas actuales', 'descrip.de la pregunta', 'BCO', 1);
+INSERT INTO `aumau` (`aumaucorr`, `aumautipo`, `aumaudesc`, `aumauayda`, `aumautegn`, `aumaumrcd`) VALUES(2, 'D', 'Cuenta  con inforcred', 'informe de INF', 'BCO', 3);
+
+DROP TABLE IF EXISTS `gbage`;
+CREATE TABLE IF NOT EXISTS `gbage` (
+  `gbagecage` int(11) NOT NULL,
+  `gbagenomb` varchar(90) NOT NULL,
+  `gbagetdid` smallint(6) DEFAULT NULL,
+  `gbagendid` varchar(20) DEFAULT NULL,
+  `gbagenruc` varchar(20) DEFAULT NULL,
+  `gbagetper` smallint(6) DEFAULT NULL,
+  `gbagefnac` date DEFAULT NULL,
+  `gbagesexo` smallint(6) DEFAULT NULL,
+  `gbageeciv` smallint(6) DEFAULT NULL,
+  `gbagenaci` varchar(30) DEFAULT NULL,
+  `gbageprof` smallint(6) DEFAULT NULL,
+  `gbagedir1` varchar(30) DEFAULT NULL,
+  `gbagedir2` varchar(30) DEFAULT NULL,
+  `gbageddo1` varchar(30) DEFAULT NULL,
+  `gbageddo2` varchar(30) DEFAULT NULL,
+  `gbagetlfd` varchar(20) DEFAULT NULL,
+  `gbagetlfo` varchar(20) DEFAULT NULL,
+  `gbagencas` varchar(10) DEFAULT NULL,
+  `gbagenfax` varchar(10) DEFAULT NULL,
+  `gbagetlex` varchar(10) DEFAULT NULL,
+  `gbageciiu` decimal(6,0) DEFAULT NULL,
+  `gbageact1` varchar(30) DEFAULT NULL,
+  `gbageact2` varchar(30) DEFAULT NULL,
+  `gbagecalf` varchar(2) DEFAULT NULL,
+  `gbagefreg` date DEFAULT NULL,
+  `gbageplaz` smallint(6) DEFAULT NULL,
+  `gbageagen` smallint(6) DEFAULT NULL,
+  `gbageuser` varchar(20) DEFAULT NULL,
+  `gbagehora` varchar(8) DEFAULT NULL,
+  `gbagefpro` date DEFAULT NULL,
+  `gbageclas` varchar(1) DEFAULT NULL,
+  `gbagestat` smallint(6) DEFAULT NULL,
+  `gbagefsta` date DEFAULT NULL,
+  `gbagestaa` smallint(6) DEFAULT NULL,
+  `gbagefsaa` date DEFAULT NULL,
+  `gbageumrc` varchar(20) DEFAULT NULL,
+  `gbageumod` varchar(20) DEFAULT NULL,
+  `gbagefmod` date DEFAULT NULL,
+  `gbagefmrc` date DEFAULT NULL,
+  `gbagemrcb` smallint(6) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+DROP TABLE IF EXISTS `prdeu`;
+CREATE TABLE IF NOT EXISTS `prdeu` (
+  `prdeucage` int(11) NOT NULL AUTO_INCREMENT,
+  `prdeunpre` int(11) NOT NULL,
+  PRIMARY KEY (`prdeucage`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+
+DROP TABLE IF EXISTS `prmpr`;
+CREATE TABLE IF NOT EXISTS `prmpr` (
+  `prmprnpre` int(11) DEFAULT NULL,
+  `prmprcage` int(11) DEFAULT NULL,
+  `prmprfreg` date NOT NULL,
+  `prmprnctr` char(12) DEFAULT NULL,
+  `prmprlncr` int(11) DEFAULT NULL,
+  `prmprreso` char(12) DEFAULT NULL,
+  `prmprtcre` smallint(6) NOT NULL,
+  `prmprorgr` smallint(6) NOT NULL,
+  `prmprautp` int(11) DEFAULT NULL,
+  `prmprrseg` int(11) DEFAULT NULL,
+  `prmprconv` int(11) DEFAULT NULL,
+  `prmprrubr` smallint(6) NOT NULL,
+  `prmprciiu` decimal(6,0) DEFAULT NULL,
+  `prmprdest` smallint(6) NOT NULL,
+  `prmprddes` char(30) DEFAULT NULL,
+  `prmprcmon` smallint(6) NOT NULL,
+  `prmprmapt` decimal(14,2) NOT NULL,
+  `prmprplzo` int(11) DEFAULT NULL,
+  `prmpruplz` smallint(6) NOT NULL,
+  `prmprtsex` smallint(6) DEFAULT NULL,
+  `prmprfpag` smallint(6) NOT NULL,
+  `prmprppgk` int(11) DEFAULT NULL,
+  `prmprppgi` int(11) DEFAULT NULL,
+  `prmprgrac` int(11) DEFAULT NULL,
+  `prmpruppg` smallint(6) NOT NULL,
+  `prmprdiap` smallint(6) DEFAULT NULL,
+  `prmprfprp` date DEFAULT NULL,
+  `prmpriupg` decimal(14,2) NOT NULL,
+  `prmprsald` decimal(14,2) NOT NULL,
+  `prmprkven` decimal(14,2) NOT NULL,
+  `prmprmdes` decimal(14,2) NOT NULL,
+  `prmprmseg` decimal(14,2) NOT NULL,
+  `prmprstat` smallint(6) NOT NULL,
+  `prmprfsta` date NOT NULL,
+  `prmprfpvc` date DEFAULT NULL,
+  `prmprfvac` date DEFAULT NULL,
+  `prmprfvor` date DEFAULT NULL,
+  `prmprstan` smallint(6) NOT NULL,
+  `prmprfsan` date NOT NULL,
+  `prmprfdes` date DEFAULT NULL,
+  `prmprfulp` date DEFAULT NULL,
+  `prmprfcal` smallint(6) DEFAULT NULL,
+  `prmprcalf` char(1) NOT NULL,
+  `prmprviad` smallint(6) NOT NULL,
+  `prmprctad` char(13) DEFAULT NULL,
+  `prmprviac` smallint(6) NOT NULL,
+  `prmprctac` char(13) DEFAULT NULL,
+  `prmprdeba` char(1) NOT NULL,
+  `prmprcrpg` smallint(6) NOT NULL,
+  `prmprfrpg` date DEFAULT NULL,
+  `prmprpdvg` decimal(14,2) NOT NULL,
+  `prmprpsus` decimal(14,2) NOT NULL,
+  `prmprfdev` date NOT NULL,
+  `prmprmcpd` char(1) NOT NULL,
+  `prmprreve` char(1) NOT NULL,
+  `prmprusrr` char(3) DEFAULT NULL,
+  `prmprmrcb` smallint(6) NOT NULL,
+  `prmprplaz` smallint(6) NOT NULL,
+  `prmpragen` smallint(6) NOT NULL,
+  `prmpruser` char(3) NOT NULL,
+  `prmprhora` char(8) NOT NULL,
+  `prmprfpro` date NOT NULL,
+  `prmprcclf` smallint(6) DEFAULT NULL,
+  `prmprcpac` smallint(6) DEFAULT NULL,
+  `prmprnlex` int(11) DEFAULT NULL,
+  `prmprnmod` smallint(6) DEFAULT NULL,
+  `prmprfinc` date DEFAULT NULL,
+  `prmprnatu` smallint(6) DEFAULT NULL,
+  `prmprnprp` int(11) DEFAULT NULL,
+  `prmprctpp` smallint(6) DEFAULT NULL,
+  `prmprcbnq` int(11) DEFAULT NULL,
+  `prmprnrpg` int(11) DEFAULT NULL,
+  `prmprpais` int(11) DEFAULT NULL,
+  `prmprdpto` int(11) DEFAULT NULL,
+  `prmprcprv` int(11) DEFAULT NULL,
+  `prmprciud` int(11) DEFAULT NULL,
+  `prmprzona` int(11) DEFAULT NULL,
+  `prmprcmun` int(11) DEFAULT NULL,
+  `prmprambg` smallint(6) DEFAULT NULL,
+  `prmprcgta` int(11) DEFAULT NULL,
+  `prmprugps` smallint(6) DEFAULT NULL,
+  `prmprlong` decimal(20,10) DEFAULT NULL,
+  `prmprlati` decimal(20,10) DEFAULT NULL,
+  `prmprnfam` smallint(6) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+DROP TABLE IF EXISTS `usuario`;
+CREATE TABLE IF NOT EXISTS `usuario` (
+  `usr_id` int(11) NOT NULL AUTO_INCREMENT,
+  `usr_login` varchar(128) NOT NULL,
+  `usr_password` text NOT NULL,
+  `usr_email` text NOT NULL,
+  PRIMARY KEY (`usr_id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=2 ;
+
+INSERT INTO `usuario` (`usr_id`, `usr_login`, `usr_password`, `usr_email`) VALUES(1, 'test', 'd41d8cd98f00b204e9800998ecf8427e', 'calidavidx21@hotmail.com');
+
+
+EOF;
+  foreach(explode(";\n",$q) as $_sql): if(trim($_sql)):
+    $db-&gt;query($_sql);
+  endif;
+  endforeach;
+</action></controller></package><package name="classes" type="" __ideNodeOpen="true"><file name="library/freeness/component.class.php" preprocess="" __ideNodeOpen="true">&lt;?php
+require_once("../library/achachi/zparser.class.php");
+
+class freeness_component {
+  protected $bindingValuesId=false;
+  function __construct(){
+    if(!$this-&gt;bindingValuesId) $this-&gt;bindingValuesId = get_class($this);// . microtime(true) . rand(1000, 9999);
+    if(!isset($_SESSION[$this-&gt;bindingValuesId])) $_SESSION[$this-&gt;bindingValuesId]=array();
+  }
+  function create($type,$__values=array()) {
+    foreach($__values as $__k =&gt; $__v) $$__k = $__v;
+    ob_start();
+    eval('?&gt;'.$this-&gt;__constructors[$type]);
+    $__res = ob_get_contents();
+    ob_end_clean();
+    return $__res;
+  }
+  function render(){
+    print $this-&gt;create("base");
+  }
+  function getBinding($name){
+    $__class = $this-&gt;bindings[$name]["class"];
+    require_once("../model/".$__class.".php");
+    foreach($this-&gt;getBindingValues() as $k =&gt; $v) $$k=$v;
+    $table=new $__class();
+    $select=$table-&gt;select();
+    eval(implode("",zparser::criteria($this-&gt;bindings[$name]["key"])));
+    return $table-&gt;fetchRow($select);
+  }
+  function getBindingValues(){
+    return $_SESSION[$this-&gt;bindingValuesId];
+  }
+  function setBindingValues($values){
+    foreach($values as $k =&gt; $v) {
+      $_SESSION[$this-&gt;bindingValuesId][$k] = $v;
+    }
+  }
+  function __get($name){
+    if(isset($this-&gt;bindings[$name])) {
+      if(isset($this-&gt;bindings[$name]["class"])) {
+        $__class = $this-&gt;bindings[$name]["class"];
+        require_once("../model/".$__class.".php");
+        foreach($this-&gt;getBindingValues() as $k =&gt; $v) $$k=$v;
+        $table=new $__class();
+        $select=$table-&gt;select();
+        if(isset($this-&gt;bindings[$name]["key"])){
+          eval(implode("",zparser::criteria($this-&gt;bindings[$name]["key"])));
+          return $table-&gt;fetchRow($select);
+        } else {
+          if(isset($this-&gt;bindings[$name]["where"])) eval(implode("",zparser::criteria($this-&gt;bindings[$name]["where"])));
+          return $table-&gt;fetchAll($select);
+        }
+      } else {
+        if(isset($this-&gt;bindings[$name]["connection"])) require_once("../model/".$this-&gt;bindings[$name]["connection"].".php");
+        else require_once("../model/connection.php");
+        $db = Zend_Db_Table_Abstract::getDefaultAdapter();
+        $stmt = $db-&gt;query($this-&gt;resolve($this-&gt;bindings[$name]["query"]));
+        return $stmt-&gt;fetchAll();
+      }
+    } else {
+      return $_SESSION[$this-&gt;bindingValuesId][$name];
+    }
+  }
+  function __set($name, $value){
+    if(isset($this-&gt;bindings[$name])) {
+      if(isset($this-&gt;bindings[$name]["class"])) {
+      }
+    } else {
+      $_SESSION[$this-&gt;bindingValuesId][$name] = $value;
+    }
+  }
+  function __replace__($__match__)
+  {
+    return eval("return {$__match__[1]};");
+  }
+  function resolve($exp)
+  {
+    $res = preg_replace_callback('/\\'."\x7b".'([^\\'."\x7d".']+)\\'."\x7d".'/', array($this,'__replace__'), $exp);
+    return $res;
+  }
+}
+
+function jencode($o){
+  $j=json_encode($o);
+  return preg_replace_callback('/"&amp;([^"\\\\]|\\.)*"/', create_function('$m', 'return substr(json_decode($m[0]),1);'), $j);
+}
+</file><file name="library/achachi/zparser.class.php" preprocess="" __ideNodeOpen="false">&lt;?php
+/**
+ * @author: calidavidx21@hotmail.com
+ */
+class zparser {
+  /**
+   * Parse a criteria expresion like:
+   *  field1 &gt; dbfunction($phpvariable); field2 = @phpfunction($phpvariable); field3 = @phpfn(phpconstant)
+   * convertion:
+   *  $select-&gt;where('field1 &gt; dbfunction(?)',$phpvariable);
+   *  $select-&gt;where('field2 = ?',phpfunction($phpvariable));
+   *  $select-&gt;where('field3 = ?',phpfn(phpconstant));
+   */
+  public static function criteria($criteria,$select='$select'){
+    $res=array();
+    if(isset($criteria)) {
+      $token = token_get_all('&lt;?php '.$criteria.';');
+      $vars=array();
+      $exp="";
+      for($i=1,$l=count($token);$i&lt;$l;$i++){
+        $t=$token[$i];
+        if(is_string($t) &amp;&amp; $t!=";" &amp;&amp; $t!="@") $exp.=$t;
+        elseif($t==="@" || (is_array($t) &amp;&amp; $t[0]==T_VARIABLE)){
+          $exp.="%s";
+          $cont=$t=="@"?array(array(307,309)):array();
+          if($t=="@")$i++;
+          $lasti=$i;
+          //$i+1   para: $this-&gt;propiedad
+          for($j=$i+1;$j&lt;$l;$j++){
+            if(is_string($token[$j])) {$e=$token[$j];$k=0;} else {$e=$token[$j][1];$k=$token[$j][0];}
+            if(trim($e)=="") {}
+            elseif(@$e=="-&gt;") $cont[]=array(307,309);
+            elseif(@$e=="[") $cont[]=array("]");
+            elseif(@$e=="(") $cont[]=array(")");
+            elseif(count($cont)==0) break;
+            elseif(count($cont)&gt;0){
+              foreach($cont as $kco =&gt; $co){
+                foreach($co as $coi){
+                  if($coi===$e || ($coi==$k &amp;&amp; !is_string($coi))){
+                    $lasti=$j;
+                    unset($cont[$kco]);
+                  }
+                }
+              }
+            }
+          }
+          $var="";
+          for($j=$i;$j&lt;=$lasti;$j++) $var.=is_string($token[$j])?$token[$j]:$token[$j][1];
+          $vars[]=$var;
+          //print("&lt;b&gt;");var_dump($var);print("&lt;/b&gt;");
+          $i=$lasti;
+        } elseif(is_array($t)) {
+          $exp.=$t[1];
+        }
+        elseif($t==";") {
+          if(trim($exp)) {
+            $exp=var_export($exp,true);
+            if($vars){
+              $xvars=$vars;
+              foreach($xvars as &amp;$xvar) $xvar=var_export("'.{$select}-&gt;getAdapter()-&gt;quote($xvar).'",true);
+              $xvars[0]='"?"';
+              eval('$exp=sprintf($exp,'.implode(',',$xvars).');');
+              $res[]="{$select}-&gt;where($exp,$vars[0]);\n";
+            } else {
+              $res[]="{$select}-&gt;where($exp);\n";
+            }
+          }
+          $vars=array();
+          $exp="";
+        }
+      }
+    }
+    return $res;
+  }
+  public static function parse($str,$separator=';'){
+    $res='';
+    if(isset($str)) {
+      $tks=array();
+      $token = token_get_all('&lt;?php '.$str.$separator);
+      $cont0=array();
+      $tk=array();
+      for($i=1,$l=count($token);$i&lt;$l;$i++){
+        $t=$token[$i];
+        if(is_string($token[$i])) {$e=$token[$i];$k=0;} else {$e=$token[$i][1];$k=$token[$i][0];}
+        //Verifica () [] y {} en la expresion de base de datos
+        if($e=="(")$cont0[]=array(")");
+        if($e=="[")$cont0[]=array("]");
+        if($e=="{")$cont0[]=array("}");
+        if(count($cont0)&gt;0){
+          foreach($cont0 as $kco =&gt; $co){
+            foreach($co as $coi){
+              if($coi===$e || ($coi==$k &amp;&amp; !is_string($coi))){
+                unset($cont0[$kco]);
+              }
+            }
+          }
+        }
+        if(is_string($t) &amp;&amp; $t!=$separator &amp;&amp; $t!="@") $tk[]=array(0,$t);
+        elseif($t==="@" || (is_array($t) &amp;&amp; $t[0]==T_VARIABLE)){
+          $cont=$t=="@"?array(array(307,309)):array();
+          if($t=="@")$i++;
+          $lasti=$i;
+          //$i+1   para: $this-&gt;propiedad
+          for($j=$i;$j&lt;$l;$j++){
+            if(is_string($token[$j])) {$e=$token[$j];$k=0;} else {$e=$token[$j][1];$k=$token[$j][0];}
+            //Verifica -&gt; () [] y {} en la expresion php
+            if(trim($e)=="") {}
+            elseif(@$e=="-&gt;") $cont[]=array(307,309);
+            elseif(@$e=="[") $cont[]=array("]");
+            elseif(@$e=="(") $cont[]=array(")");
+            elseif(@$e=="{") $cont[]=array("}");
+            elseif(count($cont)==0) break;
+            elseif(count($cont)&gt;0){
+              foreach($cont as $kco =&gt; $co){
+                foreach($co as $coi){
+                  if($coi===$e || ($coi==$k &amp;&amp; !is_string($coi))){
+                    $lasti=$j;
+                    unset($cont[$kco]);
+                  }
+                }
+              }
+            }
+          }
+          $var="";
+          for($j=$i;$j&lt;=$lasti;$j++) $var.=is_string($token[$j])?$token[$j]:$token[$j][1];
+          $tk[]=array(1,$var);
+          $i=$lasti;
+        } elseif(is_array($t)) {
+          $tk[]=array(0,$t[1]);
+        }
+        elseif($t==$separator &amp;&amp; (count($cont0)==0)) { //valid separator
+          if(count($tk)) $tks[]=$tk;
+          $tk=array();
+        }
+        else { //invalid separador
+          $tk[]=array(0,$t);
+        }
+      }
+    }
+    return $tks;
+  }
+  protected static function quote($xvar,$select='$select'){
+    return "{$select}-&gt;getAdapter()-&gt;quote($xvar)";
+  }
+  protected static function quoteIdentifier($xvar,$select='$select'){
+    return "{$select}-&gt;getAdapter()-&gt;quoteIdentifier($xvar)";
+  }
+  /**
+   * Parse from
+   */
+  public static function from($columns,$select='$select'){
+    $tks = zparser::parse($columns,',');
+    $cols=array();
+    foreach($tks as $tk){
+      $res='';$exp='';
+      foreach($tk as $i=&gt;$t){
+        if($t[0]==1){
+          //php
+          $res.="'.".zparser::quoteIdentifier($t[1],$select).".'";
+        } elseif(strtoupper($t[1])=="AS") {
+          $exp = $res;
+          $res='';
+        } else {
+          //sql
+          $res.=substr(var_export($t[1],true),1,-1);
+        }
+      }
+      if($exp){
+        //alias
+        $cols[]="array('".trim($res)."'=&gt;'".trim($exp)."')";
+      } else {
+        $cols[]="'$res'";
+      }
+    }
+    $res=array();
+    foreach($cols as $t){
+      $t=str_replace(array("''.",".''"),"",$t);
+      $res[]="{$select}-&gt;from($t);";
+    }
+    return $res;
+  }
+  /**
+   * Parse Columns
+   */
+  public static function columns($columns,$select='$select'){
+    $tks = zparser::parse($columns,',');
+    $cols=array();
+    foreach($tks as $tk){
+      $res='';$exp='';
+      $quoter="quote";
+      foreach($tk as $i=&gt;$t){
+        if($t[0]==1){
+          //php
+          $res.="'.".zparser::$quoter($t[1],$select).".'";
+        } elseif(strtoupper($t[1])=="AS") {
+          $exp = $res;
+          $res='';
+          $quoter="quoteIdentifier";
+        } else {
+          //sql
+          $res.=substr(var_export($t[1],true),1,-1);
+        }
+      }
+      if($exp){
+        //alias and expression: new Zend_Db_Expr('p.cost * 1.08') === '(p.cost * 1.08)'
+        $cols[]="array(".str_replace(array("''.",".''"),"","'".trim($res)."'")."=&gt;'(".trim($exp).")')";
+      } else {
+        $cols[]="'$res'";
+      }
+    }
+    $res=array();
+    foreach($cols as $c){
+      $t=str_replace(array("''.",".''"),"",$c);
+      $res[]="{$select}-&gt;columns($c);";
+    }
+    return $res;
+  }
+}
+</file><file name="library/freeness/modules/login.class.php" preprocess="" __ideNodeOpen="true">&lt;?php
+require_once("../library/freeness/components/login.class.php");
+
+class freeness_modules_login extends freeness_components_login {
+  var $title = "Hola Mundo";
+  var $action = "verifyLogin";
+  var $bindings = array(
+    'user'=&gt;array(
+      'class'=&gt;'user',
+      'key'=&gt;'usr_login=$user; usr_password=@md5($password)',
+    ),
+  );
+  var $fields = array(
+    array("name"=&gt;"user","type"=&gt;"text","label"=&gt;"Usuario"),
+    array("name"=&gt;"password","type"=&gt;"password","label"=&gt;"Password"),
+  );
+  var $buttons = array(
+    array("label"=&gt;"Ingresar"),
+  );
+  
+  function verifyLogin($user,$password){
+    $row = $this-&gt;getBinding("user");
+    if(isset($row)) {
+      print(json_encode(array("success"=&gt;true,"action"=&gt;"location.href='../desktop/index'")));
+    } else {
+      print(json_encode(array("success"=&gt;false)));
+    }
+  }
+}
+</file><file name="library/freeness/modules/editlogin.class.php" preprocess="" __ideNodeOpen="false">&lt;?php
+require_once("../library/freeness/components/form.class.php");
+
+class freeness_modules_editlogin extends freeness_components_form {
+  var $title = "Perfil del Usuario";
+  var $action = "saveProfile";
+  var $user = "";
+  var $bindings = array(
+    'user'=&gt;array(
+      'class'=&gt;'user',
+      'key'=&gt;'usr_login=$this-&gt;user',
+    ),
+  );
+  var $fields = array(
+    array("name"=&gt;"usr_email","type"=&gt;"text","label"=&gt;"Email"),
+    array("name"=&gt;"password","type"=&gt;"password","label"=&gt;"Password"),
+  );
+  var $buttons = array(
+    array("label"=&gt;"Guardar"),
+  );
+  
+  function __construct(){
+    parent::__construct();
+    $this-&gt;user = $_SESSION["freeness_modules_login"]["user"];
+  }
+  function saveProfile(){
+    $row = $this-&gt;getBinding("user");
+    if(isset($row)) {
+      print(json_encode(array("success"=&gt;true,"action"=&gt;"alert(".json_encode($row-&gt;usr_email).")")));
+    } else {
+      print(json_encode(array("success"=&gt;false)));
+    }
+  }
+}
+</file><file name="library/freeness/modules/auditoria.class.php" preprocess="" __ideNodeOpen="true">&lt;?php
+require_once("../library/freeness/components/formpropertygrid.class.php");
+
+class freeness_modules_auditoria extends freeness_components_formpropertygrid {
+  var $title = "Auditoria";
+  var $action = "";
+  var $bindings = array(
+    'preguntas'=&gt;array(
+      'class'=&gt;'maestroauditoria',
+      'where'=&gt;'',
+    ),
+    'clientes'=&gt;array(
+      "query"=&gt;'select prmprnpre,
+      prmprfdes,
+      prmprmdes,
+      prmprsald,
+      prmprcmon
+ from prmpr 
+ where prmprnpre={isset($this-&gt;operacion)?$this-&gt;operacion:0}  ',
+    ),
+  );
+  var $tbar=array(
+    array("icon"=&gt;"../../images/buscar.png","text"=&gt;"Buscar","handler"=&gt;"&amp;function(){freeness.runWindow('auditoriabuscar')}"),
+  );
+  var $search = array(
+  );
+  var $buttons = array(
+  );
+  var $grids = array(
+  );
+
+  function __construct() {
+    parent::__construct();
+    $grilla = -1;
+    foreach($this-&gt;preguntas as $preg) {
+      if($preg-&gt;aumautipo=="N") {
+        //PREGUNTAS N
+        if($grilla&lt;0) { $this-&gt;grids[]=array("title"=&gt;"","width"=&gt;380,"nameColumnWidth"=&gt;300,"source"=&gt;array()); $grilla=count($this-&gt;grids)-1; }
+        $this-&gt;grids[$grilla]["source"][]=array(
+          "name"=&gt; 'A',
+          "label"=&gt; $preg-&gt;aumaudesc,
+          "type"=&gt; 'combo',
+          "data"=&gt; array(
+            array("v"=&gt;"A","d"=&gt;"A"),
+            array("v"=&gt;"B","d"=&gt;"B"),
+            array("v"=&gt;"C","d"=&gt;"C"),
+            array("v"=&gt;"D","d"=&gt;"D"),
+            array("v"=&gt;"E","d"=&gt;"E"),
+            array("v"=&gt;"F","d"=&gt;"F"),
+            array("v"=&gt;"G","d"=&gt;"G"),
+          )
+        );
+      } else {
+        //PREGUNTAS D
+        $this-&gt;grids[]=array("title"=&gt;$preg-&gt;aumaudesc,"width"=&gt;380,"nameColumnWidth"=&gt;300,"source"=&gt;array()); $grilla=count($this-&gt;grids)-1;
+        foreach($this-&gt;clientes as $cli) {
+          $this-&gt;grids[$grilla]["source"][]=array(
+            "name"=&gt; 'P'.$cli["gbagecage"],
+            "label"=&gt; $cli["gbagenomb"],
+            "type"=&gt; 'combo',
+            "data"=&gt; array(
+            array("v"=&gt;"A","d"=&gt;"A"),
+            array("v"=&gt;"B","d"=&gt;"B"),
+            array("v"=&gt;"C","d"=&gt;"C"),
+            array("v"=&gt;"D","d"=&gt;"D"),
+            array("v"=&gt;"E","d"=&gt;"E"),
+            array("v"=&gt;"F","d"=&gt;"F"),
+            array("v"=&gt;"G","d"=&gt;"G"),
+            )
+          );
+        }
+        $grilla=-1;
+      }
+    }
+  }
+
+  function onsearch(){
+    
+  }
+}
+</file><file name="library/freeness/modules/explorer.class.php" preprocess="" __ideNodeOpen="false">&lt;?php
+require_once("../library/freeness/components/explorer.class.php");
+
+class freeness_modules_explorer extends freeness_components_explorer {
+  var $title = "Auditoria";
+  var $action = "";
+  var $bindings = array(
+    'preguntas'=&gt;array(
+      'class'=&gt;'maestroauditoria',
+      'where'=&gt;'',
+    ),
+    'clientes'=&gt;array(
+      "query"=&gt;'select gbagecage, gbagenomb
+                from gbage, prdeu, prmpr
+                where gbagecage  = prdeucage
+                   and prdeunpre = prmprnpre
+                   and prmprnpre = {isset($this-&gt;operacion)?$this-&gt;operacion:0}',
+    ),
+  );
+  var $search = array(
+    array("name"=&gt;"operacion","type"=&gt;"text","label"=&gt;"Operacion"),
+  );
+  var $buttons = array(
+    array("label"=&gt;"Buscar"),
+  );
+  var $grids = array(
+  );
+
+  function __construct() {
+  }
+
+  function onsearch(){
+    
+  }
+}
+</file><file name="library/freeness/modules/auditoriabuscar.class.php" preprocess="" __ideNodeOpen="true">&lt;?php
+require_once("../library/freeness/components/form.class.php");
+require_once("../library/freeness/modules/auditoria.class.php");
+
+class freeness_modules_auditoriabuscar extends freeness_components_form {
+  var $title = "Busqueda";
+  var $action = "defineOperacion";
+  var $bindings = array(
+  );
+  var $fields = array(
+    array("name"=&gt;"operacion","type"=&gt;"text","label"=&gt;"Operacion"),
+  );
+  var $buttons = array(
+    array("label"=&gt;"Buscar"),
+  );
+  
+  function defineOperacion(){
+    $audi = new freeness_modules_auditoria();
+    $audi-&gt;operacion=$this-&gt;operacion;
+    $filas = count($audi-&gt;clientes);
+    print jencode(array("success"=&gt;true,"action"=&gt;"alert($filas);"));
+  }
+}
+</file></package><package name="javascript" type="" __ideNodeOpen="false"><file name="html/script/freeness.js" preprocess="" __ideNodeOpen="false">var freeness={
+  runWindow:function($class){
+    Ext.Ajax.request({
+      url:"../run/window",
+      method:'GET',
+      params:{c:$class},
+      success:function(res){
+        eval(res.responseText);
+      }
+    });
+  }
+};
+
+</file></package><package name="componentes" type="" __ideNodeOpen="true"><fn.component name="login" __ideNodeOpen="false"><fn.item name="base" __ideNodeOpen="true"><ext class="Ext.Window" __extid="5" __ideNodeOpen="true" maximized="false" autoShow="false" closable="false" draggable="false" resizable="false" title="&lt;?=$this-&gt;title?&gt;" border="0"><ext class="Ext.form.FormPanel" frame="true" __extid="6" __ideNodeOpen="true" url="../run/doaction?c=&lt;?php $cc=get_class($this); $cc=explode('_',$cc); print $cc[count($cc)-1]; ?&gt;&amp;action=&lt;?=$this-&gt;action?&gt;"><ext.attribute name="items" __ideNodeOpen="true">[&lt;?php
+$res=array();
+foreach($this-&gt;fields as $f){
+  $res[]=$this-&gt;create($f["type"],$f);
+}
+print implode(",", $res);
+?&gt;]</ext.attribute><ext.attribute name="buttons" __ideNodeOpen="true">[&lt;?php
+$res=array();
+foreach($this-&gt;buttons as $f){
+  $res[]=$this-&gt;create("button",$f);
+}
+print implode(",", $res);
+?&gt;]</ext.attribute></ext></ext></fn.item><fn.item name="text" __ideNodeOpen="false"><ext class="Ext.form.TextField" name="&lt;?=$name?&gt;" fieldLabel="&lt;?=$label?&gt;" inputType="text" __ideNodeOpen="false"/></fn.item><fn.item name="password" __ideNodeOpen="false"><ext class="Ext.form.TextField" name="&lt;?=$name?&gt;" fieldLabel="&lt;?=$label?&gt;" inputType="password"/></fn.item><fn.item name="button" __ideNodeOpen="false"><ext class="Ext.Button" text="&lt;?=$label?&gt;" __ideNodeOpen="true"><ext.attribute name="handler" __ideNodeOpen="true">function(c,e){
+console.debug(this.ownerCt.ownerCt.getForm().submit({
+  success:function(form,action){
+    eval(action.result.action);
+  }
+}));
+}</ext.attribute></ext></fn.item>
+  function load($post){
+    $this-&gt;setBindingValues($post);
+  }</fn.component><fn.component name="formpropertygrid" __ideNodeOpen="false"><fn.item name="base" __ideNodeOpen="true"><ext class="Ext.Window" __extid="5" __ideNodeOpen="true" maximized="false" autoShow="false" closable="true" draggable="true" resizable="true" title="&lt;?=$this-&gt;title?&gt;" border="0" width="700" height="600"><ajaxLoad url="../run/doaction?c=&lt;?php $cc=get_class($this); $cc=explode(&quot;_&quot;,$cc); print $cc[count($cc)-1]; ?&gt;&amp;action=loadfragment&amp;f=base1"/></ext></fn.item><fn.item name="base1" __ideNodeOpen="true"><ext class="Ext.Panel" region="center" __ideNodeOpen="true"><ext.attribute name="tbar" isArray="false" isString="false" __ideNodeOpen="true">&lt;?php 
+  foreach($this-&gt;tbar as $i=&gt;$t){$this-&gt;tbar[$i]["scale"]="medium";}
+  print jencode($this-&gt;tbar); 
+?&gt;</ext.attribute><ext class="Ext.form.FormPanel" frame="true" __extid="6" __ideNodeOpen="true" url="../run/doaction?c=&lt;?php $cc=get_class($this); $cc=explode('_',$cc); print $cc[count($cc)-1]; ?&gt;&amp;action=onsearch" region="center"><ext.attribute name="items" isArray="false" isString="false" __ideNodeOpen="true">[&lt;?php
+$res=array();
+foreach($this-&gt;search as $f){
+  $res[]=$this-&gt;create($f["type"],$f);
+}
+print implode(",", $res);
+?&gt;]</ext.attribute><ext.attribute name="buttons" isArray="false" isString="false" __ideNodeOpen="false">[&lt;?php
+$res=array();
+foreach($this-&gt;buttons as $f){
+  $res[]=$this-&gt;create("button",$f);
+}
+print implode(",", $res);
+?&gt;]</ext.attribute></ext><ext class="Ext.form.FormPanel" frame="true" __extid="6" __ideNodeOpen="true" url="../run/doaction?c=&lt;?php $cc=get_class($this); $cc=explode('_',$cc); print $cc[count($cc)-1]; ?&gt;&amp;action=&lt;?=$this-&gt;action?&gt;" region="center"><ext.attribute name="items" isArray="false" isString="false" __ideNodeOpen="true">[&lt;?php
+$res=array();
+foreach($this-&gt;grids as $g){
+  $res[]=$this-&gt;create("grid",$g);
+}
+print implode(",", $res);
+?&gt;]</ext.attribute></ext></ext></fn.item><fn.item name="grid" __ideNodeOpen="false"><ext class="Ext.grid.PropertyGrid" __ideNodeOpen="true" title="&lt;?= $title ?&gt;"><ext.attribute name="source" isArray="false" isString="false" __ideNodeOpen="true">{&lt;?php
+$res=array();
+foreach($source as $g){
+  //TODO: load value of name
+  $res[]=json_encode($g["label"]).':'.json_encode($g["name"]);
+}
+print implode(",", $res);
+?&gt;}</ext.attribute><ext.attribute name="customEditors" isArray="false" isString="false" __ideNodeOpen="true">{&lt;?php
+$res=array();
+foreach($source as $f){
+  if($f["type"]) {
+    $res[]=json_encode($f["label"]).':'.$this-&gt;create($f["type"],$f);
+  }
+}
+print implode(",", $res);
+?&gt;}</ext.attribute><ext.attribute name="nameColumnWidth" isArray="false" isString="false" __ideNodeOpen="true">&lt;?= $nameColumnWidth ?&gt;</ext.attribute><ext.attribute name="listeners" isArray="false" isString="false" __ideNodeOpen="true">{
+  afterrender:function(){
+    this.columns[0].setText("Pregunta");
+    this.columns[1].setText("Respuesta");
+    this.getView().el.select('.x-grid3-header').setStyle('display', 'none');
+    //console.debug(this.columns);
+  }
+}</ext.attribute></ext></fn.item><fn.item name="text" __ideNodeOpen="false"><ext class="Ext.form.TextField" name="&lt;?=$name?&gt;" fieldLabel="&lt;?=$label?&gt;" inputType="text" __ideNodeOpen="false"/></fn.item><fn.item name="combo" __ideNodeOpen="false">new Ext.form.ComboBox({
+  displayField: 'd',
+  valueField: 'v',
+  store:new Ext.data.Store({
+    fields: ['v', 'd'],
+    data : &lt;?php print json_encode($data) ?&gt;
+  })
+})</fn.item><fn.item name="button" __ideNodeOpen="false"><ext class="Ext.Button" text="&lt;?=$label?&gt;" __ideNodeOpen="true"><ext.attribute name="handler" isArray="false" isString="false" __ideNodeOpen="true">function(c,e){
+console.debug(this.ownerCt.ownerCt.getForm().submit({
+  success:function(form,action){
+    eval(action.result.action);
+  }
+}));
+}</ext.attribute></ext></fn.item>
+  function load($post){
+    $this-&gt;setBindingValues($post);
+  }
+
+  function loadfragment(){
+    print "container.add(".$this-&gt;create($_GET["f"]).");";
+  }</fn.component><fn.component name="explorer" __ideNodeOpen="false"><fn.item name="base" __ideNodeOpen="true"><ext class="Ext.Window" __extid="5" __ideNodeOpen="true" maximized="false" autoShow="false" closable="true" draggable="true" resizable="true" title="&lt;?=$this-&gt;title?&gt;" border="0" width="424"><ajaxLoad url="../run/doaction?c=&lt;?php $cc=get_class($this); $cc=explode(&quot;_&quot;,$cc); print $cc[count($cc)-1]; ?&gt;&amp;action=loadfragment&amp;f=base1"/></ext></fn.item><fn.item name="base1" __ideNodeOpen="true"><ext class="Ext.Panel" region="center" __ideNodeOpen="true"><ext class="Ext.view.View" __extid="6" __ideNodeOpen="true" itemSelector="div.thumb-wrap" emptyText="" trackOver="true" overItemCls="x-item-over"><ext.attribute name="store" __ideNodeOpen="true">(Ext.Loader.setPath('Ext.ux.DataView', '../ux/DataView/'),store=new Ext.data.Store({
+__modeldv:Ext.define('ImageModel', {
+        extend: 'Ext.data.Model',
+        fields: [
+           {name: 'name'},
+           {name: 'url'},
+           {name: 'application'}
+        ]
+    }),
+        model: 'ImageModel',
+        proxy: {
+            type: 'ajax',
+            url: '../run/doaction?c=&lt;?php $cc=get_class($this); $cc=explode('_',$cc); print $cc[count($cc)-1]; ?&gt;&amp;action=itemList',
+            reader: {
+                type: 'json',
+                root: 'images'
+            }
+        }
+    }),store.load(),store)
+</ext.attribute><ext.attribute name="tpl" __ideNodeOpen="true">[
+    '&lt;tpl for="."&gt;',
+        '&lt;div class="thumb-wrap" id="{name}"&gt;',
+        '&lt;div class="thumb"&gt;&lt;img src="{url}" title="{name}"&gt;&lt;/div&gt;',
+        '&lt;span&gt;{name}&lt;/span&gt;&lt;/div&gt;',
+    '&lt;/tpl&gt;',
+    '&lt;div class="x-clear"&gt;&lt;/div&gt;'
+]
+</ext.attribute><ext.attribute name="listeners" __ideNodeOpen="true">{
+  itemclick:function( view, record, item, index, event, eOpts ){
+    if(record.data.application){
+      freeness.runWindow(record.data.application);
+    }
+  }
+}</ext.attribute></ext></ext></fn.item>
+  function load($post){
+    $this-&gt;setBindingValues($post);
+  }
+
+  function loadfragment(){
+    print "container.add(".$this-&gt;create($_GET["f"]).");";
+  }
+
+  function itemList(){
+    print '{"images":[
+      {"name":"Introducción de datos","url":"../../images/introduccion_datos.png","application":"auditoria"},
+      {"name":"Reportes","url":"../../images/reportes.png"},
+      {"name":"Parámetros","url":"../../images/parametros.png"},
+      {"name":"Herramientas","url":"../../images/herramientas.png"}
+    ]}';
+  }</fn.component><fn.component name="form" __ideNodeOpen="false"><fn.item name="base" __ideNodeOpen="true"><ext class="Ext.Window" __extid="5" __ideNodeOpen="true" autoShow="false" title="&lt;?=$this-&gt;title?&gt;" border="0"><ext class="Ext.form.FormPanel" frame="true" __extid="6" __ideNodeOpen="true" url="../run/doaction?c=&lt;?php $cc=get_class($this); $cc=explode('_',$cc); print $cc[count($cc)-1]; ?&gt;&amp;action=&lt;?=$this-&gt;action?&gt;"><ext.attribute name="items" __ideNodeOpen="true">[&lt;?php
+$res=array();
+foreach($this-&gt;fields as $f){
+  $res[]=$this-&gt;create($f["type"],$f);
+}
+print implode(",", $res);
+?&gt;]</ext.attribute><ext.attribute name="buttons" __ideNodeOpen="true">[&lt;?php
+$res=array();
+foreach($this-&gt;buttons as $f){
+  $res[]=$this-&gt;create("button",$f);
+}
+print implode(",", $res);
+?&gt;]</ext.attribute></ext></ext></fn.item><fn.item name="text" __ideNodeOpen="false"><ext class="Ext.form.TextField" name="&lt;?=$name?&gt;" fieldLabel="&lt;?=$label?&gt;" inputType="text" __ideNodeOpen="false"/></fn.item><fn.item name="password" __ideNodeOpen="false"><ext class="Ext.form.TextField" name="&lt;?=$name?&gt;" fieldLabel="&lt;?=$label?&gt;" inputType="password"/></fn.item><fn.item name="button" __ideNodeOpen="false"><ext class="Ext.Button" text="&lt;?=$label?&gt;" __ideNodeOpen="true"><ext.attribute name="handler" __ideNodeOpen="true">function(c,e){
+console.debug(this.ownerCt.ownerCt.getForm().submit({
+  success:function(form,action){
+    eval(action.result.action);
+  }
+}));
+}</ext.attribute></ext></fn.item>
+  function load($post){
+    $this-&gt;setBindingValues($post);
+  }</fn.component></package><package name="base de datos" type="" __ideNodeOpen="true"><include src="connection.xml"/><table name="user" table="usuario" primaryKey="" dependentTables=""/><table name="maestroauditoria" table="aumau" primaryKey="aumaucorr" dependentTables=""/></package></application></root>

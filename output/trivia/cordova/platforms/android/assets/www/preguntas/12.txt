@@ -1,0 +1,3 @@
+var res={"pregunta":"\u00bfCuantos libros tiene el antiguo testamento?","respuestas":["42","44","46","48"],"correcta":"2","imagen":"img\/r_rembrandt_rembrandt132.jpg"};
+dibujaPregunta($pregunta,$respuestas,$imagen,res);
+

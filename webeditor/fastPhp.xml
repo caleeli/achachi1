@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root><path path="output/fastPhp" main="output/fastPhp/index.txt" __ideNodeOpen="true"><component name="fastPhp" transparent="" precode="" engine="cmd" __ideNodeOpen="true">gksu -- bash -c 'mkdir -p $path;chown david:david $path;chmod 777 $path;mount -t tmpfs -o size=$size,mode=0755,uid=$(id -u david),gid=$(id -g david) tmpfs $path;echo ok'</component><file name="index.txt" preprocess="" __ideNodeOpen="true"><fastPhp path="/home/david/php_session" size="200m"/></file></path></root>

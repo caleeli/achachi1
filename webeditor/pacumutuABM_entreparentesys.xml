@@ -1,0 +1,504 @@
+<?xml version="1.0" encoding="UTF-8"?><root><path path="C:\Program Files (x86)\Zend\Apache2\htdocs\entre\application\fuente" main="" __ideNodeOpen="true"><component name="abm" transparent="" precode="" __ideNodeOpen="false"><file name="@{$name}.var" preprocess="">array (
+  '_name' =&gt; '@{$name}',
+  '_template' =&gt; 'tpl_H0.0',
+  'title' =&gt; '@{$title}',
+  'icon' =&gt; 'window.gif',
+  'regionA1' =&gt; '@{$name}Grid',
+  'buttons' =&gt; '',
+  'script' =&gt; '',
+  'model' =&gt; '',
+  'where' =&gt; '',
+  'toolbar' =&gt; '',
+)</file><file name="@{$name}Add.var" preprocess="">array (
+  '_name' =&gt; '@{$name}Add',
+  '_template' =&gt; 'tpl_H0.0',
+  'toolbar' =&gt; '',
+  'title' =&gt; '',
+  'icon' =&gt; 'add.gif',
+  'regionA1' =&gt; '@{$name}AddFieldset',
+  'buttons' =&gt; 'Adicionar,insert',
+  'script' =&gt; '
+function insert(){
+  panel.zinsert();
+  panel.previousNode("window").destroy();
+}',
+  'model' =&gt; '@{$model}',
+  'where' =&gt; '',
+  'oninsert' =&gt; '',
+  'onupdate' =&gt; '',
+)</file><file name="@{$name}AddFieldset.var" preprocess="">array (
+  '_name' =&gt; '@{$name}AddFieldset',
+  '_template' =&gt; 'ide_fieldset',
+  'adapter' =&gt; 'connection',
+  'query' =&gt; '',
+  'model' =&gt; '',
+  'where' =&gt; '',
+  'onload' =&gt; '',
+  'oninsert' =&gt; '',
+  'fields' =&gt; '@{node::content($_nodes['fieldsAdd'])}',
+  'labelWidth' =&gt; '',
+  'title' =&gt; '',
+)</file><file name="@{$name}Delete.var" preprocess="">array (
+  '_name' =&gt; '@{$name}Delete',
+  '_template' =&gt; 'tpl_H0.0',
+  'toolbar' =&gt; '',
+  'title' =&gt; '',
+  'icon' =&gt; 'clear.gif',
+  'regionA1' =&gt; '@{$name}DeleteFieldset',
+  'buttons' =&gt; 'Borrar,remove',
+  'script' =&gt; '
+function remove(){
+  panel.zdelete();
+  panel.previousNode("window").destroy();
+}',
+  'model' =&gt; '@{$model}',
+  'where' =&gt; '@{empty($idField)?'id':$idField}=:@{$name}Grid_@{empty($idField)?'id':$idField}',
+  'oninsert' =&gt; '',
+  'onupdate' =&gt; '',
+)</file><file name="@{$name}DeleteFieldset.var" preprocess="">array (
+  '_name' =&gt; '@{$name}DeleteFieldset',
+  '_template' =&gt; 'ide_fieldset',
+  'adapter' =&gt; 'connection',
+  'query' =&gt; '',
+  'model' =&gt; '@{$model}',
+  'where' =&gt; '@{empty($idField)?'id':$idField}=:@{$name}Grid_@{empty($idField)?'id':$idField}',
+  'onload' =&gt; '',
+  'oninsert' =&gt; '',
+  'fields' =&gt; '@{node::content($_nodes['fieldsDelete'])}',
+  'labelWidth' =&gt; '',
+  'title' =&gt; '',
+)</file><file name="@{$name}Grid.var" preprocess="">array (
+  '_name' =&gt; '@{$name}Grid',
+  '_template' =&gt; '@{empty($groupField)?"ide_grilla":"ide_groupgrid"}',
+  'adapter' =&gt; 'connection',
+  'query' =&gt; @{var_export($query,true)},
+  'model' =&gt; '',
+  'where' =&gt; '',
+  'fields' =&gt; '@{node::content($_nodes['fieldsGrid'])}',
+  'columns' =&gt; '@{node::content($_nodes['columnsGrid'])}',
+  'toolbar' =&gt; '#{
+    $__tt=explode(';',$toolbar);
+    $_res=array();
+    if($__tt[0]!='') $_res[]=$__tt[0].',add.gif,'.$name.'Add,400,400,Nuevo';
+    if($__tt[1]!='') $_res[]=$__tt[1].',pencil.png,'.$name.'Modify,400,400,Editar';
+    if($__tt[2]!='') $_res[]=$__tt[2].',clear.gif,'.$name.'Delete,,,Eliminar';
+    for($_i=3,$_l=count($__tt);$_i&lt;$_l;$_i++):
+      $_res[]=$__tt[$_i];
+    endfor;
+    return implode("\n", $_res);
+}',
+#{
+  if(empty($groupField))
+    return '';
+  else
+    return "'groupField' =&gt; '$groupField',\n";
+}  'onload' =&gt; '',
+  'bindingCode' =&gt; @{var_export("".@node::content($_nodes['bindingCode']),true)},
+  'title' =&gt; '',
+)</file><file name="@{$name}Modify.var" preprocess="">array (
+  '_name' =&gt; '@{$name}Modify',
+  '_template' =&gt; 'tpl_H0.0',
+  'toolbar' =&gt; '',
+  'title' =&gt; '',
+  'icon' =&gt; 'pencil.png',
+  'regionA1' =&gt; '@{$name}ModifyFieldset',
+  'buttons' =&gt; 'Guardar Cambios,update',
+  'script' =&gt; '
+function update(){
+  panel.zupdate();
+  panel.previousNode("window").destroy()
+}
+',
+  'model' =&gt; '@{$model}',
+  'where' =&gt; '@{empty($idField)?'id':$idField}=:@{$name}Grid_@{empty($idField)?'id':$idField}',
+  'oninsert' =&gt; '',
+  'onupdate' =&gt; '',
+)</file><file name="@{$name}ModifyFieldset.var" preprocess="">array (
+  '_name' =&gt; '@{$name}ModifyFieldset',
+  '_template' =&gt; 'ide_fieldset',
+  'adapter' =&gt; 'connection',
+  'query' =&gt; '',
+  'model' =&gt; '@{$model}',
+  'where' =&gt; '@{empty($idField)?'id':$idField}=:@{$name}Grid_@{empty($idField)?'id':$idField}',
+  'onload' =&gt; '',
+  'oninsert' =&gt; '',
+  'fields' =&gt; '@{node::content($_nodes['fieldsModify'])}',
+  'labelWidth' =&gt; '',
+  'title' =&gt; '',
+)</file></component><component name="abmfilter" transparent="" precode="" __ideNodeOpen="false"><file name="@{$name}.var" preprocess="" __ideNodeOpen="true">array (
+  '_name' =&gt; '@{$name}',
+  '_template' =&gt; 'tpl_H1.1',
+  'title' =&gt; '@{$title}',
+  'icon' =&gt; 'window.gif',
+  'regionA1' =&gt; '@{$name}Filter',
+  'regionA2' =&gt; '@{$name}Grid',
+  'buttons' =&gt; '',
+  'script' =&gt; '',
+  'model' =&gt; '',
+  'where' =&gt; '',
+)</file><file name="@{$name}Add.var" preprocess="">array (
+  '_name' =&gt; '@{$name}Add',
+  '_template' =&gt; 'tpl_H0.0',
+  'toolbar' =&gt; '',
+  'title' =&gt; '',
+  'icon' =&gt; 'add.gif',
+  'regionA1' =&gt; '@{$name}AddFieldset',
+  'buttons' =&gt; 'Adicionar,insert',
+  'script' =&gt; '
+function insert(){
+  panel.zinsert();
+  panel.previousNode("window").destroy();
+}',
+  'model' =&gt; '@{$model}',
+  'where' =&gt; '',
+  'oninsert' =&gt; '',
+  'onupdate' =&gt; '',
+)</file><file name="@{$name}AddFieldset.var" preprocess="">array (
+  '_name' =&gt; '@{$name}AddFieldset',
+  '_template' =&gt; 'ide_fieldset',
+  'adapter' =&gt; 'connection',
+  'query' =&gt; '',
+  'model' =&gt; '',
+  'where' =&gt; '',
+  'onload' =&gt; '',
+  'oninsert' =&gt; '',
+  'fields' =&gt; '@{node::content($_nodes['fieldsAdd'])}',
+  'labelWidth' =&gt; '',
+  'title' =&gt; '',
+)</file><file name="@{$name}Delete.var" preprocess="">array (
+  '_name' =&gt; '@{$name}Delete',
+  '_template' =&gt; 'tpl_H0.0',
+  'toolbar' =&gt; '',
+  'title' =&gt; '',
+  'icon' =&gt; 'clear.gif',
+  'regionA1' =&gt; '@{$name}DeleteFieldset',
+  'buttons' =&gt; 'Borrar,remove',
+  'script' =&gt; '
+function remove(){
+  panel.zdelete();
+  panel.previousNode("window").destroy();
+}',
+  'model' =&gt; '@{$model}',
+  'where' =&gt; '',
+  'oninsert' =&gt; '',
+  'onupdate' =&gt; '',
+)</file><file name="@{$name}DeleteFieldset.var" preprocess="">array (
+  '_name' =&gt; '@{$name}DeleteFieldset',
+  '_template' =&gt; 'ide_fieldset',
+  'adapter' =&gt; 'connection',
+  'query' =&gt; '',
+  'model' =&gt; '@{$model}',
+  'where' =&gt; 'id=:@{$name}Grid_id',
+  'onload' =&gt; '',
+  'oninsert' =&gt; '',
+  'fields' =&gt; '@{node::content($_nodes['fieldsDelete'])}',
+  'labelWidth' =&gt; '',
+  'title' =&gt; '',
+)</file><file name="@{$name}Grid.var" preprocess="">array (
+  '_name' =&gt; '@{$name}Grid',
+  '_template' =&gt; '@{empty($groupField)?"ide_grilla":"ide_groupgrid"}',
+  'adapter' =&gt; 'connection',
+  'query' =&gt; @{var_export($query,true)},
+  'model' =&gt; '',
+  'where' =&gt; '',
+  'fields' =&gt; '@{node::content($_nodes['fieldsGrid'])}',
+  'columns' =&gt; '@{node::content($_nodes['columnsGrid'])}',
+  'toolbar' =&gt; '#{
+    $__tt=explode(';',$toolbar);
+    $_res=array();
+    if($__tt[0]!='') $_res[]=$__tt[0].',add.gif,'.$name.'Add,400,400,Nuevo';
+    if($__tt[1]!='') $_res[]=$__tt[1].',pencil.png,'.$name.'Modify,400,400,Editar';
+    if($__tt[2]!='') $_res[]=$__tt[2].',clear.gif,'.$name.'Delete,,,Eliminar';
+    for($_i=3,$_l=count($__tt);$_i&lt;$_l;$_i++):
+      $_res[]=$__tt[$_i];
+    endfor;
+    return implode("\n", $_res);
+}',
+#{
+  if(empty($groupField))
+    return '';
+  else
+    return "'groupField' =&gt; '$groupField',\n";
+}  'onload' =&gt; '',
+  'bindingCode' =&gt; @{var_export("".@node::content($_nodes['bindingCode']),true)},
+  'title' =&gt; '',
+)</file><file name="@{$name}Modify.var" preprocess="">array (
+  '_name' =&gt; '@{$name}Modify',
+  '_template' =&gt; 'tpl_H0.0',
+  'toolbar' =&gt; '',
+  'title' =&gt; '',
+  'icon' =&gt; 'pencil.png',
+  'regionA1' =&gt; '@{$name}ModifyFieldset',
+  'buttons' =&gt; 'Guardar Cambios,update',
+  'script' =&gt; '
+function update(){
+  panel.zupdate();
+  panel.previousNode("window").destroy()
+}
+',
+  'model' =&gt; '@{$model}',
+  'where' =&gt; 'id=:@{$name}Grid_id',
+  'oninsert' =&gt; '',
+  'onupdate' =&gt; '',
+)</file><file name="@{$name}ModifyFieldset.var" preprocess="">array (
+  '_name' =&gt; '@{$name}ModifyFieldset',
+  '_template' =&gt; 'ide_fieldset',
+  'adapter' =&gt; 'connection',
+  'query' =&gt; '',
+  'model' =&gt; '@{$model}',
+  'where' =&gt; 'id=:@{$name}Grid_id',
+  'onload' =&gt; '',
+  'oninsert' =&gt; '',
+  'fields' =&gt; '@{node::content($_nodes['fieldsModify'])}',
+  'labelWidth' =&gt; '',
+  'title' =&gt; '',
+)</file><file name="@{$name}Filter.var" preprocess="">array (
+  '_name' =&gt; '@{$name}Filter',
+  '_template' =&gt; 'ide_form',
+  'title' =&gt; '-',
+  'icon' =&gt; '',
+  'regionA1' =&gt; '@{$name}FilterFieldset',
+  'buttons' =&gt; 'Aceptar,update',
+  'script' =&gt; 'function update(){
+  var grid=panel.ownerCt.ownerCt.ownerCt.query("grid")[0];
+  panel.zupdate(function(){
+    grid.store.reload();
+  });
+}
+',
+  'model' =&gt; '',
+  'where' =&gt; '',
+)</file><file name="@{$name}FilterFieldset.var" preprocess="">array (
+  '_name' =&gt; '@{$name}FilterFieldset',
+  '_template' =&gt; 'ide_fieldset',
+  'adapter' =&gt; '',
+  'query' =&gt; '',
+  'model' =&gt; '',
+  'where' =&gt; '',
+  'onload' =&gt; '',
+  'oninsert' =&gt; '',
+  'fields' =&gt; '@{node::content($_nodes['fieldsFilter'])}',
+  'labelWidth' =&gt; '',
+  'title' =&gt; '',
+)</file></component><component name="grid" transparent="" precode="" __ideNodeOpen="false"><file name="@{$name}.var" preprocess="" __ideNodeOpen="false">array (
+  '_name' =&gt; '@{$name}',
+  '_template' =&gt; 'tpl_H0.0',
+  'title' =&gt; '@{$title}',
+  'icon' =&gt; 'window.gif',
+  'regionA1' =&gt; '@{$name}Grid',
+  'buttons' =&gt; '',
+  'script' =&gt; '',
+  'model' =&gt; '',
+  'where' =&gt; '',
+)</file><file name="@{$name}Grid.var" preprocess="">array (
+  '_name' =&gt; '@{$name}Grid',
+  '_template' =&gt; 'ide_grilla',
+  'adapter' =&gt; 'connection',
+  'query' =&gt; @{var_export($query,true)},
+  'model' =&gt; '',
+  'where' =&gt; '',
+  'fields' =&gt; '@{node::content($_nodes['fieldsGrid'])}',
+  'columns' =&gt; '@{node::content($_nodes['columnsGrid'])}',
+  'toolbar' =&gt; '',
+  'onload' =&gt; '',
+  'bindingCode' =&gt; '',
+  'title' =&gt; '',
+)</file></component><component name="fieldsGrid" transparent="" precode="" __ideNodeOpen="false">@{node::content($_)}</component><component name="columnsGrid" transparent="" precode="" __ideNodeOpen="false">@{node::content($_)}</component><component name="fieldsAdd" transparent="" precode="" __ideNodeOpen="false">@{node::content($_)}</component><component name="fieldsModify" transparent="" precode="" __ideNodeOpen="false">@{node::content($_)}</component><component name="fieldsDelete" transparent="" precode="" __ideNodeOpen="false">@{node::content($_)}</component><component name="fieldsFilter" transparent="" precode="" __ideNodeOpen="false">@{node::content($_)}</component><component name="bindingCode" transparent="" precode="" __ideNodeOpen="false">@{node::content($_)}</component><component name="combo" transparent="" precode="" __ideNodeOpen="false"><file name="@{$name}.var" preprocess="">array (
+  '_name' =&gt; '@{$name}',
+  '_template' =&gt; 'ide_combo',
+  'adapter' =&gt; '@{$adapter}',
+  'query' =&gt; '@{$query}',
+  'fields' =&gt; '@{implode("\n",explode(",",$fields))}',
+  'width' =&gt; '@{$width/*355*/}',
+)
+</file></component><component name="abmMD" transparent="" precode="" __ideNodeOpen="true"><file name="@{$name}.var" preprocess="" __ideNodeOpen="true">array (
+  '_name' =&gt; '@{$name}',
+  '_template' =&gt; 'tpl_H1.1',
+  'title' =&gt; '@{$title}',
+  'icon' =&gt; 'window.gif',
+  'regionA1' =&gt; '@{$name}Master',
+  'regionA2' =&gt; '@{$name}Grid',
+  'buttons' =&gt; '',
+  'script' =&gt; '',
+  'model' =&gt; '',
+  'where' =&gt; '',
+)</file><file name="@{$name}Add.var" preprocess="">array (
+  '_name' =&gt; '@{$name}Add',
+  '_template' =&gt; 'tpl_H0.0',
+  'toolbar' =&gt; '',
+  'title' =&gt; '',
+  'icon' =&gt; 'add.gif',
+  'regionA1' =&gt; '@{$name}AddFieldset',
+  'buttons' =&gt; 'Adicionar,insert',
+  'script' =&gt; '
+function insert(){
+  panel.zinsert();
+  panel.previousNode("window").destroy();
+}',
+  'model' =&gt; '@{$model}',
+  'where' =&gt; '',
+  'oninsert' =&gt; '',
+  'onupdate' =&gt; '',
+)</file><file name="@{$name}AddFieldset.var" preprocess="">array (
+  '_name' =&gt; '@{$name}AddFieldset',
+  '_template' =&gt; 'ide_fieldset',
+  'adapter' =&gt; 'connection',
+  'query' =&gt; '',
+  'model' =&gt; '',
+  'where' =&gt; '',
+  'onload' =&gt; '$data-&gt;variable_id=$_SESSION["entreCrearVariableMaster,1"]-&gt;id;',
+  'oninsert' =&gt; '',
+  'fields' =&gt; '@{node::content($_nodes['fieldsAdd'])}',
+  'labelWidth' =&gt; '',
+  'title' =&gt; '',
+)</file><file name="@{$name}Delete.var" preprocess="">array (
+  '_name' =&gt; '@{$name}Delete',
+  '_template' =&gt; 'tpl_H0.0',
+  'toolbar' =&gt; '',
+  'title' =&gt; '',
+  'icon' =&gt; 'clear.gif',
+  'regionA1' =&gt; '@{$name}DeleteFieldset',
+  'buttons' =&gt; 'Borrar,remove',
+  'script' =&gt; '
+function remove(){
+  panel.zdelete();
+  panel.previousNode("window").destroy();
+}',
+  'model' =&gt; '@{$model}',
+  'where' =&gt; '',
+  'oninsert' =&gt; '',
+  'onupdate' =&gt; '',
+)</file><file name="@{$name}DeleteFieldset.var" preprocess="">array (
+  '_name' =&gt; '@{$name}DeleteFieldset',
+  '_template' =&gt; 'ide_fieldset',
+  'adapter' =&gt; 'connection',
+  'query' =&gt; '',
+  'model' =&gt; '@{$model}',
+  'where' =&gt; 'id=:@{$name}Grid_id',
+  'onload' =&gt; '',
+  'oninsert' =&gt; '',
+  'fields' =&gt; '@{node::content($_nodes['fieldsDelete'])}',
+  'labelWidth' =&gt; '',
+  'title' =&gt; '',
+)</file><file name="@{$name}Grid.var" preprocess="" __ideNodeOpen="true">array (
+  '_name' =&gt; '@{$name}Grid',
+  '_template' =&gt; '@{empty($groupField)?"ide_grilla":"ide_groupgrid"}',
+  'adapter' =&gt; 'connection',
+  'query' =&gt; @{var_export($query,true)},
+  'model' =&gt; '',
+  'where' =&gt; '',
+  'fields' =&gt; '@{node::content($_nodes['fieldsGrid'])}',
+  'columns' =&gt; '@{node::content($_nodes['columnsGrid'])}',
+  'toolbar' =&gt; '#{
+    $__tt=explode(';',$toolbar);
+    $_res=array();
+    if($__tt[0]!='') $_res[]=$__tt[0].',add.gif,'.$name.'Add,400,250,Nuevo';
+    if($__tt[1]!='') $_res[]=$__tt[1].',pencil.png,'.$name.'Modify,400,250,Editar';
+    if($__tt[2]!='') $_res[]=$__tt[2].',clear.gif,'.$name.'Delete,,,Eliminar';
+    for($_i=3,$_l=count($__tt);$_i&lt;$_l;$_i++):
+      $_res[]=$__tt[$_i];
+    endfor;
+    return implode("\n", $_res);
+}',
+#{
+  if(empty($groupField))
+    return '';
+  else
+    return "'groupField' =&gt; '$groupField',\n";
+}  'onload' =&gt; '',
+  'bindingCode' =&gt; @{var_export("".@node::content($_nodes['bindingCode']),true)},
+  'title' =&gt; '',
+)</file><file name="@{$name}Modify.var" preprocess="" __ideNodeOpen="true">array (
+  '_name' =&gt; '@{$name}Modify',
+  '_template' =&gt; 'tpl_H0.0',
+  'toolbar' =&gt; '',
+  'title' =&gt; '',
+  'icon' =&gt; 'pencil.png',
+  'regionA1' =&gt; '@{$name}ModifyFieldset',
+  'buttons' =&gt; 'Guardar Cambios,update',
+  'script' =&gt; '
+function update(){
+  panel.zupdate();
+  panel.previousNode("window").destroy()
+}
+',
+  'model' =&gt; '@{$model}',
+  'where' =&gt; 'id=:@{$name}Grid_id',
+  'oninsert' =&gt; '',
+  'onupdate' =&gt; '',
+)</file><file name="@{$name}ModifyFieldset.var" preprocess="">array (
+  '_name' =&gt; '@{$name}ModifyFieldset',
+  '_template' =&gt; 'ide_fieldset',
+  'adapter' =&gt; 'connection',
+  'query' =&gt; '',
+  'model' =&gt; '@{$model}',
+  'where' =&gt; 'id=:@{$name}Grid_id',
+  'onload' =&gt; '',
+  'oninsert' =&gt; '',
+  'fields' =&gt; '@{node::content($_nodes['fieldsModify'])}',
+  'labelWidth' =&gt; '',
+  'title' =&gt; '',
+)</file><file name="@{$name}Master.var" preprocess="" __ideNodeOpen="true">array (
+  '_name' =&gt; '@{$name}Master',
+  '_template' =&gt; 'ide_form',
+  'title' =&gt; '-',
+  'icon' =&gt; '',
+  'regionA1' =&gt; '@{$name}MasterFieldset',
+  'buttons' =&gt; 'Aceptar,update',
+  'script' =&gt; 'function update(){
+  var grid=panel.ownerCt.ownerCt.ownerCt.query("grid")[0];
+  panel.zupdate(function(){
+    grid.store.reload();
+  });
+}
+',
+  'model' =&gt; '@{$masterModel}',
+  'where' =&gt; '',
+)</file><file name="@{$name}MasterFieldset.var" preprocess="" __ideNodeOpen="true">array (
+  '_name' =&gt; '@{$name}MasterFieldset',
+  '_template' =&gt; 'ide_fieldset',
+  'adapter' =&gt; '',
+  'query' =&gt; '',
+  'model' =&gt; '',
+  'where' =&gt; '',
+  'onload'=&gt; @{var_export($onload_new,true)},
+  'oninsert' =&gt; '',
+  'fields' =&gt; '@{node::content($_nodes['fieldsFilter'])}',
+  'labelWidth' =&gt; '',
+  'title' =&gt; '',
+)</file></component><abmfilter name="entreDimensiones" title="Dimensiones por variable" query="select * from dimension where variable_id=:entreDimensionesFilter_variable_id order by nombre asc" __ideNodeOpen="false" model="dimension" toolbar="Nuevo;Editar;Eliminar;Excel,excel.gif,@gridToExcel,-1,-1,Exportar Excel;Imprimir,printer.png,@printGrid,-1,-1,Impresion" groupField=""><fieldsGrid __ideNodeOpen="true">nombre
+dominio
+variable_id</fieldsGrid><columnsGrid __ideNodeOpen="true">Nombre,300,left,3,false
+Dominio,300,left,3,false
+Variable_id,200,left,1,false</columnsGrid><fieldsAdd __ideNodeOpen="true">nombre,Nombre
+dominio,Dominio
+variable_id,Variable_id</fieldsAdd><fieldsModify __ideNodeOpen="true">nombre,Nombre
+dominio,Dominio
+variable_id,Variable_id,label</fieldsModify><fieldsDelete __ideNodeOpen="true">nombre,Nombre,label
+dominio,Dominio,label
+variable_id,Variable_id,label</fieldsDelete><fieldsFilter __ideNodeOpen="true">variable_id,Variable,object,entreVariablesCombo</fieldsFilter></abmfilter><combo name="entreVariablesCombo" adapter="connection" query="select * from variable" fields="id,nombre" width="355"/><abmMD name="entreCrearVariable" title="Crear variable" query="select * from dimension where variable_id=:entreCrearVariableMaster_id order by nombre asc" __ideNodeOpen="true" model="dimension" toolbar="Nuevo;Editar;Eliminar;Excel,excel.gif,@gridToExcel,-1,-1,Exportar Excel;Imprimir,printer.png,@printGrid,-1,-1,Impresion" groupField="" masterModel="variable" onload_new="$data-&gt;id=uniqid('v');$_SESSION['entreCrearVariableMaster,1']=$data;"><fieldsGrid __ideNodeOpen="true">nombre
+dominio
+variable_id</fieldsGrid><columnsGrid __ideNodeOpen="true">Nombre,300,left,3,false
+Dominio,300,left,3,false
+Variable_id,200,left,1,false</columnsGrid><fieldsAdd __ideNodeOpen="true">nombre,Nombre
+dominio,Dominio
+variable_id,Variable_id</fieldsAdd><fieldsModify __ideNodeOpen="true">nombre,Nombre
+dominio,Dominio
+variable_id,Variable_id,label</fieldsModify><fieldsDelete __ideNodeOpen="true">nombre,Nombre,label
+dominio,Dominio,label
+variable_id,Variable_id,label</fieldsDelete><fieldsFilter __ideNodeOpen="true">nombre,Nombre
+gestion,Gestion
+unidad,Unidad
+id,Id</fieldsFilter></abmMD><abmfilter name="entreVariables" title="Variables existentes" query="select * from variable" __ideNodeOpen="false" model="variable" toolbar="Nuevo;Editar;Eliminar;Excel,excel.gif,@gridToExcel,-1,-1,Exportar Excel;Imprimir,printer.png,@printGrid,-1,-1,Impresion" groupField=""><fieldsGrid __ideNodeOpen="true">id
+nombre
+gestion
+unidad</fieldsGrid><columnsGrid __ideNodeOpen="true">Id,100,left,1,false
+Nombre,300,left,3,false
+Gestion,300,left,3,false
+Unidad,200,left,2,false</columnsGrid><fieldsAdd __ideNodeOpen="true">nombre,Nombre
+dominio,Dominio
+variable_id,Variable_id</fieldsAdd><fieldsModify __ideNodeOpen="true">nombre,Nombre
+dominio,Dominio
+variable_id,Variable_id,label</fieldsModify><fieldsDelete __ideNodeOpen="true">nombre,Nombre,label
+dominio,Dominio,label
+variable_id,Variable_id,label</fieldsDelete><fieldsFilter __ideNodeOpen="true">variable_id,Variable,object,entreVariablesCombo</fieldsFilter></abmfilter></path></root>

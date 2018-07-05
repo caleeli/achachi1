@@ -1,0 +1,3 @@
+var res={"pregunta":"David quien era el menor de los hijos, era valiente y tenia buena presencia. \u00bfDe qui\u00e9n era hijo?","respuestas":["Jese","Job","Saul"],"correcta":"0","imagen":"img\/rey-david-unguido2.jpg"};
+dibujaPregunta($pregunta,$respuestas,$imagen,res);
+

@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root><path path="output/ffplugin" main=""><file name="install.rdf" preprocess="">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;RDF xmlns="http://www.w3.org/1999/02/22-rdf-syntax-ns#" 
+ xmlns:em="http://www.mozilla.org/2004/em-rdf#"&gt;
+  &lt;Description about="urn:mozilla:install-manifest"&gt;
+    &lt;!-- needs to be in the format of an email address, but should be an actual email address --&gt;
+    &lt;em:id&gt;preflight@adam.goucher&lt;/em:id&gt;
+    &lt;!-- has to be lowercase --&gt;
+    &lt;em:name&gt;preflight&lt;/em:name&gt;
+    &lt;em:version&gt;1.0&lt;/em:version&gt;
+    &lt;em:creator&gt;Adam Goucher&lt;/em:creator&gt;
+    &lt;em:description&gt;A sample plugin for a Selenium-IDE API&lt;/em:description&gt;
+    &lt;em:type&gt;2&lt;/em:type&gt;
+    &lt;!--Preferences --&gt;
+    &lt;em:optionsURL&gt;chrome://preflight/content/view/options.xul&lt;/em:optionsURL&gt;
+ 
+    &lt;!-- its a firefox plugin --&gt;
+    &lt;em:targetApplication&gt;
+      &lt;Description&gt;
+        &lt;em:id&gt;{ec8030f7-c20a-464f-9b0e-13a3a9e97384}&lt;/em:id&gt;
+        &lt;em:minVersion&gt;1.5&lt;/em:minVersion&gt;
+        &lt;em:maxVersion&gt;37.*&lt;/em:maxVersion&gt;
+      &lt;/Description&gt;
+    &lt;/em:targetApplication&gt;
+ 
+    &lt;!-- this is an Se-IDE plugin, so we need to specify it as a requirement --&gt;
+    &lt;em:requires&gt;   
+      &lt;Description&gt;
+        &lt;em:id&gt;{a6fd85ed-e919-4a43-a5af-8da18bda539f}&lt;/em:id&gt;
+        &lt;em:minVersion&gt;1.0b2&lt;/em:minVersion&gt;
+        &lt;em:maxVersion&gt;1.*&lt;/em:maxVersion&gt;
+      &lt;/Description&gt;  
+    &lt;/em:requires&gt;
+  &lt;/Description&gt;
+&lt;/RDF&gt;
+</file><file name="chrome.manifest" preprocess="">content preflight  chrome/content/
+ 
+locale  preflight  en-US chrome/locale/en-US/
+ 
+overlay chrome://selenium-ide/content/selenium-ide-common.xul chrome://preflight/content/view/optionsOverlay.xul
+
+&lt;!-- toolbar button --&gt;
+overlay chrome://selenium-ide/content/selenium-ide.xul chrome://preflight/content/view/toolbarOverlay.xul
+</file><file name="content/view/optionsOverlay.xul" preprocess="">&lt;?xml version="1.0"?&gt;
+&lt;?xml-stylesheet href="chrome://global/skin/" type="text/css"?&gt; 
+ 
+&lt;overlay id="selenium_overlay" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"&gt;
+ 
+  &lt;menupopup id="options-popup"&gt;
+    &lt;menuitem label="Preflight Options..." accesskey="P" oncommand="window.open('chrome://preflight/content/view/options.xul','Preflight Options','chrome=yes,,centerscreen=yes');" /&gt;
+  &lt;/menupopup&gt;
+ 
+&lt;/overlay&gt;</file><file name="content/view/options.xul" preprocess="">&lt;?xml version="1.0"?&gt;
+&lt;?xml-stylesheet href="chrome://global/skin/" type="text/css"?&gt;
+ 
+&lt;!DOCTYPE prefwindow SYSTEM "chrome://preflight/locale/options.dtd"&gt;
+ 
+&lt;prefwindow id="preflight-prefs"
+      title="Preflight Settings" 
+      width="520"
+      height="200"
+      xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"&gt;
+ 
+  &lt;!-- Pref Pane --&gt; 
+  &lt;prefpane id="preflight-panel" label="Preflight Settings"&gt; 
+ 
+    &lt;preferences&gt;
+      &lt;preference id="pref_perform" name="extensions.selenium-ide.preflight.performpreflight" type="bool" /&gt;
+    &lt;/preferences&gt;
+ 
+    &lt;tabbox&gt;  
+      &lt;tabs&gt;
+        &lt;tab label="General"/&gt;
+      &lt;/tabs&gt;
+      &lt;tabpanels flex="1" &gt;
+        &lt;tabpanel&gt;
+          &lt;vbox flex="1"&gt;
+            &lt;hbox align="center"&gt;
+              &lt;label control="name" value="&amp;performpreflight;"/&gt;
+              &lt;checkbox preference="pref_perform" id="perform" /&gt;
+            &lt;/hbox&gt;
+            &lt;spacer height="100" /&gt;
+          &lt;/vbox&gt;
+        &lt;/tabpanel&gt;
+      &lt;/tabpanels&gt;
+    &lt;/tabbox&gt;
+  &lt;/prefpane&gt;
+&lt;/prefwindow&gt;</file><file name="locale/en-US/options.dtd" preprocess="">&lt;!ENTITY performpreflight "Enable CR24 Recoring"&gt;</file><file name="defaults/preferences/preflight.js" preprocess="">pref("extensions.selenium-ide.preflight.performpreflight",true);</file><file name="build.sh" preprocess="">#!/bin/bash
+ 
+APP_NAME=preflight          # short-name, jar and xpi files name. Must be lowercase with no spaces
+CHROME_PROVIDERS="content"  # which chrome providers we have (space-separated list)
+ROOT_DIRS="defaults"         # ...and these directories       (space separated list)
+ 
+ROOT_DIR=`pwd`
+TMP_DIR=build
+ 
+# remove any left-over files from previous build
+rm -f $APP_NAME.jar $APP_NAME.xpi
+rm -rf $TMP_DIR
+ 
+mkdir -p $TMP_DIR/chrome/content
+ 
+cp -v -R content $TMP_DIR/chrome
+cp -v -R locale $TMP_DIR/chrome
+cp -v -R skin $TMP_DIR/chrome
+cp -v -R defaults $TMP_DIR
+cp -v install.rdf $TMP_DIR
+cp -v chrome.manifest $TMP_DIR
+ 
+# generate the XPI file
+cd $TMP_DIR
+echo "Generating $APP_NAME.xpi..."
+zip -r ../$APP_NAME.xpi *
+ 
+cd "$ROOT_DIR"</file></path></root>

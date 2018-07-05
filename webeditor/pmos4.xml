@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?><root><path path="C:\Users\processmaker\PhpStormProjects\processmaker" main="output/example/index.html" __ideNodeOpen="true"><package name="components" type="" __ideNodeOpen="true"><php __ideNodeOpen="true">//Load ProcessMaker $app
+require_once "C:\Users\processmaker\PhpStormProjects\processmaker\bootstrap\autoload.php";
+require_once "C:\Users\processmaker\PhpStormProjects\processmaker\bootstrap\app.php";
+$kernel = $app-&gt;make(Illuminate\Contracts\Http\Kernel::class);
+
+$mainResponse = $kernel-&gt;handle(
+    $mainRequest = Illuminate\Http\Request::capture()
+);
+
+class ApiGen
+{
+    public static $api = [];
+
+    public static function build($name, $data = '', $extraArgs = '')
+    {
+        $routeCollection = app()-&gt;routes-&gt;getRoutes();
+
+        foreach ($routeCollection as $value) {
+            if (!empty($value-&gt;action['controller'])) {
+                $controllerPath = explode("\\", $value-&gt;action['controller']);
+                list($controller, $method) = explode("@", array_pop($controllerPath));
+                if ("$controller@$method" === $name) {
+                    $extra = [];
+                    foreach ($value-&gt;action['middleware'] as $m) {
+                        switch ($m) {
+                            case 'oauth':
+                                $extra[] = '    settings.headers.Authorization  = "Bearer " + Api.$accessToken;';
+                                break;
+                        }
+                    }
+                    if (!empty(trim($data))) {
+                        $extra[]=ApiGen::tab('settings.data = JSON.stringify('.$data.");","    ");
+                    }
+                    preg_match_all('/\{([^}]+)\}/', $value-&gt;uri, $arguments);
+                    ApiGen::$api[substr($controller, 0, -10)][$method] = 'function(' . implode(',', $arguments[1]) . ($extraArgs?", $extraArgs":"") . ') {
+    var settings = jQuery.extend({}, Api.$settings);
+    settings.method = ' . json_encode($value-&gt;methods[0]) . ';
+    settings.url = Api.$baseUrl + "/" ' . str_replace('+ ""', '', '+ ' . preg_replace('/\{([^}]+)\}/', '" + $1 + "', json_encode($value-&gt;uri))) . ';
+' . implode("\n", $extra) . '
+    return Api.$ajax(settings);
+}';
+                }
+            }
+        }
+    }
+
+    public static function getCode()
+    {
+        $code = "\n";
+        foreach (ApiGen::$api as $c =&gt; $controller) {
+            $code .= "    $c: {\n";
+            foreach ($controller as $m =&gt; $method) {
+                $code .= "        $m: " . ApiGen::tab($method, "            ", false) . ",\n";
+            }
+            $code .= "    },\n";
+        }
+        return 'Object.assign(Api, {' . $code . '});';
+    }
+
+    public static function tab($code, $tab, $firstLine = true)
+    {
+        $lines = explode("\n", $code);
+        foreach ($lines as $i =&gt; &amp;$line) {
+            if (($i == 0 &amp;&amp; $firstLine) || ($i &gt; 0)) {
+                $line = $tab . $line;
+            }
+        }
+        return implode("\n", $lines);
+    }
+}
+</php><component name="layout" transparent="" precode="" __ideNodeOpen="true">@{$name/*main|login*/}</component><component name="page" transparent="" precode="" __ideNodeOpen="true">@{$name}@{$title}@{$cache/*0*/}</component><component name="apiCall" transparent="" precode="" __ideNodeOpen="true">#{
+    ApiGen::build($name, node::content($_), $extraArgs);
+}</component><component name="api" transparent="" precode="" __ideNodeOpen="true">!function () {
+    var locks = [];
+    window.lock = function (callback) {
+        var i = locks.length;
+        var locked = true;
+        locks.push(true);
+        $("body").css('opacity', '0.7');
+        $("body").css('pointer-events', 'none');
+        callback(function () {
+            if (locked) {
+                locks.splice(i, 1);
+                locked = false;
+            }
+            unlock();
+        });
+    }
+    window.unlock = function () {
+        if (locks.length === 0) {
+            $("body").css('opacity', '1');
+            $("body").css('pointer-events', 'all');
+        }
+    }
+}();
+function Api(baseUrl, accessToken) {
+    var Api = {
+        $baseUrl: baseUrl,
+        $accessToken: accessToken,
+        $settings: {
+            "async": true,
+            "crossDomain": true,
+            "processData": false,
+            "headers": {
+                "authorization": "Basic eC1wbS1sb2NhbC1jbGllbnQ6MTc5YWQ0NWM2Y2UyY2I5N2NmMTAyOWUyMTIwNDZlODE",
+                "content-type": "application/json",
+                "cache-control": "no-cache",
+            },
+        },
+        $ajax: function (settings) {
+            var $ajax;
+            lock(function (unlock) {
+                $ajax = $.ajax(settings).always(function () {
+                    unlock();
+                });
+            });
+            return $ajax;
+        }
+    };
+    @{ApiGen::tab(ApiGen::getCode(), "    ", false)}
+    return Api;
+}</component></package><package name="implementation" type="" __ideNodeOpen="true"><php __ideNodeOpen="true">@unlink('workflow/public_html/lib/js/api.js');
+@file_get_contents("http://205.processmaker.dev/lib/js/api.js");
+</php><file name="workflow/public_html/lib/js/api.js" preprocess="" __ideNodeOpen="true"><api __ideNodeOpen="true"><apiCall name="OAuth2Controller@token" extraArgs="username, password">{
+     "grant_type": "password",
+     "username": username,
+     "password": password,
+     "scope": "*"
+}</apiCall><apiCall name="WorkspaceController@languages" extraArgs=""/><apiCall name="ProjectController@getProjects" extraArgs=""/></api></file></package></path></root>

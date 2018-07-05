@@ -1,0 +1,3 @@
+var res={"pregunta":"En Juan 15:12 dice:","respuestas":["Amense unos con otros","Amense como yo los amo a ustedes","Amense unos con otros, como yo los amo a ustedes","Les doy este mandamiento nuevo: Que se amen unos a otros"],"correcta":"2","imagen":"img\/ve-en-nuestro-corazon.jpg"};
+dibujaPregunta($pregunta,$respuestas,$imagen,res);
+

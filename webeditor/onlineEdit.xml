@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?><root><path path="output/onlineEdit" main="output/onlineEdit/index.php" __ideNodeOpen="true"><component name="onlineEditor" transparent="" precode="" __ideNodeOpen="true">&lt;script src="jquery.qtip.min.js" type="text/javascript"&gt;&lt;/script&gt;
+&lt;link rel="stylesheet" type="text/css" href="jquery.qtip.min.css"&gt;
+&lt;script type="text/javascript"&gt;
+var onlineDev={
+  FILE_SERVICE:"binderRest.php",
+  makePreview:function(file, line, callback){
+    var min=Math.min(1,line-2);
+    var max=line+2;
+    $.ajax({
+      url: this.FILE_SERVICE,
+      data: {file:file,from:min,to:max},
+      dataType: "json",
+      success:function(lines){
+        var l=min;
+        var res=[];
+        for(var i=0,l=lines.length;i&lt;l;i++){
+          res.push((l+i)+"| "+lines[i]);
+        }
+        var $code=$("&lt;i&gt;Code&lt;/i&gt;");
+        $code.qtip({
+          content:{
+            title: file,
+            text:"&lt;pre&gt;"+res.join("\n")+"&lt;/pre&gt;"
+          },
+          hide:{
+            fixed:true
+          }
+        });
+        callback($code);
+      }
+    });
+  }
+};
+$(function(){
+$("[online-dev]").each(function(){
+console.log(this);
+  var def=this.getAttribute("online-dev");
+  if(!def) return;
+
+  var $title;
+  var obj=JSON.parse(def);
+
+  onlineDev.makePreview(obj.file, obj.line, function($codePreview){
+    $title=$("&lt;div&gt;"+obj.function+"&lt;/div&gt;");
+    $title.append($codePreview);
+    var $objProperties=$("&lt;div class='online-dev-props'&gt;&lt;/div&gt;");
+    if(obj.function=="bind"){
+      obj.args[0].split(",").forEach(function(p){
+        var pa=p.split(":");
+        var prop=pa[0].trim();
+        var value=pa[1].trim();
+        var $prop=$("&lt;div class='online-dev-prop'&gt;&lt;span&gt;"+prop+"&lt;/span&gt;&lt;input&gt;&lt;/div&gt;");
+        $prop.find("input").val(value);
+        $objProperties.append($prop);
+      });
+    }
+    $(this).qtip({
+      content:{
+        title: '$title',
+        text: '$objProperties'
+      }
+    });
+
+  });
+});
+});
+&lt;/script&gt;</component><file name="index.php" preprocess="" __ideNodeOpen="true">&lt;?php
+require('binder.php');
+?&gt;
+&lt;html&gt;
+&lt;head&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;script src="jquery-2.1.4.min.js" type="text/javascript"&gt;&lt;/script&gt;
+&lt;div&gt;
+LAAAA PAAAZZZ!!!
+&lt;textarea &lt;?php bind('click:holas') ?&gt;&gt;HOLA MUNDO&lt;/textarea&gt;
+&lt;span &gt;HasasdOLA MUNDO&lt;/span&gt;
+&lt;/div&gt;<onlineEditor/>
+&lt;/body&gt;
+&lt;/html&gt;</file><file name="binder.php" preprocess="" __ideNodeOpen="true">&lt;?php
+
+function bind($binds){
+  $call=debug_backtrace();
+  echo ' online-dev="',htmlentities(json_encode($call[0]), ENT_QUOTES, 'utf-8'),'"';
+}
+
+function restResponse(){
+  $file=$_REQUEST['file'];
+  $from=$_REQUEST['from'];
+  $to=$_REQUEST['to'];
+  $f=fopen($file, 'r');
+  $l=0;
+  $res=[];
+  while($line=fgets($f)){
+    $l++;
+    if($l&gt;$to) break;
+    if($l&gt;=$from) $res[]=$line;
+  }
+  fclose($f);
+  header('Content-Type: application/json');
+  echo json_encode($res);
+}
+</file><file name="binderRest.php" preprocess="" __ideNodeOpen="true">&lt;?php
+require("binder.php");
+restResponse();
+</file></path></root>

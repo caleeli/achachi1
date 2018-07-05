@@ -1,0 +1,470 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root __ideNodeOpen="true"><include src="GOlib.xml"/><include src="$library/extjslib2.xml"/><path path="/home/david/php/www/CRM/modules/license" __ideNodeOpen="true"><module module="license" __ideNodeOpen="true"><dialog dialog="Manage" module="license" __ideNodeOpen="true"><dialog_config __ideNodeOpen="true">  //this.nextStep=function(){};
+  //this.prevStep=function(){};
+  this.nextButton=new Ext.Button({
+      text:'Next',
+      disabled:true,
+      handler: function()
+      {
+        this.nextStep();
+      },
+      scope: this
+    });
+  this.prevButton=new Ext.Button(    {
+      text:'Previous',
+      disabled:true,
+      handler: function()
+      {
+        this.prevStep();
+      },
+      scope: this
+    });
+  config.buttons=[
+    {
+      text:GO.lang['cmdClose'],
+      handler: function()
+      {
+        this.hide()
+      },
+      scope: this
+    },
+    this.prevButton,
+    this.nextButton
+  ];
+</dialog_config><dialog_extend __ideNodeOpen="true">  show : function(config) {
+    if (config.link_config) {
+      this.link_config = config.link_config;
+      if (config.link_config.modelNameAndId) {
+        this.selectLinkField.setValue(config.link_config.modelNameAndId);
+        this.selectLinkField.setRemoteText(config.link_config.text);
+        var me=this;
+        this.phone_store.baseParams.link=config.link_config.modelNameAndId;
+        if(!this.phone_store.loaded)this.phone_store.load();
+      }
+    }
+    Ext.ComponentMgr.get("selectStandardPlan").enable();
+    Ext.ComponentMgr.get("selectProfessionalPlan").enable();
+    Ext.ComponentMgr.get("selectEnterprisePlan").enable();
+    if(config.plan==='standard'){
+      Ext.ComponentMgr.get("selectStandardPlan").disable();
+    }
+    if(config.plan==='professional'){
+      Ext.ComponentMgr.get("selectStandardPlan").disable();
+      Ext.ComponentMgr.get("selectProfessionalPlan").disable();
+    }
+    if(config.plan==='enterprise'){
+      Ext.ComponentMgr.get("selectStandardPlan").disable();
+      Ext.ComponentMgr.get("selectProfessionalPlan").disable();
+      Ext.ComponentMgr.get("selectEnterprisePlan").disable();
+    }
+    GO.license.ManageDialog.superclass.show.call(this);
+  },
+<dialog_extend_onsubmit module="calllog" __ideNodeOpen="true">      params: {
+        task:'save_row',
+        id:this.call_id
+      },
+      success:function(form, action)
+      {
+        if(action.result.id)
+        {
+          this.call_id=action.result.id;
+        }
+      
+        this.fireEvent('save');
+        
+        if(hide)
+        {
+          this.hide();
+        }
+      },
+      failure: function(form, action) 
+      {
+        var error = '';
+        if(action.failureType=='client')
+        {
+          error = GO.lang['strErrorsInForm'];
+        }else
+        {
+          error = action.result.feedback;
+        }
+        Ext.MessageBox.alert(GO.lang['strError'], error);
+      },
+</dialog_extend_onsubmit></dialog_extend><dialog_buildForm __ideNodeOpen="true">    var PLAN1='Free';
+    var PLAN2='Standard';
+    var PLAN3='Enterprise';
+    var PLAN_INFO={};
+    PLAN_INFO[PLAN1]={
+      base:0,
+      user_month:0,
+      user_year:0,
+      users:3
+    };
+    PLAN_INFO[PLAN2]={
+      base:0,
+      user_month:30,
+      user_year:25,
+      users:"unlimited"
+    };
+    PLAN_INFO[PLAN3]={
+      base:0,
+      user_month:45,
+      user_year:40,
+      users:"unlimited"
+    };
+    var numberUsers=0;
+    var currentStep;
+    var stepsContainer;
+    var me = this;
+    //Validation of users
+    Ext.form.VTypes["sotaUsersExp"] = /^([0-9]+|unlimited)$/;
+    Ext.form.VTypes["sotaUsers"]=function(v){
+      var plan = Ext.ComponentMgr.get("selectedPlan").getValue();
+      if(!Ext.form.VTypes["sotaUsersExp"].test(v)){
+        Ext.form.VTypes["sotaUsersText"]="Must be a valid number or &lt;a href='javascript:licenseUnlimited()'&gt;unlimited&lt;/a&gt;"
+        return false;
+      }
+      if(plan===PLAN1 &amp;&amp; (v==="unlimited" || parseInt(v)&gt;PLAN_INFO[PLAN1].users)) {
+        Ext.form.VTypes["sotaUsersText"]="To add more users, please &lt;a href='javascript:licenseUpgrade2PP()'&gt;upgrade to a paid plan&lt;/a&gt;";
+        return false;
+      }
+     return true;
+    }
+    window.licenseUpgrade2PP=function(){
+      selectPlan(PLAN2);
+    }
+    window.licenseUnlimited=function(){
+      Ext.ComponentMgr.get("numberOfUsers").setValue(PLAN_INFO[PLAN3].users);
+    }
+    //Step functions
+    function selectStep(container, number){
+      currentStep = number;
+      if(currentStep==0) {
+        me.prevButton.disable();
+        me.nextButton.disable();
+      } else if(currentStep==container.items.items.length-1) {
+        me.prevButton.enable();
+        me.nextButton.disable();
+      } else {
+        me.prevButton.enable();
+        me.nextButton.enable();
+      }
+      for(var i=0,l=container.items.items.length;i&lt;l;i++) {
+        container.items.items[i].hide();
+      }
+      container.items.items[number].enable();
+      container.items.items[number].show();
+    }
+    this.nextStep = function(){
+      var plan = Ext.ComponentMgr.get("selectedPlan").getValue();
+      if(currentStep==2 &amp;&amp; !((plan==PLAN1 || Ext.ComponentMgr.get("amountToBePayed").getValue()*1&gt;0) &amp;&amp; Ext.ComponentMgr.get("numberOfUsers").isValid())){
+        return;
+      }
+      if(currentStep==3 &amp;&amp; plan==PLAN1){
+        var formPanel=this.formPanel;
+        doUpgradePlan('', '');
+        return;
+      }
+      if(currentStep==3 &amp;&amp; plan!=PLAN1){
+        var formPanel=this.formPanel;
+        billmeLoad(
+          Ext.ComponentMgr.get("amountToBePayed").getValue(),
+          function(){
+            selectStep(formPanel, 4);
+          }
+        );
+        return;
+      }
+      if(currentStep&lt;this.formPanel.items.items.length) {
+        selectStep(this.formPanel, currentStep+1);
+      }
+    }
+    this.prevStep = function(){
+      if(currentStep&gt;0) {
+        selectStep(this.formPanel, currentStep-1);
+      }
+    }
+    function selectPlan(plan){
+      Ext.ComponentMgr.get("selectedPlan").setValue(plan);
+      Ext.ComponentMgr.get("numberOfUsers").setValue(PLAN_INFO[plan].users);
+      calculateAmountToBePayed();
+    }
+    function calculateAmountToBePayed(){
+      var plan = Ext.ComponentMgr.get("selectedPlan").getValue();
+      if(Ext.ComponentMgr.get("paymentDurationMonthly").getValue()){
+        Ext.ComponentMgr.get("unitPrice").setValue(PLAN_INFO[plan].user_month);
+      } else if(Ext.ComponentMgr.get("paymentDurationYearly").getValue()) {
+        Ext.ComponentMgr.get("unitPrice").setValue(PLAN_INFO[plan].user_year);
+      } else {
+        Ext.ComponentMgr.get("unitPrice").setValue('');
+      }
+      //numberUsers = 1;//Ext.ComponentMgr.get("numberOfUsers").getValue() * 1;
+      Ext.ComponentMgr.get("amountToBePayed").setValue(
+        Ext.ComponentMgr.get("unitPrice").getValue()
+      );
+      document.getElementById("summaryPlan").innerHTML = plan;
+      document.getElementById("summaryPlanUnitPrice").innerHTML = '$ '+number_format(Ext.ComponentMgr.get("unitPrice").getValue(), 2);
+      document.getElementById("summaryPlanUnits").innerHTML = (Ext.ComponentMgr.get("numberOfUsers").getValue());
+      document.getElementById("summaryPlanTotal").innerHTML = '$ '+number_format(Ext.ComponentMgr.get("amountToBePayed").getValue(), 2);
+      document.getElementById("summaryPlanTotal2").innerHTML = '$ '+number_format(Ext.ComponentMgr.get("amountToBePayed").getValue(), 2);
+    }
+    function number_format(number, decimals, dec_point, thousands_sep) {
+      number = (number + '')
+        .replace(/[^0-9+\-Ee.]/g, '');
+      var n = !isFinite(+number) ? 0 : +number,
+        prec = !isFinite(+decimals) ? 0 : Math.abs(decimals),
+        sep = (typeof thousands_sep === 'undefined') ? ',' : thousands_sep,
+        dec = (typeof dec_point === 'undefined') ? '.' : dec_point,
+        s = '',
+        toFixedFix = function(n, prec) {
+          var k = Math.pow(10, prec);
+          return '' + (Math.round(n * k) / k)
+            .toFixed(prec);
+        };
+      // Fix for IE parseFloat(0.55).toFixed(0) = 0;
+      s = (prec ? toFixedFix(n, prec) : '' + Math.round(n))
+        .split('.');
+      if (s[0].length &gt; 3) {
+        s[0] = s[0].replace(/\B(?=(?:\d{3})+(?!\d))/g, sep);
+      }
+      if ((s[1] || '')
+        .length &lt; prec) {
+        s[1] = s[1] || '';
+        s[1] += new Array(prec - s[1].length + 1)
+          .join('0');
+      }
+      return s.join(dec);
+    }
+    var doUpgradePlan=function(product_key, payment_key){
+                  Ext.Ajax.request({
+                    url: GO.url('license/upgrade/payment'),
+                    success: function(response){
+                      var res = JSON.parse(response.responseText);
+                      if(res.success){
+                        location.href=location.href;
+                      } else {
+                        Ext.MessageBox.alert("Error", res.message);
+                      }
+                    },
+                    failure: function(){
+                    },
+                    headers: {
+                    },
+                    params: {
+                      plan: Ext.ComponentMgr.get("selectedPlan").getValue(),
+                      payment_key: payment_key,
+                      product_key:product_key,
+                      users: Ext.ComponentMgr.get("numberOfUsers").getValue()
+                    }
+                  });
+                };
+    window.billmeLoad=function(cost,callback){
+            var billme=document.getElementById("BILLME");
+            var billmePanel=document.getElementById("billmePanel");
+            var plan = Ext.ComponentMgr.get("selectedPlan").getValue();
+            billmePanel.appendChild(billme);
+            BILLME.load({
+                product_key:"SOTA CRM "+plan+' '+cost,
+                cost:number_format(cost,2,'.',','),
+                onpaid:doUpgradePlan
+            });
+            BILLME.onloadHtml=function(){
+                BILLME.openWindow();
+            }
+            callback();
+    }
+    this.formPanel = <ext.fragment encode="" __ideNodeOpen="true" indent="true"><ext class="Ext.Panel" title="" frame="false" __ideNodeOpen="true" height="400"><ext class="Ext.Panel" title="1. Plan Selection" frame="false" border="false" layout="column" __ideNodeOpen="true"><ext class="Ext.Panel" title="" frame="false" columnWidth="0.33" __ideNodeOpen="true" height="350"><ext class="Ext.Panel" title="" frame="false" border="false" bodyStyle="text-align: center" __ideNodeOpen="true"><ext.attribute name="html" isArray="false" isString="false" __ideNodeOpen="true" type="string">    &lt;div style="font-size:150%"&gt;FREE/Always&lt;/div&gt;
+    &lt;div class="main-price"&gt;
+        &lt;div style="color:#8AC007"&gt; 
+            &lt;small name="priceChangetxt"&gt;$&lt;/small&gt; &lt;b style="font-size:250%"&gt;0&lt;/b&gt;&lt;small name="priceChangetxt"&gt;/MO&lt;/small&gt;
+        &lt;/div&gt;
+        &lt;div class="price-term"&gt;This plan is 100% FREE&lt;/div&gt; 
+        &lt;div class="info"&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+</ext.attribute></ext><ext class="Ext.Panel" title="" frame="false" border="false" __ideNodeOpen="false" buttonAlign="center"><ext.attribute name="buttons" isArray="false" isString="false" type="array"><ext class="Ext.Button" name="upgrade1" text="UPGRADE" type="submit" __ideNodeOpen="true" id="selectStandardPlan"><ext.attribute name="handler" isArray="false" isString="false">function(a,b){
+						var plan=0;
+						var panel=this.ownerCt.ownerCt.ownerCt.ownerCt;
+						var container=panel.ownerCt;
+						container.items.items[1].items.items[0].hide();
+						container.items.items[1].items.items[1].hide();
+						container.items.items[1].items.items[2].hide();
+						container.items.items[1].items.items[plan].show();
+						selectStep(container, 1);
+selectPlan(PLAN1);
+					}</ext.attribute></ext></ext.attribute></ext><ext class="Ext.Panel" title="" frame="false" border="false" bodyStyle="text-align: center" __ideNodeOpen="true"><ext.attribute name="html" isArray="false" isString="false" __ideNodeOpen="true" type="string">    &lt;br /&gt;&lt;a href="#"&gt;
+            FREE features:
+    &lt;/a&gt;
+    &lt;br /&gt;&lt;br /&gt;
+    &lt;ul class="price-features"&gt;
+        &lt;li&gt;Contact Management&lt;br&gt;&lt;/li&gt;
+        &lt;li&gt;Task Management&lt;br&gt;&lt;/li&gt;
+        &lt;li&gt;Calendar&lt;br&gt;&lt;/li&gt;
+        &lt;li&gt;Custom Dashboard&lt;br&gt;&lt;/li&gt;
+        &lt;li&gt;Web Forms&lt;br&gt;&lt;/li&gt;
+        &lt;li&gt;Multi Tasking&lt;br&gt;&lt;/li&gt;
+        &lt;li&gt;20,000 Records&lt;br&gt;&lt;/li&gt;
+    &lt;/ul&gt;
+&lt;br&gt;
+</ext.attribute></ext></ext><ext class="Ext.Panel" title="" frame="false" columnWidth="0.33" __ideNodeOpen="true" height="350"><ext class="Ext.Panel" title="" frame="false" border="false" bodyStyle="text-align: center" __ideNodeOpen="true"><ext.attribute name="html" isArray="false" isString="false" __ideNodeOpen="true" type="string">    &lt;div style="font-size:150%"&gt;STANDARD&lt;/div&gt;
+    &lt;div class="main-price"&gt;
+        &lt;div style="color:#8AC007"&gt; 
+            &lt;small name="priceChangetxt"&gt;$&lt;/small&gt; &lt;b style="font-size:250%"&gt;25&lt;/b&gt;&lt;small name="priceChangetxt"&gt;/MO&lt;/small&gt;
+        &lt;/div&gt;
+        &lt;div class="price-term"&gt;Billed annually or &lt;/div&gt;
+        &lt;div class="info"&gt;
+            &lt;small name="priceChangetxt"&gt;$&lt;/small&gt;
+            &lt;i name="priceChange"&gt;30&lt;/i&gt; month-to-month
+        &lt;/div&gt;
+    &lt;/div&gt;
+</ext.attribute></ext><ext class="Ext.Panel" title="" frame="false" border="false" __ideNodeOpen="true" buttonAlign="center"><ext.attribute name="buttons" isArray="false" isString="false" type="array"><ext class="Ext.Button" name="upgrade2" text="UPGRADE" type="button" id="selectProfessionalPlan"><ext.attribute name="handler" isArray="false" isString="false">function(a,b){
+						var plan=1;
+						var panel=this.ownerCt.ownerCt.ownerCt.ownerCt;
+						var container=panel.ownerCt;
+						container.items.items[1].items.items[0].hide();
+						container.items.items[1].items.items[1].hide();
+						container.items.items[1].items.items[2].hide();
+						container.items.items[1].items.items[plan].show();
+						selectStep(container, 1);
+selectPlan(PLAN2);
+					}</ext.attribute></ext></ext.attribute></ext><ext class="Ext.Panel" title="" frame="false" border="false" bodyStyle="text-align: center"><ext.attribute name="html" isArray="false" isString="false" __ideNodeOpen="true" type="string">    &lt;br /&gt;&lt;a href="#"&gt;
+            FREE features plus:
+    &lt;/a&gt;
+    &lt;br /&gt;&lt;br /&gt;
+    &lt;ul class="price-features"&gt;
+        &lt;li&gt;Lead Management &amp; Conversion Tracking&lt;br&gt;&lt;/li&gt;
+        &lt;li&gt;Opportunity Tracking&lt;br&gt;&lt;/li&gt;
+        &lt;li&gt;File Storage (Drive)&lt;br&gt;&lt;/li&gt;
+        &lt;li&gt;Manage Email Account&lt;br&gt;&lt;/li&gt;
+        &lt;li&gt;Role-based Security&lt;br&gt;&lt;/li&gt;
+        &lt;li&gt;SMS Integration (Twilio)&lt;br&gt;&lt;/li&gt;
+        &lt;li&gt;Unlimited Records&lt;br&gt;&lt;/li&gt;
+    &lt;/ul&gt;
+&lt;br&gt;
+</ext.attribute></ext></ext><ext class="Ext.Panel" title="" frame="false" columnWidth="0.34" __ideNodeOpen="true" height="350"><ext class="Ext.Panel" title="" frame="false" border="false" bodyStyle="text-align: center"><ext.attribute name="html" isArray="false" isString="false" __ideNodeOpen="true" type="string">    &lt;div style="font-size:150%"&gt;ENTERPRISE&lt;/div&gt;
+    &lt;div class="main-price"&gt;
+        &lt;div style="color:#8AC007"&gt; 
+            &lt;small name="priceChangetxt"&gt;$&lt;/small&gt; &lt;b style="font-size:250%"&gt;40&lt;/b&gt;&lt;small name="priceChangetxt"&gt;/MO&lt;/small&gt;
+        &lt;/div&gt;
+        &lt;div class="price-term"&gt;Billed annually or &lt;/div&gt;
+        &lt;div class="info"&gt;
+            &lt;small name="priceChangetxt"&gt;$&lt;/small&gt;
+            &lt;i name="priceChange"&gt;45&lt;/i&gt; month-to-month
+        &lt;/div&gt;
+    &lt;/div&gt;
+</ext.attribute></ext><ext class="Ext.Panel" title="" frame="false" border="false" __ideNodeOpen="true" buttonAlign="center"><ext.attribute name="buttons" isArray="false" isString="false" type="array"><ext class="Ext.Button" name="upgrade3" text="UPGRADE" type="button" id="selectEnterprisePlan"><ext.attribute name="handler" isArray="false" isString="false">function(a,b){
+						var plan=2;
+						var panel=this.ownerCt.ownerCt.ownerCt.ownerCt;
+						var container=panel.ownerCt;
+						container.items.items[1].items.items[0].hide();
+						container.items.items[1].items.items[1].hide();
+						container.items.items[1].items.items[2].hide();
+						container.items.items[1].items.items[plan].show();
+						selectStep(container, 1);
+selectPlan(PLAN3);
+					}</ext.attribute></ext></ext.attribute></ext><ext class="Ext.Panel" title="" frame="false" border="false" bodyStyle="text-align: center"><ext.attribute name="html" isArray="false" isString="false" __ideNodeOpen="true" type="string">    &lt;br /&gt;&lt;a href="#"&gt;
+            STANDARD features plus:
+    &lt;/a&gt;
+    &lt;br /&gt;&lt;br /&gt;
+    &lt;ul class="price-features"&gt;
+        &lt;li&gt;Support Ticket Management&lt;br&gt;&lt;/li&gt;
+        &lt;li&gt;Mass Email&lt;br&gt;&lt;/li&gt;
+        &lt;li&gt;Rapid Calling (Call Campaigns)&lt;br&gt;&lt;/li&gt;
+        &lt;li&gt;Document Templates&lt;br&gt;&lt;/li&gt;
+        &lt;li&gt;Notebook&lt;br&gt;&lt;/li&gt;
+        &lt;li&gt;Custom Fields&lt;br&gt;&lt;/li&gt;
+        &lt;li&gt;Unlimited Records&lt;br&gt;&lt;/li&gt;
+    &lt;/ul&gt;
+&lt;br&gt;
+</ext.attribute></ext></ext></ext><ext class="Ext.Panel" title="2. Plan Features" frame="false" border="false" __ideNodeOpen="true" disabled="disabled" hidden="true"><ext class="Ext.Panel" title="" frame="false" __ideNodeOpen="true" height="400" hidden="true"><ext class="Ext.Panel" title="" frame="false" border="false" bodyStyle="text-align: left" __ideNodeOpen="true"><ext.attribute name="html" isArray="false" isString="false" __ideNodeOpen="true" type="string">&lt;div style="padding:0.5em 1em"&gt;
+&lt;div&gt;The following features are not supported with your selection of Standard Edition. 
+This functionality and any associeted data will be permanently deleted after purchanse.&lt;/div&gt;
+&lt;ul style="margin-left:2em"&gt;
+  &lt;li&gt;- Opportunities&lt;/li&gt;
+  &lt;li&gt;- Leads&lt;/li&gt;
+  &lt;li&gt;- Cases&lt;/li&gt;
+  &lt;li&gt;- Dashboards&lt;/li&gt;
+  &lt;li&gt;- Campaigns&lt;/li&gt;
+&lt;/ul&gt;
+&lt;br /&gt;
+&lt;div&gt;If you don want this data to be deleted, please select a higher edition.&lt;/div&gt;
+&lt;p&gt;&lt;b&gt;How to backup data&lt;/b&gt;&lt;/p&gt;
+&lt;p&gt;If you would like to backup all your data, including the data that will be deleted, 
+log into your Account &gt; Admin Menu &gt;Admin Tools&lt;/p&gt;
+&lt;p&gt;I understand and agree that purchansing this edition will cause the permanently 
+loss of all data in trial features not supported in this edition&lt;/p&gt;
+&lt;/div&gt;</ext.attribute></ext><ext class="Ext.Panel" title="" frame="false" border="false" __ideNodeOpen="true" buttonAlign="center" hidden="true"><ext.attribute name="buttons" isArray="false" isString="false" type="array" __ideNodeOpen="true"><ext class="Ext.Button" name="continue1" text="Continue" type="button"><ext.attribute name="handler" isArray="false" isString="false">function(a,b){
+						var panel=this.ownerCt.ownerCt.ownerCt.ownerCt;
+						var container=panel.ownerCt;
+						selectStep(container, 2);
+					}</ext.attribute></ext></ext.attribute></ext></ext><ext class="Ext.Panel" title="" frame="false" __ideNodeOpen="true" height="400" hidden="true"><ext class="Ext.Panel" title="" frame="false" border="false" bodyStyle="text-align: left"><ext.attribute name="html" isArray="false" isString="false" __ideNodeOpen="true" type="string">&lt;div style="padding:0.5em 1em"&gt;
+&lt;div&gt;The following features are not supported with your selection of Standard Edition. 
+This functionality and any associeted data will be permanently deleted after purchanse.&lt;/div&gt;
+&lt;br /&gt;
+&lt;ul style="margin-left:2em"&gt;
+  &lt;li&gt;- Opportunities&lt;/li&gt;
+  &lt;li&gt;- Leads&lt;/li&gt;
+  &lt;li&gt;- Cases&lt;/li&gt;
+&lt;/ul&gt;
+&lt;br /&gt;
+&lt;div&gt;If you don want this data to be deleted, please select a higher edition.&lt;/div&gt;
+&lt;br /&gt;
+&lt;p&gt;&lt;b&gt;How to backup data&lt;/b&gt;&lt;/p&gt;
+&lt;p&gt;If you would like to backup all your data, including the data that will be deleted, 
+log into your Account &gt; Admin Menu &gt;Admin Tools&lt;/p&gt;
+&lt;p&gt;I understand and agree that purchansing this edition will cause the permanently 
+loss of all data in trial features not supported in this edition&lt;/p&gt;
+&lt;/div&gt;</ext.attribute></ext><ext class="Ext.Panel" title="" frame="false" border="false" __ideNodeOpen="true" buttonAlign="center" hidden="true"><ext.attribute name="buttons" isArray="false" isString="false" type="array"><ext class="Ext.Button" name="continue1" text="Continue" type="button"><ext.attribute name="handler" isArray="false" isString="false">function(a,b){
+						var panel=this.ownerCt.ownerCt.ownerCt.ownerCt;
+						var container=panel.ownerCt;
+						selectStep(container, 2);
+					}</ext.attribute></ext></ext.attribute></ext></ext><ext class="Ext.Panel" title="" frame="false" __ideNodeOpen="true" height="400" hidden="true"><ext class="Ext.Panel" title="" frame="false" border="false" bodyStyle="text-align: left"><ext.attribute name="html" isArray="false" isString="false" __ideNodeOpen="true" type="string">&lt;div style="padding:0.5em 1em"&gt;
+&lt;p&gt;&lt;b&gt;How to backup data&lt;/b&gt;&lt;/p&gt;
+&lt;p&gt;If you would like to backup all your data, including the data that will be deleted, 
+log into your Account &gt; Admin Menu &gt;Admin Tools&lt;/p&gt;
+&lt;p&gt;I understand and agree that purchansing this edition will cause the permanently 
+loss of all data in trial features not supported in this edition&lt;/p&gt;
+&lt;/div&gt;</ext.attribute></ext><ext class="Ext.Panel" title="" frame="false" border="false" __ideNodeOpen="true" buttonAlign="center" hidden="true"><ext.attribute name="buttons" isArray="false" isString="false" type="array"><ext class="Ext.Button" name="continue1" text="Continue" type="button"><ext.attribute name="handler" isArray="false" isString="false">function(a,b){
+						var panel=this.ownerCt.ownerCt.ownerCt.ownerCt;
+						var container=panel.ownerCt;
+						selectStep(container, 2);
+					}</ext.attribute></ext></ext.attribute></ext></ext></ext><ext class="Ext.Panel" title="3. Plan Details" frame="false" border="false" __ideNodeOpen="true" disabled="true" hidden="true"><ext class="Ext.Panel" region="center" title="" frame="false" border="true" height="230" layout="column" __ideNodeOpen="true"><ext class="Ext.form.FormPanel" title="" frame="false" url="action" standardSubmit="false" __ideNodeOpen="true" columnWidth="0.65" boder="false" labelWidth="200" height="350" style="border:none"><ext class="Ext.form.FieldSet" title="" frame="false" border="false" columnWidth="0.3" height="165" __ideNodeOpen="true"><ext class="Ext.form.TextField" name="selectedPlan" fieldLabel="Selected Plan" inputType="text" __ideNodeOpen="true" readOnly="true" id="selectedPlan"/><ext class="Ext.form.RadioGroup" name="paymentDurationGroup" fieldLabel="Payment Duration" __ideNodeOpen="true"><ext class="Ext.form.Radio" name="paymentDuration" boxLabel="Monthly" id="paymentDurationMonthly" __ideNodeOpen="true" checked="true"><ext.attribute name="listeners" isArray="false" isString="false" __ideNodeOpen="true">{
+  check:function(me, checked){
+    calculateAmountToBePayed();
+  }
+}</ext.attribute></ext><ext class="Ext.form.Radio" name="paymentDuration" boxLabel="Yearly" id="paymentDurationYearly" __ideNodeOpen="true"><ext.attribute name="listeners" isArray="false" isString="false" __ideNodeOpen="true">{
+  check:function(me, checked){
+    calculateAmountToBePayed();
+  }
+}</ext.attribute></ext></ext><ext class="Ext.form.NumberField" name="unitPrice" fieldLabel="Price/user" __ideNodeOpen="true" id="unitPrice" readOnly="true" hidden="true"/><ext class="Ext.form.TextField" name="numberOfUsers" fieldLabel="No. of User Licenses " __ideNodeOpen="true" id="numberOfUsers" value="unlimited" vtype="sotaUsers" msgTarget="under"><ext.attribute name="listeners" isArray="false" isString="false" __ideNodeOpen="true">{
+  change:function(){
+    calculateAmountToBePayed();
+  }
+}</ext.attribute></ext></ext><ext class="Ext.form.FieldSet" title="Total" frame="false" border="false" columnWidth="0.35" height="150" __ideNodeOpen="true"><ext class="Ext.form.TextField" name="amountToBePayed" fieldLabel=" Amount to be payed per month" inputType="text" __ideNodeOpen="true" id="amountToBePayed" readOnly="true"/></ext></ext><ext class="Ext.form.FieldSet" title="Yearly Subscription Benefits" frame="false" border="false" columnWidth="0.35" height="350" __ideNodeOpen="true"><ext.attribute name="html" isArray="false" isString="false" __ideNodeOpen="true" type="string">&lt;div style="padding:0.5em 1em"&gt;
+&lt;p&gt;&lt;img src="modules/license/themes/Default/images/16x16/Us-dollar_light.png"/&gt; 20% Discount&lt;/p&gt;
+&lt;p&gt;&lt;img src="modules/license/themes/Default/images/16x16/Chat-monobook.png"/&gt; Live chat room&lt;/p&gt;
+&lt;p&gt;&lt;img src="modules/license/themes/Default/images/16x16/Email_go.png"/&gt; Unlimited E-mail support&lt;/p&gt;
+&lt;p&gt;&lt;img src="modules/license/themes/Default/images/16x16/Phone_sound.png"/&gt; Unlimited phone support&lt;/p&gt;
+&lt;p&gt;&lt;img src="modules/license/themes/Default/images/16x16/Table_relationship.png"/&gt; Data migration support from other CRM&lt;/p&gt;
+&lt;/div&gt;</ext.attribute></ext></ext><ext class="Ext.Panel" title="" frame="false" border="false" __ideNodeOpen="true" buttonAlign="center" hidden="true"><ext.attribute name="buttons" isArray="false" isString="false" type="array" __ideNodeOpen="true" hidden="true"><ext class="Ext.Button" name="continue31" text="Continue" type="button" __ideNodeOpen="true"><ext.attribute name="handler" isArray="false" isString="false">function(a,b){
+						var panel=this.ownerCt.ownerCt.ownerCt;
+						var container=panel.ownerCt;
+                                          if(Ext.ComponentMgr.get("amountToBePayed").getValue()*1&gt;0){
+						selectStep(container, 3);
+					  }
+					}</ext.attribute></ext></ext.attribute></ext></ext><ext class="Ext.Panel" title="4. Review Order" frame="false" border="false" __ideNodeOpen="true" disabled="true" hidden="true"><ext class="Ext.Panel" title="" frame="false" border="false" __ideNodeOpen="true"><ext.attribute name="html" isArray="false" isString="false" type="string" __ideNodeOpen="true">&lt;div style="height: 225px"&gt;
+&lt;b&gt;Order Summary&lt;/b&gt;
+&lt;table style="width: 100%"&gt;
+&lt;tbody&gt;&lt;tr style="background: lightgray none repeat scroll 0% 0%"&gt;&lt;th&gt;Item&lt;/th&gt;&lt;th style="display:none"&gt;Unit price&lt;/th&gt;&lt;th&gt;No.of Units&lt;/th&gt;&lt;th&gt;Total&lt;/th&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td id="summaryPlan"&gt;Proffesional&lt;/td&gt;&lt;td id="summaryPlanUnitPrice" style="display:none"&gt;240.00&lt;/td&gt;&lt;td id="summaryPlanUnits"&gt;2&lt;/td&gt;&lt;td id="summaryPlanTotal"&gt;480.00&lt;/td&gt;&lt;/tr&gt;
+&lt;tr style="background: lightgray none repeat scroll 0% 0%"&gt;&lt;td colspan="2" align="right"&gt;Amount to be paid&lt;/td&gt;&lt;td&gt;&lt;b id="summaryPlanTotal2"&gt;$480.00&lt;/b&gt;&lt;/td&gt;&lt;/tr&gt;
+&lt;/tbody&gt;&lt;/table&gt;
+&lt;/div&gt;</ext.attribute></ext><ext class="Ext.Panel" title="" frame="false" border="false" __ideNodeOpen="true" buttonAlign="center" hidden="true"><ext.attribute name="buttons" isArray="false" isString="false" type="array" hidden="true"><ext class="Ext.Button" name="continue41" text="Continue" type="button"><ext.attribute name="handler" isArray="false" isString="false">function(a,b){
+						var panel=this.ownerCt.ownerCt.ownerCt;
+						var container=panel.ownerCt;
+                                                billmeLoad(
+                                                  Ext.ComponentMgr.get("amountToBePayed").getValue(),
+                                                  function(){
+                                                  selectStep(container, 4);
+                                                  }
+                                                );
+					}</ext.attribute></ext></ext.attribute></ext></ext><ext class="Ext.Panel" title="5. Payment Details" frame="false" border="false" __ideNodeOpen="false" disabled="true" hidden="true" height="400"><ext.attribute name="html" isArray="false" isString="false" type="string" __ideNodeOpen="true">&lt;div id="billmePanel"&gt;&lt;/div&gt;</ext.attribute></ext></ext></ext.fragment></dialog_buildForm></dialog><main module="license" dialog="manage" __ideNodeOpen="true"/></module></path></root>

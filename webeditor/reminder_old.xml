@@ -1,0 +1,519 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root><include src="$library/zend.xml"/><include src="$library/extjs.xml"/><application name="reminder" main="index/index" __ideNodeOpen="true"><controller name="index" descripcion="" author="" __ideNodeOpen="false"><action name="index" noRender="false" descripcion="" loadParams=""/><phtml name="index" __ideNodeOpen="true">&lt;!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"&gt;
+&lt;html xmlns="http://www.w3.org/1999/xhtml"&gt;
+
+&lt;head&gt;
+&lt;meta content="es-bo" http-equiv="Content-Language" /&gt;
+&lt;meta content="text/html; charset=utf-8" http-equiv="Content-Type" /&gt;
+&lt;title&gt;Dícelo AHORA y llegará en el MOM&lt;/title&gt;
+&lt;style type="text/css"&gt;
+.topPost h2.topTitle a {
+  font-size: 15pt;
+  font-weight: normal;
+  color: #fff;
+  letter-spacing: -2px;
+  }
+
+a {
+  color: #6598b8;
+  text-decoration: none;
+  }
+
+* {
+  margin: 0;
+  padding: 0;
+  }
+.auto-style1 {
+  color: #FF0303;
+}
+.auto-style2 {
+  font-size: xx-large;
+}
+&lt;/style&gt;
+&lt;/head&gt;
+
+&lt;body&gt;
+
+&lt;p class="auto-style2"&gt;
+&lt;a class="auto-style1" href="http://localhost/wordpress/?p=1"&gt;Dícelo AHORA y
+llegará en el MOMENTO Preciso!!!&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&amp;nbsp;&lt;/p&gt;
+&lt;p&gt;
+&lt;img alt="Reminders Book" height="332" longdesc="Preserva un Legado" src="http://legado.boliviaincuba.net/wp-content/uploads/2011/11/LandingReminderBook.jpg" width="708" /&gt;&lt;/p&gt;&lt;p&gt;
+&lt;img alt="Reminders Book" height="332" longdesc="Preserva un Legado" src="http://legado.boliviaincuba.net/wp-content/uploads/2011/11/Susgratis" width="708" /&gt;&lt;/p&gt;
+&lt;p&gt;&amp;nbsp;&lt;/p&gt;
+&lt;p&gt;&amp;nbsp;&lt;/p&gt;
+&lt;p&gt;&lt;a href="http://www.remindersbook.com"&gt;www.remindersbook.com&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&amp;nbsp;&lt;/p&gt;
+&lt;/body&gt;
+
+&lt;/html&gt;
+</phtml></controller><ext.page name="face" __ideNodeOpen="true"><extdocument name="index" __ideNodeOpen="true"><layout layout="table" __extid="0" __ideNodeOpen="true"><extjs class="Ext.Panel" region="center" title="Hi &lt;?= $this-&gt;name ?&gt;" frame="true" __extid="1" __ideNodeOpen="true"><extjs class="Ext.form.Label" text="You have this events:" __extid="2"/><extjs class="Ext.form.FormPanel" region="center" title="Startup Weekend (La Paz-Bolivia) After-Party" frame="true" url="../reminder/index" standardSubmit="true" __extid="3" width="350" height="150" __ideNodeOpen="true"><attribute name="buttons" isArray="true" isString="false" __ideNodeOpen="true"><extjs class="Ext.Button" name="name" text="Send a Reminder" type="submit" __extid="4"><event name="handler">function(a,b){this.ownerCt.ownerCt.getForm().submit();}</event></extjs></attribute><extjs class="Ext.form.Label" fieldLabel="Time" text="&lt;?=$this-&gt;time ?&gt;" __extid="5"/><extjs class="Ext.form.Label" fieldLabel="" text="Startup Weekend is a global network of passionate leaders and entrepreneurs on a mission to inspire, educate, and empower individuals, teams and communities. " __extid="6" __ideNodeOpen="true"/></extjs><extjs class="Ext.Button" text="Create a New Memorable Event" name="create" __extid="7" __ideNodeOpen="true"><event name="handler">function(a,b){Ext.Msg.alert('Creating Events', 'Comming soon...');}
+</event></extjs></extjs></layout></extdocument><action name="index" noRender="false" descripcion="" loadParams="" __ideNodeOpen="true">
+require_once("../library/face.php");
+global $user;
+global $user_profile;
+//var_dump($user, $user_profile);
+
+$this-&gt;view-&gt;name = $user_profile["name"];
+$this-&gt;view-&gt;time = Date("r", mktime(20,0,0,11,20,2011));
+</action></ext.page><ext.page name="reminder" __ideNodeOpen="true"><extdocument __ideNodeOpen="true"><layout layout="table" __extid="0"><extjs class="Ext.form.FormPanel" region="center" title="Startup Weekend Reminder" frame="true" url="../remind/index" standardSubmit="true" __extid="1" width="450" height="400"><extjs class="Ext.form.TextField" name="from" fieldLabel="From" inputType="text" __extid="2" vtype="email" width="300" minLengthText="10" allowBlank="false"/><extjs class="Ext.form.TextField" name="to" fieldLabel="To" inputType="text" __extid="3" vtype="email" width="300" minLengthText="10" allowBlank="false"/><extjs class="Ext.form.TextArea" __extid="4" name="message" fieldLabel="Message" width="300" height="250"/><attribute name="buttons" isArray="true" isString="false" __ideNodeOpen="true"><extjs class="Ext.Button" name="name" text="Remind" type="submit" __extid="5"><event name="handler">function(a,b){this.ownerCt.ownerCt.getForm().submit();}</event></extjs><extjs class="Ext.Button" name="cancell" text="Cancel" type="button" __extid="6"><event name="handler">function(a,b){location.href="../face/index";}</event></extjs></attribute></extjs></layout></extdocument><action name="reminder" noRender="false" descripcion="" loadParams="" __ideNodeOpen="false">
+require_once("../library/face.php");
+global $user;
+global $user_profile;
+$this-&gt;view-&gt;name = $user_profile["name"];
+</action></ext.page><ext.page name="remind" __ideNodeOpen="true"><action name="index" noRender="false" descripcion="" loadParams="true" __ideNodeOpen="true">
+
+global $user;
+global $user_profile;
+
+require_once("../library/face.php");
+
+$response = $from;
+if($user_profile["name"]) $from = $user_profile["name"];
+
+// hora min sec mes dia anio
+$send_on = mktime(17, 55, 0, 11, 20, 2011 );
+$send_on = mktime(16, 50, 0, 11, 20, 2011 );
+$send_on = mktime(20, 0, 0, 11, 20, 2011 );
+
+$this-&gt;view-&gt;to = $to;
+$this-&gt;view-&gt;send_on = Date("r", $send_on);
+
+//print Date("Y-m-d h:i:s");
+
+<insert_row model="remind" var="$values" values="to=$to;from=$from;message=$message;send_on=$send_on;response=$response;" __ideNodeOpen="false"/></action><action name="cron" noRender="true" descripcion="" loadParams="true" __ideNodeOpen="true">
+//text
+
+$timestamp = time();
+
+print $timestamp;
+
+<select_table model="remind" limit="" offset="" order="" columns="" var="$rows" criteria="sent=0;send_on&lt;=$timestamp" __ideNodeOpen="true">
+REQUIRE_ONCE("Zend/Mail/Transport/Smtp.php");
+REQUIRE_ONCE("Zend/Mail.php");
+
+  $config = array('ssl' =&gt; 'tls', 'port' =&gt; 587, 'auth' =&gt; 'login', 'username' =&gt; 'davidcallizaya@gmail.com', 'password' =&gt; '4912465321');
+  $tr = new Zend_Mail_Transport_Smtp('smtp.gmail.com', $config);
+  
+  Zend_Mail::setDefaultTransport($tr);
+
+global $gruposemail;
+
+foreach($rows as $row ){
+try{
+  $to = $row-&gt;to;
+  $from = $row-&gt;from;
+  $message = $row-&gt;message;
+
+var_dump($from, $to, $message);
+  
+  $mail = new Zend_Mail();
+  
+  $fromName=explode("@",$fromName);
+  $fromName=$fromName[0];
+  var_dump( $fromName );
+  
+  $mail-&gt;setFrom($from, "Reminder Book" );
+if(isset($gruposemail[$to])){
+  foreach($gruposemail[$to] as $t0){
+    $mail-&gt;addTo($t0, $t0);
+  }
+} else {
+  $mail-&gt;addTo($to, $to);
+}
+  $mail-&gt;setSubject("Startup Weekend Reminder");
+  $htmlMessage = '&lt;div style="width:350px;border:1px solid #99BBE8;border-radius:4px;-webkit-border-radius:4px;-moz-border-radius:4px;"&gt;
+&lt;div style="color:#15428B;font-family:tahoma,arial,verdana,sans-serif;font-size:11px;font-weight:bold;padding:2px 4px;background-color:#BAD0EE;border-bottom:1px solid #99BBE8;"&gt;Reminder&lt;/div&gt;
+&lt;div style="font-family:tahoma,arial,verdana,sans-serif;font-size:11px;padding:4px;background-color:#DFE8F6;"&gt;'.htmlentities($message, ENT_NOQUOTES, 'utf-8').'&lt;/div&gt;
+&lt;div style="font-family:tahoma,arial,verdana,sans-serif;font-size:11px;padding:4px;background-color:#DFE8F6;"&gt;
+&lt;div style="text-align:right;"&gt;&lt;span style="padding:4px;display:inline-block;border:1px solid #99BBE8;background-color:#BAD0EE;border-radius:4px;-webkit-border-radius:4px;-moz-border-radius:4px;"&gt;&lt;a href="http://reminder.llankay.com/html/index.php/reply/index?to='.base64_encode($to).'&amp;from='.base64_encode($from).'"&gt;Reply&lt;/a&gt;&lt;/span&gt;
+&lt;span style="padding:4px;display:inline-block;border:1px solid #99BBE8;background-color:#BAD0EE;border-radius:4px;-webkit-border-radius:4px;-moz-border-radius:4px;"&gt;&lt;a href="http://reminder.llankay.com/html/index.php/remindme/index?to='.base64_encode($to).'&amp;from='.base64_encode($to).'"&gt;Remind Me&lt;/a&gt;&lt;/span&gt;&lt;/div&gt;
+&lt;br /&gt;
+Visit us at: &lt;a href="http://legado.boliviaincuba.net/"&gt;legado.boliviaincuba.net&lt;/a&gt;&lt;/div&gt;
+&lt;div style="font-family:tahoma,arial,verdana,sans-serif;font-size:11px;padding:4px;background-color:#DFE8F6;"&gt;or at Facebook: &lt;a href="http://www.facebook.com/pages/Reminders-Book/161988810566105?sk=app_278343152208414"&gt;Reminders-Book&lt;/a&gt;&lt;/div&gt;
+&lt;/div&gt;';
+  $mail-&gt;setBodyHtml($htmlMessage);
+  //$mail-&gt;setBodyText($message);
+  $mail-&gt;send();
+  
+  $row-&gt;sent=1;
+  $row-&gt;save();
+} catch(Exception $e){
+}
+}
+
+</select_table></action><extdocument name="index" __ideNodeOpen="true"><layout layout="table" __extid="0"><extjs class="Ext.form.FormPanel" region="center" title="You send a Reminder" frame="true" url="../face/index" standardSubmit="true" __extid="1" width="350" height="150" __ideNodeOpen="true"><attribute name="buttons" isArray="true" isString="false" __ideNodeOpen="true"><extjs class="Ext.Button" name="name" text="Ok" type="submit" __extid="2"><event name="handler">function(a,b){this.ownerCt.ownerCt.getForm().submit();}</event></extjs></attribute><extjs class="Ext.form.Label" fieldLabel="To" text="&lt;?=$this-&gt;to ?&gt;" __extid="3" __ideNodeOpen="true"/><extjs class="Ext.form.Label" fieldLabel="Reminder Time" text="&lt;?=$this-&gt;send_on?&gt;" __extid="4"/></extjs></layout></extdocument></ext.page><file name="html/config.php" preprocess="" __ideNodeOpen="true">&lt;?php
+
+function add_include_path ($path)
+{
+    foreach (func_get_args() AS $path)
+    {
+        if (!file_exists($path) OR (file_exists($path) &amp;&amp; filetype($path) !== 'dir'))
+        {
+            trigger_error("Include path '{$path}' not exists", E_USER_WARNING);
+            continue;
+        }
+       
+        $paths = explode(PATH_SEPARATOR, get_include_path());
+       
+        if (array_search($path, $paths) === false)
+            array_push($paths, $path);
+       
+        set_include_path(implode(PATH_SEPARATOR, $paths));
+    }
+}
+
+add_include_path ("../../../zend_library");
+
+global $gruposemail;
+$gruposemail=array(
+"commic-factory@remindersbook.com"=&gt;array("galahamd@gmail.com",
+  "izecla@hotmail.com",
+  "atararish@gmail.com",
+  "desalazar@gmail.com"),
+"yo-quiero.bo@remindersbook.com"=&gt;array("duranjuniors@gmail.com",
+  "nicky_les@hotmail.com",
+  "todobien182@hotmail.com",
+  "hugos_207@hotmail.com",
+  "willzon38@gmail.com",
+  "andina_estudio@hotmail.com"),
+"el-guru@remindersbook.com"=&gt;array("niwre_@hotmail.com",
+  "alvaromolinac@gmail.com",
+  "ponchopanadero@hotmail.com"),
+"vamos-up@remindersbook.com"=&gt;array("ayar_yps@hotmail.com",
+  "xcostaner@gmail.com",
+  "falcomon@hotmail.com",
+  "cprafo@gmail.com",
+  "fabianita_v@hotmail.com",
+  "yalimurillo@hotmail.com",
+  "ivettgamarra14@hotmail.com"),
+"platito-del-dia@remindersbook.com"=&gt;array("sromecin@gmail.com", 
+  "oscarin_chili@hotmail.com", "Paperback_Writer_@hotmail.com", 
+  "desagonx@hotmail.com", "anita_p15@hotmail.com", 
+  "a_c121@hotmail.com", "diegotezanospinto@hotmail.com", 
+  "belmoscoso@hotmail.com"),
+  "estas-cerca@remindersbook.com"=&gt;array("lo_ca5@hotmail.com", 
+  "angui4you@hotmail.com", 
+  "vero.13c@gmail.com", 
+  "roswaldo@hotmail.com", 
+  "dendogolibra@hotmail.com"),
+"turismo-2.0@remindersbook.com"=&gt;array("ongcerbol@yahoo.es"),
+"info@remindersbook.com"=&gt;array("davidcallizaya@gmail.com","rogerhugochavez@gmail.com","infcle@gmail.com","ever1024@gmail.com"),
+);
+</file><file name="library/face.php" preprocess="" __ideNodeOpen="false">&lt;?php
+
+/**
+ * Copyright 2011 Facebook, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License. You may obtain
+ * a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ */
+
+require_once '../facebook-php-sdk/src/facebook.php';
+global $user;
+global $user_profile;
+
+// Create our Application instance (replace this with your appId and secret).
+$facebook = new Facebook(array(
+  'appId'  =&gt; '154853601250391',
+  'secret' =&gt; '6841c57608a20153d4fd64a618282a60',
+  'cookie' =&gt; true,
+));
+
+
+// Get User ID
+$user = $facebook-&gt;getUser();
+
+
+// We may or may not have this data based on whether the user is logged in.
+//
+// If we have a $user id here, it means we know the user is logged into
+// Facebook, but we don't know if the access token is valid. An access
+// token is invalid if the user logged out of Facebook.
+
+if ($user) {
+  try {
+    // Proceed knowing you have a logged in user who's authenticated.
+    $user_profile = $facebook-&gt;api('/me');
+  } catch (FacebookApiException $e) {
+    error_log($e);
+    $user = null;
+  }
+} else {
+//  echo("Hola don peperony&lt;script&gt; alert('Don peperony');top.location.href='" . $auth_url . "'&lt;/script&gt;");
+//  die;
+}
+
+</file><table name="remind" table="remind" primaryKey="" dependentTables=""/><connection driver="Mysqli" host="localhost" username="llankay_reminder" password="reminder" dbname="llankay_reminder"/><ext.page name="reply" __ideNodeOpen="false"><extdocument __ideNodeOpen="true"><layout layout="table" __extid="0"><extjs class="Ext.form.FormPanel" region="center" title="Reply to Startup Weekend Reminder" frame="true" url="../remindreply/index" standardSubmit="true" __extid="1" width="450" height="400"><extjs class="Ext.form.TextField" name="from" fieldLabel="From" inputType="text" __extid="2" vtype="email" width="300" minLengthText="10" allowBlank="false" value="&lt;?=$this-&gt;from ?&gt;" readOnly="true"/><extjs class="Ext.form.TextField" name="to" fieldLabel="To" inputType="text" __extid="3" vtype="email" width="300" minLengthText="10" allowBlank="false" value="&lt;?=$this-&gt;to  ?&gt;" readOnly="true"/><extjs class="Ext.form.TextArea" __extid="4" name="message" fieldLabel="Message" width="300" height="250"/><attribute name="buttons" isArray="true" isString="false" __ideNodeOpen="true"><extjs class="Ext.Button" name="name" text="Send" type="submit" __extid="5"><event name="handler">function(a,b){this.ownerCt.ownerCt.getForm().submit();}</event></extjs></attribute></extjs></layout></extdocument><action name="index" noRender="false" descripcion="" loadParams="$to,$from" __ideNodeOpen="true">
+require_once("../library/face.php");
+global $user;
+global $user_profile;
+$this-&gt;view-&gt;name = $user_profile["name"];
+
+$this-&gt;view-&gt;to = base64_decode($to);
+$this-&gt;view-&gt;from = base64_decode($from);
+
+</action></ext.page><ext.page name="remindreply" __ideNodeOpen="false"><action name="index" noRender="false" descripcion="" loadParams="true" __ideNodeOpen="true">
+
+global $user;
+global $user_profile;
+
+require_once("../library/face.php");
+
+$response = $from;
+if($user_profile["name"]) $from = $user_profile["name"];
+
+// hora min sec mes dia anio
+$send_on = mktime(17, 55, 0, 11, 20, 2011 );
+$send_on = mktime(1, 0, 0, 11, 20, 2011 );
+
+$this-&gt;view-&gt;to = $to;
+$this-&gt;view-&gt;send_on = Date("r", $send_on);
+
+//print Date("Y-m-d h:i:s");
+
+<insert_row model="remind" var="$values" values="to=$to;from=$from;message=$message;send_on=$send_on;response=$response;" __ideNodeOpen="false"/></action><action name="cron" noRender="true" descripcion="" loadParams="true" __ideNodeOpen="true">
+//text
+
+$timestamp = time();
+
+print $timestamp;
+
+<select_table model="remind" limit="" offset="" order="" columns="" var="$rows" criteria="sent=0;send_on&lt;=$timestamp" __ideNodeOpen="true">
+REQUIRE_ONCE("Zend/Mail/Transport/Smtp.php");
+REQUIRE_ONCE("Zend/Mail.php");
+
+  $config = array('ssl' =&gt; 'tls', 'port' =&gt; 587, 'auth' =&gt; 'login', 'username' =&gt; 'davidcallizaya@gmail.com', 'password' =&gt; '4912465321');
+  $tr = new Zend_Mail_Transport_Smtp('smtp.gmail.com', $config);
+  
+  Zend_Mail::setDefaultTransport($tr);
+
+foreach($rows as $row ){
+try{
+  $to = $row-&gt;to;
+  $from = $row-&gt;from;
+  $message = $row-&gt;message;
+
+var_dump($from, $to, $message);
+  
+  $mail = new Zend_Mail();
+  
+  $fromName=explode("@",$fromName);
+  $fromName=$fromName[0];
+  var_dump( $fromName );
+  
+  $mail-&gt;setFrom($from, "Reminder Book" );
+  $mail-&gt;addTo($to, $to);
+  $mail-&gt;setSubject("Startup Weekend Reminder");
+  $htmlMessage = '&lt;div style="width:350px;border:1px solid #99BBE8;border-radius:4px;-webkit-border-radius:4px;-moz-border-radius:4px;"&gt;
+&lt;div style="color:#15428B;font-family:tahoma,arial,verdana,sans-serif;font-size:11px;font-weight:bold;padding:2px 4px;background-color:#BAD0EE;border-bottom:1px solid #99BBE8;"&gt;Reminder&lt;/div&gt;
+&lt;div style="font-family:tahoma,arial,verdana,sans-serif;font-size:11px;padding:4px;background-color:#DFE8F6;"&gt;'.htmlentities($message, ENT_NOQUOTES, 'utf-8').'&lt;/div&gt;
+&lt;div style="font-family:tahoma,arial,verdana,sans-serif;font-size:11px;padding:4px;background-color:#DFE8F6;"&gt;&lt;br /&gt;Visit us at: &lt;a href="http://legado.boliviaincuba.net/"&gt;legado.boliviaincuba.net&lt;/a&gt;&lt;/div&gt;
+&lt;div style="font-family:tahoma,arial,verdana,sans-serif;font-size:11px;padding:4px;background-color:#DFE8F6;"&gt;or at Facebook: &lt;a href="http://www.facebook.com/pages/Reminders-Book/161988810566105?sk=app_278343152208414"&gt;Reminders-Book&lt;/a&gt;&lt;/div&gt;
+&lt;/div&gt;';
+  $mail-&gt;setBodyHtml($htmlMessage);
+  //$mail-&gt;setBodyText($message);
+  $mail-&gt;send();
+  
+  $row-&gt;sent=1;
+  $row-&gt;save();
+} catch(Exception $e){
+}
+}
+
+</select_table></action><extdocument name="index" __ideNodeOpen="true"><layout layout="table" __extid="0"><extjs class="Ext.form.FormPanel" region="center" title="You send a Reminder about Startup Weekend (La Paz-Bolivia)" frame="true" url="http://legado.boliviaincuba.net/" standardSubmit="true" __extid="1" width="350" height="150" __ideNodeOpen="true"><attribute name="buttons" isArray="true" isString="false" __ideNodeOpen="true"><extjs class="Ext.Button" name="name" text="Ok" type="submit" __extid="2"><event name="handler">function(a,b){this.ownerCt.ownerCt.getForm().submit();}</event></extjs></attribute><extjs class="Ext.form.Label" fieldLabel="To" text="&lt;?=$this-&gt;to ?&gt;" __extid="3" __ideNodeOpen="true"/><extjs class="Ext.form.Label" fieldLabel="Reminder Time" text="Now" __extid="4"/></extjs></layout></extdocument></ext.page><ext.page name="remindme" __ideNodeOpen="true"><extdocument __ideNodeOpen="true"><layout layout="table" __extid="0"><extjs class="Ext.form.FormPanel" region="center" title="Reply to Startup Weekend Reminder" frame="true" url="../remindmereply/index" standardSubmit="true" __extid="1" width="450" height="400"><extjs class="Ext.form.Label" name="date" fieldLabel="Date" inputType="text" __extid="2" vtype="email" width="300" minLengthText="10" allowBlank="false" value="&lt;?=$this-&gt;from ?&gt;" text="Today"/><extjs class="Ext.form.TimeField" name="time" fieldLabel="Time" __extid="3" allowBlank="false"/><extjs class="Ext.form.TextField" name="from" fieldLabel="From" inputType="text" __extid="4" vtype="email" width="300" minLengthText="10" allowBlank="false" value="&lt;?=$this-&gt;from ?&gt;" readOnly="true"/><extjs class="Ext.form.TextField" name="to" fieldLabel="To" inputType="text" __extid="5" vtype="email" width="300" minLengthText="10" allowBlank="false" value="&lt;?=$this-&gt;to  ?&gt;" readOnly="true"/><extjs class="Ext.form.TextArea" __extid="6" name="message" fieldLabel="Message" width="300" height="250"/><attribute name="buttons" isArray="true" isString="false" __ideNodeOpen="false"><extjs class="Ext.Button" name="name" text="Remind" type="submit" __extid="7"><event name="handler">function(a,b){this.ownerCt.ownerCt.getForm().submit();}</event></extjs><extjs class="Ext.Button" name="cancell" text="Cancel" type="button" __extid="8"><event name="handler">function(a,b){location.href="../face/index";}</event></extjs></attribute></extjs></layout></extdocument><action name="index" noRender="false" descripcion="" loadParams="$to,$from" __ideNodeOpen="true">
+require_once("../library/face.php");
+global $user;
+global $user_profile;
+$this-&gt;view-&gt;name = $user_profile["name"];
+
+$this-&gt;view-&gt;to = base64_decode($to);
+$this-&gt;view-&gt;from = base64_decode($from);
+
+</action></ext.page><ext.page name="remindmereply" __ideNodeOpen="true"><action name="index" noRender="false" descripcion="" loadParams="true" __ideNodeOpen="true">
+
+global $user;
+global $user_profile;
+
+require_once("../library/face.php");
+
+$response = $from;
+if($user_profile["name"]) $from = $user_profile["name"];
+
+// hora min sec mes dia anio
+$send_on = mktime(17, 55, 0, 11, 20, 2011 );
+list($hm,$pm) = explode(" ",$time);
+list($h,$m) = explode(":", $hm);
+$m=$m + 0;
+if($pm=="PM") $h = $h + 12;
+
+$send_on = mktime($h, $m, 0, 11, 20, 2011 );
+
+$this-&gt;view-&gt;to = $to;
+$this-&gt;view-&gt;send_on = Date("r", $send_on);
+
+//print Date("Y-m-d h:i:s");
+
+<insert_row model="remind" var="$values" values="to=$to;from=$from;message=$message;send_on=$send_on;response=$response;" __ideNodeOpen="false"/></action><action name="cron" noRender="true" descripcion="" loadParams="true" __ideNodeOpen="true">
+//text
+
+$timestamp = time();
+
+print $timestamp;
+
+<select_table model="remind" limit="" offset="" order="" columns="" var="$rows" criteria="sent=0;send_on&lt;=$timestamp" __ideNodeOpen="true">
+REQUIRE_ONCE("Zend/Mail/Transport/Smtp.php");
+REQUIRE_ONCE("Zend/Mail.php");
+
+  $config = array('ssl' =&gt; 'tls', 'port' =&gt; 587, 'auth' =&gt; 'login', 'username' =&gt; 'davidcallizaya@gmail.com', 'password' =&gt; '4912465321');
+  $tr = new Zend_Mail_Transport_Smtp('smtp.gmail.com', $config);
+  
+  Zend_Mail::setDefaultTransport($tr);
+
+foreach($rows as $row ){
+try{
+  $to = $row-&gt;to;
+  $from = $row-&gt;from;
+  $message = $row-&gt;message;
+
+var_dump($from, $to, $message);
+  
+  $mail = new Zend_Mail();
+  
+  $fromName=explode("@",$fromName);
+  $fromName=$fromName[0];
+  var_dump( $fromName );
+  
+  $mail-&gt;setFrom($from, "Reminder Book" );
+  $mail-&gt;addTo($to, $to);
+  $mail-&gt;setSubject("Startup Weekend Reminder");
+  $htmlMessage = '&lt;div style="width:350px;border:1px solid #99BBE8;border-radius:4px;-webkit-border-radius:4px;-moz-border-radius:4px;"&gt;
+&lt;div style="color:#15428B;font-family:tahoma,arial,verdana,sans-serif;font-size:11px;font-weight:bold;padding:2px 4px;background-color:#BAD0EE;border-bottom:1px solid #99BBE8;"&gt;Reminder&lt;/div&gt;
+&lt;div style="font-family:tahoma,arial,verdana,sans-serif;font-size:11px;padding:4px;background-color:#DFE8F6;"&gt;'.htmlentities($message, ENT_NOQUOTES, 'utf-8').'&lt;/div&gt;
+&lt;div style="font-family:tahoma,arial,verdana,sans-serif;font-size:11px;padding:4px;background-color:#DFE8F6;"&gt;&lt;br /&gt;Visit us at: &lt;a href="http://legado.boliviaincuba.net/"&gt;legado.boliviaincuba.net&lt;/a&gt;&lt;/div&gt;
+&lt;div style="font-family:tahoma,arial,verdana,sans-serif;font-size:11px;padding:4px;background-color:#DFE8F6;"&gt;or at Facebook: &lt;a href="http://www.facebook.com/pages/Reminders-Book/161988810566105?sk=app_278343152208414"&gt;Reminders-Book&lt;/a&gt;&lt;/div&gt;
+&lt;/div&gt;';
+  $mail-&gt;setBodyHtml($htmlMessage);
+  //$mail-&gt;setBodyText($message);
+  $mail-&gt;send();
+  
+  $row-&gt;sent=1;
+  $row-&gt;save();
+} catch(Exception $e){
+}
+}
+
+</select_table></action><extdocument name="index" __ideNodeOpen="true"><layout layout="table" __extid="0"><extjs class="Ext.form.FormPanel" region="center" title="You send a Reminder about Startup Weekend (La Paz-Bolivia)" frame="true" url="http://legado.boliviaincuba.net/" standardSubmit="true" __extid="1" width="350" height="150" __ideNodeOpen="true"><attribute name="buttons" isArray="true" isString="false" __ideNodeOpen="true"><extjs class="Ext.Button" name="name" text="Ok" type="submit" __extid="2"><event name="handler">function(a,b){this.ownerCt.ownerCt.getForm().submit();}</event></extjs></attribute><extjs class="Ext.form.Label" fieldLabel="To" text="&lt;?=$this-&gt;to ?&gt;" __extid="3" __ideNodeOpen="true"/><extjs class="Ext.form.Label" fieldLabel="Reminder Time" text="&lt;?=$this-&gt;send_on?&gt;" __extid="4"/></extjs></layout></extdocument></ext.page><ext.page name="face" __ideNodeOpen="true"><extdocument __ideNodeOpen="true"><layout layout="table" __extid="0"><extjs class="Ext.form.FormPanel" region="center" title="Reminder" frame="true" url="../remindit/index" standardSubmit="true" __extid="1" width="450" height="400"><extjs class="Ext.form.DateField" name="date" fieldLabel="Date" __extid="2" allowBlank="false" value="&lt;?=$this-&gt;date ?&gt;"/><extjs class="Ext.form.TimeField" name="time" fieldLabel="Time" __extid="3" allowBlank="false" value="&lt;?= $this-&gt;time ?&gt;"/><extjs class="Ext.form.TextField" name="to" fieldLabel="To (email)" inputType="text" __extid="4" vtype="email" width="300" minLengthText="10" allowBlank="false" value="&lt;?=$this-&gt;to  ?&gt;"/><extjs class="Ext.form.TextArea" __extid="5" name="message" fieldLabel="Message" width="300" height="220"/><extjs class="Ext.form.TextField" name="from" fieldLabel="Reply to (email)" inputType="text" __extid="6" vtype="email" width="300" minLengthText="10" allowBlank="true" value="&lt;?=$this-&gt;from ?&gt;"/><attribute name="buttons" isArray="true" isString="false" __ideNodeOpen="false"><extjs class="Ext.Button" name="name" text="Remind" type="submit" __extid="7"><event name="handler">function(a,b){this.ownerCt.ownerCt.getForm().submit();}</event></extjs><extjs class="Ext.Button" name="cancell" text="Cancel" type="button" __extid="8"><event name="handler">function(a,b){location.href="../face/index";}</event></extjs></attribute></extjs></layout></extdocument><action name="index" noRender="false" descripcion="" loadParams="$to,$from" __ideNodeOpen="true">
+require_once("../library/face.php");
+global $user;
+global $user_profile;
+$this-&gt;view-&gt;name = $user_profile["name"];
+
+$this-&gt;view-&gt;date = Date("m/d/Y",time()+3600*24);
+$this-&gt;view-&gt;time = "12:00 PM";
+$this-&gt;view-&gt;to = "";
+$this-&gt;view-&gt;from = "";
+
+</action></ext.page><ext.page name="remindit" __ideNodeOpen="true"><action name="index" noRender="false" descripcion="" loadParams="true" __ideNodeOpen="true">
+
+global $user;
+global $user_profile;
+
+require_once("../library/face.php");
+
+//$response = $from;
+if($user_profile["name"]) $response = $user_profile["name"];
+
+// hora min sec mes dia anio
+$send_on = mktime(17, 55, 0, 11, 20, 2011 );
+$send_on = mktime(16, 50, 0, 11, 20, 2011 );
+$send_on = mktime(20, 0, 0, 11, 20, 2011 );
+
+list($hm,$pm) = explode(" ",$time);
+list($h,$m) = explode(":", $hm);
+$m=$m + 0;
+if($pm=="PM") $h = $h + 12;
+
+list($M,$D,$Y)=explode("/",$date);
+$send_on = mktime($h, $m, 0, $M, $D, $Y );
+
+if(!$from &amp;&amp; $response) $from = preg_replace('/[^\w\d]/', '-',$response) . "@remindersbook.com";
+if(!$from &amp;&amp; !$response) $from = "reminder@remindersbook.com";
+
+$this-&gt;view-&gt;to = $to;
+$this-&gt;view-&gt;send_on = Date("r", $send_on);
+
+//print Date("Y-m-d h:i:s");
+
+<insert_row model="remind" var="$values" values="to=$to;from=$from;message=$message;send_on=$send_on;response=$response;" __ideNodeOpen="false"/></action><action name="cron" noRender="true" descripcion="" loadParams="true" __ideNodeOpen="true">
+//text
+
+$timestamp = time();
+
+print $timestamp;
+
+<select_table model="remind" limit="" offset="" order="" columns="" var="$rows" criteria="sent=0;send_on&lt;=$timestamp" __ideNodeOpen="true">
+REQUIRE_ONCE("Zend/Mail/Transport/Smtp.php");
+REQUIRE_ONCE("Zend/Mail.php");
+
+  $config = array('ssl' =&gt; 'tls', 'port' =&gt; 587, 'auth' =&gt; 'login', 'username' =&gt; 'davidcallizaya@gmail.com', 'password' =&gt; '4912465321');
+  $tr = new Zend_Mail_Transport_Smtp('smtp.gmail.com', $config);
+  
+  Zend_Mail::setDefaultTransport($tr);
+
+global $gruposemail;
+
+foreach($rows as $row ){
+try{
+  $to = $row-&gt;to;
+  $from = $row-&gt;from;
+  $message = $row-&gt;message;
+
+var_dump($from, $to, $message);
+  
+  $mail = new Zend_Mail();
+  
+  $fromName=explode("@",$fromName);
+  $fromName=$fromName[0];
+  var_dump( $fromName );
+  
+  $mail-&gt;setFrom($from, "Reminder Book" );
+if(isset($gruposemail[$to])){
+  foreach($gruposemail[$to] as $t0){
+    $mail-&gt;addTo($t0, $t0);
+  }
+} else {
+  $mail-&gt;addTo($to, $to);
+}
+  $mail-&gt;setSubject("Startup Weekend Reminder");
+  $htmlMessage = '&lt;div style="width:350px;border:1px solid #99BBE8;border-radius:4px;-webkit-border-radius:4px;-moz-border-radius:4px;"&gt;
+&lt;div style="color:#15428B;font-family:tahoma,arial,verdana,sans-serif;font-size:11px;font-weight:bold;padding:2px 4px;background-color:#BAD0EE;border-bottom:1px solid #99BBE8;"&gt;Reminder&lt;/div&gt;
+&lt;div style="font-family:tahoma,arial,verdana,sans-serif;font-size:11px;padding:4px;background-color:#DFE8F6;"&gt;'.htmlentities($message, ENT_NOQUOTES, 'utf-8').'&lt;/div&gt;
+&lt;div style="font-family:tahoma,arial,verdana,sans-serif;font-size:11px;padding:4px;background-color:#DFE8F6;"&gt;
+&lt;div style="text-align:right;"&gt;&lt;span style="padding:4px;display:inline-block;border:1px solid #99BBE8;background-color:#BAD0EE;border-radius:4px;-webkit-border-radius:4px;-moz-border-radius:4px;"&gt;&lt;a href="http://reminder.llankay.com/html/index.php/reply/index?to='.base64_encode($to).'&amp;from='.base64_encode($from).'"&gt;Reply&lt;/a&gt;&lt;/span&gt;
+&lt;span style="padding:4px;display:inline-block;border:1px solid #99BBE8;background-color:#BAD0EE;border-radius:4px;-webkit-border-radius:4px;-moz-border-radius:4px;"&gt;&lt;a href="http://reminder.llankay.com/html/index.php/remindme/index?to='.base64_encode($to).'&amp;from='.base64_encode($to).'"&gt;Remind Me&lt;/a&gt;&lt;/span&gt;&lt;/div&gt;
+&lt;br /&gt;
+Visit us at: &lt;a href="http://legado.boliviaincuba.net/"&gt;legado.boliviaincuba.net&lt;/a&gt;&lt;/div&gt;
+&lt;div style="font-family:tahoma,arial,verdana,sans-serif;font-size:11px;padding:4px;background-color:#DFE8F6;"&gt;or at Facebook: &lt;a href="http://www.facebook.com/pages/Reminders-Book/161988810566105?sk=app_278343152208414"&gt;Reminders-Book&lt;/a&gt;&lt;/div&gt;
+&lt;/div&gt;';
+  $mail-&gt;setBodyHtml($htmlMessage);
+  //$mail-&gt;setBodyText($message);
+  $mail-&gt;send();
+  
+  $row-&gt;sent=1;
+  $row-&gt;save();
+} catch(Exception $e){
+}
+}
+
+</select_table></action><extdocument name="index" __ideNodeOpen="true"><layout layout="table" __extid="0"><extjs class="Ext.form.FormPanel" region="center" title="You send a Reminder" frame="true" url="../face/index" standardSubmit="true" __extid="1" width="350" height="150" __ideNodeOpen="true"><attribute name="buttons" isArray="true" isString="false" __ideNodeOpen="true"><extjs class="Ext.Button" name="name" text="Ok" type="submit" __extid="2"><event name="handler">function(a,b){this.ownerCt.ownerCt.getForm().submit();}</event></extjs></attribute><extjs class="Ext.form.Label" fieldLabel="To" text="&lt;?=$this-&gt;to ?&gt;" __extid="3" __ideNodeOpen="true"/><extjs class="Ext.form.Label" fieldLabel="Reminder Time" text="&lt;?=$this-&gt;send_on?&gt;" __extid="4"/></extjs></layout></extdocument></ext.page></application></root>

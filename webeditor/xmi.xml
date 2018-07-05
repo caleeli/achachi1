@@ -1,0 +1,340 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root><path path="/php/www/xmi" main=":8000/xmi/index.php"><file name="index.php" preprocess="">&lt;pre&gt;
+&lt;?php
+require_once("reduce.php");
+
+class Model {
+  protected $patters=[
+    'classes'=&gt;[
+      'fn'=&gt;[
+        'init'=&gt;'$result=[];',
+        'start'=&gt;'$a="";',
+        'concat'=&gt;'$a.=$e;',
+        'push'=&gt;'$result[]=$a;',
+        'finish'=&gt;'$ok=true;',
+        'error'=&gt;'$ok=false;',
+      ],
+      'states'=&gt;[
+        0=&gt;'init',
+        1=&gt;['enter'=&gt;'start',
+            'events'=&gt;[
+              T_NS_SEPARATOR=&gt;[2,'concat'],
+              T_STRING=&gt;[3,'concat'],
+            ]],
+        2=&gt;[
+            'events'=&gt;[
+              T_STRING=&gt;[3,'concat'],
+            ]],
+        3=&gt;[
+            'events'=&gt;[
+              T_WHITESPACE=&gt;[],
+              T_NS_SEPARATOR=&gt;[2,'concat'],
+              T_STRING=&gt;[3,'concat'],
+            ]],
+      ]
+    ]
+  ];
+
+  function parseFolder($path){
+    //$this-&gt;node-&gt;add($this-&gt;createArtifact($path, "folder"));
+    foreach(glob($path.'/*') as $f){
+      if(is_file($f)) $this-&gt;parseFile($f);
+      else $this-&gt;parseFolder($f);
+    }
+  }
+  function parseFile($path){
+    //$this-&gt;add($this-&gt;createArtifact($path, "file"));
+    if(substr($path,-4)=='.php'){
+      echo "Parsing: $path\n";
+      //php 5.2.2+
+      $tk = token_get_all(file_get_contents($path));
+      //var_dump($tk);
+      $lastline=1;
+      $aa=[];
+      $rr=[];
+      foreach($tk as $i=&gt;$t){
+        if(is_string($t)) {
+          $tk[$i]=$t=array($t,$t,$lastline);
+        }
+        if($t[1]=='abstract') $abstract=true;
+        if($t[1]=='static') $static=true;
+        if($t[1]=='public') $visibility=$t[1];
+        if($t[1]=='protected') $visibility=$t[1];
+        if($t[1]=='private') $visibility=$t[1];
+        if($t[0]==T_CLASS) $state=$t[0];
+        if($t[0]==T_IMPLEMENTS) $state=$t[0];
+        if($t[0]==T_EXTENDS) $state=$t[0];
+        if($t[1]=='{') $state=$t[0];
+        $t[0]=is_string($t[0])?$t[0]:token_name($t[0]);
+        //var_dump($t);
+        $aa[]=$t[0];
+        $rr[]=$t[1];
+        $lastline=$t[2];
+      }
+
+      list($trans0, $machine, $run)=reduce($aa,$rr);
+      foreach($trans0 as $i=&gt;$t){
+        echo htmlentities("$t[0]-{ $t[1] : ".$tk[$i][1]." }-$t[2]\n");
+      }
+      echo "Machine: \n";
+      foreach($machine as $s){
+        foreach($s as $t){
+          echo htmlentities("$t[0]-$t[1]-$t[2]\n");
+        }
+      }
+      echo "Run: \n";
+      foreach($run as $i=&gt;$r) echo htmlentities("$i=&gt;$r\n");
+      
+
+
+      /*$cc=[];
+      $trans=reduce($bb);
+      foreach($trans as $i=&gt;$t){
+        echo htmlentities("$t[0]:".($trans0[$i][0]."-".$trans0[$i][1]."-".$trans0[$i][2]).":$t[2]\n");
+      }*/
+    }
+  }
+}
+
+$m = new Model();
+$m-&gt;parseFolder('/php/www/openbank3');
+</file><file name="reduce.php" preprocess="">&lt;pre&gt;
+&lt;?php
+
+$aa=['a','b','b','c','a','d','c'];
+$aa=['a','a','b','c','a','a','a','a'];
+$aa=['I','W','N','S','N','S','C','S','X'];
+//$aa=['implements',' ','\\','abc','\\','def',',','xyz','{'];
+//$aa=['N','S','N','S','C','S','X']; --&gt; se llegua al mismo resultado solo que aislado
+
+
+//$aa=['a','b','c','a','c','b','c','a','b'];
+
+list($trans, $machine, $run)=reduce($aa,$aa);
+
+foreach($trans as $t){
+  echo "$t[0]-$t[1]-$t[2]\n";
+}
+echo "Machine: \n";
+foreach($machine as $s){
+  foreach($s as $t){
+    echo "$t[0]-$t[1]-$t[2]\n";
+  }
+}
+echo "Run: \n";
+print_r($run);
+
+function reduce($aa, $rr) {
+  $trans=[];
+  foreach($aa as $a){
+    $trans[]=[0,$a,0];
+  }
+  $trans[0][0]=1;
+  $sgte=2;
+  $saltarOpciones=[];
+
+  while(($i=buscaImpar($trans,$saltarOpciones,$sgte, $propone))&gt;=0){
+    //$propone=$trans[$i];
+    //$propone[2]=$sgte;
+    $saltarOpciones[]=$propone;
+    $res=llena($trans, $propone, true);
+    echo "$propone[0]-$propone[1]-$propone[2]=&gt;$res\n";
+    //tdump($trans);
+    if(1!=$res) {
+      $ok=false;$opciones=["$propone[0] - $propone[1] -$propone[2]=&gt;$res"];
+      while(($i=buscaImpar($trans,$saltarOpciones,$sgte, $propone))&gt;0){
+        //$propone=$trans[$i];
+        //$propone[2]=$sgte;
+        $saltarOpciones[]=$propone;
+        $res=llena($trans, $propone, true);
+        $opciones[]="$propone[0] - $propone[1] -$propone[2]=&gt;$res";
+        if(1==$res) {
+          $ok=true;
+          break;
+        }
+      }
+      if(!$ok){
+        var_dump("No pudo llenar:", $opciones);
+        tdump($trans);
+        die;
+      }
+    }
+    $sgte++;
+  }
+  $machine=[];
+  foreach($trans as $t){
+    if(!isset($machine[$t[0]])) $machine[$t[0]]=[];
+    if(array_search($t, $machine[$t[0]])===false) $machine[$t[0]][]=$t;
+  }
+  $run=[];$c=0;
+  foreach($trans as $i=&gt;$t){
+    if(count($machine[$t[0]])&gt;1){
+      $run[]=$rr[$i];//$t[1];
+      $c=0;
+    } else {
+      $c++;
+    }
+  }
+  $run[]=$c;
+  return [$trans, $machine, $run];
+}  
+
+function llena(&amp;$trans, $propone, $t2IsNew){
+//0=no cambio 1=cambio y ok 2=roolback
+  $trans0=$trans;
+//echo "&lt;u&gt;";tdump($trans);echo "&lt;/u&gt;";
+  foreach($trans as $j=&gt;$t)if($t[1]==$propone[1]){
+    $abajo = puedeLlenarAbajo($trans, $j, $propone[2]);
+    $ariba = puedeLlenarAriba($trans, $j, $propone[0]);
+    if($t[0]==$propone[0] &amp;&amp; $t[1]==$propone[1] &amp;&amp; !$abajo) {
+      //var_dump( "rollback" , $propone, $j , $abajo);tdump($trans);
+      foreach($trans0 as $ii=&gt;$tt){
+        $trans[$ii]=$tt;
+      }
+      return 2;
+    }
+if($propone[0]==3 &amp;&amp; $propone[1]=='T_STRING' &amp;&amp; $j==82){
+//echo "antes:\n";tdump($trans,$j);
+}
+    $back0=$trans[$j];$back_1="j==0 =&gt; no backup";
+    $seLlenoAriba=false;$trans1=$trans;
+    if(($trans[$j][0]==0) &amp;&amp; $ariba &amp;&amp; (($trans[$j][2]==0) &amp;&amp; $abajo || ($trans[$j][2]==$propone[2])) ){
+//    if(($trans[$j][0]==0) &amp;&amp; $ariba &amp;&amp; $abajo){
+      $seLlenoAriba=true;
+      $trans[$j][0]=$propone[0];
+      if($j&gt;0){
+        $back_1=$back1=$trans[$j-1];
+        $trans[$j-1][2]=$propone[0];
+        if($trans[$j-1][0]&gt;0){
+          if(2==llena($trans, $trans[$j-1], false)){
+            $trans[$j-1]=$back1;
+            $trans[$j]=$back0;
+            $seLlenoAriba=false;
+//echo "microrollback!!!";
+//echo "microrollback en $j y $j-1 \n";tdump($trans);die;
+          }
+        }
+      }
+    }
+if(!revisar($trans)) {var_dump( "error" , __LINE__, $propone, $j , $abajo, $ariba);/*echo "antes:\n";tdump($trans0);echo "despues:\n";*/tdump($trans);die;}
+//    if(($t[2]==0) &amp;&amp; /*$seLlenoAriba*/($trans[$j][0]==$propone[0]) &amp;&amp; $abajo){
+    if(($trans[$j][0]==$propone[0])){
+      $trans[$j][2]=$propone[2];
+      if($j&lt;(count($trans)-1)){
+        $back1=$trans[$j+1];
+        $trans[$j+1][0]=$propone[2];
+        if($trans[$j+1][2]&gt;0){
+          $res=llena($trans, $trans[$j+1], false);
+          echo "  ",$trans[$j+1][0],"-",$trans[$j+1][1],"-",$trans[$j+1][2],"=&gt;$res\n";
+          if(2==$res){
+            /*$trans[$j+1]=$back1;
+            $trans[$j]=$back0;*/
+            foreach($trans1 as $ii=&gt;$tt){
+              $trans[$ii]=$tt;
+            }
+          }
+if($propone[0]==3 &amp;&amp; $propone[1]=='T_STRING' &amp;&amp; $j==82){
+//echo "despues:\n";tdump($trans,$j);
+//var_dump($ariba,$abajo, [$propone,$t], $back0);die;
+}
+        }
+      }
+    }
+unset($trans1);
+if(!revisar($trans)) {var_dump( "error" , __LINE__, $propone, $j , $abajo, $ariba);/*echo "antes:\n";tdump($trans0);echo "despues:\n";*/tdump($trans);die;}
+  }
+  return $trans0!=$trans?1:0;
+}
+function puedeLlenarAriba($trans, $i, $val0){
+  return /*se puede ariba*/
+    (
+      ( $i==0 ) || 
+      ( 
+        (($trans[$i-1][2]==0) || ($trans[$i-1][2]==$val0)) &amp;&amp; 
+        (($trans[$i-1][0]==0) || verRegla($trans, [$trans[$i-1][0],$trans[$i-1][1],$val0]) ) 
+      )
+    );
+}
+function puedeLlenarAbajo($trans, $i, $val1){
+  return /*se puede abajo*/
+    (
+      ($i==count($trans)-1) || 
+      ( 
+        (($trans[$i+1][0]==0) || ($trans[$i+1][0]==$val1)) &amp;&amp; 
+        (($trans[$i+1][2]==0) || verRegla($trans, [$val1,$trans[$i+1][1],$trans[$i+1][2]]) ) 
+      )
+    );
+}
+function puedeLlenarAbajo0($trans, $i, $t, $t2IsNew){
+  $val0=$t[0];
+  $val=$t[2];
+if( !(($i==0 || (($trans[$i-1][2]==0) || ($trans[$i-1][2]==$val0)) &amp;&amp; ($trans[$i-1][0]==0 || verRegla($trans, [$trans[$i-1][0],$trans[$i-1][1],$val0]) ) ) &amp;&amp; 
+    (($trans[$i][0]==0)||($trans[$i][0]==$t[0])) &amp;&amp; ($trans[$i][2]==0 &amp;&amp; (($i==count($trans)-1) || ($trans[$i+1][0]==0) || ($trans[$i+1][0]==$val)) &amp;&amp; (($i==count($trans)-1) || ($trans[$i+1][2]==0) || (verRegla($trans, [$val,$trans[$i+1][1], $trans[$i+1][2]]))) )
+) ) {
+var_dump( $t, $trans[$i],
+    ($i==0 || (($trans[$i-1][2]==0) || ($trans[$i-1][2]==$val0)) &amp;&amp; ($trans[$i-1][0]==0 || verRegla($trans, [$trans[$i-1][0],$trans[$i-1][1],$val0]) ) ) , 
+
+    (($trans[$i][0]==0)||($trans[$i][0]==$t[0])) ,
+    [
+      $trans[$i][2]==0 &amp;&amp; (($i==count($trans)-1) || ($trans[$i+1][0]==0) || ($trans[$i+1][0]==$val)) &amp;&amp; (($i==count($trans)-1) || ($trans[$i+1][2]==0) || (verRegla($trans, [$val,$trans[$i+1][1], $trans[$i+1][2]]))) ]
+);
+tdump($trans);
+die;
+}
+  return ($i==0 || (($trans[$i-1][2]==0) || ($trans[$i-1][2]==$val0)) &amp;&amp; ($trans[$i-1][0]==0 || verRegla($trans, [$trans[$i-1][0],$trans[$i-1][1],$val0]) ) ) &amp;&amp; 
+    (($trans[$i][0]==0)||($trans[$i][0]==$t[0])) &amp;&amp; ($trans[$i][2]==0 &amp;&amp; (($i==count($trans)-1) || ($trans[$i+1][0]==0) || ($trans[$i+1][0]==$val)) &amp;&amp; (($i==count($trans)-1) || ($trans[$i+1][2]==0) || (verRegla($trans, [$val,$trans[$i+1][1], $trans[$i+1][2]]))) );
+}
+/*todo: verificar si cumple la condicion base en caso de no ser 0*/
+function verRegla(&amp;$trans, $newval){
+  foreach($trans as $t){
+    if($t[0]==$newval[0] &amp;&amp; $t[1]==$newval[1] &amp;&amp; $t[2]!=0 &amp;&amp; $t[2]!=$newval[2]){
+      return false;
+    }
+  }
+  return true;
+}
+function tdump($trans,$j=-1){
+  $l=count($trans)-1;
+  foreach($trans as $i=&gt;$t){
+    if($i&gt;0 &amp;&amp; $i&lt;$l){
+      if($t[0]!=$trans[$i-1][2] || $t[2]!=$trans[$i+1][0]) {
+        echo "&lt;font color='red'&gt;";
+      }
+    }
+    if($i==$j) echo "&lt;span style='background:lightgreen;'&gt;";
+    echo "$i=&gt; $t[0] - $t[1] - $t[2]\n";
+    if($i==$j) echo "&lt;/span&gt;";
+    if($i&gt;0 &amp;&amp; $i&lt;$l){
+      if($t[0]!=$trans[$i-1][2] || $t[2]!=$trans[$i+1][0]) {
+        echo "&lt;/font&gt;";
+      }
+    }
+  }
+}
+function buscaImpar($trans,$saltarOpciones,$sgte,&amp;$propone){
+  foreach($trans as $i=&gt;$t){
+    $opt=[$t[0],$t[1],$sgte];
+    if($t[0]&gt;0 &amp;&amp; $t[2]==0 &amp;&amp; array_search($opt, $saltarOpciones)===false) {
+      $propone=$opt;
+      return $i;
+    }
+  }
+  foreach($trans as $i=&gt;$t){
+    $opt=[$sgte,$t[1],$t[2]];
+    if($t[2]&gt;0 &amp;&amp; $t[0]==0 &amp;&amp; array_search($opt, $saltarOpciones)===false) {
+      $propone=$opt;
+      return $i;
+    }
+  }
+  return -1;
+}
+
+function revisar($trans){
+  $l=count($trans)-1;
+  foreach($trans as $i=&gt;$t){
+    if($i&gt;0 &amp;&amp; $i&lt;$l){
+      if($t[0]!=$trans[$i-1][2] || $t[2]!=$trans[$i+1][0]) return false;
+    }
+  }
+  return true;
+}</file></path></root>

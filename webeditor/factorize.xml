@@ -1,0 +1,324 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root><path path="output/example" main="output/example/index.php" __ideNodeOpen="true"><file name="index.php" preprocess="">&lt;?php
+error_reporting(E_ALL);
+require_once("index2.php");</file><file name="index2a.php" preprocess="">&lt;?php
+header("Content-type: text/javascript");
+$c = file_get_contents('C:\Jdeveloper\mywork\acreedores_1\ViewController\public_html\templates\templateDef4.jspx');
+//$me = preg_split('/(\w+)/', $c,null,PREG_SPLIT_DELIM_CAPTURE);
+//var_dump($me);
+
+set_time_limit(-1);
+
+define('JOIN_TYPE','cl');
+
+/*DESCOMPONE LA CADENA*/
+$patrones=array(
+  '(\w+)',
+  '(\s+)',
+  '(\d+)',
+  '([^\w\s]+)',
+  '(\&lt;)',
+);
+$patronesCnt=array();
+foreach($patrones as $k =&gt; $p ) $patronesCnt[$k]=array(0,0);
+
+preg_match_all('/'.implode('|',$patrones).'/', $c,$mag);
+$ma=$mag[0];
+
+/*CLASIFICA LOS COMPONENTES*/
+$cl =array(); //indice del patron
+$pl =array(); //patron
+foreach($ma as $m) foreach($patrones as $k =&gt; $p) if(preg_match("/$p/",$m)){
+  $cl[]=$k;$pl[]=$p;
+  $patronesCnt[$k][0]++;
+  $patronesCnt[$k][1]+=strlen($m);
+  break;
+}
+
+function reducePar($ma,$cl,$pl,$debug=false) {
+  global $cacheContar;
+  global $patrones;
+  global $patronesCnt;
+
+  /*Busca el par mas repetido*/
+  $v = 2;
+  $cacheContar=array();
+  $maxc=0;$maxi=-1;$maxs=0;
+  for($i=0,$l=count($cl)-1;$i&lt;$l;$i++){
+//Se invirtio erroneamente $c y $s , pero el resultado es interesante
+    list($c,$s) = contar($i,$v,$ma,$cl,$pl);
+//    if($c&gt;$maxc){$maxc=$c;$maxi=$i;}
+    if($s&gt;$maxs){$maxc=$c;$maxs=$s;$maxi=$i;}
+  }
+if($debug) {
+  var_dump(implode("",array_slice($pl,$maxi,$v))."=".$maxc);
+}
+  if($maxc&lt;=1) return array($maxc,$ma,$cl,$pl);
+  /*Concatena el par mas repetido*/
+  $u=$maxi;$v=2;
+  
+//  $nuevoPatron="(".implode(")(",array_slice($pl,$u,$v)).")";
+  $nuevoPatron=implode("",array_slice($pl,$u,$v));
+  $patrones[]=$nuevoPatron;
+  $patronesCnt[]=array($maxc,$maxs);
+  $nuevoPatroni=count($patrones)-1;
+
+  $nma=array();$ncl=array();$npl=array();
+  for($i=0,$l=count($cl);$i&lt;$l;$i++){
+    $ok=compara($ma,$cl,$pl,$i,$u,$v);
+    if($ok){
+      $nma[]=implode("",array_slice($ma,$i,$v));
+      $ncl[]=$nuevoPatroni;
+      $npl[]=$nuevoPatron;
+      $i+=$v-1;
+    } else {
+      $nma[]=$ma[$i];
+      $ncl[]=$cl[$i];
+      $npl[]=$pl[$i];
+    }
+  }
+  return array($c,$nma,$ncl,$npl);
+}
+
+function compara($ma,$cl,$pl,$i,$u,$v){
+  if($i+$v&gt;count($ma)) return false;
+  $ok=true;
+  for($j=0;$j&lt;$v;$j++) {
+    if(JOIN_TYPE=='ma') {if($ma[$i+$j]!=$ma[$u+$j]){$ok=false;break;}}
+    elseif(JOIN_TYPE=='pl') {if($pl[$i+$j]!=$pl[$u+$j]){$ok=false;break;}}
+    elseif(JOIN_TYPE=='cl') {if($cl[$i+$j]!=$cl[$u+$j]){$ok=false;break;}}
+  }
+  return $ok;
+}
+
+function contar($u,$v,$ma,$cl,$pl){
+  global $cacheContar;
+  if(JOIN_TYPE=='ma') $k=implode("",array_slice($ma,$u,$v));
+  elseif(JOIN_TYPE=='pl') $k=implode("",array_slice($pl,$u,$v));
+  elseif(JOIN_TYPE=='cl') $k=implode("",array_slice($cl,$u,$v));
+  
+  if(isset($cacheContar[$k])) return $cacheContar[$k];
+  $c=0;$s=0;
+  for($i=0,$l=count($cl);$i&lt;$l;$i++){
+    $ok=compara($ma,$cl,$pl,$i,$u,$v);
+    $c+=$ok?1:0;
+    $s+=$ok?strlen(implode("",array_slice($ma,$i,$v))):0;
+    if($ok) $i+=$v-1;
+  }
+  return $cacheContar[$k] = array($s,$c);
+}
+
+
+for($j=0;$j&lt;300;$j++){
+  list($c,$ma,$cl,$pl)=reducePar($ma,$cl,$pl,false);
+  if($c&lt;=1) break;
+}
+//reducePar($ma,$cl,$pl,true);
+/*
+foreach($ma as $k =&gt; $m) $ma[$k] = $m . "    ======&gt; ".$pl[$k];
+$cacheContar=array();
+var_dump(contar(2142,2,$ma,$cl,$pl));
+var_dump(compara($ma,$cl,$pl,2146,2142,2));*/
+var_dump($ma);
+print "\n\n";
+foreach($patrones as $k =&gt; $p){
+  $c=$patronesCnt[$k][0];
+  $s=$patronesCnt[$k][1];
+  print("$p\t$s\t$c\n");
+}
+</file><file name="index2.php" preprocess="">&lt;?php
+header("Content-type: text/html");
+$codigoFuente = file_get_contents('example.js');
+
+set_time_limit(-1);
+
+define('JOIN_TYPE','pl');
+
+/*COMPONENTES BASICOS*/
+$patrones=array(
+  '("[^"]*")',
+  '(\w+)',
+  '(\s+)',
+//  '(\d+)',
+  '([^\w\s"]+)',
+);
+$components=array();
+$patronesCnt=array();
+foreach($patrones as $k =&gt; $p ) $patronesCnt[$k]=array(0,0);
+
+preg_match_all('/'.implode('|',$patrones).'/', $codigoFuente,$mag);
+$ma=$mag[0];
+
+/*DESCOMPONE EL CODIGO*/
+$cl =array(); //indice del patron
+$pl =array(); //patron
+$variantes = array();
+foreach($ma as $m) foreach($patrones as $k =&gt; $p) if(preg_match("/$p/",$m)){
+  $cl[]=$k;$pl[]=$p;
+  $patronesCnt[$k][0]++;
+  $patronesCnt[$k][1]+=strlen($m);
+  if(!isset($variantes[$k]))$variantes[$k]=array($m);
+  elseif(array_search($m, $variantes[$k])===false)$variantes[$k][]=$m;
+  break;
+}
+
+//var_dump($ma);die;
+
+$rotacolor=0;
+function rotacolor($ma){
+  global $rotacolor;
+  $colors=array("red","green","blue");
+  $c=$colors[$rotacolor=($rotacolor+1) % count($colors)];
+  return "&lt;span style='background:$c'&gt;".$ma[0]."&lt;/span&gt;";
+}
+function resaltaExp($cod,$exp){
+//  $cod = htmlentities($cod, ENT_NOQUOTES, 'utf-8');
+  return "&lt;pre&gt;".preg_replace_callback("/$exp/", "rotacolor", $cod)."&lt;/pre&gt;";
+}
+
+function reduce($ma,$cl,$pl,$debug=false) {
+  global $cacheContar;
+  global $patrones;
+  global $patronesCnt;
+
+  /*Cuenta similares*/
+  $cacheContar=array();
+  $maxi=-1;$maxv=0;$maxs=0;
+  for($i=0,$l=count($cl)-1;$i&lt;$l;$i++){
+    for($v=2,$vl=floor(count($ma)/2);$v&lt;$vl;$v++){
+      list($s,$c,$var,$par) = contar($i,$v,$ma,$cl,$pl);
+      if($par&gt;0 &amp;&amp; $s&gt;$maxs){$maxi=$i;$maxv=$v;$maxs=$s;$maxc=$c;}
+    }
+  }
+  /*print "&lt;table border=1&gt;";
+  print "&lt;tr&gt;&lt;td&gt;exp&lt;/td&gt;&lt;td&gt;size&lt;/td&gt;&lt;td&gt;count&lt;/td&gt;&lt;td&gt;variants&lt;/td&gt;&lt;/tr&gt;";
+  foreach($cacheContar as $k =&gt; $c){
+    $code="";
+    print "&lt;tr&gt;&lt;td&gt;$k&lt;/td&gt;&lt;td&gt;$c[0]&lt;/td&gt;&lt;td&gt;$c[1]&lt;/td&gt;&lt;td&gt;$c[2]&lt;/td&gt;&lt;td&gt;$c[3]&lt;/td&gt;$code&lt;/tr&gt;";
+  }
+  print "&lt;/table&gt;";
+  
+  print "&lt;pre&gt;".parametriza($ma,$cl,$pl,$maxi,$maxv)."&lt;/pre&gt;";
+  */
+  global $components;
+  $components[]=parametriza($ma,$cl,$pl,$maxi,$maxv);
+  list($componenteCode,$params)=$components[count($components)-1];
+  $componente=md5("c").(count($components)-1);
+
+  $u=$maxi;$v=$maxv;
+  $nma=array();$ncl=array();$npl=array();
+  for($i=0,$l=count($cl);$i&lt;$l;$i++){
+    $ok=compara($ma,$cl,$pl,$i,$u,$v);
+    if($ok){
+      $iparams=array();
+      foreach($params as $j =&gt; $ip ) $iparams[]=$ma[$i+$j];
+      $nma[]='@{makeNode("'.$componente.'",'.var_export(implode("¬",$iparams),true).')}';
+      $ncl[]=$componente;
+      $npl[]=-1;
+      $i+=$v-1;
+    } else {
+      $nma[]=$ma[$i];
+      $ncl[]=$cl[$i];
+      $npl[]=$pl[$i];
+    }
+  }
+  return array($maxc,$nma,$ncl,$npl);
+}
+
+function parametriza($ma,$cl,$pl,$u,$v){
+  $c=0;$s=0;
+  $variantes=array();
+  for($i=0,$l=count($cl);$i&lt;$l;$i++){
+    $ok=compara($ma,$cl,$pl,$i,$u,$v);
+    if($ok){
+      for($j=0;$j&lt;$v;$j++){
+        if(!isset($variantes[$j]))$variantes[$j]=array($ma[$i+$j]);
+        elseif(array_search($ma[$i+$j], $variantes[$j])===false) $variantes[$j][]=$ma[$i+$j];
+      }
+    }
+    $c+=$ok?1:0;
+    $s+=$ok?strlen(implode("",array_slice($ma,$i,$v))):0;
+    if($ok) $i+=$v-1;
+  }
+  $factor="";$vi=0;$ivars=array();
+  for($j=0;$j&lt;$v;$j++){
+    $cv=count($variantes[$j]);
+    //Cuenta y reduce variables repetidas
+    if($cv==1) {
+      $factor.=$variantes[$j][0];
+    } else {
+      $vi = array_search($variantes[$j],$variantes);
+      if(!isset($ivars[$vi])) $ivars[$vi]=count($ivars)+1;
+      $factor.='@{$v'.$ivars[$vi].'}';
+    }
+  }
+  return array($factor,$ivars);
+}
+
+function compara($ma,$cl,$pl,$i,$u,$v){
+  if($i+$v&gt;count($ma)) return false;
+  $ok=true;
+  for($j=0;$j&lt;$v;$j++) {
+    if(JOIN_TYPE=='ma') {if($ma[$i+$j]!=$ma[$u+$j]){$ok=false;break;}}
+    elseif(JOIN_TYPE=='pl') {if($pl[$i+$j]!=$pl[$u+$j]){$ok=false;break;}}
+    elseif(JOIN_TYPE=='cl') {if($cl[$i+$j]!=$cl[$u+$j]){$ok=false;break;}}
+  }
+  return $ok;
+}
+
+function contar($u,$v,$ma,$cl,$pl){
+  global $cacheContar;
+  if(JOIN_TYPE=='ma') $k=implode("",array_slice($ma,$u,$v));
+  elseif(JOIN_TYPE=='pl') $k=implode("",array_slice($pl,$u,$v));
+  elseif(JOIN_TYPE=='cl') $k=implode(",",array_slice($cl,$u,$v));
+  
+  if(isset($cacheContar[$k])) return $cacheContar[$k];
+  $c=0;$s=0;
+  $variantes=array();
+  for($i=0,$l=count($cl);$i&lt;$l;$i++){
+    $ok=compara($ma,$cl,$pl,$i,$u,$v);
+    if($ok){
+      for($j=0;$j&lt;$v;$j++){
+        if(!isset($variantes[$j]))$variantes[$j]=array($ma[$i+$j]);
+        elseif(array_search($ma[$i+$j], $variantes[$j])===false) $variantes[$j][]=$ma[$i+$j];
+      }
+    }
+    $c+=$ok?1:0;
+    $s+=$ok?strlen(implode("",array_slice($ma,$i,$v))):0;
+    if($ok) $i+=$v-1;
+  }
+  $var=1;$par=0;
+  for($j=0;$j&lt;$v;$j++){
+    $cv=count($variantes[$j]);
+    $var*=$cv;
+    //Cuenta y reduce variables repetidas
+    if($cv&gt;1 &amp;&amp; array_search($variantes[$j],$variantes)==$j ) $par++;
+  }
+  return $cacheContar[$k] = array($s,$c,$var,$par);
+}
+
+
+list($c,$nma,$ncl,$npl) = reduce($ma,$cl,$pl);
+var_dump($components,$nma);
+
+
+/*print "\n\n";
+foreach($patrones as $k =&gt; $p){
+  $c=$patronesCnt[$k][0];
+  $s=$patronesCnt[$k][1];
+  print("$p\t$s\t$c\n");
+}
+*/</file><file name="example.js" preprocess="" __ideNodeOpen="true">&lt;jsp:root xmlns:jsp="http://java.sun.com/JSP/Page" version="2.1"
+          xmlns:f="http://java.sun.com/jsf/core"
+          xmlns:af="http://xmlns.oracle.com/adf/faces/rich"
+          xmlns:arq="http://arq.blogspot.com/adf/components"&gt;
+  &lt;jsp:directive.page contentType="text/html;charset=UTF-8"/&gt;
+  &lt;af:pageTemplateDef var="attrs"&gt;
+    &lt;af:xmlContent&gt;
+      &lt;component xmlns="http://xmlns.oracle.com/adf/faces/rich/component"&gt;
+        &lt;display-name&gt;Pantilla SIGEF&lt;/display-name&gt;
+        &lt;facet&gt;
+          &lt;description&gt;Cuerpo del formulario&lt;/description&gt;
+          &lt;facet-name&gt;cuerpo&lt;/facet-name&gt;
+        &lt;/facet&gt;
+</file></path></root>

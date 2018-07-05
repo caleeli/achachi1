@@ -1,0 +1,346 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root><path path="output/rpg" main="output/rpg/index.php" __ideNodeOpen="true"><file name="index.php" preprocess="" __ideNodeOpen="true"><jqueryui name="filename">&lt;html xmlns="http://www.w3.org/1999/xhtml"&gt;
+&lt;head&gt;
+&lt;meta http-equiv="Content-Type" content="text/html; charset=utf-8"/&gt;
+&lt;title&gt;&lt;?php print "New Page"; ?&gt;&lt;/title&gt;
+&lt;link type="text/css" href="/jquery/css/face/jquery-ui.custom.css" rel="stylesheet"/&gt;	
+&lt;script type="text/javascript" src="/jquery/js/jquery.min.js"&gt;&lt;/script&gt;
+&lt;script type="text/javascript" src="/jquery/js/jquery-ui.custom.min.js"&gt;&lt;/script&gt;
+&lt;script type="text/javascript" src="rpg.js"&gt;&lt;/script&gt;
+&lt;style&gt;.qE{
+  display:inline-block;
+  position:absolute;
+}
+html{
+  height:100%;
+}
+body{
+  padding:0px;
+  margin:0px;
+  font-size:12px;
+}
+.fliph{
+    -moz-transform: scaleX(-1);
+    -o-transform: scaleX(-1);
+    -webkit-transform: scaleX(-1);
+    transform: scaleX(-1);
+    filter: FlipH;
+    -ms-filter: "FlipH";
+}
+&lt;/style&gt;
+&lt;script type="text/javascript" id="jsloader"&gt;
+$(function(){
+//qend//
+});
+&lt;/script&gt;
+&lt;/head&gt;
+&lt;body&gt;&lt;div id="main" class="qE div" style="width: 336px; height: 392px; background-color: lightgreen; left: 0px; top: 0px; position: absolute;" jid=""&gt;
+&lt;div class="qE div sprite team2" spritedata="5 3 10 26 50 5 down 0 2 up 10 12 right 5 7 left/fliph 5 7 standDown 1 standUp 11 standRight 6 standLeft/fliph 6" sprite="right" style="width: 54px; height: 65px; background-image: url(&amp;quot;m3xpsprites.png&amp;quot;); background-position:-43px 0px; left: 224px; top: 0px;" jid=""&gt;&amp;nbsp;&lt;/div&gt;
+&lt;div sprite="right" spritedata="5 3 10 26 50 20 down 0 2 up 10 12 right 5 7 left/fliph 5 7 standDown 1 standUp 11 standRight 6 standLeft/fliph 6" jid="" style="width: 54px; height: 65px; background-image: url(&amp;quot;m3xpsprites.png&amp;quot;); background-position: -691px -1728px; left: 320px; top: 272px;" class="qE div sprite controlled"&gt;&amp;nbsp;&lt;/div&gt;
+&lt;/div&gt;
+&lt;div style="display:block"&gt;
+&lt;div id="bullet_snow" spritedata="2 1 1 20 20 60 move 0 1" sprite="move" style="width: 30px; height: 21px; background-image: url(&amp;quot;bullets.png&amp;quot;); background-position:-145px -152px;"&gt;&amp;nbsp;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</jqueryui></file><file name="rpg.js" preprocess="" __ideNodeOpen="true">var animSpeed=100;
+var spriteIndex=[];
+$.fn.removeSprite=function(){
+  this.each(function(){
+    delete spriteIndex[this.getAttribute("idx")];
+    $(this).remove();
+  });
+}
+$.fn.createSprite=function(x,y){
+  var res=[];
+  this.each(function(){
+    var n=this.cloneNode(true);
+    n.setAttribute("id","");
+    n.className="qE sprite";
+    $("#main").append(n);
+    $(n).css("left",x);
+    $(n).css("top",y);
+    new Sprite(n);
+    res.push(n);
+  });
+  return $(res);
+}
+function Sprite(elem){
+  var idx=spriteIndex.length;
+  spriteIndex.push(this);
+  var me=this;
+  var $s=$(elem);
+  $s.empty();
+  $s.attr("idx", idx);
+  var w=$s.css("width").match(/\d+/)*1;
+  var h=$s.css("height").match(/\d+/)*1;
+  var sp=$s.css("background-position").split(" ");
+  var sx=sp[0].match(/-\d+/)*1;
+  var sy=sp[1].match(/-\d+/)*1;
+  var ss=$s.attr("spritedata").split(" ");
+  var sxn=ss[0];
+  var syn=ss[1];
+  var offsetY=ss[2]*1;
+  var realW=ss[3]*1;
+  var realH=ss[4]*1;
+  var spriteMoveSpeed=ss[5]*1;
+  var spriteMoveSpeedX=spriteMoveSpeed;
+  var spriteMoveSpeedY=spriteMoveSpeed;
+  var sprites={};
+  var classes={};
+  var sprite="";
+  var image=$s.css("background-image");
+  var extraImages=[];
+  for(var i=6,l=ss.length;i&lt;l;i++){
+    if(ss[i]==ss[i].match(/\d+/)) {
+      sprites[sprite].push(ss[i]*1);
+    } else {
+      sprite=ss[i].split("/")[0];
+      classes[sprite]=ss[i].split("/")[1];
+      sprites[sprite]=[];
+    }
+  }
+  if(!$s.attr("sprite")) $s.attr("sprite",sprite);
+  var destX=$s.position().left;
+  var destY=$s.position().top;
+  var i=0;
+  var moveToCallback=function(){};
+  var render=function(){
+    var pos=$s.position();
+    if(Math.abs(pos.top-destY)&gt;spriteMoveSpeedY) {
+      if(pos.top&gt;destY) $s.attr("sprite", "up"); else  $s.attr("sprite", "down");
+      pos.top+=(pos.top&gt;destY)?-spriteMoveSpeedY:spriteMoveSpeedY;
+    } else if(Math.abs(pos.top-destY)&gt;0){
+      if(pos.top&gt;destY) $s.attr("sprite", "standUp"); else  $s.attr("sprite", "standDown");
+      pos.top=destY;
+    }
+    if(Math.abs(pos.left-destX)&gt;spriteMoveSpeedX) {
+      if(pos.left&gt;destX) $s.attr("sprite", "left"); else  $s.attr("sprite", "right");
+      pos.left+=(pos.left&gt;destX)?-spriteMoveSpeedX:spriteMoveSpeedX;
+    } else if(Math.abs(pos.left-destX)&gt;0){
+      if(pos.left&gt;destX) $s.attr("sprite", "standLeft"); else  $s.attr("sprite", "standRight");
+      pos.left=destX;
+    }
+    if((typeof moveToCallback=="function")&amp;&amp;(pos.left==destX)&amp;&amp;(pos.top==destY)){
+      moveToCallback.call(me);
+      moveToCallback=null;
+    }
+    $s.css("z-index",pos.top+100);
+    $s.css("left",pos.left);
+    $s.css("top",pos.top);
+    var sprite = elem.getAttribute("sprite");
+    if(!sprites[sprite]) sprite="move";
+    $s.removeClass("fliph");
+    $s.addClass(classes[sprite]);
+    i++;i=i%sprites[sprite].length;
+    var pbg=(-(sprites[sprite][i]%sxn)*w+sx)+"px "+(-Math.floor(sprites[sprite][i]/sxn)*h+sy)+"px";
+    for(var j=0,l=extraImages.length;j&lt;l;j++){
+      pbg+=","+extraImages[j].position;
+    }
+    $s.css("background-position", pbg);
+  };
+  setInterval(render,animSpeed);
+  this.viewTo=function(destX,destY){
+    var pos=$s.position();
+    if(Math.abs(pos.top-destY)&gt;Math.abs(pos.left-destX)) {
+      if(pos.top&gt;destY) $s.attr("sprite", "standUp"); else  $s.attr("sprite", "standDown");
+    } else {
+      if(pos.left&gt;destX) $s.attr("sprite", "standLeft"); else  $s.attr("sprite", "standRight");
+    }
+  }
+  this.moveTo=function(x,y,callback){
+    destX=x-Math.floor(w/2);destY=y-h+offsetY;
+    moveToCallback=callback;
+  }
+  this.shutTo=function(x,y,callback){
+    this.moveTo(x,y,callback);
+    var pos=$s.position();
+    var dx=Math.abs(pos.left-destX);
+    var dy=Math.abs(pos.top-destY);
+    var H=Math.sqrt(dx*dx+dy*dy);
+    spriteMoveSpeedX=Math.ceil(dx/H*spriteMoveSpeed);
+    spriteMoveSpeedY=Math.ceil(dy/H*spriteMoveSpeed);
+  }
+  this.isIn=function(x,y){
+    var pos=$s.position();
+    return (x&gt;=pos.left+(w-realW)*0.5)&amp;&amp;(x&lt;=pos.left+(w+realW)*0.5)&amp;&amp;
+           (y&gt;=pos.top+(h-offsetY-realH))&amp;&amp;(y&lt;=pos.top+(h-offsetY));
+  }
+  this.addBGImage=function(url,x,y){
+    var bg=$s.css("background-image").split(", ");
+    var indexOf=-1;
+    for(var j=0,l=bg.length;j&lt;l;j++){
+      if(bg[j].indexOf(url)&gt;-1){indexOf=j;break;}
+    }
+    if(indexOf==-1){
+      bg.push('url("'+url+'")');
+      extraImages.push({position:x+"px "+y+"px"});
+      $s.css("background-image", bg.join(", "));
+      render();
+    }
+  }
+  this.removeBGImage=function(url){
+    var bg=$s.css("background-image").split(", ");
+    var indexOf=-1;
+    for(var j=0,l=bg.length;j&lt;l;j++){
+      if(bg[j].indexOf(url)&gt;-1){indexOf=j;break;}
+    }
+    var j=indexOf;
+    if(j&gt;-1){
+      bg.splice(j,1);
+      extraImages.splice(j-1,1);
+      $s.css("background-image", bg.join(", "));
+      render();
+    }
+  }
+  this.remove=function(){
+    delete spriteIndex[spriteIndex.indexOf(this)];
+    $s.remove();
+  }
+  this.getCenter=function(){
+    var pos=$s.position();
+    return {left:pos.left+Math.floor(w/2), top:pos.top+h-offsetY};
+  }
+  this.stop=function(){
+    var pos=$s.position();
+    destX=pos.left;destY=pos.top;
+  }
+}
+$.getInPlace=function(x,y){
+  var res=[];
+  $(".sprite").each(function(){
+    if(spriteIndex[this.getAttribute("idx")].isIn(x,y)) return res.push(this);
+  });
+  return $(res);
+}
+$.fn.moveTo=function(x,y,callback){
+  this.each(function(){
+    spriteIndex[this.getAttribute("idx")].moveTo(x,y,callback);
+  });
+}
+$.fn.viewTo=function(x,y){
+  this.each(function(){
+    spriteIndex[this.getAttribute("idx")].viewTo(x,y);
+  });
+}
+$.fn.shutTo=function(x,y,callback){
+  this.each(function(){
+    spriteIndex[this.getAttribute("idx")].shutTo(x,y,callback);
+  });
+}
+$.fn.stop=function(){
+  this.each(function(){
+    spriteIndex[this.getAttribute("idx")].stop();
+  });
+}
+$.fn.addBGImage=function(url,x,y){
+  this.each(function(){
+    spriteIndex[this.getAttribute("idx")].addBGImage(url,x,y);
+  });
+}
+$.fn.removeBGImage=function(url){
+  this.each(function(){
+    spriteIndex[this.getAttribute("idx")].removeBGImage(url);
+  });
+}
+$.fn.selectEffect=function(){
+  this.addBGImage('select.png',0,0);
+  var $e=this;
+  setTimeout(function(){
+    $e.removeBGImage('select.png');
+  },500);
+}
+$(function(){
+  $(".sprite").each(function(){
+    new Sprite(this);
+  });
+  $("#main").click(function(e){
+    var $target=$.getInPlace(e.clientX, e.clientY);
+    if($target.length==0) $(".controlled").moveTo(e.clientX, e.clientY);
+    else {
+      $(".controlled").viewTo(e.clientX, e.clientY);
+      $(".controlled").stop();
+    }
+    $target.selectEffect();
+    $target.each(function(){
+      var spr=spriteIndex[this.getAttribute("idx")];
+      var dest=spr.getCenter();
+      $(".controlled").each(function(){
+        var pos=$(this).position();
+        $("#bullet_snow").createSprite(pos.left,pos.top).shutTo(dest.left, dest.top, function(){
+          this.remove();
+        });
+      });
+    });
+  });
+  $(".team2").moveTo(300,300);
+})</file><file name="factory.php" preprocess="" __ideNodeOpen="true">&lt;html xmlns="http://www.w3.org/1999/xhtml"&gt;
+&lt;head&gt;
+&lt;meta http-equiv="Content-Type" content="text/html; charset=utf-8"/&gt;
+&lt;title&gt;&lt;?php print "New Page"; ?&gt;&lt;/title&gt;
+&lt;link type="text/css" href="/jquery/css/face/jquery-ui.custom.css" rel="stylesheet"/&gt;	
+&lt;script type="text/javascript" src="/jquery/js/jquery.min.js"&gt;&lt;/script&gt;
+&lt;script type="text/javascript" src="/jquery/js/jquery-ui.custom.min.js"&gt;&lt;/script&gt;
+&lt;style&gt;.qE{
+  display:inline-block;
+  position:absolute;
+}
+html{
+  height:100%;
+}
+body{
+  padding:0px;
+  margin:0px;
+  font-size:12px;
+}
+.box{
+  opacity:0.1;
+}
+.checked{
+  background-color:black !important;
+  opacity:0.9;
+}
+&lt;/style&gt;
+&lt;script type="text/javascript" id="jsloader"&gt;&lt;!--
+$(function(){
+  var $b=$(".box");
+  for(var z=0;10&gt;z;z++){
+    for(var x=0;10&gt;x;x++){
+      for(var y=0;10&gt;y;y++){
+        $b.appendTo("body");
+        $b.css("left", x*$b.width() + (z*20));
+        $b.css("top",  y*$b.height() + (200-z*20));
+        $b.attr("zpos", z);
+        $b=$b.clone();
+      }
+    }
+    $c=$('&lt;button class="qE" onclick="selectZ('+z+')"&gt;*&lt;/button&gt;');
+    $c.appendTo("body");
+    $c.css("left", x*$b.width() + (z*20));
+    $c.css("top",  y*$b.height() + (200-z*20));
+  }
+  selectZ(0);
+  $(".box").click(function(){
+    if(currentZ!=this.getAttribute("zpos")) return;
+    if($(this).hasClass("checked")) $(this).removeClass("checked");
+    else $(this).addClass("checked");
+  });
+//qend//
+});
+var currentZ=0;
+function selectZ(z){
+  currentZ=z;
+  var $box=$(".box");
+  $box.css("border","none");
+  $box.css("z-index",0);
+  $box=$(".box[zpos="+z+"]");
+  $box.css("border","1px solid black");
+  $box.css("z-index",1);
+}
+--&gt;&lt;/script&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;div jid="" style="width:40px;height:40px;background-color:lightgreen;" class="qE div box"/&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</file></path></root>

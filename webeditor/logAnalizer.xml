@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8"?><root><path path="/home/david/php/www" main="checklog.php"><file name="checklog.php" preprocess="">&lt;?php
+$regexps=['/JSON/'];
+$f=fopen('logs1/tomcat8-stdout.2015-05-21.log', 'r');
+$blockSize=15;
+$ttl=20;
+
+if($_REQUEST["action"]=="block"){
+  ob_start();
+  $i=$_REQUEST["i"];
+  $iLine=$_REQUEST["iLine"]*1;
+  $ttl=20;
+
+  fseek($f, $i);
+  getBlock($f, $regexps, $blockSize, $ttl, $iLine);
+  $i=ftell($f);
+  fclose($f);
+  $c=ob_get_contents();
+  ob_end_clean();
+  header('finalI: '.$i);
+  header('iLine: '.$i);
+  echo $c;
+  die;
+}
+?&gt;
+&lt;html&gt;
+&lt;head&gt;
+&lt;meta charset="UTF-8"&gt;
+&lt;script src="/jquery-2.1.4.min.js"&gt;&lt;/script&gt;
+&lt;style&gt;
+/* The animation code */
+@keyframes example {
+    from {background-color: aliceblue;}
+    to {background-color: white;}
+}
+@-webkit-keyframes example {
+    from {background-color: aliceblue;}
+    to {background-color: white;}
+}
+
+/* Standard syntax */
+@keyframes example {
+    from {background-color: aliceblue;}
+    to {background-color: white;}
+}
+
+.block{
+  border-top:1px solid black;
+  margin-top:4px;
+  -webkit-animation-name: example; /* Chrome, Safari, Opera */
+  -webkit-animation-duration: 4s; /* Chrome, Safari, Opera */
+  animation-name: example;
+  animation-duration: 4s;
+}
+ma{
+  background-color: lightgreen;
+}
+#regexp-text{
+  position:fixed;
+  right:0px;
+  top:0px;
+}
+&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;textarea id="regexp-text" cols="40" rows="10"&gt;&lt;?php echo htmlentities(implode("\n", $regexps)); ?&gt;&lt;/textarea&gt;
+&lt;pre id="thelog"&gt;&lt;?php
+$i0=0;
+$i=$i0;
+$iLine=0;
+
+fseek($f, $i);
+
+function getBlock($f, $regexps, $blockSize, $ttl, &amp;$iLine){
+  $buff=[];
+  while($ttl&gt;0 &amp;&amp; $line=fgets($f)){
+    $iLine++;
+    $line=utf8_encode($line);
+    if(count($buff)&gt;$blockSize){
+      array_shift($buff);
+    }
+    $buff[]=$iLine . '| ' . $line;
+  
+    if(count($buff)&gt;=$blockSize){
+      $ok=null;
+      $replaces=[];
+      foreach($regexps as $regexp){
+        $foundInBlock=false;
+        foreach($buff as $line){
+          if(preg_match($regexp, $line, $ma)) {
+            $replaces[$ma[0]]='&lt;ma&gt;&lt;b&gt;&lt;u&gt;'.$ma[0].'&lt;/u&gt;&lt;/b&gt;&lt;/ma&gt;';
+            $foundInBlock=true;
+          }
+        }
+        if(!isset($ok)){
+          $ok=$foundInBlock;
+        } else {
+          $ok=$ok &amp;&amp; $foundInBlock;
+        }
+      }
+      if($ok){
+        echo "&lt;div class='block'&gt;";
+        echo str_replace(array_keys($replaces), array_values($replaces), htmlentities( implode("", $buff), ENT_NOQUOTES, 'UTF-8' ) );
+        echo "&lt;/div&gt;";
+        $ttl--;
+        $buff=[];
+      }
+    }
+  }
+}
+getBlock($f, $regexps, $blockSize, $ttl, $iLine);
+
+$i=ftell($f);
+fclose($f);
+?&gt;
+&lt;/pre&gt;
+&lt;script&gt;
+var currentI=&lt;?php echo $i0; ?&gt;;
+var finalI=&lt;?php echo $i; ?&gt;;
+var iLine=&lt;?php echo $iLine; ?&gt;;
+var $thelog;
+var thelog;
+$thelog=$("#thelog");
+thelog=document.getElementById("thelog");
+$(function(){
+  document.body.onscroll=function(){
+    if(document.body.scrollHeight - document.body.scrollTop - document.body.clientHeight&lt;=16){
+      console.log('goDown');
+      goDown();
+    }
+    if(document.body.scrollTop&lt;=16){
+      console.log('goUp');
+      goUp();
+    }
+  }
+});
+function goDown(){
+  var lastI=-1;
+  for(var i=thelog.childNodes.length-1;i&gt;=0;i--){
+    console.log(thelog.childNodes[i], thelog.childNodes[i].style.display);
+    if(thelog.childNodes[i].style.display==="none"){
+      lastI=i;
+    } else {
+      break;
+    }
+  }
+  if(lastI&gt;=0){
+    thelog.childNodes[lastI].style.display="block";
+    console.log(thelog.childNodes[lastI].style.display);
+  } else {
+    $.ajax({
+      url:"",
+      async:true,
+      data:{action:"block",i:finalI, iLine:iLine},
+      type:"get",
+      dataType:"html",
+      success:function(res, textStatus, request){
+        finalI=parseInt(request.getResponseHeader('finalI'));
+        iLine=parseInt(request.getResponseHeader('iLine'));
+        $thelog.append(res);
+      }
+    });
+  }
+}
+function goUp(){
+  var lastI=-1;
+  for(var i=0,l=thelog.childNodes.length;i&lt;l;i++){
+    if(thelog.childNodes[i].style.display==="none"){
+      lastI=i;
+    } else {
+      break;
+    }
+  }
+  if(lastI&gt;=0){
+    thelog.childNodes[lastI].style.display="block";
+  } else if(currentI&gt;0) {
+    /*currentI-=1000;
+    if(currentI&lt;0){
+      currentI=0;
+    }
+    $.ajax({
+      url:"",
+      async:true,
+      data:{action:"block",i0:currentI},
+      type:"get",
+      dataType:"html",
+      success:function(res, textStatus, request){
+        currentI=request.getResponseHeader('currentI');
+        $(thelog.childNodes[0]).before(res);
+      }
+    });*/
+  }
+}
+&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;</file></path></root>

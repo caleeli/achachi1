@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root><include src="$library/zend.xml"/><include src="$library/extjs.xml"/><application name="extjsfragmentos"><ext.page name="index"><extdocument><layout layout="border"><extjs class="Ext.Panel" region="center" title="title" frame="true"><expression name="listeners">{render: function(panel){
+  Ext.Ajax.request(
+  {
+      url:"fragmento",
+      params:{},
+      success:function(response, opts) {
+          var content = eval(response.responseText);
+          panel.add(content);
+          panel.doLayout();
+      }
+  });
+}}</expression></extjs></layout></extdocument><action name="fragmento" noRender="true" descripcion="" loadParams=""><ext.fragment outputType="PHP_TAG" language="php" variable=""><extdocument><extjs class="Ext.Panel" title="Panel Interno" frame="true"/></extdocument></ext.fragment></action></ext.page></application></root>

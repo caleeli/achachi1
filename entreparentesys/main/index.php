@@ -1,0 +1,46 @@
+<?php
+@session_start();
+return array(
+  'stylesheets'=>[
+    \Router::url('html/stylesheet/main/index.css'),
+  ],
+  'scripts'=>[
+  ],
+  [
+    'class'=>'panel',
+    'layout'=>'border',
+    'items'=>array(
+      [
+        'class'=>'navbar',
+        'region'=>'north',
+        'cssClass'=>'mainnavbar',
+        'items'=>['class'=>'html','html'=>'<a class="navbar-brand" href="#">Entreparentesys</a>'],
+        'menu'=>[
+          ['id'=>'123','label'=>'Dashboard'],
+          ['id'=>'345','label'=>'Configuración'],
+          ['id'=>'567','label'=>'Perfil'],
+        ],
+      ],
+      [
+        'class'=>'panelListener',
+        'region'=>'west',
+        'width'=>'3',
+        'collapsible'=>true,
+        'cssClass'=>'menutree hidden-xs',
+        'items'=>[
+          ['class'=>'tree','model'=>$this->db->instanceModel('\Menu',['rol'=>$_SESSION['user']->rol_id,'parent'=>'root'])]
+        ]
+      ],
+      [
+        'class'=>'ajax',
+        'region'=>'center',
+        'width'=>'9',
+        'cssClass'=>'workspace',
+        'url'=>'../content/main/admin.php',
+        'observer'=>[
+          ''
+        ]
+      ],
+    ),
+  ]
+);

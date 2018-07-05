@@ -1,0 +1,3654 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root><path path="/home/david/php/www/main" main="main/index.html" __ideNodeOpen="true"><include src="diagramPlugin.xml"/><package name="components" type="" __ideNodeOpen="false"><php __ideNodeOpen="true">function dd(){
+  call_user_func_array('var_dump', func_get_args());
+  die;
+}
+class DVF {
+  static function getNamespace($e){
+    if(!$e) return '';
+    if($e-&gt;nodeName=='module') {
+      return '';
+    }
+    if($e-&gt;nodeName=='package') {
+      return   DVF::getNamespace($e-&gt;parentNode).'\\'.$e-&gt;getAttribute('name');
+    }
+    return DVF::getNamespace($e-&gt;parentNode);
+  }
+  static function getPath($e){
+    if(!$e) return '';
+    if($e-&gt;nodeName=='path') {
+      return $e-&gt;getAttribute('path');
+    }
+    if($e-&gt;nodeName=='module') {
+      return 'local/'.$e-&gt;getAttribute('group').'/'.$e-&gt;getAttribute('name').'/src';
+    }
+    if($e-&gt;nodeName=='package') {
+      return DVF::getPath($e-&gt;parentNode).'/'.$e-&gt;getAttribute('name');
+    }
+    return DVF::getPath($e-&gt;parentNode);
+  }
+  static function getPackages($e){
+    $ps=[];
+    $packages=$e-&gt;getElementsByTagName("package");
+    foreach($packages as $p){
+      if($p-&gt;parentNode-&gt;parentNode===$e){
+        $ps[$p-&gt;getAttribute('name')]='src';
+      }
+    }
+    return $ps;
+  }
+  static function copy($source, $dest){
+    if(is_dir($source)) {
+        $dir_handle=opendir($source);
+        while($file=readdir($dir_handle)){
+            if($file!="." &amp;&amp; $file!=".." &amp;&amp; substr($file,0,1)!="."){
+                if(is_dir($source."/".$file)){
+                    if(!is_dir($dest."/".$file)){
+                        mkdir($dest."/".$file);
+                    }
+                    DVF::copy($source."/".$file, $dest."/".$file);
+                } else {
+                    copy($source."/".$file, $dest."/".$file);
+                }
+            }
+        }
+        closedir($dir_handle);
+    } else {
+        copy($source, $dest);
+    }
+  }
+}
+</php><component name="class" transparent="" precode="" __ideNodeOpen="true"><file name="@{DVF::getPath($_e)}/@{$name}.php" preprocess="" __ideNodeOpen="true">&lt;?php
+#{
+$_name=substr(DVF::getNamespace($_e),1);
+return $_name ? "namespace $_name;":'';
+}
+@{node::content($_)}</file></component><component name="page" transparent="" precode="" __ideNodeOpen="true"><file name="@{DVF::getPath($_e)}/@{$name}" preprocess="" __ideNodeOpen="true">@{node::content($_)}</file></component><component name="package" transparent="" precode="" __ideNodeOpen="false"/><php __ideNodeOpen="true">class DepAdmin{
+  private static $instance;
+  public $composer;
+  function __construct(){
+    $this-&gt;composer=$this-&gt;loadComposer();
+  }
+  static function getInstance(){
+    if(empty(DepAdmin::$instance)){
+      DepAdmin::$instance=new DepAdmin();
+    }
+    return DepAdmin::$instance;
+  }
+  function loadComposer(){
+    return json_decode(file_get_contents('composer.json'));
+  }
+  function saveComposer(){
+    file_put_contents('composer.json',$this-&gt;prettify(json_encode($this-&gt;composer)));
+  }
+  function addRepository($name){
+    $exists=false;
+    if(!isset($this-&gt;composer-&gt;repositories)){
+      $this-&gt;composer-&gt;repositories=[];
+    }
+    foreach($this-&gt;composer-&gt;repositories as $rep){
+      if($rep-&gt;type=="vcs" &amp;&amp; $rep-&gt;url=="local/$name"){
+        $exists=true;
+        break;
+      }
+    }
+    if(!$exists){
+      $this-&gt;composer-&gt;repositories[]=(object)[
+        "type"=&gt;"vcs",
+        "url"=&gt;"local/$name",
+      ];
+      $this-&gt;saveComposer();
+    }
+  }
+  function prettify($json)
+  {
+    $result = '';
+    $pos = 0;
+    $prevChar = '';
+    $outOfQuotes = true;
+    $json = str_split($json);
+    array_map(
+        function ($char) use (&amp;$prevChar, &amp;$outOfQuotes, &amp;$result, &amp;$pos) {
+        if ($char == '"' &amp;&amp; $prevChar != '\\') {
+          $outOfQuotes = !$outOfQuotes;
+        } else
+        {
+          if (($char == '}' || $char == ']') &amp;&amp; $outOfQuotes) {
+                  $result .= PHP_EOL;
+            $pos-=2;
+            $result = str_pad($result, strlen($result) + $pos, " ");
+          }
+        }
+        $result .= $char;
+        if ((in_array($char, array(',', '{', '['))) &amp;&amp; $outOfQuotes) {
+          $result .= PHP_EOL;
+          if (in_array($char, array('[', '{'))) {
+            $pos+=2;
+          }
+          $result = str_pad($result, strlen($result) + $pos, " ");
+        }
+        $prevChar = $char;
+      },
+      $json
+    );
+    return $result;
+  }
+}
+</php><component name="module" transparent="" precode="" __ideNodeOpen="true"><file name="local/@{$group}/@{$name}/composer.json" preprocess="" __ideNodeOpen="true">{
+    "name": "@{$group}/@{$name}",
+    "description": @{json_encode($description)},
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "David Callizaya",
+            "email": "davidcallizaya@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-0": @{json_encode(DVF::getPackages($_e))}
+    }
+}
+</file><php __ideNodeOpen="true">DepAdmin::getInstance()-&gt;addRepository(${$group.'/'.$name});
+
+DVF::copy('local/@{$group.'/'.$name}', 'vendor/@{$group.'/'.$name}');
+
+</php></component><php __ideNodeOpen="true">$return=0;
+passthru("grunt", $return);
+</php></package><file name="index.html" preprocess="">&lt;html&gt;
+&lt;head&gt;
+&lt;script src="bower_components/handsontable/dist/handsontable.full.js"&gt;&lt;/script&gt;
+&lt;link rel="stylesheet" media="screen" href="bower_components/handsontable/dist/handsontable.full.css"&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;div id="hot"&gt;&lt;/div&gt;
+&lt;script&gt;
+  var data = [
+    ["", "Kia", "Nissan", "Toyota", "Honda"],
+    ["2008", 10, 11, 12, 13],
+    ["2009", 20, 11, 14, 13],
+    ["2010", 30, 15, 12, 13]
+  ];
+  
+  var container = document.getElementById('hot');
+  var hot = new Handsontable(container,
+    {
+      data: data,
+      minSpareRows: 1,
+      colHeaders: true,
+      contextMenu: true
+    });
+&lt;/script&gt;
+
+&lt;/body&gt;
+&lt;/html&gt;</file><file name="index.html" preprocess="">&lt;html&gt;
+&lt;head&gt;
+&lt;link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css"&gt;
+&lt;link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap-theme.min.css"&gt;
+&lt;script src="bower_components/jquery/dist/jquery.min.js"&gt;&lt;/script&gt;
+&lt;script src="bower_components/bootstrap/dist/js/bootstrap.min.js"&gt;&lt;/script&gt;
+&lt;/head&gt;
+&lt;body&gt;
+
+&lt;/body&gt;
+&lt;/html&gt;</file><file name="header.php" preprocess="">&lt;?php
+$config = json_decode(file_get_contents('config.json'));
+class Builder {
+  function concat($dest, $configGroup, $property){
+    $f=fopen($dest, 'w');
+    foreach($configGroup as $item){
+      foreach($item-&gt;$property as $file) {
+        $f1=fopen('bower_components/'.$file,'r');
+        while($line=fread($f1)){
+          fwrite($f,$line);
+        }
+        fclose($f1);
+      }
+    }
+    fclose($f);
+  }
+  function run(){
+    //Concat css
+    $this-&gt;concat('css/main.css', $this-&gt;config-&gt;bower, 'css');
+    //Concat js
+    $this-&gt;concat('js/main.js', $this-&gt;config-&gt;bower, 'js');
+  }
+}
+
+$builder = new Builder();
+$builder-&gt;run();
+</file><file name="config.json" preprocess="">{
+}</file><file name="css/readme.txt" preprocess="">#:)</file><file name="page.php" preprocess="">&lt;?php
+require('vendor/autoload.php');
+ini_set('display_errors', 'on');
+error_reporting(E_ALL);
+
+use \dvf\Router;
+
+//Router::resolveRequest();
+
+trait RestServer {
+  function initRestServer(){
+    $GLOBALS['RestServer']=new \rest\Rest();
+    $GLOBALS['RestServer']-&gt;init([
+      '\depadmin\Composer'
+    ]);
+  }
+  function sessionRestServer(){
+    $_SESSION['RestServer']=[
+      'apikey'=&gt;'123'
+    ];
+  }
+}
+
+trait RouterService {
+  function initRouterService(){
+    $GLOBALS['RouterService']=new \dvf\Router();
+    $GLOBALS['connection'] = new \model\Connection('mysql:host=localhost;dbname=main', 'root', 'root');
+    $m=$GLOBALS['connection']-&gt;instanceModel('\depadmin\DvObject', ['name'=&gt;'login']);
+    var_dump($m-&gt;fetch());
+//$GLOBALS['RouterService']
+$def1 = array(
+  'stylesheets'=&gt;[
+//    \Router::url('html/stylesheet/main/login.css'),
+  ],
+  'scripts'=&gt;[
+  ],
+  [
+    'class'=&gt;'panel',
+    'cssClass'=&gt;'login-panel',
+    'title'=&gt;'Ingresar',
+    'items'=&gt;array(
+      ['class'=&gt;'form',
+        'action'=&gt;Router::url('main/auth.php'),
+        'items'=&gt;array(
+          ['class'=&gt;'textfield',    'name'=&gt;'user', 'label'=&gt;'Usuario'],
+          ['class'=&gt;'passwordfield','name'=&gt;'pass', 'label'=&gt;'Contraseña'],
+          ['class'=&gt;'checkbox','boxLabel'=&gt;'Recuerdame'],
+          ['class'=&gt;'button','text'=&gt;'Ingresar',
+            'handler'=&gt;'$(this.form).ajaxSubmit(function(res){eval(res)})',
+          ],
+        )
+      ]
+    )
+  ]
+);
+\dvf\Router::resolveRoute('/html/html', $def1);
+
+  }
+  function sessionRouterServer(){
+  }
+}
+
+class ContextSpecification{
+  use RestServer, RouterService;
+  function initGlobals(){
+    $methods=get_class_methods($this);
+    $currentMethod=explode("::",__METHOD__)[1];
+    foreach($methods as $m) {
+      if($m!==$currentMethod &amp;&amp; substr($m,0,4)==="init"){
+        $this-&gt;$m();
+      }
+    }
+  }
+}
+
+$a = new ContextSpecification();
+
+$a-&gt;initGlobals();
+</file><module name="depadmin" group="caleeli" description="Dependency admin." __ideNodeOpen="true"><diagram __ideNodeOpen="true"><!--{"diagram":{"zoom":1,"scrollTop":6,"scrollLeft":9},"dgc08f2979c4a041d38064360f5693f17d":"position: absolute; height: 80.1418px; left: 249.22px; top: 69.0189px; width: 175.887px;","dgfafd63dd7024480d84f31e53bbf6d6c1":"position: absolute; height: 80.1418px; left: 50.5792px; top: 70px; width: 185.816px;","dgd4b43c0bedd14d4ea4e90832136c402b":"position: absolute; height: 438px; left: 18.0023px; top: 15.9811px; width: 1337px;","dga5cb5850ac9e41e1836c42f79ff1b516":"position: absolute; height: 74px; left: 486.017px; top: 66px; width: 162px;","dg50adfe6b39714b0b93febc5fc6f61947":"position: absolute; height: 66px; left: 665.9px; top: 65.0167px; width: 179px;","dgdd0ae323eec841b7979b6a8a3db4fd57":"position: absolute; height: 77px; left: 879.217px; top: 166.767px; width: 163px;","dg11483d8d20034d8ab1752d0b01038e41":"position: absolute; height: 77px; left: 1059px; top: 169.933px; width: 179px;","dgc728667300ea442a9b2392241f00dd5a":"position: absolute; height: 83px; left: 880.667px; top: 291.217px; width: 178px;","dgdfd88f37f9994eca8169297d5d4b921f":"position: absolute; height: 79px; left: 878.317px; top: 53.9px; width: 165px;","dgd65761e7810c4676a727dd903b912135":"position: absolute; height: 83px; left: 1056.82px; top: 53.8px; width: 177px;","dgb042503174b54bdfa38d3335fc0390c7":"position: absolute; height: 69px; left: 53.1167px; top: 183.7px; width: 179px;","dg14b2839df6a5467699343c8ced07a046":"position: absolute; height: 84px; left: 1075.98px; top: 290px; width: 218px;","dg86890450cded4fee87d2aba138bf2c0d":"position: absolute; height: 73px; left: 487px; top: 184px; width: 164px;","dgdff93f722fc04cedac86f141fba05be9":"position: absolute; height: 76px; left: 672px; top: 186px; width: 165px;","dgdce3ac2fb0584f5789ebdc6e53a11537":"position: absolute; height: 81px; left: 251px; top: 183px; width: 173px;"}--><package __ideNodeOpen="false" __ideDiagramId="dgd4b43c0bedd14d4ea4e90832136c402b" name="dvf" type=""><class name="ResolveRouteInterface" __ideNodeOpen="true" __ideDiagramId="dgc08f2979c4a041d38064360f5693f17d">
+interface ResolveRouteInterface {
+  public static function resolveRoute($ROUTE, $DATA, $BASE='');
+}
+</class><class name="IncludeScriptInterface" __ideNodeOpen="true" __ideDiagramId="dgfafd63dd7024480d84f31e53bbf6d6c1">
+interface IncludeScriptInterface {
+  public function includeScript($PATH, $DATA, $CONTENT);
+}
+</class><class name="IncludeScriptTrait" __ideNodeOpen="true" __ideDiagramId="dga5cb5850ac9e41e1836c42f79ff1b516">
+trait IncludeScriptTrait {
+  public function includeScript($PATH, $DATA, $CONTENT) {
+    return include($PATH);
+  }
+}
+</class><class name="ResolveRouteTrait" __ideNodeOpen="true" __ideDiagramId="dg50adfe6b39714b0b93febc5fc6f61947">
+trait ResolveRouteTrait {
+  static protected $controllerClass='\\dvf\\Controller';
+
+  /*  |----route1----||------route2------|
+   *  /route1a/route1b/route2a/route2b.php
+   *  route1:
+   *    class=\route1a\Route1b
+   *    method=indexAction   (route2aAction no existe)
+   *    script=\route1a\route1b\index.php (\route1a\route1b\route2a no existe)
+   *  route2:
+   *    class=\Route2a
+   *    method=route2bAction
+   *    script=\route2a\route2b.php
+   *  @param $ROUTE = abc/def/... (No empieza con /)
+   *  @param $DIR = abc/def/ (Termina con / o es vacio, no puede ser ./)
+   */
+  public static function resolveRoute($ROUTE, $DATA, $CONTENT=null, $DIR='') {
+    if($ROUTE=='') $ROUTE='index.php';
+    $aROUTE=explode("/", $ROUTE);
+    $NAME=array_shift($aROUTE);
+    $FILE=$DIR.$NAME;
+    $CLASS='\\'.str_replace('/', '\\', $DIR).ucfirst($NAME);
+    var_dump([$CLASS =&gt; class_exists($CLASS), "$FILE/"=&gt; IS_DIR($FILE), "$FILE/-$DIR-$ROUTE"=&gt; static::namespaceExists($FILE, $DIR, $ROUTE), REALPATH(".").":$FILE"=&gt; FILE_EXISTS($FILE) ]);
+    if(class_exists($CLASS)){
+      return static::loadClass($CLASS, $FILE, $aROUTE, $DATA, $CONTENT, false);
+    } elseif(static::namespaceExists($FILE, $DIR, $ROUTE)/*is_dir($FILE)*/) {
+      return static::resolveRoute(implode("/", $aROUTE), $DATA, $CONTENT, $FILE.'/');
+    } elseif(file_exists($FILE)) {
+      return static::loadClass(static::$controllerClass, $FILE, $aROUTE, $DATA, $CONTENT, true);
+    } else {
+    }
+  }
+  protected static function loadClass($CLASS, $FILE, &amp;$aROUTE, $DATA, $CONTENT=null, $isScript=false){
+    $INSTANCE=new $CLASS();
+    if(method_exists($INSTANCE, 'loadContext')) {
+      $INSTANCE-&gt;loadContext();
+    }
+    if(count($aROUTE)&gt;0) {
+      $METHOD = explode('.',$aROUTE[0])[0].'Action';
+      $SCRIPT = $FILE.'/'.$aROUTE[0];//\PagePaths::resolve($DIR, $NAME);
+      if(method_exists($INSTANCE, $METHOD) || (file_exists($SCRIPT) &amp;&amp; is_file($SCRIPT))) {
+        array_shift($aROUTE);
+      }elseif(file_exists($SCRIPT) &amp;&amp; is_dir($SCRIPT)){
+        array_shift($aROUTE);
+        return static::resolveRoute(implode("/", $aROUTE), $DATA, $CONTENT, $SCRIPT.'/');
+      } else { //if(!method_exists($INSTANCE, $METHOD) &amp;&amp; !(file_exists($SCRIPT) &amp;&amp; is_file($SCRIPT))) {
+        $METHOD = 'indexAction';
+        $SCRIPT = $FILE.'/index.php';//\PagePaths::resolve($DIR, $NAME);
+      }
+    } else {
+      $METHOD='indexAction';
+      $SCRIPT = $FILE.'/'.'index.php';//\PagePaths::resolve($DIR, $NAME);
+    }
+    if(count($aROUTE)&gt;0) {
+      //Start from base='' a new absolute route.
+      $res0=static::resolveRoute(implode("/", $aROUTE), $DATA, $CONTENT, '');
+      if(isset($res0)) $CONTENT=$res0;
+    } else {
+      //$CONTENT=null;
+    }
+    if(method_exists($INSTANCE, $METHOD)) {
+      $res0 = $INSTANCE-&gt;$METHOD($DATA, $CONTENT);
+      if(isset($res0)) $CONTENT=$res0;
+      //$INSTANCE-&gt;$METHOD($CONTENT);
+    }
+    if(file_exists($SCRIPT)) {
+      $res0 = $INSTANCE-&gt;includeScript($SCRIPT, $DATA, $CONTENT);
+      if(isset($res0)) $CONTENT=$res0;
+    }
+    if($isScript) {
+      $ext=explode(".",$FILE);
+      $ext=$ext[count($ext)-1];
+          header("Content-ext: $ext");
+      switch($ext){
+        case "css":
+          header("Content-type: text/css");
+          break;
+        case "js":
+          header("Content-type: text/javascript");
+          break;
+        case "html":
+          header("Content-type: text/html");
+          break;
+        case "png":
+          header("Content-type: image/png");
+          break;
+        case "php":
+          break;
+        default:
+          $finfo = finfo_open(FILEINFO_MIME_TYPE);
+          header("Content-type: ".finfo_file($finfo, $FILE));
+          finfo_close($finfo);
+      }
+      $res0 = $INSTANCE-&gt;includeScript($FILE, $DATA, $CONTENT);
+      if(isset($res0)) $CONTENT=$res0;
+    }
+    return $CONTENT;
+  }
+  static function namespaceExists($namespace, $dir, $path){
+    $fpath=explode('/',$dir.$path);
+    $base='\\';
+    foreach($fpath as $p){
+      $c=$base.ucfirst($p);
+      if(class_exists($c)){
+        return $c;
+      }
+      $base.=$p.'\\';
+    }
+    return false;
+  }
+}</class><class name="Paths" __ideNodeOpen="true" __ideDiagramId="dgdd0ae323eec841b7979b6a8a3db4fd57">class Paths {
+  public static $paths=array();
+
+  public static function add($path){
+    static::$paths[]=$path;
+  }
+
+  public static function addInclude($path){
+    set_include_path(get_include_path() . PATH_SEPARATOR . $path);
+  }
+
+  public static function resolve($nombre_clase, $complemento){
+    $nombre_clase = str_replace('\\','/',$nombre_clase);
+    if(substr($nombre_clase,0,1)!='/')$nombre_clase='/'.$nombre_clase;
+    $path=false;
+    foreach(static::$paths as $p){
+      $P=$p.$nombre_clase . $complemento;
+      if(file_exists($P)){
+        $path=$P;
+      }
+    }
+    return $path;
+  }
+}
+</class><class name="Router" __ideNodeOpen="true" __ideDiagramId="dgdfd88f37f9994eca8169297d5d4b921f">
+class Router implements ResolveRouteInterface, ResolveRequestInterface {
+  use ResolveRouteTrait, ResolveRequestTrait;
+
+}
+</class><class name="Controller" __ideNodeOpen="true" __ideDiagramId="dgd65761e7810c4676a727dd903b912135">
+class Controller implements IncludeScriptInterface, LoadContextInterface {
+  use IncludeScriptTrait, LoadContextTrait;
+}
+</class><class name="LoadContextInterface" __ideNodeOpen="true" __ideDiagramId="dgb042503174b54bdfa38d3335fc0390c7">
+interface LoadContextInterface {
+  public function loadContext();
+}
+</class><class name="LoadContextTrait" __ideDiagramId="dg86890450cded4fee87d2aba138bf2c0d" __ideNodeOpen="true">
+trait LoadContextTrait {
+
+  public function loadContext(){
+    
+  }
+}
+</class><class name="ResolveRequestTrait" __ideDiagramId="dgdff93f722fc04cedac86f141fba05be9">/*
+ * requires ResolveRouteInterface;
+ */
+trait ResolveRequestTrait{
+  static public function resolveRequest(){
+    $parse = parse_url($_SERVER['REQUEST_URI']);
+    $route = substr($parse['path'], STRLEN($_SERVER['SCRIPT_NAME'])+1);
+    static::resolveRoute($route, $_REQUEST);
+  }
+  static public function url($route){
+    return $_SERVER['SCRIPT_NAME'].'/'.$route;
+  }
+}</class><class name="ResolveRequestInterface" __ideDiagramId="dgdce3ac2fb0584f5789ebdc6e53a11537">
+interface ResolveRequestInterface {
+  static public function resolveRequest();
+  static public function url($route);
+}</class><class name="ClassPaths" __ideNodeOpen="true" __ideDiagramId="dg11483d8d20034d8ab1752d0b01038e41">require_once('Paths.php');
+
+class ClassPaths extends Paths {
+
+}
+</class></package></diagram><diagram __ideNodeOpen="true"><!--{"diagram":{"zoom":1,"scrollTop":0,"scrollLeft":0},"dgbd2d4c0a1b4e40c79977aae06b95dba4":"position: absolute; height: 300px; left: 27px; top: 21px; width: 765px;","dg28fb7990dad54d8a8ee70d4d57f5b7ac":"position: absolute; height: 42px; left: 39px; top: 50px; width: 196px;","dgd458c89b31a34f0bbee54d701bd6c239":"position: absolute; height: 55px; left: 261px; top: 48px; width: 194px;","dg60ca5fd97e27407392fb5590b3c82b76":"position: absolute; height: 56px; left: 40px; top: 129px; width: 192px;"}--><package __ideDiagramId="dgbd2d4c0a1b4e40c79977aae06b95dba4" name="depadmin" __ideNodeOpen="false"><class __ideDiagramId="dg28fb7990dad54d8a8ee70d4d57f5b7ac" name="Composer">/**
+ * @Path("/composer")
+ */
+class Composer{
+  private $client;
+  private $currentPackages=['php'=&gt;'5.6.5'];
+  /**
+   * @GET
+   * @Path("/search/:search")
+   */
+  public function search($search){
+    $this-&gt;client = new \Packagist\Api\Client();
+    return [];
+    $r=$this-&gt;client-&gt;search($search);
+    ob_start();
+    echo '&lt;table&gt;';
+    foreach($r as $p){
+      $ress=$this-&gt;evalPackage($p-&gt;getName()/*'friendsofsymfony/rest'*/);
+      foreach($ress as $res){
+        echo "&lt;tr&gt;";
+        echo "&lt;td&gt;",$res['value'],"&lt;/td&gt;";
+        echo "&lt;td&gt;",$p-&gt;getFavers(),"&lt;/td&gt;";
+        echo "&lt;td&gt;",$p-&gt;getDownloads(),"&lt;/td&gt;";
+        echo "&lt;td&gt;",$res['name'],"&lt;/td&gt;";
+        echo "&lt;td&gt;",$p-&gt;getDescription(),"&lt;/td&gt;";
+        echo "&lt;td&gt;'",$res['version'],"&lt;/td&gt;";
+        echo "&lt;td&gt;",nl2br(print_r($res['require'],true)),"&lt;/td&gt;";
+        echo "&lt;td&gt;",nl2br(print_r($res['incompatible'],true)),"&lt;/td&gt;";
+        echo "&lt;/tr&gt;";
+      }
+    }
+    echo '&lt;/table&gt;';
+    file_put_contents('/home/david/php/analisis/rest.html', ob_get_contents() );
+    ob_end_clean();
+echo 'OK';
+    return '';
+  }
+  private function evalPackage($packageName){
+    $res=[];
+    $versions=$this-&gt;client-&gt;get( $packageName )-&gt;getVersions();
+    foreach($versions as $v){
+      list($req,$incom)=$this-&gt;verify($v-&gt;getRequire());
+      $value=100/(count($req)+1);
+      if(count($incom)&gt;0){
+        $value-=100;
+      }
+      $value=count($req);
+      $res[]=[
+        "value"=&gt;$value,
+        "name"=&gt;$v-&gt;getName(),
+        "version"=&gt;$v-&gt;getVersion(),
+        "require"=&gt;$req,
+        "incompatible"=&gt;$incom,
+      ];
+    }
+    return $res;
+  }
+  private function verify($requires){
+    $required=[];
+    $incompatibles=[];
+    if(!is_array($requires)){
+//      var_dump("not array",$requires);
+    } else 
+    {
+      foreach($requires as $package =&gt; $pkvs) {
+        $installed=false;
+        $incompatible="";
+        foreach($this-&gt;currentPackages as $insPackage=&gt;$insVersion) if($insPackage===$package){
+          $installed=true;
+          $insVersionNum = $this-&gt;version2num($insVersion);
+          foreach(explode(',', $pkvs) as $v) {
+            if(substr($v,0,2)==="&gt;="){
+              $vNum=$this-&gt;version2num(substr($v,2));
+              if($insVersionNum&gt;=$vNum){
+              } else {
+                $incompatible="$insPackage - $insVersion";
+                $installed=false;break;
+              }
+            } elseif(substr($v,0,2)==="&lt;=") {
+              $vNum=$this-&gt;version2num(substr($v,2));
+              if($insVersionNum&lt;=$vNum){
+              } else {
+                $incompatible="$insPackage - $insVersion";
+                $installed=false;break;
+              }
+            } elseif(substr($v,0,1)==="&gt;") {
+              $vNum=$this-&gt;version2num(substr($v,1));
+              if($insVersionNum&gt;$vNum){
+              } else {
+                $incompatible="$insPackage - $insVersion";
+                $installed=false;break;
+              }
+            } elseif(substr($v,0,1)==="&lt;") {
+              $vNum=$this-&gt;version2num(substr($v,1));
+              if($insVersionNum&lt;$vNum){
+              } else {
+                $incompatible="$insPackage - $insVersion";
+                $installed=false;break;
+              }
+            } elseif(substr($v,0,1)==="=") {
+              $vNum=$this-&gt;version2num(substr($v,1));
+              if($insVersionNum==$vNum){
+              } else {
+                $incompatible="$insPackage - $insVersion";
+                $installed=false;break;
+              }
+            }
+          }
+          break;
+        }
+        if(!$installed){
+          $required[$package] = $pkvs;
+        }
+        if($incompatible){
+          $incompatibles[] = $incompatible;
+        }
+      }
+    }
+    return [$required,$incompatibles];
+  }
+  private function version2num($a){
+    $a=explode('-',$a)[0];
+    $a=explode('.',$a);
+    $a1=0;
+    foreach($a as $i=&gt;$ai){
+      $a1+=substr($ai,0,3)/pow(1000, $i);
+    }
+    return $a1;
+  }
+  /**
+   * @GET
+   * @Produces("text/html")
+   * @Path("/lte")
+   */
+  public function lte(){
+    require(__DIR__.'/base.php');
+  }
+}</class><page __ideDiagramId="dgd458c89b31a34f0bbee54d701bd6c239" name="base.php">&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+  &lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;title&gt;AdminLTE 2 | Dashboard&lt;/title&gt;
+    &lt;meta content='width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no' name='viewport'&gt;
+    &lt;!-- Bootstrap 3.3.2 --&gt;
+    &lt;link href="bootstrap/css/bootstrap.min.css" rel="stylesheet" type="text/css" /&gt;    
+    &lt;!-- FontAwesome 4.3.0 --&gt;
+    &lt;link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css" /&gt;
+    &lt;!-- Ionicons 2.0.0 --&gt;
+    &lt;link href="http://code.ionicframework.com/ionicons/2.0.0/css/ionicons.min.css" rel="stylesheet" type="text/css" /&gt;    
+    &lt;!-- Theme style --&gt;
+    &lt;link href="dist/css/AdminLTE.min.css" rel="stylesheet" type="text/css" /&gt;
+    &lt;!-- AdminLTE Skins. Choose a skin from the css/skins 
+         folder instead of downloading all of them to reduce the load. --&gt;
+    &lt;link href="dist/css/skins/_all-skins.min.css" rel="stylesheet" type="text/css" /&gt;
+    &lt;!-- iCheck --&gt;
+    &lt;link href="plugins/iCheck/flat/blue.css" rel="stylesheet" type="text/css" /&gt;
+    &lt;!-- Morris chart --&gt;
+    &lt;link href="plugins/morris/morris.css" rel="stylesheet" type="text/css" /&gt;
+    &lt;!-- jvectormap --&gt;
+    &lt;link href="plugins/jvectormap/jquery-jvectormap-1.2.2.css" rel="stylesheet" type="text/css" /&gt;
+    &lt;!-- Date Picker --&gt;
+    &lt;link href="plugins/datepicker/datepicker3.css" rel="stylesheet" type="text/css" /&gt;
+    &lt;!-- Daterange picker --&gt;
+    &lt;link href="plugins/daterangepicker/daterangepicker-bs3.css" rel="stylesheet" type="text/css" /&gt;
+    &lt;!-- bootstrap wysihtml5 - text editor --&gt;
+    &lt;link href="plugins/bootstrap-wysihtml5/bootstrap3-wysihtml5.min.css" rel="stylesheet" type="text/css" /&gt;
+
+    &lt;!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries --&gt;
+    &lt;!-- WARNING: Respond.js doesn't work if you view the page via file:// --&gt;
+    &lt;!--[if lt IE 9]&gt;
+        &lt;script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"&gt;&lt;/script&gt;
+        &lt;script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"&gt;&lt;/script&gt;
+    &lt;![endif]--&gt;
+  &lt;/head&gt;
+  &lt;body class="skin-blue"&gt;
+    &lt;div class="wrapper"&gt;
+      
+      &lt;header class="main-header"&gt;
+        &lt;!-- Logo --&gt;
+        &lt;a href="index2.html" class="logo"&gt;&lt;b&gt;Admin&lt;/b&gt;LTE&lt;/a&gt;
+        &lt;!-- Header Navbar: style can be found in header.less --&gt;
+        &lt;nav class="navbar navbar-static-top" role="navigation"&gt;
+          &lt;!-- Sidebar toggle button--&gt;
+          &lt;a href="#" class="sidebar-toggle" data-toggle="offcanvas" role="button"&gt;
+            &lt;span class="sr-only"&gt;Toggle navigation&lt;/span&gt;
+          &lt;/a&gt;
+          &lt;div class="navbar-custom-menu"&gt;
+            &lt;ul class="nav navbar-nav"&gt;
+              &lt;!-- Messages: style can be found in dropdown.less--&gt;
+              &lt;li class="dropdown messages-menu"&gt;
+                &lt;a href="#" class="dropdown-toggle" data-toggle="dropdown"&gt;
+                  &lt;i class="fa fa-envelope-o"&gt;&lt;/i&gt;
+                  &lt;span class="label label-success"&gt;4&lt;/span&gt;
+                &lt;/a&gt;
+                &lt;ul class="dropdown-menu"&gt;
+                  &lt;li class="header"&gt;You have 4 messages&lt;/li&gt;
+                  &lt;li&gt;
+                    &lt;!-- inner menu: contains the actual data --&gt;
+                    &lt;ul class="menu"&gt;
+                      &lt;li&gt;&lt;!-- start message --&gt;
+                        &lt;a href="#"&gt;
+                          &lt;div class="pull-left"&gt;
+                            &lt;img src="dist/img/user2-160x160.jpg" class="img-circle" alt="User Image"/&gt;
+                          &lt;/div&gt;
+                          &lt;h4&gt;
+                            Support Team
+                            &lt;small&gt;&lt;i class="fa fa-clock-o"&gt;&lt;/i&gt; 5 mins&lt;/small&gt;
+                          &lt;/h4&gt;
+                          &lt;p&gt;Why not buy a new awesome theme?&lt;/p&gt;
+                        &lt;/a&gt;
+                      &lt;/li&gt;&lt;!-- end message --&gt;
+                      &lt;li&gt;
+                        &lt;a href="#"&gt;
+                          &lt;div class="pull-left"&gt;
+                            &lt;img src="dist/img/user3-128x128.jpg" class="img-circle" alt="user image"/&gt;
+                          &lt;/div&gt;
+                          &lt;h4&gt;
+                            AdminLTE Design Team
+                            &lt;small&gt;&lt;i class="fa fa-clock-o"&gt;&lt;/i&gt; 2 hours&lt;/small&gt;
+                          &lt;/h4&gt;
+                          &lt;p&gt;Why not buy a new awesome theme?&lt;/p&gt;
+                        &lt;/a&gt;
+                      &lt;/li&gt;
+                      &lt;li&gt;
+                        &lt;a href="#"&gt;
+                          &lt;div class="pull-left"&gt;
+                            &lt;img src="dist/img/user4-128x128.jpg" class="img-circle" alt="user image"/&gt;
+                          &lt;/div&gt;
+                          &lt;h4&gt;
+                            Developers
+                            &lt;small&gt;&lt;i class="fa fa-clock-o"&gt;&lt;/i&gt; Today&lt;/small&gt;
+                          &lt;/h4&gt;
+                          &lt;p&gt;Why not buy a new awesome theme?&lt;/p&gt;
+                        &lt;/a&gt;
+                      &lt;/li&gt;
+                      &lt;li&gt;
+                        &lt;a href="#"&gt;
+                          &lt;div class="pull-left"&gt;
+                            &lt;img src="dist/img/user3-128x128.jpg" class="img-circle" alt="user image"/&gt;
+                          &lt;/div&gt;
+                          &lt;h4&gt;
+                            Sales Department
+                            &lt;small&gt;&lt;i class="fa fa-clock-o"&gt;&lt;/i&gt; Yesterday&lt;/small&gt;
+                          &lt;/h4&gt;
+                          &lt;p&gt;Why not buy a new awesome theme?&lt;/p&gt;
+                        &lt;/a&gt;
+                      &lt;/li&gt;
+                      &lt;li&gt;
+                        &lt;a href="#"&gt;
+                          &lt;div class="pull-left"&gt;
+                            &lt;img src="dist/img/user4-128x128.jpg" class="img-circle" alt="user image"/&gt;
+                          &lt;/div&gt;
+                          &lt;h4&gt;
+                            Reviewers
+                            &lt;small&gt;&lt;i class="fa fa-clock-o"&gt;&lt;/i&gt; 2 days&lt;/small&gt;
+                          &lt;/h4&gt;
+                          &lt;p&gt;Why not buy a new awesome theme?&lt;/p&gt;
+                        &lt;/a&gt;
+                      &lt;/li&gt;
+                    &lt;/ul&gt;
+                  &lt;/li&gt;
+                  &lt;li class="footer"&gt;&lt;a href="#"&gt;See All Messages&lt;/a&gt;&lt;/li&gt;
+                &lt;/ul&gt;
+              &lt;/li&gt;
+              &lt;!-- Notifications: style can be found in dropdown.less --&gt;
+              &lt;li class="dropdown notifications-menu"&gt;
+                &lt;a href="#" class="dropdown-toggle" data-toggle="dropdown"&gt;
+                  &lt;i class="fa fa-bell-o"&gt;&lt;/i&gt;
+                  &lt;span class="label label-warning"&gt;10&lt;/span&gt;
+                &lt;/a&gt;
+                &lt;ul class="dropdown-menu"&gt;
+                  &lt;li class="header"&gt;You have 10 notifications&lt;/li&gt;
+                  &lt;li&gt;
+                    &lt;!-- inner menu: contains the actual data --&gt;
+                    &lt;ul class="menu"&gt;
+                      &lt;li&gt;
+                        &lt;a href="#"&gt;
+                          &lt;i class="fa fa-users text-aqua"&gt;&lt;/i&gt; 5 new members joined today
+                        &lt;/a&gt;
+                      &lt;/li&gt;
+                      &lt;li&gt;
+                        &lt;a href="#"&gt;
+                          &lt;i class="fa fa-warning text-yellow"&gt;&lt;/i&gt; Very long description here that may not fit into the page and may cause design problems
+                        &lt;/a&gt;
+                      &lt;/li&gt;
+                      &lt;li&gt;
+                        &lt;a href="#"&gt;
+                          &lt;i class="fa fa-users text-red"&gt;&lt;/i&gt; 5 new members joined
+                        &lt;/a&gt;
+                      &lt;/li&gt;
+
+                      &lt;li&gt;
+                        &lt;a href="#"&gt;
+                          &lt;i class="fa fa-shopping-cart text-green"&gt;&lt;/i&gt; 25 sales made
+                        &lt;/a&gt;
+                      &lt;/li&gt;
+                      &lt;li&gt;
+                        &lt;a href="#"&gt;
+                          &lt;i class="fa fa-user text-red"&gt;&lt;/i&gt; You changed your username
+                        &lt;/a&gt;
+                      &lt;/li&gt;
+                    &lt;/ul&gt;
+                  &lt;/li&gt;
+                  &lt;li class="footer"&gt;&lt;a href="#"&gt;View all&lt;/a&gt;&lt;/li&gt;
+                &lt;/ul&gt;
+              &lt;/li&gt;
+              &lt;!-- Tasks: style can be found in dropdown.less --&gt;
+              &lt;li class="dropdown tasks-menu"&gt;
+                &lt;a href="#" class="dropdown-toggle" data-toggle="dropdown"&gt;
+                  &lt;i class="fa fa-flag-o"&gt;&lt;/i&gt;
+                  &lt;span class="label label-danger"&gt;9&lt;/span&gt;
+                &lt;/a&gt;
+                &lt;ul class="dropdown-menu"&gt;
+                  &lt;li class="header"&gt;You have 9 tasks&lt;/li&gt;
+                  &lt;li&gt;
+                    &lt;!-- inner menu: contains the actual data --&gt;
+                    &lt;ul class="menu"&gt;
+                      &lt;li&gt;&lt;!-- Task item --&gt;
+                        &lt;a href="#"&gt;
+                          &lt;h3&gt;
+                            Design some buttons
+                            &lt;small class="pull-right"&gt;20%&lt;/small&gt;
+                          &lt;/h3&gt;
+                          &lt;div class="progress xs"&gt;
+                            &lt;div class="progress-bar progress-bar-aqua" style="width: 20%" role="progressbar" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100"&gt;
+                              &lt;span class="sr-only"&gt;20% Complete&lt;/span&gt;
+                            &lt;/div&gt;
+                          &lt;/div&gt;
+                        &lt;/a&gt;
+                      &lt;/li&gt;&lt;!-- end task item --&gt;
+                      &lt;li&gt;&lt;!-- Task item --&gt;
+                        &lt;a href="#"&gt;
+                          &lt;h3&gt;
+                            Create a nice theme
+                            &lt;small class="pull-right"&gt;40%&lt;/small&gt;
+                          &lt;/h3&gt;
+                          &lt;div class="progress xs"&gt;
+                            &lt;div class="progress-bar progress-bar-green" style="width: 40%" role="progressbar" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100"&gt;
+                              &lt;span class="sr-only"&gt;40% Complete&lt;/span&gt;
+                            &lt;/div&gt;
+                          &lt;/div&gt;
+                        &lt;/a&gt;
+                      &lt;/li&gt;&lt;!-- end task item --&gt;
+                      &lt;li&gt;&lt;!-- Task item --&gt;
+                        &lt;a href="#"&gt;
+                          &lt;h3&gt;
+                            Some task I need to do
+                            &lt;small class="pull-right"&gt;60%&lt;/small&gt;
+                          &lt;/h3&gt;
+                          &lt;div class="progress xs"&gt;
+                            &lt;div class="progress-bar progress-bar-red" style="width: 60%" role="progressbar" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100"&gt;
+                              &lt;span class="sr-only"&gt;60% Complete&lt;/span&gt;
+                            &lt;/div&gt;
+                          &lt;/div&gt;
+                        &lt;/a&gt;
+                      &lt;/li&gt;&lt;!-- end task item --&gt;
+                      &lt;li&gt;&lt;!-- Task item --&gt;
+                        &lt;a href="#"&gt;
+                          &lt;h3&gt;
+                            Make beautiful transitions
+                            &lt;small class="pull-right"&gt;80%&lt;/small&gt;
+                          &lt;/h3&gt;
+                          &lt;div class="progress xs"&gt;
+                            &lt;div class="progress-bar progress-bar-yellow" style="width: 80%" role="progressbar" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100"&gt;
+                              &lt;span class="sr-only"&gt;80% Complete&lt;/span&gt;
+                            &lt;/div&gt;
+                          &lt;/div&gt;
+                        &lt;/a&gt;
+                      &lt;/li&gt;&lt;!-- end task item --&gt;
+                    &lt;/ul&gt;
+                  &lt;/li&gt;
+                  &lt;li class="footer"&gt;
+                    &lt;a href="#"&gt;View all tasks&lt;/a&gt;
+                  &lt;/li&gt;
+                &lt;/ul&gt;
+              &lt;/li&gt;
+              &lt;!-- User Account: style can be found in dropdown.less --&gt;
+              &lt;li class="dropdown user user-menu"&gt;
+                &lt;a href="#" class="dropdown-toggle" data-toggle="dropdown"&gt;
+                  &lt;img src="dist/img/user2-160x160.jpg" class="user-image" alt="User Image"/&gt;
+                  &lt;span class="hidden-xs"&gt;Alexander Pierce&lt;/span&gt;
+                &lt;/a&gt;
+                &lt;ul class="dropdown-menu"&gt;
+                  &lt;!-- User image --&gt;
+                  &lt;li class="user-header"&gt;
+                    &lt;img src="dist/img/user2-160x160.jpg" class="img-circle" alt="User Image" /&gt;
+                    &lt;p&gt;
+                      Alexander Pierce - Web Developer
+                      &lt;small&gt;Member since Nov. 2012&lt;/small&gt;
+                    &lt;/p&gt;
+                  &lt;/li&gt;
+                  &lt;!-- Menu Body --&gt;
+                  &lt;li class="user-body"&gt;
+                    &lt;div class="col-xs-4 text-center"&gt;
+                      &lt;a href="#"&gt;Followers&lt;/a&gt;
+                    &lt;/div&gt;
+                    &lt;div class="col-xs-4 text-center"&gt;
+                      &lt;a href="#"&gt;Sales&lt;/a&gt;
+                    &lt;/div&gt;
+                    &lt;div class="col-xs-4 text-center"&gt;
+                      &lt;a href="#"&gt;Friends&lt;/a&gt;
+                    &lt;/div&gt;
+                  &lt;/li&gt;
+                  &lt;!-- Menu Footer--&gt;
+                  &lt;li class="user-footer"&gt;
+                    &lt;div class="pull-left"&gt;
+                      &lt;a href="#" class="btn btn-default btn-flat"&gt;Profile&lt;/a&gt;
+                    &lt;/div&gt;
+                    &lt;div class="pull-right"&gt;
+                      &lt;a href="#" class="btn btn-default btn-flat"&gt;Sign out&lt;/a&gt;
+                    &lt;/div&gt;
+                  &lt;/li&gt;
+                &lt;/ul&gt;
+              &lt;/li&gt;
+            &lt;/ul&gt;
+          &lt;/div&gt;
+        &lt;/nav&gt;
+      &lt;/header&gt;
+      &lt;!-- Left side column. contains the logo and sidebar --&gt;
+      &lt;aside class="main-sidebar"&gt;
+        &lt;!-- sidebar: style can be found in sidebar.less --&gt;
+        &lt;section class="sidebar"&gt;
+          &lt;!-- Sidebar user panel --&gt;
+          &lt;div class="user-panel"&gt;
+            &lt;div class="pull-left image"&gt;
+              &lt;img src="dist/img/user2-160x160.jpg" class="img-circle" alt="User Image" /&gt;
+            &lt;/div&gt;
+            &lt;div class="pull-left info"&gt;
+              &lt;p&gt;Alexander Pierce&lt;/p&gt;
+
+              &lt;a href="#"&gt;&lt;i class="fa fa-circle text-success"&gt;&lt;/i&gt; Online&lt;/a&gt;
+            &lt;/div&gt;
+          &lt;/div&gt;
+          &lt;!-- search form --&gt;
+          &lt;form action="#" method="get" class="sidebar-form"&gt;
+            &lt;div class="input-group"&gt;
+              &lt;input type="text" name="q" class="form-control" placeholder="Search..."/&gt;
+              &lt;span class="input-group-btn"&gt;
+                &lt;button type='submit' name='search' id='search-btn' class="btn btn-flat"&gt;&lt;i class="fa fa-search"&gt;&lt;/i&gt;&lt;/button&gt;
+              &lt;/span&gt;
+            &lt;/div&gt;
+          &lt;/form&gt;
+          &lt;!-- /.search form --&gt;
+          &lt;!-- sidebar menu: : style can be found in sidebar.less --&gt;
+          &lt;ul class="sidebar-menu"&gt;
+            &lt;li class="header"&gt;MAIN NAVIGATION&lt;/li&gt;
+            &lt;li class="active treeview"&gt;
+              &lt;a href="#"&gt;
+                &lt;i class="fa fa-dashboard"&gt;&lt;/i&gt; &lt;span&gt;Dashboard&lt;/span&gt; &lt;i class="fa fa-angle-left pull-right"&gt;&lt;/i&gt;
+              &lt;/a&gt;
+              &lt;ul class="treeview-menu"&gt;
+                &lt;li class="active"&gt;&lt;a href="index.html"&gt;&lt;i class="fa fa-circle-o"&gt;&lt;/i&gt; Dashboard v1&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href="index2.html"&gt;&lt;i class="fa fa-circle-o"&gt;&lt;/i&gt; Dashboard v2&lt;/a&gt;&lt;/li&gt;
+              &lt;/ul&gt;
+            &lt;/li&gt;
+            &lt;li class="treeview"&gt;
+              &lt;a href="#"&gt;
+                &lt;i class="fa fa-files-o"&gt;&lt;/i&gt;
+                &lt;span&gt;Layout Options&lt;/span&gt;
+                &lt;span class="label label-primary pull-right"&gt;4&lt;/span&gt;
+              &lt;/a&gt;
+              &lt;ul class="treeview-menu"&gt;
+                &lt;li&gt;&lt;a href="pages/layout/top-nav.html"&gt;&lt;i class="fa fa-circle-o"&gt;&lt;/i&gt; Top Navigation&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href="pages/layout/boxed.html"&gt;&lt;i class="fa fa-circle-o"&gt;&lt;/i&gt; Boxed&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href="pages/layout/fixed.html"&gt;&lt;i class="fa fa-circle-o"&gt;&lt;/i&gt; Fixed&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href="pages/layout/collapsed-sidebar.html"&gt;&lt;i class="fa fa-circle-o"&gt;&lt;/i&gt; Collapsed Sidebar&lt;/a&gt;&lt;/li&gt;
+              &lt;/ul&gt;
+            &lt;/li&gt;
+            &lt;li&gt;
+              &lt;a href="pages/widgets.html"&gt;
+                &lt;i class="fa fa-th"&gt;&lt;/i&gt; &lt;span&gt;Widgets&lt;/span&gt; &lt;small class="label pull-right bg-green"&gt;new&lt;/small&gt;
+              &lt;/a&gt;
+            &lt;/li&gt;
+            &lt;li class="treeview"&gt;
+              &lt;a href="#"&gt;
+                &lt;i class="fa fa-pie-chart"&gt;&lt;/i&gt;
+                &lt;span&gt;Charts&lt;/span&gt;
+                &lt;i class="fa fa-angle-left pull-right"&gt;&lt;/i&gt;
+              &lt;/a&gt;
+              &lt;ul class="treeview-menu"&gt;
+                &lt;li&gt;&lt;a href="pages/charts/morris.html"&gt;&lt;i class="fa fa-circle-o"&gt;&lt;/i&gt; Morris&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href="pages/charts/flot.html"&gt;&lt;i class="fa fa-circle-o"&gt;&lt;/i&gt; Flot&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href="pages/charts/inline.html"&gt;&lt;i class="fa fa-circle-o"&gt;&lt;/i&gt; Inline charts&lt;/a&gt;&lt;/li&gt;
+              &lt;/ul&gt;
+            &lt;/li&gt;
+            &lt;li class="treeview"&gt;
+              &lt;a href="#"&gt;
+                &lt;i class="fa fa-laptop"&gt;&lt;/i&gt;
+                &lt;span&gt;UI Elements&lt;/span&gt;
+                &lt;i class="fa fa-angle-left pull-right"&gt;&lt;/i&gt;
+              &lt;/a&gt;
+              &lt;ul class="treeview-menu"&gt;
+                &lt;li&gt;&lt;a href="pages/UI/general.html"&gt;&lt;i class="fa fa-circle-o"&gt;&lt;/i&gt; General&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href="pages/UI/icons.html"&gt;&lt;i class="fa fa-circle-o"&gt;&lt;/i&gt; Icons&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href="pages/UI/buttons.html"&gt;&lt;i class="fa fa-circle-o"&gt;&lt;/i&gt; Buttons&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href="pages/UI/sliders.html"&gt;&lt;i class="fa fa-circle-o"&gt;&lt;/i&gt; Sliders&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href="pages/UI/timeline.html"&gt;&lt;i class="fa fa-circle-o"&gt;&lt;/i&gt; Timeline&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href="pages/UI/modals.html"&gt;&lt;i class="fa fa-circle-o"&gt;&lt;/i&gt; Modals&lt;/a&gt;&lt;/li&gt;
+              &lt;/ul&gt;
+            &lt;/li&gt;
+            &lt;li class="treeview"&gt;
+              &lt;a href="#"&gt;
+                &lt;i class="fa fa-edit"&gt;&lt;/i&gt; &lt;span&gt;Forms&lt;/span&gt;
+                &lt;i class="fa fa-angle-left pull-right"&gt;&lt;/i&gt;
+              &lt;/a&gt;
+              &lt;ul class="treeview-menu"&gt;
+                &lt;li&gt;&lt;a href="pages/forms/general.html"&gt;&lt;i class="fa fa-circle-o"&gt;&lt;/i&gt; General Elements&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href="pages/forms/advanced.html"&gt;&lt;i class="fa fa-circle-o"&gt;&lt;/i&gt; Advanced Elements&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href="pages/forms/editors.html"&gt;&lt;i class="fa fa-circle-o"&gt;&lt;/i&gt; Editors&lt;/a&gt;&lt;/li&gt;
+              &lt;/ul&gt;
+            &lt;/li&gt;
+            &lt;li class="treeview"&gt;
+              &lt;a href="#"&gt;
+                &lt;i class="fa fa-table"&gt;&lt;/i&gt; &lt;span&gt;Tables&lt;/span&gt;
+                &lt;i class="fa fa-angle-left pull-right"&gt;&lt;/i&gt;
+              &lt;/a&gt;
+              &lt;ul class="treeview-menu"&gt;
+                &lt;li&gt;&lt;a href="pages/tables/simple.html"&gt;&lt;i class="fa fa-circle-o"&gt;&lt;/i&gt; Simple tables&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href="pages/tables/data.html"&gt;&lt;i class="fa fa-circle-o"&gt;&lt;/i&gt; Data tables&lt;/a&gt;&lt;/li&gt;
+              &lt;/ul&gt;
+            &lt;/li&gt;
+            &lt;li&gt;
+              &lt;a href="pages/calendar.html"&gt;
+                &lt;i class="fa fa-calendar"&gt;&lt;/i&gt; &lt;span&gt;Calendar&lt;/span&gt;
+                &lt;small class="label pull-right bg-red"&gt;3&lt;/small&gt;
+              &lt;/a&gt;
+            &lt;/li&gt;
+            &lt;li&gt;
+              &lt;a href="pages/mailbox/mailbox.html"&gt;
+                &lt;i class="fa fa-envelope"&gt;&lt;/i&gt; &lt;span&gt;Mailbox&lt;/span&gt;
+                &lt;small class="label pull-right bg-yellow"&gt;12&lt;/small&gt;
+              &lt;/a&gt;
+            &lt;/li&gt;
+            &lt;li class="treeview"&gt;
+              &lt;a href="#"&gt;
+                &lt;i class="fa fa-folder"&gt;&lt;/i&gt; &lt;span&gt;Examples&lt;/span&gt;
+                &lt;i class="fa fa-angle-left pull-right"&gt;&lt;/i&gt;
+              &lt;/a&gt;
+              &lt;ul class="treeview-menu"&gt;
+                &lt;li&gt;&lt;a href="pages/examples/invoice.html"&gt;&lt;i class="fa fa-circle-o"&gt;&lt;/i&gt; Invoice&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href="pages/examples/login.html"&gt;&lt;i class="fa fa-circle-o"&gt;&lt;/i&gt; Login&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href="pages/examples/register.html"&gt;&lt;i class="fa fa-circle-o"&gt;&lt;/i&gt; Register&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href="pages/examples/lockscreen.html"&gt;&lt;i class="fa fa-circle-o"&gt;&lt;/i&gt; Lockscreen&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href="pages/examples/404.html"&gt;&lt;i class="fa fa-circle-o"&gt;&lt;/i&gt; 404 Error&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href="pages/examples/500.html"&gt;&lt;i class="fa fa-circle-o"&gt;&lt;/i&gt; 500 Error&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href="pages/examples/blank.html"&gt;&lt;i class="fa fa-circle-o"&gt;&lt;/i&gt; Blank Page&lt;/a&gt;&lt;/li&gt;
+              &lt;/ul&gt;
+            &lt;/li&gt;
+            &lt;li class="treeview"&gt;
+              &lt;a href="#"&gt;
+                &lt;i class="fa fa-share"&gt;&lt;/i&gt; &lt;span&gt;Multilevel&lt;/span&gt;
+                &lt;i class="fa fa-angle-left pull-right"&gt;&lt;/i&gt;
+              &lt;/a&gt;
+              &lt;ul class="treeview-menu"&gt;
+                &lt;li&gt;&lt;a href="#"&gt;&lt;i class="fa fa-circle-o"&gt;&lt;/i&gt; Level One&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;
+                  &lt;a href="#"&gt;&lt;i class="fa fa-circle-o"&gt;&lt;/i&gt; Level One &lt;i class="fa fa-angle-left pull-right"&gt;&lt;/i&gt;&lt;/a&gt;
+                  &lt;ul class="treeview-menu"&gt;
+                    &lt;li&gt;&lt;a href="#"&gt;&lt;i class="fa fa-circle-o"&gt;&lt;/i&gt; Level Two&lt;/a&gt;&lt;/li&gt;
+                    &lt;li&gt;
+                      &lt;a href="#"&gt;&lt;i class="fa fa-circle-o"&gt;&lt;/i&gt; Level Two &lt;i class="fa fa-angle-left pull-right"&gt;&lt;/i&gt;&lt;/a&gt;
+                      &lt;ul class="treeview-menu"&gt;
+                        &lt;li&gt;&lt;a href="#"&gt;&lt;i class="fa fa-circle-o"&gt;&lt;/i&gt; Level Three&lt;/a&gt;&lt;/li&gt;
+                        &lt;li&gt;&lt;a href="#"&gt;&lt;i class="fa fa-circle-o"&gt;&lt;/i&gt; Level Three&lt;/a&gt;&lt;/li&gt;
+                      &lt;/ul&gt;
+                    &lt;/li&gt;
+                  &lt;/ul&gt;
+                &lt;/li&gt;
+                &lt;li&gt;&lt;a href="#"&gt;&lt;i class="fa fa-circle-o"&gt;&lt;/i&gt; Level One&lt;/a&gt;&lt;/li&gt;
+              &lt;/ul&gt;
+            &lt;/li&gt;
+            &lt;li&gt;&lt;a href="documentation/index.html"&gt;&lt;i class="fa fa-book"&gt;&lt;/i&gt; Documentation&lt;/a&gt;&lt;/li&gt;
+            &lt;li class="header"&gt;LABELS&lt;/li&gt;
+            &lt;li&gt;&lt;a href="#"&gt;&lt;i class="fa fa-circle-o text-danger"&gt;&lt;/i&gt; Important&lt;/a&gt;&lt;/li&gt;
+            &lt;li&gt;&lt;a href="#"&gt;&lt;i class="fa fa-circle-o text-warning"&gt;&lt;/i&gt; Warning&lt;/a&gt;&lt;/li&gt;
+            &lt;li&gt;&lt;a href="#"&gt;&lt;i class="fa fa-circle-o text-info"&gt;&lt;/i&gt; Information&lt;/a&gt;&lt;/li&gt;
+          &lt;/ul&gt;
+        &lt;/section&gt;
+        &lt;!-- /.sidebar --&gt;
+      &lt;/aside&gt;
+
+      &lt;!-- Content Wrapper. Contains page content --&gt;
+      &lt;div class="content-wrapper"&gt;
+        &lt;!-- Content Header (Page header) --&gt;
+        &lt;section class="content-header"&gt;
+          &lt;h1&gt;
+            Dashboard
+            &lt;small&gt;Control panel&lt;/small&gt;
+          &lt;/h1&gt;
+          &lt;ol class="breadcrumb"&gt;
+            &lt;li&gt;&lt;a href="#"&gt;&lt;i class="fa fa-dashboard"&gt;&lt;/i&gt; Home&lt;/a&gt;&lt;/li&gt;
+            &lt;li class="active"&gt;Dashboard&lt;/li&gt;
+          &lt;/ol&gt;
+        &lt;/section&gt;
+
+        &lt;!-- Main content --&gt;
+        &lt;section class="content"&gt;
+          &lt;!-- Small boxes (Stat box) --&gt;
+          &lt;div class="row"&gt;
+            &lt;div class="col-lg-3 col-xs-6"&gt;
+              &lt;!-- small box --&gt;
+              &lt;div class="small-box bg-aqua"&gt;
+                &lt;div class="inner"&gt;
+                  &lt;h3&gt;150&lt;/h3&gt;
+                  &lt;p&gt;New Orders&lt;/p&gt;
+                &lt;/div&gt;
+                &lt;div class="icon"&gt;
+                  &lt;i class="ion ion-bag"&gt;&lt;/i&gt;
+                &lt;/div&gt;
+                &lt;a href="#" class="small-box-footer"&gt;More info &lt;i class="fa fa-arrow-circle-right"&gt;&lt;/i&gt;&lt;/a&gt;
+              &lt;/div&gt;
+            &lt;/div&gt;&lt;!-- ./col --&gt;
+            &lt;div class="col-lg-3 col-xs-6"&gt;
+              &lt;!-- small box --&gt;
+              &lt;div class="small-box bg-green"&gt;
+                &lt;div class="inner"&gt;
+                  &lt;h3&gt;53&lt;sup style="font-size: 20px"&gt;%&lt;/sup&gt;&lt;/h3&gt;
+                  &lt;p&gt;Bounce Rate&lt;/p&gt;
+                &lt;/div&gt;
+                &lt;div class="icon"&gt;
+                  &lt;i class="ion ion-stats-bars"&gt;&lt;/i&gt;
+                &lt;/div&gt;
+                &lt;a href="#" class="small-box-footer"&gt;More info &lt;i class="fa fa-arrow-circle-right"&gt;&lt;/i&gt;&lt;/a&gt;
+              &lt;/div&gt;
+            &lt;/div&gt;&lt;!-- ./col --&gt;
+            &lt;div class="col-lg-3 col-xs-6"&gt;
+              &lt;!-- small box --&gt;
+              &lt;div class="small-box bg-yellow"&gt;
+                &lt;div class="inner"&gt;
+                  &lt;h3&gt;44&lt;/h3&gt;
+                  &lt;p&gt;User Registrations&lt;/p&gt;
+                &lt;/div&gt;
+                &lt;div class="icon"&gt;
+                  &lt;i class="ion ion-person-add"&gt;&lt;/i&gt;
+                &lt;/div&gt;
+                &lt;a href="#" class="small-box-footer"&gt;More info &lt;i class="fa fa-arrow-circle-right"&gt;&lt;/i&gt;&lt;/a&gt;
+              &lt;/div&gt;
+            &lt;/div&gt;&lt;!-- ./col --&gt;
+            &lt;div class="col-lg-3 col-xs-6"&gt;
+              &lt;!-- small box --&gt;
+              &lt;div class="small-box bg-red"&gt;
+                &lt;div class="inner"&gt;
+                  &lt;h3&gt;65&lt;/h3&gt;
+                  &lt;p&gt;Unique Visitors&lt;/p&gt;
+                &lt;/div&gt;
+                &lt;div class="icon"&gt;
+                  &lt;i class="ion ion-pie-graph"&gt;&lt;/i&gt;
+                &lt;/div&gt;
+                &lt;a href="#" class="small-box-footer"&gt;More info &lt;i class="fa fa-arrow-circle-right"&gt;&lt;/i&gt;&lt;/a&gt;
+              &lt;/div&gt;
+            &lt;/div&gt;&lt;!-- ./col --&gt;
+          &lt;/div&gt;&lt;!-- /.row --&gt;
+          &lt;!-- Main row --&gt;
+          &lt;div class="row"&gt;
+            &lt;!-- Left col --&gt;
+            &lt;section class="col-lg-7 connectedSortable"&gt;
+              &lt;!-- Custom tabs (Charts with tabs)--&gt;
+              &lt;div class="nav-tabs-custom"&gt;
+                &lt;!-- Tabs within a box --&gt;
+                &lt;ul class="nav nav-tabs pull-right"&gt;
+                  &lt;li class="active"&gt;&lt;a href="#revenue-chart" data-toggle="tab"&gt;Area&lt;/a&gt;&lt;/li&gt;
+                  &lt;li&gt;&lt;a href="#sales-chart" data-toggle="tab"&gt;Donut&lt;/a&gt;&lt;/li&gt;
+                  &lt;li class="pull-left header"&gt;&lt;i class="fa fa-inbox"&gt;&lt;/i&gt; Sales&lt;/li&gt;
+                &lt;/ul&gt;
+                &lt;div class="tab-content no-padding"&gt;
+                  &lt;!-- Morris chart - Sales --&gt;
+                  &lt;div class="chart tab-pane active" id="revenue-chart" style="position: relative; height: 300px;"&gt;&lt;/div&gt;
+                  &lt;div class="chart tab-pane" id="sales-chart" style="position: relative; height: 300px;"&gt;&lt;/div&gt;
+                &lt;/div&gt;
+              &lt;/div&gt;&lt;!-- /.nav-tabs-custom --&gt;
+
+              &lt;!-- Chat box --&gt;
+              &lt;div class="box box-success"&gt;
+                &lt;div class="box-header"&gt;
+                  &lt;i class="fa fa-comments-o"&gt;&lt;/i&gt;
+                  &lt;h3 class="box-title"&gt;Chat&lt;/h3&gt;
+                  &lt;div class="box-tools pull-right" data-toggle="tooltip" title="Status"&gt;
+                    &lt;div class="btn-group" data-toggle="btn-toggle" &gt;
+                      &lt;button type="button" class="btn btn-default btn-sm active"&gt;&lt;i class="fa fa-square text-green"&gt;&lt;/i&gt;&lt;/button&gt;
+                      &lt;button type="button" class="btn btn-default btn-sm"&gt;&lt;i class="fa fa-square text-red"&gt;&lt;/i&gt;&lt;/button&gt;
+                    &lt;/div&gt;
+                  &lt;/div&gt;
+                &lt;/div&gt;
+                &lt;div class="box-body chat" id="chat-box"&gt;
+                  &lt;!-- chat item --&gt;
+                  &lt;div class="item"&gt;
+                    &lt;img src="dist/img/user4-128x128.jpg" alt="user image" class="online"/&gt;
+                    &lt;p class="message"&gt;
+                      &lt;a href="#" class="name"&gt;
+                        &lt;small class="text-muted pull-right"&gt;&lt;i class="fa fa-clock-o"&gt;&lt;/i&gt; 2:15&lt;/small&gt;
+                        Mike Doe
+                      &lt;/a&gt;
+                      I would like to meet you to discuss the latest news about
+                      the arrival of the new theme. They say it is going to be one the
+                      best themes on the market
+                    &lt;/p&gt;
+                    &lt;div class="attachment"&gt;
+                      &lt;h4&gt;Attachments:&lt;/h4&gt;
+                      &lt;p class="filename"&gt;
+                        Theme-thumbnail-image.jpg
+                      &lt;/p&gt;
+                      &lt;div class="pull-right"&gt;
+                        &lt;button class="btn btn-primary btn-sm btn-flat"&gt;Open&lt;/button&gt;
+                      &lt;/div&gt;
+                    &lt;/div&gt;&lt;!-- /.attachment --&gt;
+                  &lt;/div&gt;&lt;!-- /.item --&gt;
+                  &lt;!-- chat item --&gt;
+                  &lt;div class="item"&gt;
+                    &lt;img src="dist/img/user3-128x128.jpg" alt="user image" class="offline"/&gt;
+                    &lt;p class="message"&gt;
+                      &lt;a href="#" class="name"&gt;
+                        &lt;small class="text-muted pull-right"&gt;&lt;i class="fa fa-clock-o"&gt;&lt;/i&gt; 5:15&lt;/small&gt;
+                        Alexander Pierce
+                      &lt;/a&gt;
+                      I would like to meet you to discuss the latest news about
+                      the arrival of the new theme. They say it is going to be one the
+                      best themes on the market
+                    &lt;/p&gt;
+                  &lt;/div&gt;&lt;!-- /.item --&gt;
+                  &lt;!-- chat item --&gt;
+                  &lt;div class="item"&gt;
+                    &lt;img src="dist/img/user2-160x160.jpg" alt="user image" class="offline"/&gt;
+                    &lt;p class="message"&gt;
+                      &lt;a href="#" class="name"&gt;
+                        &lt;small class="text-muted pull-right"&gt;&lt;i class="fa fa-clock-o"&gt;&lt;/i&gt; 5:30&lt;/small&gt;
+                        Susan Doe
+                      &lt;/a&gt;
+                      I would like to meet you to discuss the latest news about
+                      the arrival of the new theme. They say it is going to be one the
+                      best themes on the market
+                    &lt;/p&gt;
+                  &lt;/div&gt;&lt;!-- /.item --&gt;
+                &lt;/div&gt;&lt;!-- /.chat --&gt;
+                &lt;div class="box-footer"&gt;
+                  &lt;div class="input-group"&gt;
+                    &lt;input class="form-control" placeholder="Type message..."/&gt;
+                    &lt;div class="input-group-btn"&gt;
+                      &lt;button class="btn btn-success"&gt;&lt;i class="fa fa-plus"&gt;&lt;/i&gt;&lt;/button&gt;
+                    &lt;/div&gt;
+                  &lt;/div&gt;
+                &lt;/div&gt;
+              &lt;/div&gt;&lt;!-- /.box (chat box) --&gt;
+
+              &lt;!-- TO DO List --&gt;
+              &lt;div class="box box-primary"&gt;
+                &lt;div class="box-header"&gt;
+                  &lt;i class="ion ion-clipboard"&gt;&lt;/i&gt;
+                  &lt;h3 class="box-title"&gt;To Do List&lt;/h3&gt;
+                  &lt;div class="box-tools pull-right"&gt;
+                    &lt;ul class="pagination pagination-sm inline"&gt;
+                      &lt;li&gt;&lt;a href="#"&gt;&amp;laquo;&lt;/a&gt;&lt;/li&gt;
+                      &lt;li&gt;&lt;a href="#"&gt;1&lt;/a&gt;&lt;/li&gt;
+                      &lt;li&gt;&lt;a href="#"&gt;2&lt;/a&gt;&lt;/li&gt;
+                      &lt;li&gt;&lt;a href="#"&gt;3&lt;/a&gt;&lt;/li&gt;
+                      &lt;li&gt;&lt;a href="#"&gt;&amp;raquo;&lt;/a&gt;&lt;/li&gt;
+                    &lt;/ul&gt;
+                  &lt;/div&gt;
+                &lt;/div&gt;&lt;!-- /.box-header --&gt;
+                &lt;div class="box-body"&gt;
+                  &lt;ul class="todo-list"&gt;
+                    &lt;li&gt;
+                      &lt;!-- drag handle --&gt;
+                      &lt;span class="handle"&gt;
+                        &lt;i class="fa fa-ellipsis-v"&gt;&lt;/i&gt;
+                        &lt;i class="fa fa-ellipsis-v"&gt;&lt;/i&gt;
+                      &lt;/span&gt;
+                      &lt;!-- checkbox --&gt;
+                      &lt;input type="checkbox" value="" name=""/&gt;
+                      &lt;!-- todo text --&gt;
+                      &lt;span class="text"&gt;Design a nice theme&lt;/span&gt;
+                      &lt;!-- Emphasis label --&gt;
+                      &lt;small class="label label-danger"&gt;&lt;i class="fa fa-clock-o"&gt;&lt;/i&gt; 2 mins&lt;/small&gt;
+                      &lt;!-- General tools such as edit or delete--&gt;
+                      &lt;div class="tools"&gt;
+                        &lt;i class="fa fa-edit"&gt;&lt;/i&gt;
+                        &lt;i class="fa fa-trash-o"&gt;&lt;/i&gt;
+                      &lt;/div&gt;
+                    &lt;/li&gt;
+                    &lt;li&gt;
+                      &lt;span class="handle"&gt;
+                        &lt;i class="fa fa-ellipsis-v"&gt;&lt;/i&gt;
+                        &lt;i class="fa fa-ellipsis-v"&gt;&lt;/i&gt;
+                      &lt;/span&gt;
+                      &lt;input type="checkbox" value="" name=""/&gt;
+                      &lt;span class="text"&gt;Make the theme responsive&lt;/span&gt;
+                      &lt;small class="label label-info"&gt;&lt;i class="fa fa-clock-o"&gt;&lt;/i&gt; 4 hours&lt;/small&gt;
+                      &lt;div class="tools"&gt;
+                        &lt;i class="fa fa-edit"&gt;&lt;/i&gt;
+                        &lt;i class="fa fa-trash-o"&gt;&lt;/i&gt;
+                      &lt;/div&gt;
+                    &lt;/li&gt;
+                    &lt;li&gt;
+                      &lt;span class="handle"&gt;
+                        &lt;i class="fa fa-ellipsis-v"&gt;&lt;/i&gt;
+                        &lt;i class="fa fa-ellipsis-v"&gt;&lt;/i&gt;
+                      &lt;/span&gt;
+                      &lt;input type="checkbox" value="" name=""/&gt;
+                      &lt;span class="text"&gt;Let theme shine like a star&lt;/span&gt;
+                      &lt;small class="label label-warning"&gt;&lt;i class="fa fa-clock-o"&gt;&lt;/i&gt; 1 day&lt;/small&gt;
+                      &lt;div class="tools"&gt;
+                        &lt;i class="fa fa-edit"&gt;&lt;/i&gt;
+                        &lt;i class="fa fa-trash-o"&gt;&lt;/i&gt;
+                      &lt;/div&gt;
+                    &lt;/li&gt;
+                    &lt;li&gt;
+                      &lt;span class="handle"&gt;
+                        &lt;i class="fa fa-ellipsis-v"&gt;&lt;/i&gt;
+                        &lt;i class="fa fa-ellipsis-v"&gt;&lt;/i&gt;
+                      &lt;/span&gt;
+                      &lt;input type="checkbox" value="" name=""/&gt;
+                      &lt;span class="text"&gt;Let theme shine like a star&lt;/span&gt;
+                      &lt;small class="label label-success"&gt;&lt;i class="fa fa-clock-o"&gt;&lt;/i&gt; 3 days&lt;/small&gt;
+                      &lt;div class="tools"&gt;
+                        &lt;i class="fa fa-edit"&gt;&lt;/i&gt;
+                        &lt;i class="fa fa-trash-o"&gt;&lt;/i&gt;
+                      &lt;/div&gt;
+                    &lt;/li&gt;
+                    &lt;li&gt;
+                      &lt;span class="handle"&gt;
+                        &lt;i class="fa fa-ellipsis-v"&gt;&lt;/i&gt;
+                        &lt;i class="fa fa-ellipsis-v"&gt;&lt;/i&gt;
+                      &lt;/span&gt;
+                      &lt;input type="checkbox" value="" name=""/&gt;
+                      &lt;span class="text"&gt;Check your messages and notifications&lt;/span&gt;
+                      &lt;small class="label label-primary"&gt;&lt;i class="fa fa-clock-o"&gt;&lt;/i&gt; 1 week&lt;/small&gt;
+                      &lt;div class="tools"&gt;
+                        &lt;i class="fa fa-edit"&gt;&lt;/i&gt;
+                        &lt;i class="fa fa-trash-o"&gt;&lt;/i&gt;
+                      &lt;/div&gt;
+                    &lt;/li&gt;
+                    &lt;li&gt;
+                      &lt;span class="handle"&gt;
+                        &lt;i class="fa fa-ellipsis-v"&gt;&lt;/i&gt;
+                        &lt;i class="fa fa-ellipsis-v"&gt;&lt;/i&gt;
+                      &lt;/span&gt;
+                      &lt;input type="checkbox" value="" name=""/&gt;
+                      &lt;span class="text"&gt;Let theme shine like a star&lt;/span&gt;
+                      &lt;small class="label label-default"&gt;&lt;i class="fa fa-clock-o"&gt;&lt;/i&gt; 1 month&lt;/small&gt;
+                      &lt;div class="tools"&gt;
+                        &lt;i class="fa fa-edit"&gt;&lt;/i&gt;
+                        &lt;i class="fa fa-trash-o"&gt;&lt;/i&gt;
+                      &lt;/div&gt;
+                    &lt;/li&gt;
+                  &lt;/ul&gt;
+                &lt;/div&gt;&lt;!-- /.box-body --&gt;
+                &lt;div class="box-footer clearfix no-border"&gt;
+                  &lt;button class="btn btn-default pull-right"&gt;&lt;i class="fa fa-plus"&gt;&lt;/i&gt; Add item&lt;/button&gt;
+                &lt;/div&gt;
+              &lt;/div&gt;&lt;!-- /.box --&gt;
+
+              &lt;!-- quick email widget --&gt;
+              &lt;div class="box box-info"&gt;
+                &lt;div class="box-header"&gt;
+                  &lt;i class="fa fa-envelope"&gt;&lt;/i&gt;
+                  &lt;h3 class="box-title"&gt;Quick Email&lt;/h3&gt;
+                  &lt;!-- tools box --&gt;
+                  &lt;div class="pull-right box-tools"&gt;
+                    &lt;button class="btn btn-info btn-sm" data-widget="remove" data-toggle="tooltip" title="Remove"&gt;&lt;i class="fa fa-times"&gt;&lt;/i&gt;&lt;/button&gt;
+                  &lt;/div&gt;&lt;!-- /. tools --&gt;
+                &lt;/div&gt;
+                &lt;div class="box-body"&gt;
+                  &lt;form action="#" method="post"&gt;
+                    &lt;div class="form-group"&gt;
+                      &lt;input type="email" class="form-control" name="emailto" placeholder="Email to:"/&gt;
+                    &lt;/div&gt;
+                    &lt;div class="form-group"&gt;
+                      &lt;input type="text" class="form-control" name="subject" placeholder="Subject"/&gt;
+                    &lt;/div&gt;
+                    &lt;div&gt;
+                      &lt;textarea class="textarea" placeholder="Message" style="width: 100%; height: 125px; font-size: 14px; line-height: 18px; border: 1px solid #dddddd; padding: 10px;"&gt;&lt;/textarea&gt;
+                    &lt;/div&gt;
+                  &lt;/form&gt;
+                &lt;/div&gt;
+                &lt;div class="box-footer clearfix"&gt;
+                  &lt;button class="pull-right btn btn-default" id="sendEmail"&gt;Send &lt;i class="fa fa-arrow-circle-right"&gt;&lt;/i&gt;&lt;/button&gt;
+                &lt;/div&gt;
+              &lt;/div&gt;
+
+            &lt;/section&gt;&lt;!-- /.Left col --&gt;
+            &lt;!-- right col (We are only adding the ID to make the widgets sortable)--&gt;
+            &lt;section class="col-lg-5 connectedSortable"&gt;
+
+              &lt;!-- Map box --&gt;
+              &lt;div class="box box-solid bg-light-blue-gradient"&gt;
+                &lt;div class="box-header"&gt;
+                  &lt;!-- tools box --&gt;
+                  &lt;div class="pull-right box-tools"&gt;
+                    &lt;button class="btn btn-primary btn-sm daterange pull-right" data-toggle="tooltip" title="Date range"&gt;&lt;i class="fa fa-calendar"&gt;&lt;/i&gt;&lt;/button&gt;
+                    &lt;button class="btn btn-primary btn-sm pull-right" data-widget='collapse' data-toggle="tooltip" title="Collapse" style="margin-right: 5px;"&gt;&lt;i class="fa fa-minus"&gt;&lt;/i&gt;&lt;/button&gt;
+                  &lt;/div&gt;&lt;!-- /. tools --&gt;
+
+                  &lt;i class="fa fa-map-marker"&gt;&lt;/i&gt;
+                  &lt;h3 class="box-title"&gt;
+                    Visitors
+                  &lt;/h3&gt;
+                &lt;/div&gt;
+                &lt;div class="box-body"&gt;
+                  &lt;div id="world-map" style="height: 250px; width: 100%;"&gt;&lt;/div&gt;
+                &lt;/div&gt;&lt;!-- /.box-body--&gt;
+                &lt;div class="box-footer no-border"&gt;
+                  &lt;div class="row"&gt;
+                    &lt;div class="col-xs-4 text-center" style="border-right: 1px solid #f4f4f4"&gt;
+                      &lt;div id="sparkline-1"&gt;&lt;/div&gt;
+                      &lt;div class="knob-label"&gt;Visitors&lt;/div&gt;
+                    &lt;/div&gt;&lt;!-- ./col --&gt;
+                    &lt;div class="col-xs-4 text-center" style="border-right: 1px solid #f4f4f4"&gt;
+                      &lt;div id="sparkline-2"&gt;&lt;/div&gt;
+                      &lt;div class="knob-label"&gt;Online&lt;/div&gt;
+                    &lt;/div&gt;&lt;!-- ./col --&gt;
+                    &lt;div class="col-xs-4 text-center"&gt;
+                      &lt;div id="sparkline-3"&gt;&lt;/div&gt;
+                      &lt;div class="knob-label"&gt;Exists&lt;/div&gt;
+                    &lt;/div&gt;&lt;!-- ./col --&gt;
+                  &lt;/div&gt;&lt;!-- /.row --&gt;
+                &lt;/div&gt;
+              &lt;/div&gt;
+              &lt;!-- /.box --&gt;
+
+              &lt;!-- solid sales graph --&gt;
+              &lt;div class="box box-solid bg-teal-gradient"&gt;
+                &lt;div class="box-header"&gt;
+                  &lt;i class="fa fa-th"&gt;&lt;/i&gt;
+                  &lt;h3 class="box-title"&gt;Sales Graph&lt;/h3&gt;
+                  &lt;div class="box-tools pull-right"&gt;
+                    &lt;button class="btn bg-teal btn-sm" data-widget="collapse"&gt;&lt;i class="fa fa-minus"&gt;&lt;/i&gt;&lt;/button&gt;
+                    &lt;button class="btn bg-teal btn-sm" data-widget="remove"&gt;&lt;i class="fa fa-times"&gt;&lt;/i&gt;&lt;/button&gt;
+                  &lt;/div&gt;
+                &lt;/div&gt;
+                &lt;div class="box-body border-radius-none"&gt;
+                  &lt;div class="chart" id="line-chart" style="height: 250px;"&gt;&lt;/div&gt;
+                &lt;/div&gt;&lt;!-- /.box-body --&gt;
+                &lt;div class="box-footer no-border"&gt;
+                  &lt;div class="row"&gt;
+                    &lt;div class="col-xs-4 text-center" style="border-right: 1px solid #f4f4f4"&gt;
+                      &lt;input type="text" class="knob" data-readonly="true" value="20" data-width="60" data-height="60" data-fgColor="#39CCCC"/&gt;
+                      &lt;div class="knob-label"&gt;Mail-Orders&lt;/div&gt;
+                    &lt;/div&gt;&lt;!-- ./col --&gt;
+                    &lt;div class="col-xs-4 text-center" style="border-right: 1px solid #f4f4f4"&gt;
+                      &lt;input type="text" class="knob" data-readonly="true" value="50" data-width="60" data-height="60" data-fgColor="#39CCCC"/&gt;
+                      &lt;div class="knob-label"&gt;Online&lt;/div&gt;
+                    &lt;/div&gt;&lt;!-- ./col --&gt;
+                    &lt;div class="col-xs-4 text-center"&gt;
+                      &lt;input type="text" class="knob" data-readonly="true" value="30" data-width="60" data-height="60" data-fgColor="#39CCCC"/&gt;
+                      &lt;div class="knob-label"&gt;In-Store&lt;/div&gt;
+                    &lt;/div&gt;&lt;!-- ./col --&gt;
+                  &lt;/div&gt;&lt;!-- /.row --&gt;
+                &lt;/div&gt;&lt;!-- /.box-footer --&gt;
+              &lt;/div&gt;&lt;!-- /.box --&gt;
+
+              &lt;!-- Calendar --&gt;
+              &lt;div class="box box-solid bg-green-gradient"&gt;
+                &lt;div class="box-header"&gt;
+                  &lt;i class="fa fa-calendar"&gt;&lt;/i&gt;
+                  &lt;h3 class="box-title"&gt;Calendar&lt;/h3&gt;
+                  &lt;!-- tools box --&gt;
+                  &lt;div class="pull-right box-tools"&gt;
+                    &lt;!-- button with a dropdown --&gt;
+                    &lt;div class="btn-group"&gt;
+                      &lt;button class="btn btn-success btn-sm dropdown-toggle" data-toggle="dropdown"&gt;&lt;i class="fa fa-bars"&gt;&lt;/i&gt;&lt;/button&gt;
+                      &lt;ul class="dropdown-menu pull-right" role="menu"&gt;
+                        &lt;li&gt;&lt;a href="#"&gt;Add new event&lt;/a&gt;&lt;/li&gt;
+                        &lt;li&gt;&lt;a href="#"&gt;Clear events&lt;/a&gt;&lt;/li&gt;
+                        &lt;li class="divider"&gt;&lt;/li&gt;
+                        &lt;li&gt;&lt;a href="#"&gt;View calendar&lt;/a&gt;&lt;/li&gt;
+                      &lt;/ul&gt;
+                    &lt;/div&gt;
+                    &lt;button class="btn btn-success btn-sm" data-widget="collapse"&gt;&lt;i class="fa fa-minus"&gt;&lt;/i&gt;&lt;/button&gt;
+                    &lt;button class="btn btn-success btn-sm" data-widget="remove"&gt;&lt;i class="fa fa-times"&gt;&lt;/i&gt;&lt;/button&gt;
+                  &lt;/div&gt;&lt;!-- /. tools --&gt;
+                &lt;/div&gt;&lt;!-- /.box-header --&gt;
+                &lt;div class="box-body no-padding"&gt;
+                  &lt;!--The calendar --&gt;
+                  &lt;div id="calendar" style="width: 100%"&gt;&lt;/div&gt;
+                &lt;/div&gt;&lt;!-- /.box-body --&gt;
+                &lt;div class="box-footer text-black"&gt;
+                  &lt;div class="row"&gt;
+                    &lt;div class="col-sm-6"&gt;
+                      &lt;!-- Progress bars --&gt;
+                      &lt;div class="clearfix"&gt;
+                        &lt;span class="pull-left"&gt;Task #1&lt;/span&gt;
+                        &lt;small class="pull-right"&gt;90%&lt;/small&gt;
+                      &lt;/div&gt;
+                      &lt;div class="progress xs"&gt;
+                        &lt;div class="progress-bar progress-bar-green" style="width: 90%;"&gt;&lt;/div&gt;
+                      &lt;/div&gt;
+
+                      &lt;div class="clearfix"&gt;
+                        &lt;span class="pull-left"&gt;Task #2&lt;/span&gt;
+                        &lt;small class="pull-right"&gt;70%&lt;/small&gt;
+                      &lt;/div&gt;
+                      &lt;div class="progress xs"&gt;
+                        &lt;div class="progress-bar progress-bar-green" style="width: 70%;"&gt;&lt;/div&gt;
+                      &lt;/div&gt;
+                    &lt;/div&gt;&lt;!-- /.col --&gt;
+                    &lt;div class="col-sm-6"&gt;
+                      &lt;div class="clearfix"&gt;
+                        &lt;span class="pull-left"&gt;Task #3&lt;/span&gt;
+                        &lt;small class="pull-right"&gt;60%&lt;/small&gt;
+                      &lt;/div&gt;
+                      &lt;div class="progress xs"&gt;
+                        &lt;div class="progress-bar progress-bar-green" style="width: 60%;"&gt;&lt;/div&gt;
+                      &lt;/div&gt;
+
+                      &lt;div class="clearfix"&gt;
+                        &lt;span class="pull-left"&gt;Task #4&lt;/span&gt;
+                        &lt;small class="pull-right"&gt;40%&lt;/small&gt;
+                      &lt;/div&gt;
+                      &lt;div class="progress xs"&gt;
+                        &lt;div class="progress-bar progress-bar-green" style="width: 40%;"&gt;&lt;/div&gt;
+                      &lt;/div&gt;
+                    &lt;/div&gt;&lt;!-- /.col --&gt;
+                  &lt;/div&gt;&lt;!-- /.row --&gt;
+                &lt;/div&gt;
+              &lt;/div&gt;&lt;!-- /.box --&gt;
+
+            &lt;/section&gt;&lt;!-- right col --&gt;
+          &lt;/div&gt;&lt;!-- /.row (main row) --&gt;
+
+        &lt;/section&gt;&lt;!-- /.content --&gt;
+      &lt;/div&gt;&lt;!-- /.content-wrapper --&gt;
+      &lt;footer class="main-footer"&gt;
+        &lt;div class="pull-right hidden-xs"&gt;
+          &lt;b&gt;Version&lt;/b&gt; 2.0
+        &lt;/div&gt;
+        &lt;strong&gt;Copyright &amp;copy; 2014-2015 &lt;a href="http://almsaeedstudio.com"&gt;Almsaeed Studio&lt;/a&gt;.&lt;/strong&gt; All rights reserved.
+      &lt;/footer&gt;
+    &lt;/div&gt;&lt;!-- ./wrapper --&gt;
+
+    &lt;!-- jQuery 2.1.3 --&gt;
+    &lt;script src="plugins/jQuery/jQuery-2.1.3.min.js"&gt;&lt;/script&gt;
+    &lt;!-- jQuery UI 1.11.2 --&gt;
+    &lt;script src="http://code.jquery.com/ui/1.11.2/jquery-ui.min.js" type="text/javascript"&gt;&lt;/script&gt;
+    &lt;!-- Resolve conflict in jQuery UI tooltip with Bootstrap tooltip --&gt;
+    &lt;script&gt;
+      $.widget.bridge('uibutton', $.ui.button);
+    &lt;/script&gt;
+    &lt;!-- Bootstrap 3.3.2 JS --&gt;
+    &lt;script src="bootstrap/js/bootstrap.min.js" type="text/javascript"&gt;&lt;/script&gt;    
+    &lt;!-- Morris.js charts --&gt;
+    &lt;script src="http://cdnjs.cloudflare.com/ajax/libs/raphael/2.1.0/raphael-min.js"&gt;&lt;/script&gt;
+    &lt;script src="plugins/morris/morris.min.js" type="text/javascript"&gt;&lt;/script&gt;
+    &lt;!-- Sparkline --&gt;
+    &lt;script src="plugins/sparkline/jquery.sparkline.min.js" type="text/javascript"&gt;&lt;/script&gt;
+    &lt;!-- jvectormap --&gt;
+    &lt;script src="plugins/jvectormap/jquery-jvectormap-1.2.2.min.js" type="text/javascript"&gt;&lt;/script&gt;
+    &lt;script src="plugins/jvectormap/jquery-jvectormap-world-mill-en.js" type="text/javascript"&gt;&lt;/script&gt;
+    &lt;!-- jQuery Knob Chart --&gt;
+    &lt;script src="plugins/knob/jquery.knob.js" type="text/javascript"&gt;&lt;/script&gt;
+    &lt;!-- daterangepicker --&gt;
+    &lt;script src="plugins/daterangepicker/daterangepicker.js" type="text/javascript"&gt;&lt;/script&gt;
+    &lt;!-- datepicker --&gt;
+    &lt;script src="plugins/datepicker/bootstrap-datepicker.js" type="text/javascript"&gt;&lt;/script&gt;
+    &lt;!-- Bootstrap WYSIHTML5 --&gt;
+    &lt;script src="plugins/bootstrap-wysihtml5/bootstrap3-wysihtml5.all.min.js" type="text/javascript"&gt;&lt;/script&gt;
+    &lt;!-- iCheck --&gt;
+    &lt;script src="plugins/iCheck/icheck.min.js" type="text/javascript"&gt;&lt;/script&gt;
+    &lt;!-- Slimscroll --&gt;
+    &lt;script src="plugins/slimScroll/jquery.slimscroll.min.js" type="text/javascript"&gt;&lt;/script&gt;
+    &lt;!-- FastClick --&gt;
+    &lt;script src='plugins/fastclick/fastclick.min.js'&gt;&lt;/script&gt;
+    &lt;!-- AdminLTE App --&gt;
+    &lt;script src="dist/js/app.min.js" type="text/javascript"&gt;&lt;/script&gt;
+
+    &lt;!-- AdminLTE dashboard demo (This is only for demo purposes) --&gt;
+    &lt;script src="dist/js/pages/dashboard.js" type="text/javascript"&gt;&lt;/script&gt;
+
+    &lt;!-- AdminLTE for demo purposes --&gt;
+    &lt;script src="dist/js/demo.js" type="text/javascript"&gt;&lt;/script&gt;
+  &lt;/body&gt;
+&lt;/html&gt;</page><class __ideDiagramId="dg60ca5fd97e27407392fb5590b3c82b76" name="DvObject" __ideNodeOpen="true">class DvObject extends \model\Model {
+//  public static function getRowClass(){
+//  }
+  public static function getQuery(){
+    return 'select * from objects where name=:name';
+  }
+}</class></package></diagram><diagram __ideNodeOpen="true"><!--{"diagram":{"zoom":1,"scrollTop":0,"scrollLeft":0},"dgbd2d4c0a1b4e40c79977aae06b95dba4":"position: absolute; height: 300px; left: 27px; top: 21px; width: 765px;","dg28fb7990dad54d8a8ee70d4d57f5b7ac":"position: absolute; height: 26px; left: 38px; top: 49px; width: 195px;"}--><package __ideDiagramId="dgbd2d4c0a1b4e40c79977aae06b95dba4" name="rest" __ideNodeOpen="false"><class __ideDiagramId="dg28fb7990dad54d8a8ee70d4d57f5b7ac" name="Rest">use fkooman\Http\JsonResponse;
+use fkooman\Rest\Service;
+use fkooman\Http\Exception\BadRequestException;
+
+class Rest /*extends \dvf\Context*/ {
+  function init($classes){
+    try {
+        $service = new Service();
+        foreach($classes as $c) {
+          $this-&gt;registerClass($service, $c);
+        }
+        $service-&gt;get('/rest/list', function(){
+          $response = new \fkooman\Http\JsonResponse();
+          $response-&gt;setContent([]);
+          return $response;
+        });
+        $service-&gt;run()-&gt;sendResponse();
+    } catch (\fkooman\Http\Exception\NotFoundException $e) {
+        //
+    } catch (Exception $e) {
+        Service::handleException($e)-&gt;sendResponse();
+    }
+  }
+  function registerClass($service, $c){
+        $rc = new \ReflectionClass($c);
+        $doc = $rc-&gt;getDocComment();
+        if(preg_match('/@Path\([\'"](.+)[\'"]\)/i',$doc,$ma)) {
+          $urlBase = $ma[1];
+        } else {
+        }
+        foreach(get_class_methods($c) as $m){
+          $r = new \ReflectionMethod($c, $m);
+          $doc = $r-&gt;getDocComment();
+          $params = $r-&gt;getParameters();
+          $sparams = '';
+          foreach($params as $p){
+            $sparams.=',$'.$p-&gt;getName();
+          }
+          //@GET
+          if(preg_match('/@GET/i',$doc)) $type="get";
+          //@POST
+          if(preg_match('/@POST/i',$doc)) $type="post";
+          //@Path("/xml/:firstName")
+          if(preg_match('/@Path\([\'"](.+)[\'"]\)/i',$doc,$ma)) {
+            $url = $ma[1];
+          } else {
+            continue;
+            $url = '/'.strtolower( basename(str_replace('\\','/',$c)) ).'/'.$m;
+            foreach($params as $p){
+              $url.='/:'.$p-&gt;getName();
+            }
+          }
+          //@Produces("application/json")
+          if(preg_match('/@Produces\([\'"](.+)[\'"]\)/i',$doc,$ma)) {
+            $produces = $ma[1];
+          } else {
+            $produces = 'application/json';
+          }
+          call_user_func(array($service, $type),
+              $urlBase . $url,
+              eval('return function('.substr($sparams,1).') use($c,$m,$produces) {
+                $o=new $c();
+                $args=func_get_args();
+                $res=call_user_func_array(array($o, $m), $args);
+                switch($produces){
+                  case "application/json":
+                    $response = new \fkooman\Http\JsonResponse();
+                    $response-&gt;setContent($res);
+                    return $response;
+                  case "text/html":
+                    return "";
+                }
+              };')
+          );
+        }
+  }
+}
+</class></package></diagram><diagram __ideNodeOpen="true"><!--{"diagram":{"zoom":1,"scrollTop":0,"scrollLeft":0},"dge5acf61f5a1b4749a192bfbd32ba4684":"position: absolute; height: 76.8519px; left: 622.655px; top: 52.0062px; width: 210.185px;","dgf4a453bff9d74e3b8b4bc248bf77d608":"position: absolute; height: 32px; left: 356px; top: 47px; width: 200px;","dg7e3ca83d18bf4266870735a3deae0782":"position: absolute; height: 473px; left: 11px; top: 14px; width: 831px;","dgab9264c1212348f2a7584528d6726469":"position: absolute; height: 66.6667px; left: 68.9969px; top: 57.0062px; width: 233.333px;","dg521fce25e83f4eaeaf5685a3f252b648":"position: absolute; height: 3px; left: 345px; top: 169px; width: 219px;","dg849c2ec82427472282b7c9a4b990c056":"position: absolute; height: 2px; left: 345px; top: 198px; width: 218px;","dg3e7ae0d989244873b14039064ddf3464":"position: absolute; height: 20px; left: 616px; top: 181px; width: 210px;","dgaf4ee1b10a624a2ca84afbb08bfb6295":"position: absolute; height: 60px; left: 80px; top: 364px; width: 210px;","dg052de4dd840f465bb7f8e5ef95935258":"position: absolute; height: 45px; left: 80px; top: 190px; width: 216px;","dga131d8ee9b0e4381b03d946d9b9f328a":"position: absolute; height: 69px; left: 616px; top: 360px; width: 204px;","dg7712d590f09642fba9e9a38f5544ffb6":"position: absolute; height: 1px; left: 345px; top: 236px; width: 213px;","dgaa500b1ab8714cd58bc6732cc317aa70":"position: absolute; height: 1px; left: 344px; top: 274px; width: 216px;","dg3663a44d2baf44d3b9be107d395f2f56":"position: absolute; height: 33px; left: 355px; top: 366px; width: 208px;","dg27990a8a6d394513a955580e559b9f93":"position: absolute; height: 4px; left: 344px; top: 303px; width: 228px;","dg58de4c0591ff43b0ba97a8026521453f":"position: absolute; height: 17px; left: 617px; top: 238px; width: 208px;","dga8d5e3b118fc4222a85fb33f2daa97da":"position: absolute; height: 42px; left: 80px; top: 281px; width: 217px;","dg7982a3bf982d4645a47a230b75a90ac8":"position: absolute; height: 12px; left: 616px; top: 460px; width: 199px;"}--><package __ideDiagramId="dg7e3ca83d18bf4266870735a3deae0782" name="model" __ideNodeOpen="false"><class name="Connection" __ideNodeOpen="true" __ideDiagramId="dge5acf61f5a1b4749a192bfbd32ba4684">
+class Connection extends \PDO implements InstanceModelInterface {
+  use PDOInstanceModelTrait;
+}
+</class><class name="PDOInstanceModelTrait" __ideNodeOpen="true" __ideDiagramId="dgf4a453bff9d74e3b8b4bc248bf77d608">
+trait PDOInstanceModelTrait{
+  static $instance=null;
+  public function instanceModel($class, $params=array()){
+    $this-&gt;setAttribute(\PDO::ATTR_STATEMENT_CLASS, array($class, array($this)));
+    $stmt=$this-&gt;prepare($class::getQuery());
+    $stmt-&gt;setParams($params);
+    $stmt-&gt;execute();
+    return $stmt;
+  }
+  public function deserializeModel($serializedModel){
+    $class=$serializedModel['class'];
+    $this-&gt;setAttribute(\PDO::ATTR_STATEMENT_CLASS, array($class, array($this)));
+    $stmt=$this-&gt;prepare($class::getQuery());
+    $stmt-&gt;setParams($serializedModel['params']);
+    $stmt-&gt;execute();
+    return $stmt;
+  }
+  public static function getInstance(){
+    if(!isset(static::$instance)){
+      static::$instance=new static;
+    }
+    return static::$instance;
+  }
+  public static function unserializeModel($serializedModel){
+    $classConn=$serializedModel['connection'];
+    $conn=$classConn::getInstance();
+    $class=$serializedModel['class'];
+    $conn-&gt;setAttribute(\PDO::ATTR_STATEMENT_CLASS, array($class, array($conn)));
+    $stmt=$conn-&gt;prepare($class::getQuery());
+    $stmt-&gt;setParams($serializedModel['params']);
+    $stmt-&gt;execute();
+    return $stmt;
+  }
+}
+</class><class name="InstanceModelInterface" __ideDiagramId="dgab9264c1212348f2a7584528d6726469" __ideNodeOpen="false">
+interface InstanceModelInterface {
+  public function instanceModel($class, $params=array());
+}</class><class name="FetchModelTrait" __ideNodeOpen="true" __ideDiagramId="dg521fce25e83f4eaeaf5685a3f252b648">
+trait FetchModelTrait {
+  public function fetch($fetch_style = \PDO::FETCH_CLASS, $cursor_orientation = \PDO::FETCH_ORI_NEXT, $cursor_offset = 0 ){
+    $this-&gt;setFetchMode( \PDO::FETCH_CLASS, static::getRowClass());
+    $row = \PDOStatement::fetch($fetch_style, $cursor_orientation, $cursor_offset);
+    if(is_object($row) &amp;&amp; $row instanceof RowInterface) {
+      $row-&gt;setModel($this);
+      $row-&gt;onfetch();
+    }
+    return $row;
+  }
+  public function fetchAll($fetch_style = \PDO::FETCH_CLASS, $fetch_argument='', $ctor_args=array()) {
+    $class=static::getRowClass();
+    $this-&gt;setFetchMode( \PDO::FETCH_CLASS, $class);
+    $rows = \PDOStatement::fetchAll($fetch_style, $class, $ctor_args);
+    if(is_array($rows)) {
+      foreach($rows as &amp;$row){
+        if($row instanceof RowInterface){
+          $row-&gt;setModel($this);
+          $row-&gt;onfetch();
+        }
+      }
+    }
+    return $rows;
+  }
+}
+</class><class name="ConnectionReferenceTrait" __ideDiagramId="dg849c2ec82427472282b7c9a4b990c056">trait ConnectionReferenceTrait{
+  public $dbh;
+  protected function __construct($dbh) {
+    $this-&gt;dbh = $dbh;
+  }
+  public function getConnection(){
+    return $this-&gt;dbh;
+  }
+}</class><class name="Model" __ideNodeOpen="true" __ideDiagramId="dg3e7ae0d989244873b14039064ddf3464">
+abstract class Model extends \PDOStatement implements ModelInterface {
+  use ConnectionReferenceTrait, FetchModelTrait, DefaultModelsRowTrait, SerializeModelTrait;
+}
+</class><class name="RowInterface" __ideNodeOpen="true" __ideDiagramId="dgaf4ee1b10a624a2ca84afbb08bfb6295">
+interface RowInterface {
+  public function onfetch();
+}
+</class><class name="ModelInterface" __ideDiagramId="dg052de4dd840f465bb7f8e5ef95935258">interface ModelInterface {
+  public static function getRowClass();
+  public static function getQuery();
+  public function getConnection();
+}</class><class name="Row" __ideDiagramId="dga131d8ee9b0e4381b03d946d9b9f328a">class Row implements RowInterface{
+  use RowDMLTrait;
+  public function onfetch(){
+  }
+}
+</class><class name="DefaultModelsRowTrait" __ideDiagramId="dg7712d590f09642fba9e9a38f5544ffb6">trait DefaultModelsRowTrait {
+  public static function getRowClass(){
+    return '\model\Row';
+  }
+}</class><class name="SerializeModelTrait" __ideDiagramId="dgaa500b1ab8714cd58bc6732cc317aa70">trait SerializeModelTrait {
+  protected $params=[];
+  public function setParams($params){
+    $this-&gt;params=$params;
+    foreach($params as $a=&gt;&amp;$b){
+      if(is_numeric($a)){
+        $this-&gt;bindParam($a+1,$b);
+      } else {
+        $this-&gt;bindParam($a,$b);
+      }
+    }
+  }
+  public function serializeMe(){
+    return ['connection'=&gt;get_class($this-&gt;getConnection()),'class'=&gt;get_class($this), 'params'=&gt;$this-&gt;params];
+  }
+}</class><class __ideDiagramId="dg3663a44d2baf44d3b9be107d395f2f56" name="RowDMLTrait">trait RowDMLTrait {
+  public function setModel($model){
+    $this-&gt;__model=$model;
+    $this-&gt;__modelSerialized=$model-&gt;serializeMe();
+    $me=$this;
+    $this-&gt;__initialValues=new \StdClass();
+    foreach($me as $k=&gt;$v) if(substr($k,0,2)!='__'){
+      $this-&gt;__initialValues-&gt;$k=$v;
+    }
+  }
+  public function insert(){
+    return $this-&gt;__model-&gt;insert($this);
+  }
+  public function update(){
+    return $this-&gt;__model-&gt;update($this);
+  }
+  public function delete(){
+    return $this-&gt;__model-&gt;delete($this);
+  }
+  //serializable
+  public function __sleep()
+  {
+    $vars = get_object_vars($this);
+    unset($vars['__model']);
+    return array_keys($vars);
+  }
+  public function __wakeup()
+  {
+    $this-&gt;__model = Connection::unserializeModel($this-&gt;__modelSerialized);
+  }
+}</class><class __ideDiagramId="dg27990a8a6d394513a955580e559b9f93" name="ModelDMLTrait">trait ModelDMLTrait {
+  static $__metadata=[];
+  static $__metadataTables=[];
+  public function loadTableMetadata($table){
+    if(isset(static::$__metadataTables[$table])){
+      return static::$__metadataTables[$table];
+    }
+    $meta=new \StdClass();
+    //COLUMNS
+    $sql="SELECT 
+      *
+    FROM 
+    information_schema.columns 
+    WHERE 
+      table_name = ? and
+      table_schema = DATABASE()";
+    $stmt=$this-&gt;dbh-&gt;prepare($sql);
+    $stmt-&gt;setParams([$table]);
+    $stmt-&gt;execute();
+    $meta-&gt;columns=[];
+    while($def=$stmt-&gt;fetch()){
+      $meta-&gt;columns[$def-&gt;COLUMN_NAME]=$def;
+    }
+    //CONSTRAINTS
+    $sql="SELECT 
+     *
+    FROM 
+      information_schema.KEY_COLUMN_USAGE KC1
+    WHERE 
+      KC1.table_name = ? and
+      KC1.table_schema = DATABASE()";
+    $stmt=$this-&gt;dbh-&gt;prepare($sql);
+    $stmt-&gt;setParams([$table]);
+    $stmt-&gt;execute();
+    $meta-&gt;keys=[];
+    while($def=$stmt-&gt;fetch()){
+      if(!isset($meta-&gt;keys[$def-&gt;CONSTRAINT_NAME])){
+        $meta-&gt;keys[$def-&gt;CONSTRAINT_NAME]=new \StdClass();
+        $meta-&gt;keys[$def-&gt;CONSTRAINT_NAME]-&gt;table=$table;
+        $meta-&gt;keys[$def-&gt;CONSTRAINT_NAME]-&gt;name=$def-&gt;CONSTRAINT_NAME;
+        $meta-&gt;keys[$def-&gt;CONSTRAINT_NAME]-&gt;columns=[];
+        $meta-&gt;keys[$def-&gt;CONSTRAINT_NAME]-&gt;fnName='findBy'.static::camelize($def-&gt;CONSTRAINT_NAME);
+      }
+      $meta-&gt;keys[$def-&gt;CONSTRAINT_NAME]-&gt;columns[]=$def;
+    }
+    //FOREING KEYS LINK
+    foreach($meta-&gt;keys as $k){
+      foreach($k-&gt;columns as $c){
+        $t=static::loadTableMetadata( $c-&gt;REFERENCED_TABLE_NAME );
+        foreach($t-&gt;keys as $k2){
+          $okCnt=count($k-&gt;columns);
+          foreach($k2-&gt;columns as $c2){
+            foreach($k-&gt;columns as $c1){
+              if($c1-&gt;REFERENCED_COLUMN_NAME===$c2-&gt;COLUMN_NAME){
+                $okCnt--;break;
+              }
+            }
+          }
+          if($okCnt==0){
+            $k-&gt;reference=$k2;
+            break;
+          }
+        }
+      }
+    }
+    static::$__metadataTables[$table]=$meta;
+    return $meta;
+  }
+  public function loadMetadata(){
+    $class=get_class($this);
+    if(!isset(static::$__metadata[$class])) {
+      static::$__metadata[$class]=static::loadTableMetadata(static::getTable());
+    }
+  }
+  public function createRow(){
+    $class = static::getRowClass();
+    $o = new $class();
+    $o-&gt;setModel($this);
+    return $o;
+  }
+  public static function getQuery(){
+    return "select * from " . static::getTable();
+  }
+  public function insert($row){
+    $class=get_class($this);
+    $this-&gt;loadMetadata();
+    $columns0 = array_keys(static::$__metadata[$class]-&gt;columns);
+    $columns = [];
+    $values = [];
+    $params=[];
+    foreach($columns0 as $c){
+      if(!isset($row-&gt;$c)){
+      } else {
+        $columns[]=$c;
+        $values[]="?";
+        $params[]=isset($row-&gt;$c)?$row-&gt;$c:null;
+      }
+    }
+    $sql="insert into ". static::getTable() . "(". implode(",", $columns ) .") VALUES (".implode(',',$values).")";
+    $stmt=$this-&gt;dbh-&gt;prepare($sql);
+    $stmt-&gt;setParams($params);
+    if(!$stmt-&gt;execute()){
+      $error=$stmt-&gt;errorInfo();
+      if($error[0]==23000){
+        //Integrity error
+        preg_match('/CONSTRAINT `([^`]+)`/', $error[2], $ma);
+        $constraint = $ma[1];
+        if(isset(static::$__metadata[$class]-&gt;keys[$constraint]-&gt;reference)){
+          throw new CodedException(static::$__metadata[$class]-&gt;keys[$constraint]-&gt;reference-&gt;table . '.' . static::$__metadata[$class]-&gt;keys[$constraint]-&gt;reference-&gt;name);
+        } else {
+          throw new CodedException(static::getTable() . '.' . $constraint);
+        }
+      } else {
+        throw new \Exception('[' . $stmt-&gt;errorCode() . ']: ' . print_r($stmt-&gt;errorInfo(),true));
+      }
+    }
+  }
+  public function update($row){
+    $class=get_class($this);
+    $this-&gt;loadMetadata();
+    $columnsValues = array_keys(static::$__metadata[$class]-&gt;columns);
+    foreach($columnsValues as &amp;$v) {$v="$v=?";}
+    $params=[];
+    foreach($columns as $c){
+      $params[]=isset($row-&gt;$c)?$row-&gt;$c:null;
+    }
+    $keysValues=[];
+    foreach(static::$__metadata[$class]-&gt;columns as $c=&gt;$cc){
+      if($cc-&gt;COLUMN_KEY==='PRI'){
+        $keysValues[]=$c.'=?';
+        $params[]=isset($row-&gt;__initialValues-&gt;$c)?$row-&gt;__initialValues-&gt;$c:null;
+      }
+    }
+    $stmt=$this-&gt;dbh-&gt;prepare("update ". static::getTable() . " set ". implode(",", $columnsValues ) ." where " . implode(" and ", $keysValues ));
+    $stmt-&gt;setParams($params);
+    if(!$stmt-&gt;execute()){
+      $error=$stmt-&gt;errorInfo();
+      if($error[0]==23000){
+        //Integrity error
+        preg_match('/CONSTRAINT `([^`]+)`/', $error[2], $ma);
+        $constraint = $ma[1];
+        if(isset(static::$__metadata[$class]-&gt;keys[$constraint]-&gt;reference)){
+          throw new CodedException(static::$__metadata[$class]-&gt;keys[$constraint]-&gt;reference);
+        } else {
+          throw new CodedException($constraint);
+        }
+      } else {
+        throw new \Exception('[' . $stmt-&gt;errorCode() . ']: ' . print_r($stmt-&gt;errorInfo(),true));
+      }
+    }
+  }
+  public function delete($row){
+    $class=get_class($this);
+    $this-&gt;loadMetadata();
+    $params=[];
+    $keysValues=[];
+    foreach(static::$__metadata[$class]-&gt;columns as $c=&gt;$cc){
+      if($cc-&gt;COLUMN_KEY==='PRI'){
+        $keysValues[]=$c.'=?';
+        $params[]=isset($row-&gt;__initialValues-&gt;$c)?$row-&gt;__initialValues-&gt;$c:null;
+      }
+    }
+    $stmt=$this-&gt;dbh-&gt;prepare("delete from ". static::getTable() . " where " . implode(" and ", $keysValues ));
+    $stmt-&gt;setParams($params);
+    $stmt-&gt;execute();
+    if($this-&gt;dbh-&gt;errorInfo()){
+      throw new \Exception( print_r($this-&gt;dbh-&gt;errorInfo(), true) );
+    }
+  }
+  //findBy keys function 
+  static function camelize($name){
+    return str_replace(' ','',ucwords( strtolower( str_replace('_',' ',$name))));
+  }
+  public function findBy($params){
+    $class=get_class($this);
+    $this-&gt;loadMetadata();
+    foreach($params as $p=&gt;$v){
+      $keysValues[]="$p=:$p";
+    }
+    $stmt=$this-&gt;dbh-&gt;prepare("select * from ". static::getTable() . " where " . implode(" and ", $keysValues ));
+    $this-&gt;setFetchMode( \PDO::FETCH_CLASS, static::getRowClass());
+    $stmt-&gt;setParams($params);
+    if(!$stmt-&gt;execute()){
+      throw new \Exception( print_r($stmt-&gt;errorInfo(), true) );
+    }
+    return $stmt;
+  }
+  public function findByKey($keyName)
+  {
+    $class=get_class($this);
+    $this-&gt;loadMetadata();
+    $name=strtolower($keyName);
+    $arguments=func_get_args();
+    foreach(static::$__metadata[$class]-&gt;keys as $k=&gt;$kk){
+      //var_dump($name,$kk);
+      if($name===strtolower($k) || (isset($kk-&gt;reference) &amp;&amp; ($name===strtolower($kk-&gt;reference-&gt;name))) ){
+        $params=[];
+        foreach($kk-&gt;columns as $i=&gt;$cc){
+          $params[$cc-&gt;COLUMN_NAME]=$arguments[$i+1];
+        }
+        $stmt=$this-&gt;findBy($params);
+        $row=$stmt-&gt;fetch();
+        if(is_object($row) &amp;&amp; $row instanceof RowInterface) {
+          $row-&gt;setModel($this);
+          $row-&gt;onfetch();
+        }
+        return $row;
+      }
+    }
+  }
+}</class><class __ideDiagramId="dg58de4c0591ff43b0ba97a8026521453f" name="Entity">abstract class Entity extends \PDOStatement implements ModelInterface, EntityInterface {
+  use ConnectionReferenceTrait, FetchModelTrait, DefaultModelsRowTrait, SerializeModelTrait, ModelDMLTrait;
+}
+</class><class __ideDiagramId="dga8d5e3b118fc4222a85fb33f2daa97da" name="EntityInterface">interface EntityInterface {
+  public static function getTable();
+}</class><class __ideDiagramId="dg7982a3bf982d4645a47a230b75a90ac8" name="CodedException">class CodedException extends \Exception {
+  
+}</class></package></diagram><diagram __ideNodeOpen="true"><!--{"diagram":{"zoom":1,"scrollTop":0,"scrollLeft":0},"dgf759cde5cc31416f9c893a84ab999c2d":"position: absolute; height: 617px; left: -19px; top: 12px; width: 932px;","dg3b593689d73c4dc483ec9bfef3b5ef96":"position: absolute; height: 73px; left: 514px; top: 48px; width: 191.031px;","dg8e5ea6bf59b04b37bb9a5baa469d4981":"position: absolute; height: 51.1211px; left: 445px; top: 162.003px; width: 124.215px;","dgd83ac1175f3f415f9f80f659e20ae10e":"position: absolute; height: 37px; left: 444px; top: 311px; width: 130px;","dg644ab89f7259438cb8fad26bffa5a07a":"position: absolute; height: 42.1525px; left: 587.004px; top: 161.001px; width: 170.852px;","dg44a975ef192c430d9b3ac48cc89852ee":"position: absolute; height: 47.0852px; left: 592.996px; top: 235px; width: 147.085px;","dg8fc7407bcd394c15a26286e60f8aa7cd":"position: absolute; height: 42.1525px; left: 443.999px; top: 241.001px; width: 127.803px;","dgfda11c89ef9f4d1781387e4919d2bcd8":"position: absolute; height: 42px; left: 595px; top: 311.001px; width: 148px;","dgf5f23569fb0f4c26946494a78efbc19d":"position: absolute; height: 41px; left: 771.749px; top: 160.12px; width: 125px;","dgac935d9fea0749d580635a5034bbbd12":"position: absolute; height: 51px; left: 759px; top: 236px; width: 134px;","dgf7b4519e6c024fb583e9095d7523ff07":"position: absolute; height: 34px; left: 763px; top: 319px; width: 128px;","dg3b8d27aa6fde4dd281cac01635b2ab22":"position: absolute; height: 44px; left: 448px; top: 386px; width: 130px;","dg7c9dd530014b4b26822c73b530320d3f":"position: absolute; height: 20px; left: 449px; top: 490px; width: 126px;","dga4cfa4fc69054b029ecf991a857eac1b":"position: absolute; height: 122px; left: 447px; top: 462px; width: 290px;","dge0d6a8ceb879410ab118c8ade1a1c2a7":"position: absolute; height: 48px; left: 599px; top: 383px; width: 153px;","dg72b9f41986d14be8b54679dc17f32ed2":"position: absolute; height: 43px; left: 768px; top: 383px; width: 127px;","dg375b57b0cc204fffbf937085f85b02d3":"position: absolute; height: 45px; left: 771px; top: 462px; width: 122px;","dg0b5dcb26b90c48b7be4a80f81cb15bbd":"position: absolute; height: 17px; left: 599px; top: 491px; width: 134px;","dgae1d820a04ba4fb5bc0601008070f51d":"position: absolute; height: 31px; left: 763px; top: 539px; width: 126px;","dg8ec6d8931ff84853b36c762eaceb9ed1":"position: absolute; height: 28px; left: 762px; top: 598px; width: 127px;"}--><package __ideDiagramId="dgf759cde5cc31416f9c893a84ab999c2d" name="html" __ideNodeOpen="false"><class name="Html" __ideDiagramId="dg3b593689d73c4dc483ec9bfef3b5ef96" __ideNodeOpen="true">
+class Html extends \dvf\Controller {
+  function indexAction($data, $content){
+  }
+  function stylesheetAction($data, $content){
+    header('Content-type:text/css');
+    echo $content;
+  }
+  function contentAction($data, $content){
+    if(!empty($content) &amp;&amp; is_array($content)){
+      foreach($content as $k=&gt;$node) if(is_array($node) &amp;&amp; is_numeric($k)){
+        Router::resolveRoute('html/'.strtolower($node['class']).'.php', $node, @$node['items']);
+      }
+    }
+  }
+  public static function url($base, $model, $id){
+    @session_start();
+    if(empty($id)) $id=uniqid('d');
+    $_SESSION[$id]=$model-&gt;serializeMe();
+    return Router::url($base . '?d=' . $id);
+  }
+  function datatableAction($data, $content){
+    @session_start();
+    $id=$data['d'];
+    //var_dump($id,$_SESSION[$id]);
+    $conn=$_SESSION[$id]['connection'];
+    //TODO: $db must not be private variable (Singleton)
+    $db=new $conn();
+    echo json_encode($db-&gt;deserializeModel($_SESSION[$id])-&gt;fetchAll());
+  }
+  public static function listener($base, $callbackDI, $id){
+    @session_start();
+    if(empty($id)) $id=uniqid('c');
+    $callback=array_pop($callbackDI);
+    if($callback instanceof \Closure){
+      $serializer = new \SuperClosure\Serializer();
+      $serialized = $serializer-&gt;serialize($callback);
+      $callbackDI[]=$serialized;
+      $_SESSION[$id]=$callbackDI;
+    } else {
+      $callbackDI[]=$callback;
+      $_SESSION[$id]=$callbackDI;
+    }
+    return Router::url($base . '?c=' . $id);
+  }
+  function listenerAction($data, $content){
+    @session_start();
+    $callback_id=$data['c'];
+    $callbackDI=$_SESSION[$callback_id];
+    $callback=array_pop($callbackDI);
+    $params=[];
+    foreach($callbackDI as $p){
+      $params[]=@$data[$p];
+    }
+var_dump($callback,$params);
+    if(is_string($callback) &amp;&amp; substr($callback,0,2)=="C:"){
+      $serializer = new \SuperClosure\Serializer();
+      $callback = $serializer-&gt;unserialize($callback);
+      call_user_func_array($callback, $params);
+    } else {
+      call_user_func_array($callback, $params);
+//      call_user_func($callback, $data);
+    }
+  }
+}</class><page name="panel.php" __ideDiagramId="dg8e5ea6bf59b04b37bb9a5baa469d4981" __ideNodeOpen="false">&lt;div class="panel &lt;?=@$DATA['cssClass']?&gt;"&gt;
+&lt;div class="panel-heading"&gt;
+&lt;?php if(!empty($DATA['title'])) { ?&gt;&lt;h2 class="form-signin-heading"&gt;&lt;?=$DATA['title'] ?&gt;&lt;/h2&gt;&lt;?php } ?&gt;
+&lt;?php if(!empty($DATA['tbar'])) { ?&gt;
+&lt;div class="btn-group pull-right"&gt;
+&lt;?php Router::resolveRoute('html/content.php', $DATA, $DATA['tbar']); ?&gt;
+&lt;/div&gt;
+&lt;?php } ?&gt;
+&lt;/div&gt;
+&lt;?php 
+if(!empty($DATA['html'])){
+  echo $DATA['html'];
+}
+if(!empty($DATA['layout'])){
+  Router::resolveRoute('html/layout/'.$DATA['layout'].'.php', $DATA, $CONTENT);
+} else {
+  Router::resolveRoute('html/content.php', $DATA, $CONTENT);
+}
+?&gt;
+
+&lt;/div&gt;</page><page name="input.php" __ideDiagramId="dgd83ac1175f3f415f9f80f659e20ae10e">&lt;label for="&lt;?=@$DATA['name']?&gt;" class="sr-only"&gt;&lt;?=@$DATA['label']?&gt;&lt;/label&gt;&lt;input name="&lt;?=@$DATA['name']?&gt;" type="&lt;?=@$DATA['type']?&gt;" class="form-control" placeholder="&lt;?=@$DATA['label']?&gt;"/&gt;</page><page name="passwordfield.php" __ideDiagramId="dg644ab89f7259438cb8fad26bffa5a07a">&lt;?php $DATA['type']='password';Router::resolveRoute('html/input.php', $DATA, $CONTENT ); ?&gt;</page><page name="index.php" __ideDiagramId="dg44a975ef192c430d9b3ac48cc89852ee">&lt;!DOCTYPE HTML&gt;
+&lt;html&gt;
+&lt;head&gt;
+&lt;meta http-equiv="content-type" content="text/html; charset=UTF-8"&gt;
+&lt;meta charset="UTF-8"&gt;
+&lt;link rel="stylesheet" href="/lib/bootstrap/css/bootstrap.min.css"&gt;
+&lt;link rel="stylesheet" href="/lib/bootstrap/css/bootstrap-theme.min.css"&gt;
+&lt;!-- link rel="stylesheet" href="&lt;?=\Router::url('../bootstrap/bootstrap-notify-master/css/bootstrap-notify.css')?&gt;" --&gt;
+&lt;link rel="stylesheet" href="/lib/bootstrap-notify-master/css/bootstrap-notify.css"&gt;
+&lt;link rel="stylesheet" href="/lib/datatables/media/css/jquery.dataTables.min.css" /&gt;
+&lt;?php 
+if(!empty($CONTENT['stylesheets'])) {
+  $styles = is_array($CONTENT['stylesheets']) ? $CONTENT['stylesheets'] : [$CONTENT['stylesheets']];
+  foreach($styles as $style){
+    ?&gt;&lt;link href="&lt;?=htmlentities($style, ENT_QUOTES, 'utf-8')?&gt;" rel="stylesheet"&gt;&lt;?php 
+  }
+}
+?&gt;
+&lt;script src="/lib/jquery.min.js"&gt;&lt;/script&gt;
+&lt;script src="/lib/bootstrap/js/bootstrap.min.js"&gt;&lt;/script&gt;
+&lt;script src="&lt;?='/lib/draw3.js'?&gt;"&gt;&lt;/script&gt;
+&lt;script src="&lt;?=\Router::url('html/driver.js')?&gt;"&gt;&lt;/script&gt;
+&lt;!-- script src="&lt;?=\Router::url('../bootstrap/bootstrap-notify-master/js/bootstrap-notify.js')?&gt;"&gt;&lt;/script --&gt;
+&lt;script src="/lib/bootstrap-notify-master/js/bootstrap-notify.js"&gt;&lt;/script&gt;
+&lt;script src="/lib/datatables/media/js/jquery.dataTables.min.js" type="text/javascript"&gt;&lt;/script&gt;
+&lt;script&gt;
+var APP={
+  alert:function(msg){
+    $('.top-left').notify({
+        type: 'info',
+        message: {
+          text: msg
+        }
+      }).show();
+  },
+  message:function(msg){
+    $('.bottom-right').notify({
+        type: 'info',
+        message: {
+          text: msg
+        }
+      }).show();
+  },
+  success:function(msg){
+    $('.top-right').notify({
+        type: 'success',
+        message: {
+          text: msg
+        }
+      }).show();
+  },
+  warning:function(msg){
+    $('.top-right').notify({
+        type: 'warning',
+        message: {
+          text: msg
+        }
+      }).show();
+  },
+  error:function(msg){
+    $('.top-right').notify({
+        type: 'danger',
+        message: {
+          text: msg 
+        }
+      }).show();
+  },
+  ajaxLoad:function(selector, url){
+    $div=$(selector);
+    $div.addClass('ajax-loading');
+    $div.html('&lt;div class="ajax-loader"&gt;&lt;/div&gt;');
+    $.ajax({
+      url:url,
+      success:function(res){
+        $div.html(res);
+        $div.removeClass('ajax-loading');
+      }
+    });
+  }
+}
+&lt;/script&gt;
+&lt;?php 
+if(!empty($CONTENT['scripts'])) {
+  $scripts = is_array($CONTENT['scripts']) ? $CONTENT['scripts'] : [$CONTENT['scripts']];
+  foreach($scripts as $script){
+    ?&gt;&lt;script src="&lt;?=htmlentities($script, ENT_QUOTES, 'utf-8')?&gt;"&gt;&lt;/script&gt;&lt;?php 
+  }
+}
+?&gt;
+&lt;style&gt;
+.tree {
+    min-height:20px;
+    /*padding:19px;*/
+    margin-bottom:20px;
+    /*background-color:#fbfbfb;*/
+    /*border:1px solid #999;*/
+    -webkit-border-radius:4px;
+    -moz-border-radius:4px;
+    /*border-radius:4px;*/
+    -webkit-box-shadow:inset 0 1px 1px rgba(0, 0, 0, 0.05);
+    -moz-box-shadow:inset 0 1px 1px rgba(0, 0, 0, 0.05);
+    box-shadow:inset 0 1px 1px rgba(0, 0, 0, 0.05)
+}
+.tree li {
+    list-style-type:none;
+    margin:0;
+    padding:10px 5px 0 5px;
+    position:relative
+}
+.tree li::before, .tree li::after {
+    content:'';
+    left:-20px;
+    position:absolute;
+    right:auto
+}
+.tree li::before {
+    border-left:1px solid #999;
+    bottom:50px;
+    height:100%;
+    top:0;
+    width:1px
+}
+.tree li::after {
+    border-top:1px solid #999;
+    height:20px;
+    top:25px;
+    width:25px
+}
+.tree li span {
+    -moz-border-radius:5px;
+    -webkit-border-radius:5px;
+    border:1px solid #999;
+    border-radius:5px;
+    display:inline-block;
+    padding:3px 8px;
+    text-decoration:none
+}
+.tree li.parent_li&gt;span {
+    cursor:pointer
+}
+.tree&gt;ul&gt;li::before, .tree&gt;ul&gt;li::after {
+    border:0
+}
+.tree li:last-child::before {
+    height:30px
+}
+.tree li.parent_li&gt;span:hover, .tree li.parent_li&gt;span:hover+ul li span {
+    background:#eee;
+    border:1px solid #94a0b4;
+    color:#000
+}
+.ajax-loading{
+  position:relative;
+  overflow:hidden;
+  width:100%;
+  height:100%;
+}
+.ajax-loading .ajax-loader{
+  box-shadow:0 0 1000px 500px rgba(0, 0, 0, 0.1);
+  left: 50%;
+  position: absolute;
+  top: 50%;
+  animation: spin 1s linear infinite alternate;
+  -webkit-animation: spin 1s linear infinite alternate;
+}
+@keyframes spin
+{
+  from { box-shadow:0 0 1000px 700px rgba(0, 0, 0, 0.1); }
+  50%  { box-shadow:0 0 1000px 650px rgba(0, 0, 0, 0.1); }
+  to   { box-shadow:0 0 1000px 600px rgba(0, 0, 0, 0.1); }
+}
+@-webkit-keyframes spin
+{
+  from { box-shadow:0 0 1000px 700px rgba(0, 0, 0, 0.1); }
+  50%  { box-shadow:0 0 1000px 650px rgba(0, 0, 0, 0.1); }
+  to   { box-shadow:0 0 1000px 600px rgba(0, 0, 0, 0.1); }
+}
+&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;div class='notifications top-left'&gt;&lt;/div&gt;
+&lt;div class='notifications top-right'&gt;&lt;/div&gt;
+&lt;div class='notifications bottom-right'&gt;&lt;/div&gt;
+&lt;?php \Router::resolveRoute('html/content.php', $DATA, $CONTENT) ?&gt;
+
+&lt;/body&gt;
+&lt;/html&gt;</page><page name="textfield.php" __ideDiagramId="dg8fc7407bcd394c15a26286e60f8aa7cd">&lt;?php $DATA['type']='text';Router::resolveRoute('html/input.php', $DATA, $CONTENT ); ?&gt;</page><page name="button.php" __ideDiagramId="dgfda11c89ef9f4d1781387e4919d2bcd8">&lt;button class="btn &lt;?=$DATA['cssClass']/*btn-lg btn-block*/ ?&gt;" type="button" onclick="&lt;?=htmlentities(@$DATA['handler'], ENT_QUOTES, 'utf-8')?&gt;"&gt;&lt;?=$DATA['text']?&gt;&lt;/button&gt;</page><page name="checkbox.php" __ideDiagramId="dgf5f23569fb0f4c26946494a78efbc19d">&lt;div class="checkbox"&gt;&lt;label&gt;&lt;input type="checkbox" value="&lt;?=empty($DATA['inputValue'])?'on':$DATA['inputValue']?&gt;"&gt;&lt;?=$DATA['boxLabel']?&gt;&lt;/label&gt;&lt;/div&gt;</page><page name="form.php" __ideDiagramId="dgac935d9fea0749d580635a5034bbbd12">&lt;form class="" action="&lt;?=@$DATA['action']?&gt;"&gt;&lt;?php Router::resolveRoute('html/content.php', $DATA, $CONTENT)?&gt;&lt;/form&gt;</page><page name="driver.js" __ideDiagramId="dgf7b4519e6c024fb583e9095d7523ff07">&lt;?php header('Content-type: text/javascript'); ?&gt;
+$.fn.ajaxSubmit=function(callback){
+    this.each(function(index){
+      var multipart=this.enctype=="multipart/form-data";
+      var formData=new FormData(this);
+      if(!multipart){
+        formData=$(this).serialize();
+      }
+      $.ajax({
+          url:this.action ,
+          method:this.method?this.method:'get',
+          contentType:multipart?false:'application/x-www-form-urlencoded; charset=UTF-8',
+          processData: false,
+          data:formData,
+          success:function(res){
+              if(typeof callback=="function") callback(res);
+          }
+      });
+    });
+}
+</page><page name="tree.php" __ideDiagramId="dg3b8d27aa6fde4dd281cac01635b2ab22">&lt;?php
+$openIcon='glyphicon-folder-open';
+$closeIcon='glyphicon-folder-close';
+$leafIcon='glyphicon-circle-arrow-right';
+$draw=function($model,$class='',$id='') use(&amp;$draw, $openIcon, $closeIcon, $leafIcon) {
+?&gt;
+&lt;ul &lt;?=$id?"id='$id' ":""?&gt;class="&lt;?=$class?&gt;"&gt;
+&lt;?php
+if($model instanceof \model\ModelInterface) {
+  $rows=$model-&gt;fetchAll();
+  foreach($rows as $row){
+    $model-&gt;bindParam('parent',$row-&gt;id);
+    $model-&gt;execute();
+    ?&gt;&lt;li&gt;&lt;span&gt;&lt;i class="glyphicon &lt;?=$row-&gt;leaf=='1'?$leafIcon:$openIcon?&gt;"&gt;&lt;/i&gt; &lt;/span&gt; &lt;a href="#&lt;?=$row-&gt;id ?&gt;"&gt;&lt;?=$row-&gt;text ?&gt;&lt;/a&gt;&lt;?php $draw($model, '');?&gt;&lt;/li&gt;&lt;?php
+  }
+}
+?&gt;
+&lt;/ul&gt;
+&lt;?php
+};
+$id=uniqid('tree');
+$draw($DATA['model'], "tree ".@$DATA['cssClass'], $id);
+?&gt;
+&lt;script&gt;
+(function () {
+    $('#&lt;?=$id?&gt; li:has(ul)').addClass('parent_li').find(' &gt; span').attr('title', 'Collapse this branch');
+    $('#&lt;?=$id?&gt; li.parent_li &gt; span').on('click', function (e) {
+        var children = $(this).parent('li.parent_li').find(' &gt; ul &gt; li');
+        if (children.is(":visible")) {
+            children.hide('fast');
+            $(this).attr('title', 'Expand this branch').find(' &gt; i').addClass('&lt;?=$closeIcon?&gt;').removeClass('&lt;?=$openIcon?&gt;');
+        } else {
+            children.show('fast');
+            $(this).attr('title', 'Collapse this branch').find(' &gt; i').addClass('&lt;?=$openIcon?&gt;').removeClass('&lt;?=$closeIcon?&gt;');
+        }
+        e.stopPropagation();
+    });
+})();
+&lt;/script&gt;</page><package __ideDiagramId="dga4cfa4fc69054b029ecf991a857eac1b" name="layout"><page name="border.php" __ideDiagramId="dg7c9dd530014b4b26822c73b530320d3f">&lt;?php
+  foreach($CONTENT as $k=&gt;$node) if(is_array($node) &amp;&amp; is_numeric($k)) {
+    if($node['region']=='north') {
+      ?&gt;&lt;div class="row"&gt;&lt;?php
+      Router::resolveRoute('html/'.strtolower($node['class']).'.php', $node, @$node['items']);
+      ?&gt;&lt;/div&gt;&lt;?php
+    }
+  }
+?&gt;
+&lt;div class="row"&gt;
+&lt;?php
+  foreach($CONTENT as $k=&gt;$node) if(is_array($node) &amp;&amp; is_numeric($k)) {
+    if($node['region']=='west') {
+      ?&gt;&lt;div class="col-md-&lt;?=@$node['width']?$node['width']:'3'?&gt;"&gt;&lt;?php
+      Router::resolveRoute('html/'.strtolower($node['class']).'.php', $node, @$node['items']);
+      ?&gt;&lt;/div&gt;&lt;?php
+    }
+  }
+?&gt;
+&lt;?php
+  foreach($CONTENT as $k=&gt;$node) if(is_array($node) &amp;&amp; is_numeric($k)) {
+    if($node['region']=='center') {
+      ?&gt;&lt;div class="col-md-&lt;?=@$node['width']?$node['width']:'6'?&gt;"&gt;&lt;?php
+      Router::resolveRoute('html/'.strtolower($node['class']).'.php', $node, @$node['items']);
+      ?&gt;&lt;/div&gt;&lt;?php
+    }
+  }
+?&gt;
+&lt;?php
+  foreach($CONTENT as $k=&gt;$node) if(is_array($node) &amp;&amp; is_numeric($k)) {
+    if($node['region']=='east') {
+      ?&gt;&lt;div class="col-md-&lt;?=@$node['width']?$node['width']:'3'?&gt;"&gt;&lt;?php
+      Router::resolveRoute('html/'.strtolower($node['class']).'.php', $node, @$node['items']);
+      ?&gt;&lt;/div&gt;&lt;?php
+    }
+  }
+?&gt;
+&lt;/div&gt;
+&lt;?php
+  foreach($CONTENT as $k=&gt;$node) if(is_array($node) &amp;&amp; is_numeric($k)) {
+    if($node['region']=='south') {
+      ?&gt;&lt;div class="container-fluid"&gt;&lt;?php
+      Router::resolveRoute('html/'.strtolower($node['class']).'.php', $node, @$node['items']);
+      ?&gt;&lt;/div&gt;&lt;?php
+    }
+  }
+?&gt;</page><page name="column.php" __ideDiagramId="dg0b5dcb26b90c48b7be4a80f81cb15bbd">&lt;div class="row &lt;?=@$DATA['cssClass']?&gt;"&gt;&lt;?php
+  $c=0;
+  foreach($CONTENT as $k=&gt;$node) if(is_array($node) &amp;&amp; is_numeric($k)) {
+    $c++;
+  }
+  foreach($CONTENT as $k=&gt;$node) if(is_array($node) &amp;&amp; is_numeric($k)) {
+    ?&gt;&lt;div class="col-md-&lt;?=floor(12/$c)?&gt;"&gt;&lt;?php
+    Router::resolveRoute('html/'.strtolower($node['class']).'.php', $node, @$node['items']);
+    ?&gt;&lt;/div&gt;&lt;?php
+  }
+?&gt;
+&lt;/div&gt;</page></package><page name="navbar.php" __ideDiagramId="dge0d6a8ceb879410ab118c8ade1a1c2a7">&lt;?php
+$id=uniqid('navbar');
+?&gt;
+&lt;nav class="navbar navbar-inverse &lt;?=@$DATA['cssClass']?&gt;"&gt;
+  &lt;div class="container-fluid"&gt;
+    &lt;div class="navbar-header"&gt;
+      &lt;button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#&lt;?=$id?&gt;" aria-expanded="false" aria-controls="navbar"&gt;
+        &lt;span class="sr-only"&gt;Toggle navigation&lt;/span&gt;
+        &lt;span class="icon-bar"&gt;&lt;/span&gt;
+        &lt;span class="icon-bar"&gt;&lt;/span&gt;
+        &lt;span class="icon-bar"&gt;&lt;/span&gt;
+      &lt;/button&gt;
+    &lt;/div&gt;
+    &lt;div id="&lt;?=$id?&gt;" class="navbar-collapse collapse"&gt;
+      &lt;?php 
+        if(!empty($DATA['html'])){
+          echo $DATA['html'];
+        }
+        Router::resolveRoute('html/content.php', $DATA, $CONTENT); ?&gt;
+      &lt;ul class="nav navbar-nav navbar-right"&gt;&lt;?php 
+        foreach($DATA['menu'] as $m){
+          ?&gt;&lt;li&gt;&lt;a href="#&lt;?=$m['id']?&gt;"&gt;&lt;?=$m['label']?&gt;&lt;/a&gt;&lt;/li&gt;&lt;?php
+        }
+        ?&gt;
+      &lt;/ul&gt;
+      &lt;form class="navbar-form navbar-right"&gt;
+        &lt;input type="text" class="form-control" placeholder="Search..."&gt;
+      &lt;/form&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/nav&gt;</page><page name="html.php" __ideDiagramId="dg72b9f41986d14be8b54679dc17f32ed2">&lt;?=$DATA['html']?&gt;</page><page name="ajax.php" __ideDiagramId="dg375b57b0cc204fffbf937085f85b02d3">&lt;div id="&lt;?=$id=uniqid('af')?&gt;" class="&lt;?=@$DATA['cssClass']?&gt;"&gt;&lt;/div&gt;&lt;script&gt;
+(function(){
+  APP.ajaxLoad("#&lt;?=$id?&gt;", &lt;?=json_encode($DATA['url'])?&gt;);
+})();
+&lt;/script&gt;</page><page name="table.php" __ideDiagramId="dgae1d820a04ba4fb5bc0601008070f51d">&lt;table id="&lt;?=$id=uniqid('table')?&gt;" class="display table table-bordered &lt;?=$DATA['cssClass']?&gt;" cellspacing="0"&gt;
+&lt;thead&gt;
+&lt;tr&gt;&lt;?php
+foreach($DATA['columns'] as $c){
+  ?&gt;&lt;th&gt;&lt;?=$c['text']?&gt;&lt;/th&gt;&lt;?php
+}
+?&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tfoot&gt;
+&lt;tr&gt;&lt;?php
+foreach($DATA['columns'] as $c){
+  ?&gt;&lt;th&gt;&lt;?=$c['text']?&gt;&lt;/th&gt;&lt;?php
+}
+?&gt;
+&lt;/tr&gt;
+&lt;/tfoot&gt;
+&lt;/table&gt;
+&lt;script&gt;
+(function(){
+$('#&lt;?=$id?&gt;').dataTable( {
+  "ajax": {
+            "url": &lt;?=json_encode(Html::url("html/datatable", $DATA['model'], $DATA['name']))?&gt;,
+            "dataSrc":""
+        },
+  "columns": [
+    &lt;?php
+foreach($DATA['columns'] as $c){
+  ?&gt;{"data":&lt;?=json_encode($c['name'])?&gt;},&lt;?php
+}
+?&gt;
+
+  ]
+} );
+var table=$('#&lt;?=$id?&gt;').DataTable();
+$('#&lt;?=$id?&gt; tbody').on( 'click', 'tr', function () {
+    if ( $(this).hasClass('selected') ) {
+        $(this).removeClass('selected');
+    }
+    else {
+        table.$('tr.selected').removeClass('selected');
+        $(this).addClass('selected');
+        $.ajax({
+          method:'get',
+          url:&lt;?=json_encode(Html::listener("html/listener", $DATA['listeners']['onselectrow'], $DATA['name'].'onselectrow'))?&gt;,
+          data:{row:table.row( this ).data()},
+        });
+    }
+} );
+})();
+&lt;/script&gt;</page><page name="window.php" __ideDiagramId="dg8ec6d8931ff84853b36c762eaceb9ed1">&lt;div class="modal fade" id="&lt;?=$DATA['id']?&gt;" tabindex="-1" role="dialog" aria-hidden="true"&gt;
+  &lt;div class="modal-dialog"&gt;
+    &lt;div class="modal-content"&gt;
+      &lt;div class="modal-header"&gt;
+        &lt;button type="button" class="close" data-dismiss="modal" aria-label="Close"&gt;&lt;span aria-hidden="true"&gt;&amp;times;&lt;/span&gt;&lt;/button&gt;
+        &lt;h4 class="modal-title"&gt;&lt;?=$DATA['title']?&gt;&lt;/h4&gt;
+      &lt;/div&gt;
+      &lt;div class="modal-body"&gt;
+&lt;?php 
+if(!empty($DATA['html'])){
+  echo $DATA['html'];
+}
+if(!empty($DATA['layout'])){
+  Router::resolveRoute('html/layout/'.$DATA['layout'].'.php', $DATA, $CONTENT);
+} else {
+  Router::resolveRoute('html/content.php', $DATA, $CONTENT);
+}
+?&gt;
+      &lt;/div&gt;
+      &lt;div class="modal-footer"&gt;
+&lt;?php
+if(!empty($DATA['buttons'])){
+  Router::resolveRoute('html/content.php', $DATA, $DATA['buttons']);
+}
+?&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;</page></package></diagram></module><file name="www/pages/login.php" preprocess="">&lt;?php
+require("../main.php");
+?&gt;
+&lt;!DOCTYPE html&gt;
+&lt;html lang="en"&gt;
+
+&lt;head&gt;
+
+    &lt;meta charset="utf-8"&gt;
+    &lt;meta http-equiv="X-UA-Compatible" content="IE=edge"&gt;
+    &lt;meta name="viewport" content="width=device-width, initial-scale=1"&gt;
+    &lt;meta name="description" content=""&gt;
+    &lt;meta name="author" content=""&gt;
+
+    &lt;title&gt;OpenBank 2 - Bootstrap Admin Theme&lt;/title&gt;
+
+    &lt;!-- Bootstrap Core CSS --&gt;
+    &lt;link href="../bower_components/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet"&gt;
+
+    &lt;!-- MetisMenu CSS --&gt;
+    &lt;link href="../bower_components/metisMenu/dist/metisMenu.min.css" rel="stylesheet"&gt;
+
+    &lt;!-- Custom CSS --&gt;
+    &lt;link href="../dist/css/sb-admin-2.css" rel="stylesheet"&gt;
+
+    &lt;!-- Custom Fonts --&gt;
+    &lt;link href="../bower_components/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css"&gt;
+
+    &lt;!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries --&gt;
+    &lt;!-- WARNING: Respond.js doesn't work if you view the page via file:// --&gt;
+    &lt;!--[if lt IE 9]&gt;
+        &lt;script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"&gt;&lt;/script&gt;
+        &lt;script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"&gt;&lt;/script&gt;
+    &lt;![endif]--&gt;
+
+&lt;/head&gt;
+
+&lt;body&gt;
+
+    &lt;div class="container"&gt;
+        &lt;div class="row"&gt;
+            &lt;div class="col-md-4 col-md-offset-4"&gt;
+                &lt;div class="login-panel panel panel-default"&gt;
+                    &lt;div class="panel-heading"&gt;
+                        &lt;h3 class="panel-title"&gt;Please Sign In&lt;/h3&gt;
+                    &lt;/div&gt;
+                    &lt;div class="panel-body"&gt;
+                        &lt;form role="form" &lt;?php bind('submit: $model-&gt;login-&gt;createRow()') ?&gt;&gt;
+                            &lt;fieldset&gt;
+                                &lt;div class="form-group"&gt;
+                                    &lt;input class="form-control" placeholder="usuario" &lt;?php bind('input: name') ?&gt; type="email" autofocus &gt;
+                                &lt;/div&gt;
+                                &lt;div class="form-group"&gt;
+                                    &lt;input class="form-control" placeholder="contraseña" &lt;?php bind('input: pass') ?&gt; type="password" value=""&gt;
+                                &lt;/div&gt;
+                                &lt;div class="checkbox"&gt;
+                                    &lt;label&gt;
+                                        &lt;input name="remember" type="checkbox" value="Remember Me"&gt;Remember Me
+                                    &lt;/label&gt;
+                                &lt;/div&gt;
+                                &lt;!-- Change this to a button or input when using this as a form --&gt;
+                                &lt;a  &lt;?php bind('click: insert') ?&gt; class="btn btn-lg btn-success btn-block"&gt;Login&lt;/a&gt;
+                            &lt;/fieldset&gt;
+                        &lt;/form&gt;
+                    &lt;/div&gt;
+                &lt;/div&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;!-- jQuery --&gt;
+    &lt;script src="../bower_components/jquery/dist/jquery.min.js"&gt;&lt;/script&gt;
+
+    &lt;!-- Bootstrap Core JavaScript --&gt;
+    &lt;script src="../bower_components/bootstrap/dist/js/bootstrap.min.js"&gt;&lt;/script&gt;
+
+    &lt;!-- Metis Menu Plugin JavaScript --&gt;
+    &lt;script src="../bower_components/metisMenu/dist/metisMenu.min.js"&gt;&lt;/script&gt;
+
+    &lt;!-- Custom Theme JavaScript --&gt;
+    &lt;script src="../dist/js/sb-admin-2.js"&gt;&lt;/script&gt;
+
+&lt;/body&gt;
+
+&lt;/html&gt;
+</file><file name="www/pages/index.php" preprocess="">&lt;?php
+require("../main.php");
+?&gt;
+&lt;!DOCTYPE html&gt;
+&lt;html lang="en"&gt;
+
+&lt;head&gt;
+
+    &lt;meta charset="utf-8"&gt;
+    &lt;meta http-equiv="X-UA-Compatible" content="IE=edge"&gt;
+    &lt;meta name="viewport" content="width=device-width, initial-scale=1"&gt;
+    &lt;meta name="description" content=""&gt;
+    &lt;meta name="author" content=""&gt;
+
+    &lt;title&gt;SB Admin 2 - Bootstrap Admin Theme&lt;/title&gt;
+
+    &lt;!-- Bootstrap Core CSS --&gt;
+    &lt;link href="../bower_components/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet"&gt;
+
+    &lt;!-- MetisMenu CSS --&gt;
+    &lt;link href="../bower_components/metisMenu/dist/metisMenu.min.css" rel="stylesheet"&gt;
+
+    &lt;!-- Timeline CSS --&gt;
+    &lt;link href="../dist/css/timeline.css" rel="stylesheet"&gt;
+
+    &lt;!-- Custom CSS --&gt;
+    &lt;link href="../dist/css/sb-admin-2.css" rel="stylesheet"&gt;
+
+    &lt;!-- Morris Charts CSS --&gt;
+    &lt;link href="../bower_components/morrisjs/morris.css" rel="stylesheet"&gt;
+
+    &lt;!-- Custom Fonts --&gt;
+    &lt;link href="../bower_components/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css"&gt;
+
+    &lt;!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries --&gt;
+    &lt;!-- WARNING: Respond.js doesn't work if you view the page via file:// --&gt;
+    &lt;!--[if lt IE 9]&gt;
+        &lt;script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"&gt;&lt;/script&gt;
+        &lt;script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"&gt;&lt;/script&gt;
+    &lt;![endif]--&gt;
+
+&lt;/head&gt;
+
+&lt;body&gt;
+
+    &lt;div id="wrapper"&gt;
+
+        &lt;!-- Navigation --&gt;
+        &lt;nav class="navbar navbar-default navbar-static-top" role="navigation" style="margin-bottom: 0"&gt;
+            &lt;div class="navbar-header"&gt;
+                &lt;button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse"&gt;
+                    &lt;span class="sr-only"&gt;Toggle navigation&lt;/span&gt;
+                    &lt;span class="icon-bar"&gt;&lt;/span&gt;
+                    &lt;span class="icon-bar"&gt;&lt;/span&gt;
+                    &lt;span class="icon-bar"&gt;&lt;/span&gt;
+                &lt;/button&gt;
+                &lt;a class="navbar-brand" href="index.html"&gt;SB Admin v2.0&lt;/a&gt;
+            &lt;/div&gt;
+            &lt;!-- /.navbar-header --&gt;
+
+            &lt;ul class="nav navbar-top-links navbar-right"&gt;
+                &lt;li class="dropdown"&gt;
+                    &lt;a class="dropdown-toggle" data-toggle="dropdown" href="#"&gt;
+                        &lt;i class="fa fa-envelope fa-fw"&gt;&lt;/i&gt;  &lt;i class="fa fa-caret-down"&gt;&lt;/i&gt;
+                    &lt;/a&gt;
+                    &lt;ul class="dropdown-menu dropdown-messages"&gt;
+                        &lt;li&gt;
+                            &lt;a href="#"&gt;
+                                &lt;div&gt;
+                                    &lt;strong&gt;John Smith&lt;/strong&gt;
+                                    &lt;span class="pull-right text-muted"&gt;
+                                        &lt;em&gt;Yesterday&lt;/em&gt;
+                                    &lt;/span&gt;
+                                &lt;/div&gt;
+                                &lt;div&gt;Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque eleifend...&lt;/div&gt;
+                            &lt;/a&gt;
+                        &lt;/li&gt;
+                        &lt;li class="divider"&gt;&lt;/li&gt;
+                        &lt;li&gt;
+                            &lt;a href="#"&gt;
+                                &lt;div&gt;
+                                    &lt;strong&gt;John Smith&lt;/strong&gt;
+                                    &lt;span class="pull-right text-muted"&gt;
+                                        &lt;em&gt;Yesterday&lt;/em&gt;
+                                    &lt;/span&gt;
+                                &lt;/div&gt;
+                                &lt;div&gt;Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque eleifend...&lt;/div&gt;
+                            &lt;/a&gt;
+                        &lt;/li&gt;
+                        &lt;li class="divider"&gt;&lt;/li&gt;
+                        &lt;li&gt;
+                            &lt;a href="#"&gt;
+                                &lt;div&gt;
+                                    &lt;strong&gt;John Smith&lt;/strong&gt;
+                                    &lt;span class="pull-right text-muted"&gt;
+                                        &lt;em&gt;Yesterday&lt;/em&gt;
+                                    &lt;/span&gt;
+                                &lt;/div&gt;
+                                &lt;div&gt;Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque eleifend...&lt;/div&gt;
+                            &lt;/a&gt;
+                        &lt;/li&gt;
+                        &lt;li class="divider"&gt;&lt;/li&gt;
+                        &lt;li&gt;
+                            &lt;a class="text-center" href="#"&gt;
+                                &lt;strong&gt;Read All Messages&lt;/strong&gt;
+                                &lt;i class="fa fa-angle-right"&gt;&lt;/i&gt;
+                            &lt;/a&gt;
+                        &lt;/li&gt;
+                    &lt;/ul&gt;
+                    &lt;!-- /.dropdown-messages --&gt;
+                &lt;/li&gt;
+                &lt;!-- /.dropdown --&gt;
+                &lt;li class="dropdown"&gt;
+                    &lt;a class="dropdown-toggle" data-toggle="dropdown" href="#"&gt;
+                        &lt;i class="fa fa-tasks fa-fw"&gt;&lt;/i&gt;  &lt;i class="fa fa-caret-down"&gt;&lt;/i&gt;
+                    &lt;/a&gt;
+                    &lt;ul class="dropdown-menu dropdown-tasks"&gt;
+                        &lt;li&gt;
+                            &lt;a href="#"&gt;
+                                &lt;div&gt;
+                                    &lt;p&gt;
+                                        &lt;strong&gt;Task 1&lt;/strong&gt;
+                                        &lt;span class="pull-right text-muted"&gt;40% Complete&lt;/span&gt;
+                                    &lt;/p&gt;
+                                    &lt;div class="progress progress-striped active"&gt;
+                                        &lt;div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="40" aria-valuemin="0" aria-valuemax="100" style="width: 40%"&gt;
+                                            &lt;span class="sr-only"&gt;40% Complete (success)&lt;/span&gt;
+                                        &lt;/div&gt;
+                                    &lt;/div&gt;
+                                &lt;/div&gt;
+                            &lt;/a&gt;
+                        &lt;/li&gt;
+                        &lt;li class="divider"&gt;&lt;/li&gt;
+                        &lt;li&gt;
+                            &lt;a href="#"&gt;
+                                &lt;div&gt;
+                                    &lt;p&gt;
+                                        &lt;strong&gt;Task 2&lt;/strong&gt;
+                                        &lt;span class="pull-right text-muted"&gt;20% Complete&lt;/span&gt;
+                                    &lt;/p&gt;
+                                    &lt;div class="progress progress-striped active"&gt;
+                                        &lt;div class="progress-bar progress-bar-info" role="progressbar" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100" style="width: 20%"&gt;
+                                            &lt;span class="sr-only"&gt;20% Complete&lt;/span&gt;
+                                        &lt;/div&gt;
+                                    &lt;/div&gt;
+                                &lt;/div&gt;
+                            &lt;/a&gt;
+                        &lt;/li&gt;
+                        &lt;li class="divider"&gt;&lt;/li&gt;
+                        &lt;li&gt;
+                            &lt;a href="#"&gt;
+                                &lt;div&gt;
+                                    &lt;p&gt;
+                                        &lt;strong&gt;Task 3&lt;/strong&gt;
+                                        &lt;span class="pull-right text-muted"&gt;60% Complete&lt;/span&gt;
+                                    &lt;/p&gt;
+                                    &lt;div class="progress progress-striped active"&gt;
+                                        &lt;div class="progress-bar progress-bar-warning" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: 60%"&gt;
+                                            &lt;span class="sr-only"&gt;60% Complete (warning)&lt;/span&gt;
+                                        &lt;/div&gt;
+                                    &lt;/div&gt;
+                                &lt;/div&gt;
+                            &lt;/a&gt;
+                        &lt;/li&gt;
+                        &lt;li class="divider"&gt;&lt;/li&gt;
+                        &lt;li&gt;
+                            &lt;a href="#"&gt;
+                                &lt;div&gt;
+                                    &lt;p&gt;
+                                        &lt;strong&gt;Task 4&lt;/strong&gt;
+                                        &lt;span class="pull-right text-muted"&gt;80% Complete&lt;/span&gt;
+                                    &lt;/p&gt;
+                                    &lt;div class="progress progress-striped active"&gt;
+                                        &lt;div class="progress-bar progress-bar-danger" role="progressbar" aria-valuenow="80" aria-valuemin="0" aria-valuemax="100" style="width: 80%"&gt;
+                                            &lt;span class="sr-only"&gt;80% Complete (danger)&lt;/span&gt;
+                                        &lt;/div&gt;
+                                    &lt;/div&gt;
+                                &lt;/div&gt;
+                            &lt;/a&gt;
+                        &lt;/li&gt;
+                        &lt;li class="divider"&gt;&lt;/li&gt;
+                        &lt;li&gt;
+                            &lt;a class="text-center" href="#"&gt;
+                                &lt;strong&gt;See All Tasks&lt;/strong&gt;
+                                &lt;i class="fa fa-angle-right"&gt;&lt;/i&gt;
+                            &lt;/a&gt;
+                        &lt;/li&gt;
+                    &lt;/ul&gt;
+                    &lt;!-- /.dropdown-tasks --&gt;
+                &lt;/li&gt;
+                &lt;!-- /.dropdown --&gt;
+                &lt;li class="dropdown"&gt;
+                    &lt;a class="dropdown-toggle" data-toggle="dropdown" href="#"&gt;
+                        &lt;i class="fa fa-bell fa-fw"&gt;&lt;/i&gt;  &lt;i class="fa fa-caret-down"&gt;&lt;/i&gt;
+                    &lt;/a&gt;
+                    &lt;ul class="dropdown-menu dropdown-alerts"&gt;
+                        &lt;li&gt;
+                            &lt;a href="#"&gt;
+                                &lt;div&gt;
+                                    &lt;i class="fa fa-comment fa-fw"&gt;&lt;/i&gt; New Comment
+                                    &lt;span class="pull-right text-muted small"&gt;4 minutes ago&lt;/span&gt;
+                                &lt;/div&gt;
+                            &lt;/a&gt;
+                        &lt;/li&gt;
+                        &lt;li class="divider"&gt;&lt;/li&gt;
+                        &lt;li&gt;
+                            &lt;a href="#"&gt;
+                                &lt;div&gt;
+                                    &lt;i class="fa fa-twitter fa-fw"&gt;&lt;/i&gt; 3 New Followers
+                                    &lt;span class="pull-right text-muted small"&gt;12 minutes ago&lt;/span&gt;
+                                &lt;/div&gt;
+                            &lt;/a&gt;
+                        &lt;/li&gt;
+                        &lt;li class="divider"&gt;&lt;/li&gt;
+                        &lt;li&gt;
+                            &lt;a href="#"&gt;
+                                &lt;div&gt;
+                                    &lt;i class="fa fa-envelope fa-fw"&gt;&lt;/i&gt; Message Sent
+                                    &lt;span class="pull-right text-muted small"&gt;4 minutes ago&lt;/span&gt;
+                                &lt;/div&gt;
+                            &lt;/a&gt;
+                        &lt;/li&gt;
+                        &lt;li class="divider"&gt;&lt;/li&gt;
+                        &lt;li&gt;
+                            &lt;a href="#"&gt;
+                                &lt;div&gt;
+                                    &lt;i class="fa fa-tasks fa-fw"&gt;&lt;/i&gt; New Task
+                                    &lt;span class="pull-right text-muted small"&gt;4 minutes ago&lt;/span&gt;
+                                &lt;/div&gt;
+                            &lt;/a&gt;
+                        &lt;/li&gt;
+                        &lt;li class="divider"&gt;&lt;/li&gt;
+                        &lt;li&gt;
+                            &lt;a href="#"&gt;
+                                &lt;div&gt;
+                                    &lt;i class="fa fa-upload fa-fw"&gt;&lt;/i&gt; Server Rebooted
+                                    &lt;span class="pull-right text-muted small"&gt;4 minutes ago&lt;/span&gt;
+                                &lt;/div&gt;
+                            &lt;/a&gt;
+                        &lt;/li&gt;
+                        &lt;li class="divider"&gt;&lt;/li&gt;
+                        &lt;li&gt;
+                            &lt;a class="text-center" href="#"&gt;
+                                &lt;strong&gt;See All Alerts&lt;/strong&gt;
+                                &lt;i class="fa fa-angle-right"&gt;&lt;/i&gt;
+                            &lt;/a&gt;
+                        &lt;/li&gt;
+                    &lt;/ul&gt;
+                    &lt;!-- /.dropdown-alerts --&gt;
+                &lt;/li&gt;
+                &lt;!-- /.dropdown --&gt;
+                &lt;li class="dropdown"&gt;
+                    &lt;a class="dropdown-toggle" data-toggle="dropdown" href="#"&gt;
+                        &lt;i class="fa fa-user fa-fw"&gt;&lt;/i&gt;  &lt;i class="fa fa-caret-down"&gt;&lt;/i&gt;
+                    &lt;/a&gt;
+                    &lt;ul class="dropdown-menu dropdown-user"&gt;
+                        &lt;li&gt;&lt;a href="#"&gt;&lt;i class="fa fa-user fa-fw"&gt;&lt;/i&gt; User Profile&lt;/a&gt;
+                        &lt;/li&gt;
+                        &lt;li&gt;&lt;a href="#"&gt;&lt;i class="fa fa-gear fa-fw"&gt;&lt;/i&gt; Settings&lt;/a&gt;
+                        &lt;/li&gt;
+                        &lt;li class="divider"&gt;&lt;/li&gt;
+                        &lt;li&gt;&lt;a href="login.html"&gt;&lt;i class="fa fa-sign-out fa-fw"&gt;&lt;/i&gt; Logout&lt;/a&gt;
+                        &lt;/li&gt;
+                    &lt;/ul&gt;
+                    &lt;!-- /.dropdown-user --&gt;
+                &lt;/li&gt;
+                &lt;!-- /.dropdown --&gt;
+            &lt;/ul&gt;
+            &lt;!-- /.navbar-top-links --&gt;
+
+            &lt;div class="navbar-default sidebar" role="navigation"&gt;
+                &lt;div class="sidebar-nav navbar-collapse"&gt;
+                    &lt;ul class="nav" id="side-menu"&gt;
+                        &lt;li class="sidebar-search"&gt;
+                            &lt;div class="input-group custom-search-form"&gt;
+                                &lt;input type="text" class="form-control" placeholder="Search..."&gt;
+                                &lt;span class="input-group-btn"&gt;
+                                &lt;button class="btn btn-default" type="button"&gt;
+                                    &lt;i class="fa fa-search"&gt;&lt;/i&gt;
+                                &lt;/button&gt;
+                            &lt;/span&gt;
+                            &lt;/div&gt;
+                            &lt;!-- /input-group --&gt;
+                        &lt;/li&gt;
+                        &lt;li&gt;
+                            &lt;a href="index.html"&gt;&lt;i class="fa fa-dashboard fa-fw"&gt;&lt;/i&gt; Dashboard&lt;/a&gt;
+                        &lt;/li&gt;
+                        &lt;li&gt;
+                            &lt;a href="#"&gt;&lt;i class="fa fa-bar-chart-o fa-fw"&gt;&lt;/i&gt; Charts&lt;span class="fa arrow"&gt;&lt;/span&gt;&lt;/a&gt;
+                            &lt;ul class="nav nav-second-level"&gt;
+                                &lt;li&gt;
+                                    &lt;a href="flot.html"&gt;Flot Charts&lt;/a&gt;
+                                &lt;/li&gt;
+                                &lt;li&gt;
+                                    &lt;a href="morris.html"&gt;Morris.js Charts&lt;/a&gt;
+                                &lt;/li&gt;
+                            &lt;/ul&gt;
+                            &lt;!-- /.nav-second-level --&gt;
+                        &lt;/li&gt;
+                        &lt;li&gt;
+                            &lt;a href="tables.html"&gt;&lt;i class="fa fa-table fa-fw"&gt;&lt;/i&gt; Tables&lt;/a&gt;
+                        &lt;/li&gt;
+                        &lt;li&gt;
+                            &lt;a href="forms.html"&gt;&lt;i class="fa fa-edit fa-fw"&gt;&lt;/i&gt; Forms&lt;/a&gt;
+                        &lt;/li&gt;
+                        &lt;li&gt;
+                            &lt;a href="#"&gt;&lt;i class="fa fa-wrench fa-fw"&gt;&lt;/i&gt; UI Elements&lt;span class="fa arrow"&gt;&lt;/span&gt;&lt;/a&gt;
+                            &lt;ul class="nav nav-second-level"&gt;
+                                &lt;li&gt;
+                                    &lt;a href="panels-wells.html"&gt;Panels and Wells&lt;/a&gt;
+                                &lt;/li&gt;
+                                &lt;li&gt;
+                                    &lt;a href="buttons.html"&gt;Buttons&lt;/a&gt;
+                                &lt;/li&gt;
+                                &lt;li&gt;
+                                    &lt;a href="notifications.html"&gt;Notifications&lt;/a&gt;
+                                &lt;/li&gt;
+                                &lt;li&gt;
+                                    &lt;a href="typography.html"&gt;Typography&lt;/a&gt;
+                                &lt;/li&gt;
+                                &lt;li&gt;
+                                    &lt;a href="icons.html"&gt; Icons&lt;/a&gt;
+                                &lt;/li&gt;
+                                &lt;li&gt;
+                                    &lt;a href="grid.html"&gt;Grid&lt;/a&gt;
+                                &lt;/li&gt;
+                            &lt;/ul&gt;
+                            &lt;!-- /.nav-second-level --&gt;
+                        &lt;/li&gt;
+                        &lt;li&gt;
+                            &lt;a href="#"&gt;&lt;i class="fa fa-sitemap fa-fw"&gt;&lt;/i&gt; Multi-Level Dropdown&lt;span class="fa arrow"&gt;&lt;/span&gt;&lt;/a&gt;
+                            &lt;ul class="nav nav-second-level"&gt;
+                                &lt;li&gt;
+                                    &lt;a href="#"&gt;Second Level Item&lt;/a&gt;
+                                &lt;/li&gt;
+                                &lt;li&gt;
+                                    &lt;a href="#"&gt;Second Level Item&lt;/a&gt;
+                                &lt;/li&gt;
+                                &lt;li&gt;
+                                    &lt;a href="#"&gt;Third Level &lt;span class="fa arrow"&gt;&lt;/span&gt;&lt;/a&gt;
+                                    &lt;ul class="nav nav-third-level"&gt;
+                                        &lt;li&gt;
+                                            &lt;a href="#"&gt;Third Level Item&lt;/a&gt;
+                                        &lt;/li&gt;
+                                        &lt;li&gt;
+                                            &lt;a href="#"&gt;Third Level Item&lt;/a&gt;
+                                        &lt;/li&gt;
+                                        &lt;li&gt;
+                                            &lt;a href="#"&gt;Third Level Item&lt;/a&gt;
+                                        &lt;/li&gt;
+                                        &lt;li&gt;
+                                            &lt;a href="#"&gt;Third Level Item&lt;/a&gt;
+                                        &lt;/li&gt;
+                                    &lt;/ul&gt;
+                                    &lt;!-- /.nav-third-level --&gt;
+                                &lt;/li&gt;
+                            &lt;/ul&gt;
+                            &lt;!-- /.nav-second-level --&gt;
+                        &lt;/li&gt;
+                        &lt;li&gt;
+                            &lt;a href="#"&gt;&lt;i class="fa fa-files-o fa-fw"&gt;&lt;/i&gt; Sample Pages&lt;span class="fa arrow"&gt;&lt;/span&gt;&lt;/a&gt;
+                            &lt;ul class="nav nav-second-level"&gt;
+                                &lt;li&gt;
+                                    &lt;a href="blank.html"&gt;Blank Page&lt;/a&gt;
+                                &lt;/li&gt;
+                                &lt;li&gt;
+                                    &lt;a href="login.html"&gt;Login Page&lt;/a&gt;
+                                &lt;/li&gt;
+                            &lt;/ul&gt;
+                            &lt;!-- /.nav-second-level --&gt;
+                        &lt;/li&gt;
+                    &lt;/ul&gt;
+                &lt;/div&gt;
+                &lt;!-- /.sidebar-collapse --&gt;
+            &lt;/div&gt;
+            &lt;!-- /.navbar-static-side --&gt;
+        &lt;/nav&gt;
+
+        &lt;div id="page-wrapper"&gt;
+            &lt;div class="row"&gt;
+                &lt;div class="col-lg-12"&gt;
+                    &lt;h1 class="page-header"&gt;Dashboard&lt;/h1&gt;
+                &lt;/div&gt;
+                &lt;!-- /.col-lg-12 --&gt;
+            &lt;/div&gt;
+            &lt;!-- /.row --&gt;
+            &lt;div class="row"&gt;
+                &lt;div class="col-lg-3 col-md-6"&gt;
+                    &lt;div class="panel panel-primary"&gt;
+                        &lt;div class="panel-heading"&gt;
+                            &lt;div class="row"&gt;
+                                &lt;div class="col-xs-3"&gt;
+                                    &lt;i class="fa fa-comments fa-5x"&gt;&lt;/i&gt;
+                                &lt;/div&gt;
+                                &lt;div class="col-xs-9 text-right"&gt;
+                                    &lt;div class="huge"&gt;26&lt;/div&gt;
+                                    &lt;div&gt;New Comments!&lt;/div&gt;
+                                &lt;/div&gt;
+                            &lt;/div&gt;
+                        &lt;/div&gt;
+                        &lt;a href="#"&gt;
+                            &lt;div class="panel-footer"&gt;
+                                &lt;span class="pull-left"&gt;View Details&lt;/span&gt;
+                                &lt;span class="pull-right"&gt;&lt;i class="fa fa-arrow-circle-right"&gt;&lt;/i&gt;&lt;/span&gt;
+                                &lt;div class="clearfix"&gt;&lt;/div&gt;
+                            &lt;/div&gt;
+                        &lt;/a&gt;
+                    &lt;/div&gt;
+                &lt;/div&gt;
+                &lt;div class="col-lg-3 col-md-6"&gt;
+                    &lt;div class="panel panel-green"&gt;
+                        &lt;div class="panel-heading"&gt;
+                            &lt;div class="row"&gt;
+                                &lt;div class="col-xs-3"&gt;
+                                    &lt;i class="fa fa-tasks fa-5x"&gt;&lt;/i&gt;
+                                &lt;/div&gt;
+                                &lt;div class="col-xs-9 text-right"&gt;
+                                    &lt;div class="huge"&gt;12&lt;/div&gt;
+                                    &lt;div&gt;New Tasks!&lt;/div&gt;
+                                &lt;/div&gt;
+                            &lt;/div&gt;
+                        &lt;/div&gt;
+                        &lt;a href="#"&gt;
+                            &lt;div class="panel-footer"&gt;
+                                &lt;span class="pull-left"&gt;View Details&lt;/span&gt;
+                                &lt;span class="pull-right"&gt;&lt;i class="fa fa-arrow-circle-right"&gt;&lt;/i&gt;&lt;/span&gt;
+                                &lt;div class="clearfix"&gt;&lt;/div&gt;
+                            &lt;/div&gt;
+                        &lt;/a&gt;
+                    &lt;/div&gt;
+                &lt;/div&gt;
+                &lt;div class="col-lg-3 col-md-6"&gt;
+                    &lt;div class="panel panel-yellow"&gt;
+                        &lt;div class="panel-heading"&gt;
+                            &lt;div class="row"&gt;
+                                &lt;div class="col-xs-3"&gt;
+                                    &lt;i class="fa fa-shopping-cart fa-5x"&gt;&lt;/i&gt;
+                                &lt;/div&gt;
+                                &lt;div class="col-xs-9 text-right"&gt;
+                                    &lt;div class="huge"&gt;124&lt;/div&gt;
+                                    &lt;div&gt;New Orders!&lt;/div&gt;
+                                &lt;/div&gt;
+                            &lt;/div&gt;
+                        &lt;/div&gt;
+                        &lt;a href="#"&gt;
+                            &lt;div class="panel-footer"&gt;
+                                &lt;span class="pull-left"&gt;View Details&lt;/span&gt;
+                                &lt;span class="pull-right"&gt;&lt;i class="fa fa-arrow-circle-right"&gt;&lt;/i&gt;&lt;/span&gt;
+                                &lt;div class="clearfix"&gt;&lt;/div&gt;
+                            &lt;/div&gt;
+                        &lt;/a&gt;
+                    &lt;/div&gt;
+                &lt;/div&gt;
+                &lt;div class="col-lg-3 col-md-6"&gt;
+                    &lt;div class="panel panel-red"&gt;
+                        &lt;div class="panel-heading"&gt;
+                            &lt;div class="row"&gt;
+                                &lt;div class="col-xs-3"&gt;
+                                    &lt;i class="fa fa-support fa-5x"&gt;&lt;/i&gt;
+                                &lt;/div&gt;
+                                &lt;div class="col-xs-9 text-right"&gt;
+                                    &lt;div class="huge"&gt;13&lt;/div&gt;
+                                    &lt;div&gt;Support Tickets!&lt;/div&gt;
+                                &lt;/div&gt;
+                            &lt;/div&gt;
+                        &lt;/div&gt;
+                        &lt;a href="#"&gt;
+                            &lt;div class="panel-footer"&gt;
+                                &lt;span class="pull-left"&gt;View Details&lt;/span&gt;
+                                &lt;span class="pull-right"&gt;&lt;i class="fa fa-arrow-circle-right"&gt;&lt;/i&gt;&lt;/span&gt;
+                                &lt;div class="clearfix"&gt;&lt;/div&gt;
+                            &lt;/div&gt;
+                        &lt;/a&gt;
+                    &lt;/div&gt;
+                &lt;/div&gt;
+            &lt;/div&gt;
+            &lt;!-- /.row --&gt;
+            &lt;div class="row"&gt;
+                &lt;div class="col-lg-8"&gt;
+                    &lt;div class="panel panel-default"&gt;
+                        &lt;div class="panel-heading"&gt;
+                            &lt;i class="fa fa-bar-chart-o fa-fw"&gt;&lt;/i&gt; Area Chart Example
+                            &lt;div class="pull-right"&gt;
+                                &lt;div class="btn-group"&gt;
+                                    &lt;button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown"&gt;
+                                        Actions
+                                        &lt;span class="caret"&gt;&lt;/span&gt;
+                                    &lt;/button&gt;
+                                    &lt;ul class="dropdown-menu pull-right" role="menu"&gt;
+                                        &lt;li&gt;&lt;a href="#"&gt;Action&lt;/a&gt;
+                                        &lt;/li&gt;
+                                        &lt;li&gt;&lt;a href="#"&gt;Another action&lt;/a&gt;
+                                        &lt;/li&gt;
+                                        &lt;li&gt;&lt;a href="#"&gt;Something else here&lt;/a&gt;
+                                        &lt;/li&gt;
+                                        &lt;li class="divider"&gt;&lt;/li&gt;
+                                        &lt;li&gt;&lt;a href="#"&gt;Separated link&lt;/a&gt;
+                                        &lt;/li&gt;
+                                    &lt;/ul&gt;
+                                &lt;/div&gt;
+                            &lt;/div&gt;
+                        &lt;/div&gt;
+                        &lt;!-- /.panel-heading --&gt;
+                        &lt;div class="panel-body"&gt;
+                            &lt;div id="morris-area-chart"&gt;&lt;/div&gt;
+                        &lt;/div&gt;
+                        &lt;!-- /.panel-body --&gt;
+                    &lt;/div&gt;
+                    &lt;!-- /.panel --&gt;
+                    &lt;div class="panel panel-default"&gt;
+                        &lt;div class="panel-heading"&gt;
+                            &lt;i class="fa fa-bar-chart-o fa-fw"&gt;&lt;/i&gt; Bar Chart Example
+                            &lt;div class="pull-right"&gt;
+                                &lt;div class="btn-group"&gt;
+                                    &lt;button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown"&gt;
+                                        Actions
+                                        &lt;span class="caret"&gt;&lt;/span&gt;
+                                    &lt;/button&gt;
+                                    &lt;ul class="dropdown-menu pull-right" role="menu"&gt;
+                                        &lt;li&gt;&lt;a href="#"&gt;Action&lt;/a&gt;
+                                        &lt;/li&gt;
+                                        &lt;li&gt;&lt;a href="#"&gt;Another action&lt;/a&gt;
+                                        &lt;/li&gt;
+                                        &lt;li&gt;&lt;a href="#"&gt;Something else here&lt;/a&gt;
+                                        &lt;/li&gt;
+                                        &lt;li class="divider"&gt;&lt;/li&gt;
+                                        &lt;li&gt;&lt;a href="#"&gt;Separated link&lt;/a&gt;
+                                        &lt;/li&gt;
+                                    &lt;/ul&gt;
+                                &lt;/div&gt;
+                            &lt;/div&gt;
+                        &lt;/div&gt;
+                        &lt;!-- /.panel-heading --&gt;
+                        &lt;div class="panel-body"&gt;
+                            &lt;div class="row"&gt;
+                                &lt;div class="col-lg-4"&gt;
+                                    &lt;div class="table-responsive"&gt;
+                                        &lt;table class="table table-bordered table-hover table-striped"&gt;
+                                            &lt;thead&gt;
+                                                &lt;tr&gt;
+                                                    &lt;th&gt;#&lt;/th&gt;
+                                                    &lt;th&gt;Date&lt;/th&gt;
+                                                    &lt;th&gt;Time&lt;/th&gt;
+                                                    &lt;th&gt;Amount&lt;/th&gt;
+                                                &lt;/tr&gt;
+                                            &lt;/thead&gt;
+                                            &lt;tbody&gt;
+                                                &lt;tr&gt;
+                                                    &lt;td&gt;3326&lt;/td&gt;
+                                                    &lt;td&gt;10/21/2013&lt;/td&gt;
+                                                    &lt;td&gt;3:29 PM&lt;/td&gt;
+                                                    &lt;td&gt;$321.33&lt;/td&gt;
+                                                &lt;/tr&gt;
+                                                &lt;tr&gt;
+                                                    &lt;td&gt;3325&lt;/td&gt;
+                                                    &lt;td&gt;10/21/2013&lt;/td&gt;
+                                                    &lt;td&gt;3:20 PM&lt;/td&gt;
+                                                    &lt;td&gt;$234.34&lt;/td&gt;
+                                                &lt;/tr&gt;
+                                                &lt;tr&gt;
+                                                    &lt;td&gt;3324&lt;/td&gt;
+                                                    &lt;td&gt;10/21/2013&lt;/td&gt;
+                                                    &lt;td&gt;3:03 PM&lt;/td&gt;
+                                                    &lt;td&gt;$724.17&lt;/td&gt;
+                                                &lt;/tr&gt;
+                                                &lt;tr&gt;
+                                                    &lt;td&gt;3323&lt;/td&gt;
+                                                    &lt;td&gt;10/21/2013&lt;/td&gt;
+                                                    &lt;td&gt;3:00 PM&lt;/td&gt;
+                                                    &lt;td&gt;$23.71&lt;/td&gt;
+                                                &lt;/tr&gt;
+                                                &lt;tr&gt;
+                                                    &lt;td&gt;3322&lt;/td&gt;
+                                                    &lt;td&gt;10/21/2013&lt;/td&gt;
+                                                    &lt;td&gt;2:49 PM&lt;/td&gt;
+                                                    &lt;td&gt;$8345.23&lt;/td&gt;
+                                                &lt;/tr&gt;
+                                                &lt;tr&gt;
+                                                    &lt;td&gt;3321&lt;/td&gt;
+                                                    &lt;td&gt;10/21/2013&lt;/td&gt;
+                                                    &lt;td&gt;2:23 PM&lt;/td&gt;
+                                                    &lt;td&gt;$245.12&lt;/td&gt;
+                                                &lt;/tr&gt;
+                                                &lt;tr&gt;
+                                                    &lt;td&gt;3320&lt;/td&gt;
+                                                    &lt;td&gt;10/21/2013&lt;/td&gt;
+                                                    &lt;td&gt;2:15 PM&lt;/td&gt;
+                                                    &lt;td&gt;$5663.54&lt;/td&gt;
+                                                &lt;/tr&gt;
+                                                &lt;tr&gt;
+                                                    &lt;td&gt;3319&lt;/td&gt;
+                                                    &lt;td&gt;10/21/2013&lt;/td&gt;
+                                                    &lt;td&gt;2:13 PM&lt;/td&gt;
+                                                    &lt;td&gt;$943.45&lt;/td&gt;
+                                                &lt;/tr&gt;
+                                            &lt;/tbody&gt;
+                                        &lt;/table&gt;
+                                    &lt;/div&gt;
+                                    &lt;!-- /.table-responsive --&gt;
+                                &lt;/div&gt;
+                                &lt;!-- /.col-lg-4 (nested) --&gt;
+                                &lt;div class="col-lg-8"&gt;
+                                    &lt;div id="morris-bar-chart"&gt;&lt;/div&gt;
+                                &lt;/div&gt;
+                                &lt;!-- /.col-lg-8 (nested) --&gt;
+                            &lt;/div&gt;
+                            &lt;!-- /.row --&gt;
+                        &lt;/div&gt;
+                        &lt;!-- /.panel-body --&gt;
+                    &lt;/div&gt;
+                    &lt;!-- /.panel --&gt;
+                    &lt;div class="panel panel-default"&gt;
+                        &lt;div class="panel-heading"&gt;
+                            &lt;i class="fa fa-clock-o fa-fw"&gt;&lt;/i&gt; Responsive Timeline
+                        &lt;/div&gt;
+                        &lt;!-- /.panel-heading --&gt;
+                        &lt;div class="panel-body"&gt;
+                            &lt;ul class="timeline"&gt;
+                                &lt;li&gt;
+                                    &lt;div class="timeline-badge"&gt;&lt;i class="fa fa-check"&gt;&lt;/i&gt;
+                                    &lt;/div&gt;
+                                    &lt;div class="timeline-panel"&gt;
+                                        &lt;div class="timeline-heading"&gt;
+                                            &lt;h4 class="timeline-title"&gt;Lorem ipsum dolor&lt;/h4&gt;
+                                            &lt;p&gt;&lt;small class="text-muted"&gt;&lt;i class="fa fa-clock-o"&gt;&lt;/i&gt; 11 hours ago via Twitter&lt;/small&gt;
+                                            &lt;/p&gt;
+                                        &lt;/div&gt;
+                                        &lt;div class="timeline-body"&gt;
+                                            &lt;p&gt;Lorem ipsum dolor sit amet, consectetur adipisicing elit. Libero laboriosam dolor perspiciatis omnis exercitationem. Beatae, officia pariatur? Est cum veniam excepturi. Maiores praesentium, porro voluptas suscipit facere rem dicta, debitis.&lt;/p&gt;
+                                        &lt;/div&gt;
+                                    &lt;/div&gt;
+                                &lt;/li&gt;
+                                &lt;li class="timeline-inverted"&gt;
+                                    &lt;div class="timeline-badge warning"&gt;&lt;i class="fa fa-credit-card"&gt;&lt;/i&gt;
+                                    &lt;/div&gt;
+                                    &lt;div class="timeline-panel"&gt;
+                                        &lt;div class="timeline-heading"&gt;
+                                            &lt;h4 class="timeline-title"&gt;Lorem ipsum dolor&lt;/h4&gt;
+                                        &lt;/div&gt;
+                                        &lt;div class="timeline-body"&gt;
+                                            &lt;p&gt;Lorem ipsum dolor sit amet, consectetur adipisicing elit. Autem dolorem quibusdam, tenetur commodi provident cumque magni voluptatem libero, quis rerum. Fugiat esse debitis optio, tempore. Animi officiis alias, officia repellendus.&lt;/p&gt;
+                                            &lt;p&gt;Lorem ipsum dolor sit amet, consectetur adipisicing elit. Laudantium maiores odit qui est tempora eos, nostrum provident explicabo dignissimos debitis vel! Adipisci eius voluptates, ad aut recusandae minus eaque facere.&lt;/p&gt;
+                                        &lt;/div&gt;
+                                    &lt;/div&gt;
+                                &lt;/li&gt;
+                                &lt;li&gt;
+                                    &lt;div class="timeline-badge danger"&gt;&lt;i class="fa fa-bomb"&gt;&lt;/i&gt;
+                                    &lt;/div&gt;
+                                    &lt;div class="timeline-panel"&gt;
+                                        &lt;div class="timeline-heading"&gt;
+                                            &lt;h4 class="timeline-title"&gt;Lorem ipsum dolor&lt;/h4&gt;
+                                        &lt;/div&gt;
+                                        &lt;div class="timeline-body"&gt;
+                                            &lt;p&gt;Lorem ipsum dolor sit amet, consectetur adipisicing elit. Repellendus numquam facilis enim eaque, tenetur nam id qui vel velit similique nihil iure molestias aliquam, voluptatem totam quaerat, magni commodi quisquam.&lt;/p&gt;
+                                        &lt;/div&gt;
+                                    &lt;/div&gt;
+                                &lt;/li&gt;
+                                &lt;li class="timeline-inverted"&gt;
+                                    &lt;div class="timeline-panel"&gt;
+                                        &lt;div class="timeline-heading"&gt;
+                                            &lt;h4 class="timeline-title"&gt;Lorem ipsum dolor&lt;/h4&gt;
+                                        &lt;/div&gt;
+                                        &lt;div class="timeline-body"&gt;
+                                            &lt;p&gt;Lorem ipsum dolor sit amet, consectetur adipisicing elit. Voluptates est quaerat asperiores sapiente, eligendi, nihil. Itaque quos, alias sapiente rerum quas odit! Aperiam officiis quidem delectus libero, omnis ut debitis!&lt;/p&gt;
+                                        &lt;/div&gt;
+                                    &lt;/div&gt;
+                                &lt;/li&gt;
+                                &lt;li&gt;
+                                    &lt;div class="timeline-badge info"&gt;&lt;i class="fa fa-save"&gt;&lt;/i&gt;
+                                    &lt;/div&gt;
+                                    &lt;div class="timeline-panel"&gt;
+                                        &lt;div class="timeline-heading"&gt;
+                                            &lt;h4 class="timeline-title"&gt;Lorem ipsum dolor&lt;/h4&gt;
+                                        &lt;/div&gt;
+                                        &lt;div class="timeline-body"&gt;
+                                            &lt;p&gt;Lorem ipsum dolor sit amet, consectetur adipisicing elit. Nobis minus modi quam ipsum alias at est molestiae excepturi delectus nesciunt, quibusdam debitis amet, beatae consequuntur impedit nulla qui! Laborum, atque.&lt;/p&gt;
+                                            &lt;hr&gt;
+                                            &lt;div class="btn-group"&gt;
+                                                &lt;button type="button" class="btn btn-primary btn-sm dropdown-toggle" data-toggle="dropdown"&gt;
+                                                    &lt;i class="fa fa-gear"&gt;&lt;/i&gt;  &lt;span class="caret"&gt;&lt;/span&gt;
+                                                &lt;/button&gt;
+                                                &lt;ul class="dropdown-menu" role="menu"&gt;
+                                                    &lt;li&gt;&lt;a href="#"&gt;Action&lt;/a&gt;
+                                                    &lt;/li&gt;
+                                                    &lt;li&gt;&lt;a href="#"&gt;Another action&lt;/a&gt;
+                                                    &lt;/li&gt;
+                                                    &lt;li&gt;&lt;a href="#"&gt;Something else here&lt;/a&gt;
+                                                    &lt;/li&gt;
+                                                    &lt;li class="divider"&gt;&lt;/li&gt;
+                                                    &lt;li&gt;&lt;a href="#"&gt;Separated link&lt;/a&gt;
+                                                    &lt;/li&gt;
+                                                &lt;/ul&gt;
+                                            &lt;/div&gt;
+                                        &lt;/div&gt;
+                                    &lt;/div&gt;
+                                &lt;/li&gt;
+                                &lt;li&gt;
+                                    &lt;div class="timeline-panel"&gt;
+                                        &lt;div class="timeline-heading"&gt;
+                                            &lt;h4 class="timeline-title"&gt;Lorem ipsum dolor&lt;/h4&gt;
+                                        &lt;/div&gt;
+                                        &lt;div class="timeline-body"&gt;
+                                            &lt;p&gt;Lorem ipsum dolor sit amet, consectetur adipisicing elit. Sequi fuga odio quibusdam. Iure expedita, incidunt unde quis nam! Quod, quisquam. Officia quam qui adipisci quas consequuntur nostrum sequi. Consequuntur, commodi.&lt;/p&gt;
+                                        &lt;/div&gt;
+                                    &lt;/div&gt;
+                                &lt;/li&gt;
+                                &lt;li class="timeline-inverted"&gt;
+                                    &lt;div class="timeline-badge success"&gt;&lt;i class="fa fa-graduation-cap"&gt;&lt;/i&gt;
+                                    &lt;/div&gt;
+                                    &lt;div class="timeline-panel"&gt;
+                                        &lt;div class="timeline-heading"&gt;
+                                            &lt;h4 class="timeline-title"&gt;Lorem ipsum dolor&lt;/h4&gt;
+                                        &lt;/div&gt;
+                                        &lt;div class="timeline-body"&gt;
+                                            &lt;p&gt;Lorem ipsum dolor sit amet, consectetur adipisicing elit. Deserunt obcaecati, quaerat tempore officia voluptas debitis consectetur culpa amet, accusamus dolorum fugiat, animi dicta aperiam, enim incidunt quisquam maxime neque eaque.&lt;/p&gt;
+                                        &lt;/div&gt;
+                                    &lt;/div&gt;
+                                &lt;/li&gt;
+                            &lt;/ul&gt;
+                        &lt;/div&gt;
+                        &lt;!-- /.panel-body --&gt;
+                    &lt;/div&gt;
+                    &lt;!-- /.panel --&gt;
+                &lt;/div&gt;
+                &lt;!-- /.col-lg-8 --&gt;
+                &lt;div class="col-lg-4"&gt;
+                    &lt;div class="panel panel-default"&gt;
+                        &lt;div class="panel-heading"&gt;
+                            &lt;i class="fa fa-bell fa-fw"&gt;&lt;/i&gt; Notifications Panel
+                        &lt;/div&gt;
+                        &lt;!-- /.panel-heading --&gt;
+                        &lt;div class="panel-body"&gt;
+                            &lt;div class="list-group"&gt;
+                                &lt;a href="#" class="list-group-item"&gt;
+                                    &lt;i class="fa fa-comment fa-fw"&gt;&lt;/i&gt; New Comment
+                                    &lt;span class="pull-right text-muted small"&gt;&lt;em&gt;4 minutes ago&lt;/em&gt;
+                                    &lt;/span&gt;
+                                &lt;/a&gt;
+                                &lt;a href="#" class="list-group-item"&gt;
+                                    &lt;i class="fa fa-twitter fa-fw"&gt;&lt;/i&gt; 3 New Followers
+                                    &lt;span class="pull-right text-muted small"&gt;&lt;em&gt;12 minutes ago&lt;/em&gt;
+                                    &lt;/span&gt;
+                                &lt;/a&gt;
+                                &lt;a href="#" class="list-group-item"&gt;
+                                    &lt;i class="fa fa-envelope fa-fw"&gt;&lt;/i&gt; Message Sent
+                                    &lt;span class="pull-right text-muted small"&gt;&lt;em&gt;27 minutes ago&lt;/em&gt;
+                                    &lt;/span&gt;
+                                &lt;/a&gt;
+                                &lt;a href="#" class="list-group-item"&gt;
+                                    &lt;i class="fa fa-tasks fa-fw"&gt;&lt;/i&gt; New Task
+                                    &lt;span class="pull-right text-muted small"&gt;&lt;em&gt;43 minutes ago&lt;/em&gt;
+                                    &lt;/span&gt;
+                                &lt;/a&gt;
+                                &lt;a href="#" class="list-group-item"&gt;
+                                    &lt;i class="fa fa-upload fa-fw"&gt;&lt;/i&gt; Server Rebooted
+                                    &lt;span class="pull-right text-muted small"&gt;&lt;em&gt;11:32 AM&lt;/em&gt;
+                                    &lt;/span&gt;
+                                &lt;/a&gt;
+                                &lt;a href="#" class="list-group-item"&gt;
+                                    &lt;i class="fa fa-bolt fa-fw"&gt;&lt;/i&gt; Server Crashed!
+                                    &lt;span class="pull-right text-muted small"&gt;&lt;em&gt;11:13 AM&lt;/em&gt;
+                                    &lt;/span&gt;
+                                &lt;/a&gt;
+                                &lt;a href="#" class="list-group-item"&gt;
+                                    &lt;i class="fa fa-warning fa-fw"&gt;&lt;/i&gt; Server Not Responding
+                                    &lt;span class="pull-right text-muted small"&gt;&lt;em&gt;10:57 AM&lt;/em&gt;
+                                    &lt;/span&gt;
+                                &lt;/a&gt;
+                                &lt;a href="#" class="list-group-item"&gt;
+                                    &lt;i class="fa fa-shopping-cart fa-fw"&gt;&lt;/i&gt; New Order Placed
+                                    &lt;span class="pull-right text-muted small"&gt;&lt;em&gt;9:49 AM&lt;/em&gt;
+                                    &lt;/span&gt;
+                                &lt;/a&gt;
+                                &lt;a href="#" class="list-group-item"&gt;
+                                    &lt;i class="fa fa-money fa-fw"&gt;&lt;/i&gt; Payment Received
+                                    &lt;span class="pull-right text-muted small"&gt;&lt;em&gt;Yesterday&lt;/em&gt;
+                                    &lt;/span&gt;
+                                &lt;/a&gt;
+                            &lt;/div&gt;
+                            &lt;!-- /.list-group --&gt;
+                            &lt;a href="#" class="btn btn-default btn-block"&gt;View All Alerts&lt;/a&gt;
+                        &lt;/div&gt;
+                        &lt;!-- /.panel-body --&gt;
+                    &lt;/div&gt;
+                    &lt;!-- /.panel --&gt;
+                    &lt;div class="panel panel-default"&gt;
+                        &lt;div class="panel-heading"&gt;
+                            &lt;i class="fa fa-bar-chart-o fa-fw"&gt;&lt;/i&gt; Donut Chart Example
+                        &lt;/div&gt;
+                        &lt;div class="panel-body"&gt;
+                            &lt;div id="morris-donut-chart"&gt;&lt;/div&gt;
+                            &lt;a href="#" class="btn btn-default btn-block"&gt;View Details&lt;/a&gt;
+                        &lt;/div&gt;
+                        &lt;!-- /.panel-body --&gt;
+                    &lt;/div&gt;
+                    &lt;!-- /.panel --&gt;
+                    &lt;div class="chat-panel panel panel-default"&gt;
+                        &lt;div class="panel-heading"&gt;
+                            &lt;i class="fa fa-comments fa-fw"&gt;&lt;/i&gt;
+                            Chat
+                            &lt;div class="btn-group pull-right"&gt;
+                                &lt;button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown"&gt;
+                                    &lt;i class="fa fa-chevron-down"&gt;&lt;/i&gt;
+                                &lt;/button&gt;
+                                &lt;ul class="dropdown-menu slidedown"&gt;
+                                    &lt;li&gt;
+                                        &lt;a href="#"&gt;
+                                            &lt;i class="fa fa-refresh fa-fw"&gt;&lt;/i&gt; Refresh
+                                        &lt;/a&gt;
+                                    &lt;/li&gt;
+                                    &lt;li&gt;
+                                        &lt;a href="#"&gt;
+                                            &lt;i class="fa fa-check-circle fa-fw"&gt;&lt;/i&gt; Available
+                                        &lt;/a&gt;
+                                    &lt;/li&gt;
+                                    &lt;li&gt;
+                                        &lt;a href="#"&gt;
+                                            &lt;i class="fa fa-times fa-fw"&gt;&lt;/i&gt; Busy
+                                        &lt;/a&gt;
+                                    &lt;/li&gt;
+                                    &lt;li&gt;
+                                        &lt;a href="#"&gt;
+                                            &lt;i class="fa fa-clock-o fa-fw"&gt;&lt;/i&gt; Away
+                                        &lt;/a&gt;
+                                    &lt;/li&gt;
+                                    &lt;li class="divider"&gt;&lt;/li&gt;
+                                    &lt;li&gt;
+                                        &lt;a href="#"&gt;
+                                            &lt;i class="fa fa-sign-out fa-fw"&gt;&lt;/i&gt; Sign Out
+                                        &lt;/a&gt;
+                                    &lt;/li&gt;
+                                &lt;/ul&gt;
+                            &lt;/div&gt;
+                        &lt;/div&gt;
+                        &lt;!-- /.panel-heading --&gt;
+                        &lt;div class="panel-body"&gt;
+                            &lt;ul class="chat"&gt;
+                                &lt;li class="left clearfix"&gt;
+                                    &lt;span class="chat-img pull-left"&gt;
+                                        &lt;img src="http://placehold.it/50/55C1E7/fff" alt="User Avatar" class="img-circle" /&gt;
+                                    &lt;/span&gt;
+                                    &lt;div class="chat-body clearfix"&gt;
+                                        &lt;div class="header"&gt;
+                                            &lt;strong class="primary-font"&gt;Jack Sparrow&lt;/strong&gt;
+                                            &lt;small class="pull-right text-muted"&gt;
+                                                &lt;i class="fa fa-clock-o fa-fw"&gt;&lt;/i&gt; 12 mins ago
+                                            &lt;/small&gt;
+                                        &lt;/div&gt;
+                                        &lt;p&gt;
+                                            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur bibendum ornare dolor, quis ullamcorper ligula sodales.
+                                        &lt;/p&gt;
+                                    &lt;/div&gt;
+                                &lt;/li&gt;
+                                &lt;li class="right clearfix"&gt;
+                                    &lt;span class="chat-img pull-right"&gt;
+                                        &lt;img src="http://placehold.it/50/FA6F57/fff" alt="User Avatar" class="img-circle" /&gt;
+                                    &lt;/span&gt;
+                                    &lt;div class="chat-body clearfix"&gt;
+                                        &lt;div class="header"&gt;
+                                            &lt;small class=" text-muted"&gt;
+                                                &lt;i class="fa fa-clock-o fa-fw"&gt;&lt;/i&gt; 13 mins ago&lt;/small&gt;
+                                            &lt;strong class="pull-right primary-font"&gt;Bhaumik Patel&lt;/strong&gt;
+                                        &lt;/div&gt;
+                                        &lt;p&gt;
+                                            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur bibendum ornare dolor, quis ullamcorper ligula sodales.
+                                        &lt;/p&gt;
+                                    &lt;/div&gt;
+                                &lt;/li&gt;
+                                &lt;li class="left clearfix"&gt;
+                                    &lt;span class="chat-img pull-left"&gt;
+                                        &lt;img src="http://placehold.it/50/55C1E7/fff" alt="User Avatar" class="img-circle" /&gt;
+                                    &lt;/span&gt;
+                                    &lt;div class="chat-body clearfix"&gt;
+                                        &lt;div class="header"&gt;
+                                            &lt;strong class="primary-font"&gt;Jack Sparrow&lt;/strong&gt;
+                                            &lt;small class="pull-right text-muted"&gt;
+                                                &lt;i class="fa fa-clock-o fa-fw"&gt;&lt;/i&gt; 14 mins ago&lt;/small&gt;
+                                        &lt;/div&gt;
+                                        &lt;p&gt;
+                                            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur bibendum ornare dolor, quis ullamcorper ligula sodales.
+                                        &lt;/p&gt;
+                                    &lt;/div&gt;
+                                &lt;/li&gt;
+                                &lt;li class="right clearfix"&gt;
+                                    &lt;span class="chat-img pull-right"&gt;
+                                        &lt;img src="http://placehold.it/50/FA6F57/fff" alt="User Avatar" class="img-circle" /&gt;
+                                    &lt;/span&gt;
+                                    &lt;div class="chat-body clearfix"&gt;
+                                        &lt;div class="header"&gt;
+                                            &lt;small class=" text-muted"&gt;
+                                                &lt;i class="fa fa-clock-o fa-fw"&gt;&lt;/i&gt; 15 mins ago&lt;/small&gt;
+                                            &lt;strong class="pull-right primary-font"&gt;Bhaumik Patel&lt;/strong&gt;
+                                        &lt;/div&gt;
+                                        &lt;p&gt;
+                                            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur bibendum ornare dolor, quis ullamcorper ligula sodales.
+                                        &lt;/p&gt;
+                                    &lt;/div&gt;
+                                &lt;/li&gt;
+                            &lt;/ul&gt;
+                        &lt;/div&gt;
+                        &lt;!-- /.panel-body --&gt;
+                        &lt;div class="panel-footer"&gt;
+                            &lt;div class="input-group"&gt;
+                                &lt;input id="btn-input" type="text" class="form-control input-sm" placeholder="Type your message here..." /&gt;
+                                &lt;span class="input-group-btn"&gt;
+                                    &lt;button class="btn btn-warning btn-sm" id="btn-chat"&gt;
+                                        Send
+                                    &lt;/button&gt;
+                                &lt;/span&gt;
+                            &lt;/div&gt;
+                        &lt;/div&gt;
+                        &lt;!-- /.panel-footer --&gt;
+                    &lt;/div&gt;
+                    &lt;!-- /.panel .chat-panel --&gt;
+                &lt;/div&gt;
+                &lt;!-- /.col-lg-4 --&gt;
+            &lt;/div&gt;
+            &lt;!-- /.row --&gt;
+        &lt;/div&gt;
+        &lt;!-- /#page-wrapper --&gt;
+
+    &lt;/div&gt;
+    &lt;!-- /#wrapper --&gt;
+
+    &lt;!-- jQuery --&gt;
+    &lt;script src="../bower_components/jquery/dist/jquery.min.js"&gt;&lt;/script&gt;
+
+    &lt;!-- Bootstrap Core JavaScript --&gt;
+    &lt;script src="../bower_components/bootstrap/dist/js/bootstrap.min.js"&gt;&lt;/script&gt;
+
+    &lt;!-- Metis Menu Plugin JavaScript --&gt;
+    &lt;script src="../bower_components/metisMenu/dist/metisMenu.min.js"&gt;&lt;/script&gt;
+
+    &lt;!-- Morris Charts JavaScript --&gt;
+    &lt;script src="../bower_components/raphael/raphael-min.js"&gt;&lt;/script&gt;
+    &lt;script src="../bower_components/morrisjs/morris.min.js"&gt;&lt;/script&gt;
+    &lt;script src="../js/morris-data.js"&gt;&lt;/script&gt;
+
+    &lt;!-- Custom Theme JavaScript --&gt;
+    &lt;script src="../dist/js/sb-admin-2.js"&gt;&lt;/script&gt;
+
+&lt;/body&gt;
+
+&lt;/html&gt;
+</file><file name="www/main.php" preprocess="">&lt;?php
+//composer
+require('../../vendor/autoload.php');
+ini_set('display_errors', 'on');
+error_reporting(E_ALL);
+//header
+//header('Content-Type: text/html; charset=utf-8');
+
+//Core
+class Window{
+  public static function location($href){
+    header("Location: $href");
+  }
+}
+class CodedExceptionModel extends \model\Entity {
+  public static function getTable(){
+    return 'mensajes';
+  }
+}
+class CodedExceptionImpl {
+  function __construct(\model\CodedException $error){
+    $this-&gt;error=$error;
+  }
+  function getMessage(){
+    $c=MainConnection::getInstance()-&gt;instanceModel('CodedExceptionModel',[]);
+    list($owner,$code)=explode('.',$this-&gt;error-&gt;getMessage());
+    $row=$c-&gt;findByKey('CODE', $owner, $code, 'ERROR');
+    return $row-&gt;description;
+  }
+}
+
+
+global $model;
+$model = new StdClass();
+////////////////////////////////////////////////////////////////////////////////////
+//////////////////////MODEL/////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////
+
+class MainConnection extends \model\Connection {
+  public function __construct(){
+    parent::__construct('mysql:host=localhost;dbname=main', 'root', 'root', array(PDO::MYSQL_ATTR_INIT_COMMAND =&gt; 'SET NAMES UTF8;') );
+  }
+}
+class LoginModel extends \model\Entity {
+  public static function getTable(){
+    return 'login';
+  }
+  public static function getRowClass(){
+    return '\LoginRow';
+  }
+}
+class LoginRow extends \model\Row {
+  public function insert(){
+    parent::insert();
+    Window::location("index.html");
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////////
+//////////////////////END MODEL/////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////
+
+//session_start requires MODEL CLASSES
+session_start();
+
+
+$action=@$_REQUEST['a'];
+if($action==='submit'){
+  $o = $_SESSION[$action.'_context'];
+  $m = $_SESSION[$action.'_click'];
+  foreach($_SESSION[$action.'_fields'] as $f){
+    $o-&gt;$f=$_REQUEST[$f];
+  }
+  try{
+    $o-&gt;$m();
+  } catch(\model\CodedException $eee){
+    $e1 = new CodedExceptionImpl( $eee );
+    echo $e1-&gt;getMessage();
+  }
+  die;
+} else {
+  /////////////////INITIAL CODE FOR TEMPLATES ///////////////////////
+  global $context;
+  $context=$GLOBALS;
+  $_SESSION['submit_fields']=[];
+  /////////////////CODE FOR TEMPLATES ///////////////////////
+  $connection = MainConnection::getInstance();
+  $login = $connection-&gt;instanceModel('LoginModel',[]);
+  $model-&gt;login = $login;
+  /////////////////END CODE FOR TEMPLATES ///////////////////////
+  /////////////////END INITIAL CODE FOR TEMPLATES ///////////////////////
+}
+
+
+
+function &amp;getFC($id){
+  global $context;
+  if(is_array($context)){
+    return $context[$id];
+  } else {
+    return $context-&gt;$id;
+  }
+}
+function bind($def0, $ctx=null){
+  global $model;
+  if(!$ctx) $ctx=&amp;$GLOBALS['context'];
+  else $GLOBALS['context']=&amp;$ctx;
+  foreach(explode(',',$def0) as $def){
+    list($type,$d)=explode(":",$def,2);
+    $type=trim($type);
+    $d=trim($d);
+    switch($type){
+      case 'submit':
+        $GLOBALS['context']=eval('return '.$d.';');
+        echo ' action="?a=submit" method="post" ';
+        $_SESSION['submit_context']=$GLOBALS['context'];
+        break;
+      case 'input':
+        echo " name='$d'";
+        $_SESSION['submit_fields'][]=$d;
+        break;
+      case 'click':
+          echo ' onclick="$(this).parents(\'form:first\')[0].submit()" ';
+          $_SESSION['submit_click']=$d;
+        break;
+    }
+  }
+}
+
+</file></path></root>

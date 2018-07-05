@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?><root __ideNodeOpen="true"><path name="/home/david/nanoL/nano/flow" __ideNodeOpen="true"><include src="diagramPlugin.xml"/><package name="components" type="" __ideNodeOpen="true"><component name="Transition" transparent="" precode="" __ideNodeOpen="true"><file name="@{Diagram::getNamePath($_e)}.php" preprocess="" __ideNodeOpen="true">&lt;?php
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+namespace @{str_replace((Diagram::getNamePath($_e, '/')),'/','\\')};
+
+use DavidC\StateMachine\StateInterface;
+use DavidC\StateMachine\StateController;
+use DavidC\StateMachine\StateFactory;
+
+/**
+ * Description of Flow
+ *
+ * @author David Callizaya &lt;davidcallizaya@gmail.com&gt;
+ */
+class @{$name} extends @{$type/*Event|Get|Post|Put|Delete*/}TransitionController implements TransitionInterface
+{
+@{node::content($_)}
+}
+</file></component><component name="State" transparent="" precode="" __ideNodeOpen="true"><file name="@{Diagram::getNamePath($_e)}/@{$name}.php" preprocess="" __ideNodeOpen="true">&lt;?php
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+namespace @{Diagram::getNamePath($_e, '\\')};
+
+use DavidC\StateMachine\StateInterface;
+use DavidC\StateMachine\StateController;
+use DavidC\StateMachine\StateFactory;
+
+/**
+ * Description of Flow
+ *
+ * @author David Callizaya &lt;davidcallizaya@gmail.com&gt;
+ */
+class @{$name} extends StateController implements StateInterface
+{
+@{@node::content($_nodes['#text'])}
+}
+</file></component></package><package name="app" type="" __ideNodeOpen="true"><diagram __ideNodeOpen="true"><!--{"diagram":{"zoom":1,"scrollTop":0,"scrollLeft":0},"dgf40b807d30704f93a0095a7a5e5ba4b6":"position: absolute; height: 233.794px; left: 51px; top: -2px; width: 542.295px;","dg6f3d51708d0e46d4801d3ad299905a07":"position: absolute; height: 50.6281px; left: 95.3128px; top: 33.875px; width: 159.841px;","dg66bf76130c0b4819a4f2b549140cb12b":"position: absolute; height: 49.9162px; left: 300.196px; top: 23.3175px; width: 147.069px;","dg6b7cdf5f9e7c40f59f66ba95c98eef2f":"position: absolute; height: 9.71524px; left: 208.593px; top: 66.8195px; width: 38.0235px;","dg2f2c0a19f44d4ddc90b386a21fb02455":"position: absolute; height: 13.9866px; left: 104.969px; top: 43.6281px; width: 30.9883px;","dg4861a239e44d4ac784e74a60d929aeec":"position: absolute; height: 13.9866px; left: 158.673px; top: 43.2743px; width: 30.2345px;","dg954f1df32866403fa23d1246ed8e2311":"position: absolute; height: 4.64824px; left: 115.931px; top: 47.6034px; width: 16.7923px;","dg87fddab0c1f44bfc9c2a45049c7beef2":"position: absolute; height: 20px; left: 106px; top: 157px;"}--><State name="Main" type="" __ideDiagramId="dgf40b807d30704f93a0095a7a5e5ba4b6" __ideNodeOpen="true"><State __ideDiagramId="dg6f3d51708d0e46d4801d3ad299905a07" name="Login" __ideNodeOpen="true"><Transition __ideDiagramId="dg6b7cdf5f9e7c40f59f66ba95c98eef2f" name="Verify" type="Post" __ideNodeOpen="true">    public function dispatch($return){
+        if(empty($return['adusrcusr'])) {
+        } else {
+            $this-&gt;getUser()-&gt;event('');
+        }
+    }
+</Transition>    public function onDo()
+    {
+        $this-&gt;getUser()-&gt;gotoPage('/front/login.html');
+    }
+<State __ideDiagramId="dg2f2c0a19f44d4ddc90b386a21fb02455" name="Login" __ideNodeOpen="true"><Transition __ideDiagramId="dg954f1df32866403fa23d1246ed8e2311" name="VerifyUser" type="Post"/></State><State __ideDiagramId="dg4861a239e44d4ac784e74a60d929aeec" name="Verify" __ideNodeOpen="true">    public function onDo()
+    {
+        $this-&gt;getTransition()
+    }
+</State></State><State __ideDiagramId="dg66bf76130c0b4819a4f2b549140cb12b" name="Workflow"/><Transition __ideDiagramId="dg87fddab0c1f44bfc9c2a45049c7beef2" name="InitTransition" type="Event">    public function run(){
+        
+    }
+</Transition></State></diagram></package></path></root>

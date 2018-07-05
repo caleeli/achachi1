@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?><root><include src="$library/zend.xml"/><include src="$library/extjs.xml"/><application name="newApplication" main="index/index"><ext.page name="index"><extdocument><layout layout="border" __extid="0"><extjs class="Ext.Panel" region="center" title="Hello World" frame="true" __extid="1" __ideNodeOpen="true"><extjs class="Ext.grid.Panel" __extid="2" __ideNodeOpen="true" width="100%" height="300" stateful="true" stateId="stateGrid"><attribute name="store" __ideNodeOpen="true">store = Ext.create('Ext.data.Store', {
+        pageSize: 6,
+        fields: [
+           {name: 'record'},
+           {name: 'field'},
+           {name: 'previousValue'},
+           {name: 'currentValue'},
+           {name: 'previousValueType'},
+           {name: 'currentValueType'},
+           {name: 'task'},
+           {name: 'updateDate'},
+           {name: 'user'}
+        ],
+        groupField: 'record',
+        remoteSort: true,
+        proxy: {
+            // load using script tags for cross domain, if the data in on the same domain as
+            // this page, an HttpProxy would be better
+            type: 'jsonp',
+            url: 'http://localhost:8083/sysworkflow/en/neoclassic/cases/ajaxListener?action=changeLogTab&amp;idHistory=23134954556f0727c3fde11063016937_18295723156f2b9b26366e4040053045_16304814956f0729495da25001454322',
+            reader: {
+                root: 'data',
+                totalProperty: 'totalCount'
+            },
+            // sends single sort as multi parameter
+            simpleSortMode: true
+        },
+        sorters: [{
+            property: 'lastpost',
+            direction: 'DESC'
+        }]
+    })
+</attribute><attribute name="columns" __ideNodeOpen="true">[
+            {
+                text     : 'Field',
+                width    : 120,
+                sortable : false,
+                dataIndex: 'field'
+            },
+            {
+                text     : 'Previous Value',
+                flex     : 1,
+                sortable : false,
+                dataIndex: 'previousValue',
+                renderer: function (value, p, record) {
+                  return Ext.String.format(
+                      '{0} &lt;button disabled="disabled"&gt;{1}&lt;/button&gt;',
+                      value,
+                      record.data.previousValueType/*,
+                      record.getId(),
+                      record.data.forumid*/
+                  );
+                }
+            },
+            {
+                text     : 'Current Value',
+                flex     : 1,
+                sortable : false,
+                dataIndex: 'currentValue',
+                renderer: function (value, p, record) {
+                  return Ext.String.format(
+                      '{0} &lt;button disabled="disabled"&gt;{1}&lt;/button&gt;',
+                      value,
+                      record.data.currentValueType/*,
+                      record.getId(),
+                      record.data.forumid*/
+                  );
+                }
+            }
+        ]</attribute><attribute name="features" __ideNodeOpen="true">[
+    Ext.create('Ext.grid.feature.Grouping',{
+/*        groupHeaderTpl: 'Cuisine: {name} ({rows.length} Item{[values.rows.length &gt; 1 ? "s" : ""]})'*/
+        groupHeaderTpl: '{name}'
+    })
+]</attribute><attribute name="bbar" __ideNodeOpen="true">Ext.create('Ext.PagingToolbar', {
+            store: store,
+            displayInfo: true,
+            displayMsg: '{0} - {1}',
+            emptyMsg: "No topics to display",
+        })</attribute></extjs></extjs></layout></extdocument></ext.page></application></root>

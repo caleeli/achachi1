@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root __ideNodeOpen="true"><package name="parser" type="" __ideNodeOpen="true"><component name="parser" transparent="" precode="" __ideNodeOpen="true">#{
+$name/*parserDefinition*/;
+$_SEPARATOR=',';
+$_content=node::content($_);
+$_res=array();
+  foreach($_e-&gt;ownerDocument-&gt;getElementsByTagName("parserDefinition") as $_dd):
+    if($_dd-&gt;getAttribute("name")==$_e-&gt;getAttribute("name")):
+      $_def=$_dd-&gt;getElementsByTagName("definition")-&gt;item(0)-&gt;nodeValue;
+      if($_def):
+        $_def=explode("\n", $_def);
+        $_names=array();
+        foreach($_def as $_d):
+          $_d=explode($_SEPARATOR, $_d);
+          $_names[]=$_d[0];
+        endforeach;
+        foreach(explode("\n", $_content) as $_i=&gt;$_l):
+          $_v=explode($_SEPARATOR, $_l);
+          $_field=array();
+          foreach($_v as $_j=&gt;$_vv):
+            $_field[$_names[$_j]]=$_vv;
+          endforeach;
+          $_fn=null;
+          eval('$_fn= '.$_dd-&gt;getElementsByTagName("phpParser")-&gt;item(0)-&gt;nodeValue.';');
+          $_res[]=$_fn($_field, $_l);
+        endforeach;
+      endif;
+      break;
+    endif;
+  endforeach;
+  return implode("\n",$_res);
+}</component><component name="parserDefinition" transparent="" precode="" __ideNodeOpen="false"/><zplugin name="parser" nodesEditor="parser" __ideNodeOpen="true"><!--#editor.plugin
+
+zplugin.create($this.parentNode);
+componentsIndex[$this.parentNode.nodeName].editor=zcomponent.launch;--><zplugin.components/><zplugin.base __ideNodeOpen="true">"table",{class:"parser-table",width:"100%"},[],
+"style",{},".parser-table input{width:100%}"</zplugin.base><zplugin.launch>
+Z.emptyNode(canvas.firstChild);
+draw3(canvas.firstChild,["thead",{},["tr",{},["td",{width:"8px"},"*"]],"tbody",{},[]]);
+var header=canvas.firstChild.childNodes[0];
+var tbody=canvas.firstChild.childNodes[1];
+var _SEPARATOR=";";
+var autocomplete=[];
+function addCol(name,autocompleteValues){
+  autocomplete.push(autocompleteValues);
+  draw3(header.firstChild,["th",{},name]);
+}
+window.insertRow=function(btn){
+  var $tr=$(btn).parents("tr:first");
+  var $c=$tr.clone(true);
+  $tr.before($c);
+}
+function addRow(values){
+  if(typeof values=="undefined") values=[];
+  var inputs=["td",{},["button",{type:"button",onclick:function(){window.insertRow(this)}},"+"]];
+  for(var i=0,l=header.firstChild.childNodes.length-1;i&lt;l;i++){
+    inputs.push("td",{},["input",{value:(typeof values[i]!="undefined"?values[i]:""),onchange:function(){saveData()}},[]]);
+  }
+  draw3(tbody,["tr",{},inputs]);
+  $(tbody.lastChild).find("input").each(function(index){
+    $(this).autocomplete({
+      source: autocomplete[index],
+      minLength: 0
+    })
+  });
+}
+function loadData(){
+  var lines=node.textContent.split("\n");
+  for(var i=0,l=lines.length;i&lt;l;i++){
+    var field=lines[i].split(_SEPARATOR);
+    if(field[0]){
+      addRow(field);
+    }
+  }
+}
+function saveData(){
+  var lines=[];
+  for(var i=0,l=tbody.childNodes.length;i&lt;l;i++){
+    var linea=[],empty=true;
+    for(var j=1,m=tbody.childNodes[i].childNodes.length;j&lt;m;j++){
+      var val=tbody.childNodes[i].childNodes[j].firstChild.value/*.replace(/,/g,'|')*/;
+      if(val)empty=false;
+      linea.push(val);
+    }
+    if(!empty) lines.push(linea.join(_SEPARATOR));
+  }
+  Z.emptyNode(node);
+  draw3(node,lines.join("\n"));
+  ztree.redrawNode(node);
+}
+var definitions=node.ownerDocument.getElementsByTagName("parserDefinition");
+for(var i=0,l=definitions.length;i&lt;l;i++){
+  if(definitions[i].getAttribute("name")==node.getAttribute("name")){
+    var lines=definitions[i].getElementsByTagName("definition")[0].textContent.split("\n");
+    for(var i=0,l=lines.length;i&lt;l;i++){
+      var field=lines[i].split(_SEPARATOR);
+      if(field[0]){
+        addCol(field[0],typeof field[1]!="undefined"?field[1].split("|"):[]);
+      }
+    }
+    loadData();
+    addRow();
+    break;
+  }
+}
+</zplugin.launch></zplugin></package></root>

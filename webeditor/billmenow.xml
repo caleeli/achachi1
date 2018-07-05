@@ -1,0 +1,2668 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root __ideNodeOpen="true"><pakage path="output/billmenow" __ideNodeOpen="true" name="Components"><include src="$library/zplugin.xml"/><package name="parser" type="" __ideNodeOpen="true"><component name="parser" transparent="" precode="" __ideNodeOpen="true">#{
+$name/*parserDefinition*/;
+$_SEPARATOR=';';
+$_content=node::content($_);
+$_res=array();
+  foreach($_e-&gt;ownerDocument-&gt;getElementsByTagName("parserDefinition") as $_dd):
+    if($_dd-&gt;getAttribute("name")==$_e-&gt;getAttribute("name")):
+      $_def=$_dd-&gt;getElementsByTagName("definition")-&gt;item(0)-&gt;nodeValue;
+      if($_def):
+        $_def=explode("\n", $_def);
+        $_names=array();
+        foreach($_def as $_d):
+          $_d=explode($_SEPARATOR, $_d);
+          $_names[]=$_d[0];
+        endforeach;
+        foreach(explode("\n", $_content) as $_i=&gt;$_l):
+          $_v=explode($_SEPARATOR, $_l);
+          $_field=array();
+          foreach($_v as $_j=&gt;$_vv):
+            $_field[$_names[$_j]]=$_vv;
+          endforeach;
+          $_fn=null;
+          eval('$_fn= '.$_dd-&gt;getElementsByTagName("phpParser")-&gt;item(0)-&gt;nodeValue.';');
+          $_res[]=$_fn($_field);
+        endforeach;
+      endif;
+      break;
+    endif;
+  endforeach;
+  return implode("\n",$_res);
+}</component><component name="parserDefinition" transparent="" precode="" __ideNodeOpen="true"/><zplugin name="parser" nodesEditor="parser" __ideNodeOpen="true"><!--#editor.plugin
+
+zplugin.create($this.parentNode);
+componentsIndex[$this.parentNode.nodeName].editor=zcomponent.launch;--><zplugin.components/><zplugin.base __ideNodeOpen="true">"table",{class:"parser-table",width:"100%"},[],
+"style",{},".parser-table input{width:100%}"</zplugin.base><zplugin.launch>
+Z.emptyNode(canvas.firstChild);
+draw3(canvas.firstChild,["thead",{},["tr",{},["td",{width:"8px"},"*"]],"tbody",{},[]]);
+var header=canvas.firstChild.childNodes[0];
+var tbody=canvas.firstChild.childNodes[1];
+var _SEPARATOR=";";
+var autocomplete=[];
+function addCol(name,autocompleteValues){
+  autocomplete.push(autocompleteValues);
+  draw3(header.firstChild,["th",{},name]);
+}
+window.insertRow=function(btn){
+  var $tr=$(btn).parents("tr:first");
+  var $c=$tr.clone(true);
+  $tr.before($c);
+}
+function addRow(values){
+  if(typeof values=="undefined") values=[];
+  var inputs=["td",{},["button",{type:"button",onclick:function(){window.insertRow(this)}},"+"]];
+  for(var i=0,l=header.firstChild.childNodes.length-1;i&lt;l;i++){
+    inputs.push("td",{},["input",{value:(typeof values[i]!="undefined"?values[i]:""),onchange:function(){saveData()}},[]]);
+  }
+  draw3(tbody,["tr",{},inputs]);
+  $(tbody.lastChild).find("input").each(function(index){
+    $(this).autocomplete({
+      source: autocomplete[index],
+      minLength: 0
+    })
+  });
+}
+function loadData(){
+  var lines=node.textContent.split("\n");
+  for(var i=0,l=lines.length;i&lt;l;i++){
+    var field=lines[i].split(_SEPARATOR);
+    if(field[0]){
+      addRow(field);
+    }
+  }
+}
+function saveData(){
+  var lines=[];
+  for(var i=0,l=tbody.childNodes.length;i&lt;l;i++){
+    var linea=[],empty=true;
+    for(var j=1,m=tbody.childNodes[i].childNodes.length;j&lt;m;j++){
+      var val=tbody.childNodes[i].childNodes[j].firstChild.value/*.replace(/,/g,'|')*/;
+      if(val)empty=false;
+      linea.push(val);
+    }
+    if(!empty) lines.push(linea.join(_SEPARATOR));
+  }
+  Z.emptyNode(node);
+  draw3(node,lines.join("\n"));
+  ztree.redrawNode(node);
+}
+var definitions=node.ownerDocument.getElementsByTagName("parserDefinition");
+for(var i=0,l=definitions.length;i&lt;l;i++){
+  if(definitions[i].getAttribute("name")==node.getAttribute("name")){
+    var lines=definitions[i].getElementsByTagName("definition")[0].textContent.split("\n");
+    for(var i=0,l=lines.length;i&lt;l;i++){
+      var field=lines[i].split(_SEPARATOR);
+      if(field[0]){
+        addCol(field[0],typeof field[1]!="undefined"?field[1].split("|"):[]);
+      }
+    }
+    loadData();
+    addRow();
+    break;
+  }
+}
+</zplugin.launch></zplugin></package><parserDefinition __ideNodeOpen="true" name="fields"><definition __ideNodeOpen="true">type;leyend|text|date|select
+name
+extra
+options;[]</definition><phpParser __ideNodeOpen="true">function($field){
+  switch($field['type']){
+    case 'select':
+      $options=array();
+      foreach(json_decode($field["options"]) as $o){
+        $options[]="-&gt;addOption(".var_export($o[0],true).", ".var_export($o[1],true).")";
+      }
+      return '{{ Former::' . $field['type'] . '("' . $field['name'] . '")'.implode("",$options).'
+  -&gt;data_bind("value: '.$field['name'].'")'.@$field['extra'].' }}';
+      break;
+    case 'date':
+      return '{{ Former::' . $field['type'] . '("' . $field['name'] . '")-&gt;data_bind("datePicker: '.$field["name"].', valueUpdate: \'afterkeydown\'")
+  -&gt;data_date_format(Session::get(SESSION_DATE_PICKER_FORMAT))-&gt;append(\'&lt;i class="glyphicon glyphicon-calendar" onclick="toggleDatePicker(\\\''.$field['name'].'\\\')"&gt;&lt;/i&gt;\')'.@$field['extra'].' }}';
+      break;
+    default:
+      return '{{ Former::' . $field['type'] . '("' . $field['name'] . '")'.@$field['extra'].' }}';
+  }
+}</phpParser></parserDefinition><parserDefinition __ideNodeOpen="false" name="modelFields"><definition __ideNodeOpen="true">type;leyend|text
+name
+extra</definition><phpParser __ideNodeOpen="true">function($field){
+  return '  self.'.$field["name"].' = ko.observable("")';
+}</phpParser></parserDefinition><package name="views" type="" __ideNodeOpen="false"><component name="showPage" transparent="" precode="" __ideNodeOpen="false"><file name="show.blade.php" preprocess="" __ideNodeOpen="true">@extends('header')
+
+@section('content') 
+  
+  @if (!$@{$name}-&gt;trashed())    
+  &lt;div class="pull-right"&gt;
+    {{ Former::open('clients/bulk')-&gt;addClass('mainForm') }}
+    &lt;div style="display:none"&gt;
+      {{ Former::text('action') }}
+      {{ Former::text('id')-&gt;value($@{$name}-&gt;public_id) }}
+    &lt;/div&gt;
+
+    {{ DropdownButton::normal(trans('texts.edit_client'),
+        Navigation::links(
+          [
+            [trans('texts.edit_client'), URL::to('clients/' . $@{$name}-&gt;public_id . '/edit')],
+            [Navigation::DIVIDER],
+            [trans('texts.archive_client'), "javascript:onArchiveClick()"],
+            [trans('texts.delete_client'), "javascript:onDeleteClick()"],
+          ]
+        )
+      , ['id'=&gt;'normalDropDown'])-&gt;split(); }}
+
+      {{ DropdownButton::primary('Create Invoice', Navigation::links($actionLinks), ['id'=&gt;'primaryDropDown'])-&gt;split(); }}
+      {{ Former::close() }}    
+
+  &lt;/div&gt;
+  @endif
+
+  &lt;h2&gt;{{ $@{$name}-&gt;getDisplayName() }}&lt;/h2&gt;
+  @if ($@{$name}-&gt;last_login &gt; 0)
+  &lt;h3 style="margin-top:0px"&gt;&lt;small&gt;    
+    {{ trans('texts.last_logged_in') }} {{ Utils::timestampToDateTimeString(strtotime($@{$name}-&gt;last_login)); }}
+  &lt;/small&gt;&lt;/h3&gt;
+  @endif
+
+  &lt;div class="row"&gt;
+
+    &lt;div class="col-md-3"&gt;
+      &lt;h3&gt;{{ trans('texts.details') }}&lt;/h3&gt;
+        &lt;p&gt;{{ $@{$name}-&gt;getAddress() }}&lt;/p&gt;
+        &lt;p&gt;{{ $@{$name}-&gt;getCustomFields() }}&lt;/p&gt;
+        &lt;p&gt;{{ $@{$name}-&gt;getPhone() }}&lt;/p&gt;
+        &lt;p&gt;{{ $@{$name}-&gt;getNotes() }}&lt;/p&gt;
+        &lt;p&gt;{{ $@{$name}-&gt;getIndustry() }}&lt;/p&gt;
+        &lt;p&gt;{{ $@{$name}-&gt;getWebsite() }}&lt;/p&gt;
+        &lt;p&gt;{{ $@{$name}-&gt;payment_terms ? trans('texts.payment_terms') . ": Net " . $@{$name}-&gt;payment_terms : '' }}&lt;/p&gt;
+    &lt;/div&gt;
+
+    &lt;div class="col-md-3"&gt;
+      &lt;h3&gt;{{ trans('texts.contacts') }}&lt;/h3&gt;
+        @foreach ($@{$name}-&gt;contacts as $contact)        
+          {{ $contact-&gt;getDetails() }}        
+        @endforeach      
+    &lt;/div&gt;
+
+    &lt;div class="col-md-6"&gt;
+      &lt;h3&gt;{{ trans('texts.standing') }}
+      &lt;table class="table" style="width:300px"&gt;
+        &lt;tr&gt;
+          &lt;td&gt;&lt;small&gt;{{ trans('texts.paid_to_date') }}&lt;/small&gt;&lt;/td&gt;
+          &lt;td style="text-align: right"&gt;{{ Utils::formatMoney($@{$name}-&gt;paid_to_date, $@{$name}-&gt;currency_id); }}&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+          &lt;td&gt;&lt;small&gt;{{ trans('texts.balance') }}&lt;/small&gt;&lt;/td&gt;
+          &lt;td style="text-align: right"&gt;{{ Utils::formatMoney($@{$name}-&gt;balance, $@{$name}-&gt;currency_id); }}&lt;/td&gt;
+        &lt;/tr&gt;
+        @if ($credit &gt; 0)
+        &lt;tr&gt;
+          &lt;td&gt;&lt;small&gt;{{ trans('texts.credit') }}&lt;/small&gt;&lt;/td&gt;
+          &lt;td style="text-align: right"&gt;{{ Utils::formatMoney($credit, $@{$name}-&gt;currency_id); }}&lt;/td&gt;
+        &lt;/tr&gt;
+        @endif
+      &lt;/table&gt;
+      &lt;/h3&gt;
+
+    &lt;/div&gt;
+  &lt;/div&gt;
+
+  &lt;p&gt;&amp;nbsp;&lt;/p&gt;
+  
+  &lt;ul class="nav nav-tabs nav-justified"&gt;
+    {{ HTML::tab_link('#activity', trans('texts.activity'), true) }}
+    @if (Utils::isPro())
+      {{ HTML::tab_link('#quotes', trans('texts.quotes')) }}
+    @endif
+    {{ HTML::tab_link('#invoices', trans('texts.invoices')) }}
+    {{ HTML::tab_link('#payments', trans('texts.payments')) }}      
+    {{ HTML::tab_link('#credits', trans('texts.credits')) }}      
+  &lt;/ul&gt;
+
+  &lt;div class="tab-content"&gt;
+
+        &lt;div class="tab-pane active" id="activity"&gt;
+
+      {{ Datatable::table()    
+          -&gt;addColumn(
+            trans('texts.date'),
+            trans('texts.message'),
+            trans('texts.balance'),
+            trans('texts.adjustment'))
+          -&gt;setUrl(url('api/activities/'. $@{$name}-&gt;public_id))      
+          -&gt;setOptions('sPaginationType', 'bootstrap')
+          -&gt;setOptions('bFilter', false)
+          -&gt;setOptions('aaSorting', [['0', 'desc']])
+          -&gt;render('datatable') }}
+
+        &lt;/div&gt;
+
+    @if (Utils::isPro())
+        &lt;div class="tab-pane" id="quotes"&gt;
+
+      {{ Datatable::table()    
+          -&gt;addColumn(
+            trans('texts.quote_number'),
+            trans('texts.quote_date'),
+            trans('texts.total'),
+            trans('texts.due_date'),
+            trans('texts.status'))
+          -&gt;setUrl(url('api/quotes/'. $@{$name}-&gt;public_id))      
+          -&gt;setOptions('sPaginationType', 'bootstrap')
+          -&gt;setOptions('bFilter', false)
+          -&gt;setOptions('aaSorting', [['0', 'desc']])
+          -&gt;render('datatable') }}
+
+        &lt;/div&gt;
+    @endif
+
+    &lt;div class="tab-pane" id="invoices"&gt;
+
+      @if ($hasRecurringInvoices)
+        {{ Datatable::table()    
+            -&gt;addColumn(
+              trans('texts.frequency_id'),
+              trans('texts.start_date'),
+              trans('texts.end_date'),
+              trans('texts.invoice_total'))              
+            -&gt;setUrl(url('api/recurring_invoices/' . $@{$name}-&gt;public_id))      
+            -&gt;setOptions('sPaginationType', 'bootstrap')
+            -&gt;setOptions('bFilter', false)
+            -&gt;setOptions('aaSorting', [['0', 'asc']])
+            -&gt;render('datatable') }}
+      @endif
+
+      {{ Datatable::table()    
+          -&gt;addColumn(
+              trans('texts.invoice_number'),
+              trans('texts.invoice_date'),
+              trans('texts.invoice_total'),
+              trans('texts.balance_due'),
+              trans('texts.due_date'),
+              trans('texts.status'))
+          -&gt;setUrl(url('api/invoices/' . $@{$name}-&gt;public_id))      
+          -&gt;setOptions('sPaginationType', 'bootstrap')
+          -&gt;setOptions('bFilter', false)
+          -&gt;setOptions('aaSorting', [['0', 'asc']])
+          -&gt;render('datatable') }}
+            
+        &lt;/div&gt;
+        &lt;div class="tab-pane" id="payments"&gt;
+
+        {{ Datatable::table()    
+            -&gt;addColumn(
+                trans('texts.invoice'),
+                trans('texts.transaction_reference'),        
+                trans('texts.method'),              
+                trans('texts.payment_amount'),
+                trans('texts.payment_date'))
+        -&gt;setUrl(url('api/payments/' . $@{$name}-&gt;public_id))      
+        -&gt;setOptions('sPaginationType', 'bootstrap')
+        -&gt;setOptions('bFilter', false)
+        -&gt;setOptions('aaSorting', [['0', 'asc']])
+        -&gt;render('datatable') }}
+            
+        &lt;/div&gt;
+        &lt;div class="tab-pane" id="credits"&gt;
+
+        {{ Datatable::table()    
+            -&gt;addColumn(
+                trans('texts.credit_amount'),
+                trans('texts.credit_balance'),
+                trans('texts.credit_date'),
+                trans('texts.private_notes'))
+        -&gt;setUrl(url('api/credits/' . $@{$name}-&gt;public_id))      
+        -&gt;setOptions('sPaginationType', 'bootstrap')
+        -&gt;setOptions('bFilter', false)
+        -&gt;setOptions('aaSorting', [['0', 'asc']])
+        -&gt;render('datatable') }}
+            
+        &lt;/div&gt;
+    &lt;/div&gt;
+  
+  &lt;script type="text/javascript"&gt;
+
+  $(function() {
+    $('#normalDropDown &gt; button:first').click(function() {
+      window.location = '{{ URL::to('clients/' . $@{$name}-&gt;public_id . '/edit') }}';
+    });
+    $('#primaryDropDown &gt; button:first').click(function() {
+      window.location = '{{ URL::to('invoices/create/' . $@{$name}-&gt;public_id ) }}';
+    });
+  });
+
+  function onArchiveClick() {
+    $('#action').val('archive');
+    $('.mainForm').submit();
+  }
+
+  function onDeleteClick() {
+    if (confirm("{{ trans('texts.are_you_sure') }}")) {
+      $('#action').val('delete');
+      $('.mainForm').submit();
+    }    
+  }
+
+  &lt;/script&gt;
+
+@stop</file></component><component name="editPage" transparent="" precode="" __ideNodeOpen="false"><file name="views/@{$views}/edit.blade.php" preprocess="" __ideNodeOpen="true">@extends('header')
+
+@section('onReady')
+@{@node::content($_nodes['onReady'])}
+@stop
+
+@section('content')
+&lt;div class="row"&gt;
+
+  {{ Former::open($url)-&gt;addClass('col-md-12 warn-on-exit')-&gt;method($method)-&gt;rules(array(
+@{@node::content($_nodes['rules'])}
+  )); }}
+
+  @if ($@{$name})
+    {{ Former::populate($@{$name}) }}
+  @endif
+
+  &lt;div class="row"&gt;
+@{node::content($_nodes['content'])}
+  &lt;/div&gt;
+
+  &lt;script type="text/javascript"&gt;
+@{@node::content($_nodes['script'])}
+  &lt;/script&gt;
+
+  &lt;center class="buttons"&gt;
+    {{ Button::lg_primary_submit_success('Save')-&gt;append_with_icon('floppy-disk') }}
+    {{ Button::lg_default_link('clients/' . ($@{$name} ? $@{$name}-&gt;@{$id_field} : ''), 'Cancel')-&gt;append_with_icon('remove-circle'); }}
+  &lt;/center&gt;
+
+  {{ Former::close() }}
+&lt;/div&gt;
+@stop</file></component><component name="fieldSet" transparent="" precode="" __ideNodeOpen="false"><parser name="fields" __ideNodeOpen="false">legend;@{$name}</parser>
+@{node::content($_nodes['fields'])}</component><component name="fields" transparent="" precode="" __ideNodeOpen="false">@{node::content($_)}</component><component name="multiFieldSet" transparent="" precode="" __ideNodeOpen="false"><parser name="fields" __ideNodeOpen="false">legend;@{$name}</parser>      &lt;div data-bind='template: { foreach: @{$name},
+                                beforeRemove: hide@{ucfirst($model)},
+                                afterAdd: show@{ucfirst($model)} }'&gt;
+
+@{node::content($_nodes['fields'])}
+
+        &lt;div class="form-group"&gt;
+          &lt;div class="col-lg-8 col-lg-offset-4 bold"&gt;
+            &lt;span class="redlink bold" data-bind="visible: $parent.@{$name}().length &gt; 1"&gt;
+              {{ link_to('#', 'Remove @{$model} -', array('data-bind'=&gt;'click: $parent.remove@{ucfirst($model)}')) }}
+            &lt;/span&gt;          
+            &lt;span data-bind="visible: $index() === ($parent.@{$name}().length - 1)" class="pull-right greenlink bold"&gt;
+              {{ link_to('#', 'Add @{$model} +', array('onclick'=&gt;'return add@{ucfirst($model)}()')) }}
+            &lt;/span&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+
+  &lt;script type="text/javascript"&gt;
+  function @{ucfirst($model)}Model(data) {
+    var self = this;
+@{node::content($_nodes['modelFields'])}
+
+    if (data) {
+      ko.mapping.fromJS(data, {}, this);      
+    }    
+  }
+
+  function @{ucfirst($model)}sModel(data) {
+    var self = this;
+    self.@{$model}s = ko.observableArray();
+
+    self.mapping = {
+        '@{$model}s': {
+          create: function(options) {
+            return new @{ucfirst($model)}Model(options.data);
+          }
+        }
+    }    
+
+    if (data) {
+      ko.mapping.fromJS(data, self.mapping, this);      
+    } else {
+      self.@{$model}s.push(new @{ucfirst($model)}Model());
+    }
+  }
+
+  window.@{$modelInstance} = new @{ucfirst($model)}sModel({{ $client }});
+
+  @{$modelInstance}.show@{ucfirst($model)} = function(elem) { if (elem.nodeType === 1) $(elem).hide().slideDown() }
+  @{$modelInstance}.hide@{ucfirst($model)} = function(elem) { if (elem.nodeType === 1) $(elem).slideUp(function() { $(elem).remove(); }) }
+
+
+  ko.applyBindings(@{$modelInstance});
+
+  function add@{ucfirst($model)}() {
+    @{$modelInstance}.@{$model}s.push(new @{ucfirst($model)}Model());
+    return false;
+  }
+
+  @{$modelInstance}.remove@{ucfirst($model)} = function() {
+    @{$modelInstance}.@{$model}s.remove(this);
+  }
+
+  &lt;/script&gt;</component><component name="modelFields" transparent="" precode="" __ideNodeOpen="false">@{node::content($_)}</component><component name="content" transparent="" precode="" __ideNodeOpen="false">@{node::content($_)}</component><component name="script" transparent="" precode="" __ideNodeOpen="false">@{node::content($_)}</component><component name="column" transparent="" precode="" __ideNodeOpen="false">&lt;div class="col-md-6"&gt;
+@{node::content($_)}
+&lt;/div&gt;
+</component><component name="rules" transparent="" precode="" __ideNodeOpen="false">@{node::content($_)}</component><component name="onReady" transparent="" precode="" __ideNodeOpen="false">@{node::content($_)}</component><component name="tfoot" transparent="" precode="" __ideNodeOpen="false">@{node::content($_)}</component></package><component name="format_code" transparent="" precode="" __ideNodeOpen="false">#{
+  $_res=array();
+  $_tk = token_get_all(node::content($_));
+  $_marg=0;
+  foreach($_tk as $_t):
+    $_c=is_string($_t)?$_t:$_t[1];
+    switch(true):
+      case $_c=="\x7b":
+        $_res[]=$_c;
+        $_marg+=2;
+        break;
+      case $_c=="\x7d":
+        if(substr($_res[count($_res)-1],-$_marg)==str_repeat(' ', $_marg)):
+          $_res[count($_res)-1]=substr($_res[count($_res)-1],0,-2);
+        endif;
+        $_res[]=$_c;
+        $_marg-=2;
+        break;
+      case $_c=="[":
+        $_res[]=$_c;
+        $_marg+=2;
+        break;
+      case $_c=="]":
+        if(substr($_res[count($_res)-1],-$_marg)==str_repeat(' ', $_marg)):
+          $_res[count($_res)-1]=substr($_res[count($_res)-1],0,-2);
+        endif;
+        $_res[]=$_c;
+        $_marg-=2;
+        break;
+      case $_c=="(":
+        $_res[]=$_c;
+        $_marg+=2;
+        break;
+      case $_c==")":
+        if(substr($_res[count($_res)-1],-$_marg)==str_repeat(' ', $_marg)):
+          $_res[count($_res)-1]=substr($_res[count($_res)-1],0,-2);
+        endif;
+        $_res[]=$_c;
+        $_marg-=2;
+        break;
+      case @$_t[0]==T_ENCAPSED_AND_WHITESPACE:
+      case @$_t[0]==T_WHITESPACE:
+        $_c=preg_replace('/\n\s*/', "\n".str_repeat(' ', $_marg), $_c);
+        $_res[]=$_c;
+        break;
+      default:
+        $_res[]=$_c;
+    endswitch;
+  endforeach;
+  return implode("",$_res);
+}</component><package name="controllers" type="" __ideNodeOpen="false"><component name="defaultController" transparent="" precode="" __ideNodeOpen="true"><file name="controllers/@{ucfirst($name)}Controller.php" preprocess="format_code" __ideNodeOpen="true">&lt;?php
+
+use @{$RepositoryClass};
+
+class @{ucfirst($name)}Controller extends \BaseController {
+
+  protected $repoInstance;
+
+  public function __construct(@{$RepositoryClass} $repoInstance)
+  {
+    parent::__construct();
+
+    $this-&gt;repoInstance = $repoInstance;
+  }  
+
+  /**
+   * Display a listing of the resource.
+   *
+   * @return Response
+   */
+  public function index()
+  {
+    return View::make('list', array(
+      'entityType'=&gt;@{$entityType}, 
+      'title' =&gt; @{$listTitle/*trans( )*/},
+      'columns'=&gt;Utils::trans([@{$columns}])
+    ));
+  }
+
+  public function getDatatable()
+    {      
+      $record = $this-&gt;repoInstance-&gt;find(Input::get('sSearch'));
+
+        return Datatable::query($record)
+@{@node::content($_nodes['listColumns'])}
+          -&gt;make();          
+    }
+
+  /**
+   * Store a newly created resource in storage.
+   *
+   * @return Response
+   */
+  public function store()
+  {
+    return $this-&gt;save();
+  }
+
+  /**
+   * Display the specified resource.
+   *
+   * @param  int  $publicId
+   * @return Response
+   */
+  public function show($publicId)
+  {
+    $@{$name} = @{ucfirst($model)}::withTrashed()-&gt;scope($publicId)-&gt;with(@{$showRelations})-&gt;firstOrFail();
+    Utils::trackViewed($@{$name}-&gt;getDisplayName(), @{$entityType});
+  
+    $actionLinks = array();
+@{@node::content($_nodes['actionLinks'])}
+
+    $data = array(
+      'actionLinks' =&gt; $actionLinks,
+      'showBreadcrumbs' =&gt; false,
+      '@{$name}' =&gt; $@{$name},
+      'title' =&gt; @{$showTitle},
+    );
+
+@{@node::content($_nodes['functionShow'])}
+
+    return View::make('@{$views}.show', $data);
+  }
+
+  /**
+   * Show the form for creating a new resource.
+   *
+   * @return Response
+   */
+  public function create()
+  {
+    $data = [
+      '@{$name}' =&gt; null, 
+      'method' =&gt; 'POST', 
+      'url' =&gt; '@{$views}',
+      'title' =&gt; @{$createTitle}
+    ];
+
+@{@node::content($_nodes['functionCreate'])}
+
+    $data = array_merge($data, self::getViewModel());  
+    return View::make('@{$views}.edit', $data);
+  }  
+
+  /**
+   * Show the form for editing the specified resource.
+   *
+   * @param  int  $publicId
+   * @return Response
+   */
+  public function edit($publicId)
+  {
+    $@{$name} = @{ucfirst($model)}::scope($publicId)-&gt;with(@{$editRelations})-&gt;firstOrFail();
+    $data = [
+      '@{$name}' =&gt; $@{$name}, 
+      'method' =&gt; 'PUT', 
+      'url' =&gt; '@{$views}/' . $publicId, 
+      'title' =&gt; @{$editTitle}
+    ];
+
+@{@node::content($_nodes['functionEdit'])}
+
+    $data = array_merge($data, self::getViewModel());      
+    return View::make('@{$views}.edit', $data);
+  }
+
+  private static function getViewModel()
+  {
+@{@node::content($_nodes['functionGetViewModel'])}
+  }
+
+  /**
+   * Update the specified resource in storage.
+   *
+   * @param  int  $publicId
+   * @return Response
+   */
+  public function update($publicId)
+  {
+    return $this-&gt;save($publicId);
+  }
+
+  private function save($publicId = null)
+  {
+    $rules = array(
+@{@node::content($_nodes['saveRules'])}
+    );
+    $validator = Validator::make(Input::all(), $rules);
+
+    if ($validator-&gt;fails()) 
+    {
+      $url = $publicId ? '@{$views}/' . $publicId . '/edit' : '@{$views}/create';
+      return Redirect::to($url)
+        -&gt;withErrors($validator)
+        -&gt;withInput(Input::except('password'));
+    } 
+    else 
+    {      
+      if ($publicId) 
+      {
+        $@{$name} = @{ucfirst($model)}::scope($publicId)-&gt;firstOrFail();
+      } 
+      else 
+      {
+        $@{$name} = @{ucfirst($model)}::createNew();
+      }
+
+      $record=$@{$name};
+@{@node::content($_nodes['saveFields'])}
+      $@{$name}-&gt;save();
+
+@{node::content($_nodes['functionSave'])}
+
+      if ($publicId) 
+      {
+        Session::flash('message', trans('texts.updated_@{$name}'));
+      }
+      else 
+      {
+        Activity::create@{ucfirst($model)}($@{$name});
+        Session::flash('message', trans('texts.created_@{$name}'));
+      }
+
+      return Redirect::to('@{$views}/' . $@{$name}-&gt;@{$id_field});
+    }
+  }
+
+  public function bulk()
+  {
+    $action = Input::get('action');
+    $ids = Input::get('id') ? Input::get('id') : Input::get('ids');    
+    $count = $this-&gt;repoInstance-&gt;bulk($ids, $action);
+
+    $message = Utils::pluralize($action.'d_@{$name}', $count);
+    Session::flash('message', $message);
+
+    return Redirect::to('@{$views}');
+  }
+}
+</file></component><parserDefinition __ideNodeOpen="true" name="listColumns"><definition version="1.0" __ideNodeOpen="true">type;checkbox|link|date|action
+name
+extra</definition><phpParser __ideNodeOpen="true">function($field){
+switch($field['type']){
+  case 'checkbox':
+    return '          -&gt;addColumn("'.$field['name'].'", function($model) { return \'&lt;input type="checkbox" name="ids[]" value="\'.' . $field['extra'] . '.\'"&gt;\'; })';
+  case 'link':
+    return '          -&gt;addColumn("'.$field['name'].'", function($model) { return link_to('. $field['extra'] .'); })';
+  case 'date':
+    return '          -&gt;addColumn("'.$field['name'].'", function($model) { return Utils::timestampToDateString(strtotime($model-&gt;'.$field['name'].')); })';
+  case 'money':
+    return '          -&gt;addColumn("'.$field['name'].'", function($model) { return Utils::formatMoney($model-&gt;'.$field['name'].', '.$field['extra'].'); })';
+  case 'action':
+    $options=explode(',',$field['extra']);
+    $list=array();
+    foreach($options as $op){
+      @list($type,$url,$text)=explode('|', $op);
+      switch($type){
+        case 'link':
+          $list[]='                &lt;li&gt;&lt;a href="\' . URL::to('. $url . ') . \'"&gt;\'.'.$text.'.\'&lt;/a&gt;&lt;/li&gt;';
+          break;
+        case 'divider':
+          $list[]='                &lt;li class="divider"&gt;&lt;/li&gt;';
+          break;
+        case 'javascript':
+          $list[]='                &lt;li&gt;&lt;a href="javascript:\'. ' . $url . ' .\'"&gt;\'.'.$text.'.\'&lt;/a&gt;&lt;/li&gt;';
+          break;
+      }
+    }
+    return '          -&gt;addColumn("'.$field['name'].'", function($model)
+          {
+            return \'&lt;div class="btn-group tr-action" style="visibility:hidden;"&gt;
+                &lt;button type="button" class="btn btn-xs btn-default dropdown-toggle" data-toggle="dropdown"&gt;
+                  \'.trans(\'texts.select\').\' &lt;span class="caret"&gt;&lt;/span&gt;
+                &lt;/button&gt;
+                &lt;ul class="dropdown-menu" role="menu"&gt;
+'.implode("\n", $list).'
+              &lt;/ul&gt;
+            &lt;/div&gt;\';
+          })';
+}
+  return '';
+}
+</phpParser></parserDefinition><component name="listColumns" transparent="" precode="" __ideNodeOpen="false">@{node::content($_)}</component><parserDefinition __ideNodeOpen="false" name="actionLinks"><definition version="1.0" __ideNodeOpen="true">text
+url
+condition</definition><phpParser __ideNodeOpen="true">function($field){
+  if(@$field['condition']){
+    return '    if (' . $field['condition'] . ')
+    {
+      $actionLinks[]= [' . $field['text'] . ', URL::to(' . $field['url'] . ')];
+    }';
+  } else {
+    return '    $actionLinks[]= [' . $field['text'] . ', URL::to(' . $field['url'] . ')];';
+  }
+}</phpParser></parserDefinition><component name="actionLinks" transparent="" precode="" __ideNodeOpen="false">@{node::content($_)}</component><component name="functionShow" transparent="" precode="" __ideNodeOpen="false">@{node::content($_)}</component><component name="functionCreate" transparent="" precode="" __ideNodeOpen="false">@{node::content($_)}</component><component name="functionEdit" transparent="" precode="" __ideNodeOpen="false">@{node::content($_)}</component><parserDefinition __ideNodeOpen="true" name="saveFields"><definition version="1.0" __ideNodeOpen="true">type;text|select
+name
+default</definition><phpParser __ideNodeOpen="true">function($field){
+  switch($field['type']){
+    case 'select':
+      return '      $record-&gt;'.$field['name'].' = Input::get("'.$field['name'].'") ? : '.$field['default'].';';
+      break;
+    default:
+      return '      $record-&gt;'.$field['name'].' = trim(Input::get("'.$field['name'].'"));';
+  }
+}</phpParser></parserDefinition><component name="saveFields" transparent="" precode="" __ideNodeOpen="false">@{node::content($_)}</component><component name="functionSave" transparent="" precode="" __ideNodeOpen="false">@{node::content($_)}</component><parserDefinition __ideNodeOpen="true" name="saveRules"><definition version="1.0" __ideNodeOpen="true">type;required|
+name</definition><phpParser __ideNodeOpen="true">function($field){
+  switch($field['type']){
+    case 'required':
+      return '      "'.$field['name'].'" =&gt; "required",';
+      break;
+    default:
+  }
+}</phpParser></parserDefinition><component name="saveRules" transparent="" precode="" __ideNodeOpen="false">@{node::content($_)}</component><component name="functionGetViewModel" transparent="" precode="" __ideNodeOpen="false">@{node::content($_)}</component></package><package name="tableResponsive" type="" __ideNodeOpen="true"><parserDefinition __ideNodeOpen="false" name="tableResponsive"><definition __ideNodeOpen="true">type;autocomplete|textarea|input|label
+name
+title
+titleStyle
+extra
+dataList
+rows
+cols</definition><phpParser __ideNodeOpen="true">function($field){
+  return implode(";",$field);
+}</phpParser></parserDefinition><parserDefinition __ideNodeOpen="false" name="tableResponsiveHeader"><definition __ideNodeOpen="true">type;autocomplete|textarea|input|label
+name
+title
+titleStyle
+extra
+dataList
+rows
+cols</definition><phpParser __ideNodeOpen="true">function($field){
+  return '        &lt;th style="'.$field['titleStyle'].'"&gt;{{ '.$field['title'].' }}&lt;/th&gt;';
+}</phpParser></parserDefinition><parserDefinition __ideNodeOpen="true" name="tableResponsiveData"><definition __ideNodeOpen="true">type;autocomplete|textarea|input|label|date
+name
+title
+titleStyle
+extra
+dataList
+rows
+cols</definition><phpParser __ideNodeOpen="true">function($field){
+  switch($field['type']){
+    case 'autocomplete':
+      return '        &lt;td&gt;
+            {{ Former::text("'.$field['name'].'")-&gt;useDatalist('.$field['dataList'].')
+            -&gt;raw()-&gt;data_bind("value: '.$field['name'].', valueUpdate: \'afterkeydown\'")-&gt;addClass("datalist") }}
+          &lt;/td&gt;';
+      break;
+    case 'textarea':
+      return '        &lt;td&gt;
+            &lt;textarea data-bind="value: '.$field['name'].', valueUpdate: \'afterkeydown\'" rows="'.$field['rows'].'" cols="'.$field['cols'].'" style="resize: none;" class="form-control word-wrap"&gt;&lt;/textarea&gt;
+          &lt;/td&gt;';
+      break;
+    case 'input':
+      return '        &lt;td&gt;
+            &lt;input onkeyup="onItemChange()" data-bind="value: '.$field['name'].', valueUpdate: \'afterkeydown\'" style="text-align: right" class="form-control"/&gt;
+          &lt;/td&gt;';
+      break;
+    case 'date':
+      return '        &lt;td&gt;
+            &lt;div class="input-group"&gt;&lt;input type="date" class="form-control" data-bind="value: '.$field['name'].', datePicker: '.$field['name'].', valueUpdate: \'afterkeydown\'" data-date-format="{{ Session::get(SESSION_DATE_PICKER_FORMAT) }}"&gt;&lt;span class="input-group-addon"&gt;&lt;i class="glyphicon glyphicon-calendar" onclick="$(this.parentNode.previousSibling).datepicker(\'show\')"&gt;&lt;/i&gt;&lt;/span&gt;&lt;/div&gt;
+          &lt;/td&gt;';
+      break;
+ /*   case 'date':
+      return '        &lt;td&gt;{{ Former::' . $field['type'] . '("")-&gt;data_bind("value: '.$field['name'].', datePicker: '.$field["name"].', valueUpdate: \'afterkeydown\'")
+  -&gt;data_date_format(Session::get(SESSION_DATE_PICKER_FORMAT))-&gt;append(\'&lt;i class="glyphicon glyphicon-calendar" onclick="toggleDatePicker(\\\''.$field['name'].'\\\')"&gt;&lt;/i&gt;\')'.@$field['extra'].' }}&lt;/td&gt;';
+      break;*/
+    case 'label':
+      return '        &lt;td style="'.$field['extra'].'"&gt;
+            &lt;div class="line-total" data-bind="text: '.$field['name'].'"&gt;&lt;/div&gt;
+          &lt;/td&gt;';
+      break;
+  }
+}
+
+</phpParser></parserDefinition><component name="tableResponsive" transparent="" precode="" __ideNodeOpen="true">
+  &lt;div class="table-responsive"&gt;
+  &lt;table class="table dataTable @{$name}" style="margin-bottom: 0px !important"&gt;
+    &lt;thead&gt;
+      &lt;tr&gt;
+        &lt;th style="min-width:32px;" class="hide-border"&gt;&lt;/th&gt;
+<parser name="tableResponsiveHeader" __ideNodeOpen="true">@{node::content($_nodes['fields'])}</parser>
+        &lt;th style="min-width:32px;" class="hide-border"&gt;&lt;/th&gt;
+      &lt;/tr&gt;
+    &lt;/thead&gt;
+    &lt;tbody data-bind="sortable: { data: @{$data}, afterMove: onDragged }"&gt;
+      &lt;tr data-bind="event: { mouseover: showActions, mouseout: hideActions }" class="sortable-row"&gt;
+        &lt;td class="hide-border td-icon"&gt;
+          &lt;i style="display:none" data-bind="visible: actionsVisible() &amp;amp;&amp;amp; $parent.@{$data}().length &gt; 1" class="fa fa-sort"&gt;&lt;/i&gt;
+        &lt;/td&gt;
+<parser name="tableResponsiveData" __ideNodeOpen="true">@{node::content($_nodes['fields'])}</parser>
+        &lt;td style="cursor:pointer" class="hide-border td-icon"&gt;
+          &amp;nbsp;&lt;i style="display:none" data-bind="click: $parent.removeItem, visible: actionsVisible() &amp;amp;&amp;amp; $parent.@{$data}().length &gt; 1" class="fa fa-minus-circle redlink" title="Remove item"/&gt;
+        &lt;/td&gt;
+      &lt;/tr&gt;
+    &lt;/tbody&gt;
+
+    &lt;tfoot&gt;
+@{@node::content($_nodes['tfoot'])}
+    &lt;/tfoot&gt;
+
+  &lt;/table&gt;
+  &lt;/div&gt;
+</component></package><package name="tabTable" type="" __ideNodeOpen="true"><parserDefinition __ideNodeOpen="true" name="tabTableFields"><definition version="1.0" __ideNodeOpen="true">title</definition><phpParser __ideNodeOpen="true">function($field,$is_last){
+  return '              '.$field['title'].(!$is_last?',':'');
+}</phpParser></parserDefinition><component name="tabTable" transparent="" precode="" __ideNodeOpen="true">    &lt;div class="tab-pane" id="@{$name}"&gt;
+      {{ Datatable::table()
+          -&gt;addColumn(
+@{node::content($_nodes['fields'])}
+          )
+          -&gt;setUrl(url(@{$url}))
+          -&gt;setOptions('sPaginationType', 'bootstrap')
+          -&gt;setOptions('bFilter', false)
+          -&gt;setOptions('aaSorting', [['0', 'asc']])
+          -&gt;render('datatable') }}
+    &lt;/div&gt;
+</component></package></pakage><path path="/var/www/billing/app" __ideNodeOpen="true"><editPage111 name="client" id_field="public_id" __ideNodeOpen="false" views="clients"><content __ideNodeOpen="true"><column __ideNodeOpen="true"><fieldSet name="organization" __ideNodeOpen="true"><fields __ideNodeOpen="true"><parser name="fields" __ideNodeOpen="false">text;name;
+text;website;
+text;work_phone;</parser></fields></fieldSet></column></content></editPage111><defaultController111 name="client" RepositoryClass="redefined\repositories\ClientRepository" entityType="ENTITY_CLIENT" listTitle="trans('texts.clients')" columns="'checkbox', 'client', 'contact', 'email', 'date_created', 'last_login', 'balance', 'action'" showTitle="trans('texts.view_client')" views="clients" createTitle="trans('texts.new_client')" id_field="public_id" __ideNodeOpen="false" showRelations="'contacts', 'size', 'industry'" editRelations="'contacts'" editTitle="trans('texts.edit_client')" model="client"><listColumns __ideNodeOpen="true"><parser name="listColumns" __ideNodeOpen="false">checkbox;checkbox;$model-&gt;public_id
+link;name;'clients/' . $model-&gt;public_id, $model-&gt;name
+link;first_name;'clients/' . $model-&gt;public_id, $model-&gt;first_name . ' ' . $model-&gt;last_name
+link;email;'clients/' . $model-&gt;public_id, $model-&gt;email
+date;created_at;
+date;last_login;
+money;balance;$model-&gt;currency_id
+action;dropdown;link|'clients/'.$model-&gt;public_id.'/edit'|trans('texts.edit_client'),divider,link|'invoices/create/'.$model-&gt;public_id|trans('texts.new_invoice')</parser></listColumns><actionLinks __ideNodeOpen="true"><parser name="actionLinks" __ideNodeOpen="false">trans('texts.create_quote');'quotes/create/' . $client-&gt;public_id;Utils::isPro()
+trans('texts.create_invoice');'invoices/create/' . $client-&gt;public_id;
+trans('texts.enter_payment');'payments/create/' . $client-&gt;public_id;
+trans('texts.enter_credit');'credits/create/' . $client-&gt;public_id;</parser></actionLinks><functionShow __ideNodeOpen="true">$data['credit'] = $client-&gt;getTotalCredit();
+$data['hasRecurringInvoices'] = Invoice::scope()-&gt;where('is_recurring', '=', true)-&gt;whereClientId($client-&gt;id)-&gt;count() &gt; 0;
+
+
+</functionShow><functionCreate __ideNodeOpen="true">		if (Client::scope()-&gt;count() &gt; Auth::user()-&gt;getMaxNumClients())
+		{
+			return View::make('error', ['hideHeader' =&gt; true, 'error' =&gt; "Sorry, you've exceeded the limit of " . Auth::user()-&gt;getMaxNumClients() . " clients"]);
+		}
+</functionCreate><functionEdit __ideNodeOpen="true"/><functionGetViewModel __ideNodeOpen="true">    return [
+      'sizes' =&gt; Size::remember(DEFAULT_QUERY_CACHE)-&gt;orderBy('id')-&gt;get(),
+      'paymentTerms' =&gt; PaymentTerm::remember(DEFAULT_QUERY_CACHE)-&gt;orderBy('num_days')-&gt;get(['name', 'num_days']),
+      'industries' =&gt; Industry::remember(DEFAULT_QUERY_CACHE)-&gt;orderBy('name')-&gt;get(),
+      'currencies' =&gt; Currency::remember(DEFAULT_QUERY_CACHE)-&gt;orderBy('name')-&gt;get(),
+      'countries' =&gt; Country::remember(DEFAULT_QUERY_CACHE)-&gt;orderBy('name')-&gt;get(),
+      'customLabel1' =&gt; Auth::user()-&gt;account-&gt;custom_client_label1,
+      'customLabel2' =&gt; Auth::user()-&gt;account-&gt;custom_client_label2,
+    ];
+</functionGetViewModel><saveRules __ideNodeOpen="true"><parser name="saveRules" __ideNodeOpen="false">required;email</parser></saveRules><saveFields __ideNodeOpen="true"><parser name="saveFields" __ideNodeOpen="false">text;name;
+text;work_phone;
+text;custom_value1;
+text;custom_value2;
+text;address1;
+text;address2;
+text;city;
+text;state;
+text;postal_code;
+text;country_id;
+text;private_notes;
+text;size_id;
+text;industry_id;
+text;currency_id;
+text;payment_terms;
+text;website;</parser></saveFields><functionSave __ideNodeOpen="true">      $data = json_decode(Input::get('data'));
+      $contactIds = [];
+      $isPrimary = true;
+      
+      foreach ($data-&gt;contacts as $contact)
+      {
+        if (isset($contact-&gt;public_id) &amp;&amp; $contact-&gt;public_id)
+        {
+          $record = Contact::scope($contact-&gt;public_id)-&gt;firstOrFail();
+        }
+        else
+        {
+          $record = Contact::createNew();
+        }
+
+        $record-&gt;email = trim(strtolower($contact-&gt;email));
+        $record-&gt;first_name = trim($contact-&gt;first_name);
+        $record-&gt;last_name = trim($contact-&gt;last_name);
+        $record-&gt;phone = trim($contact-&gt;phone);
+        $record-&gt;is_primary = $isPrimary;
+        $isPrimary = false;
+
+        $client-&gt;contacts()-&gt;save($record);
+        $contactIds[] = $record-&gt;public_id;          
+      }
+
+      foreach ($client-&gt;contacts as $contact)
+      {
+        if (!in_array($contact-&gt;public_id, $contactIds))
+        {  
+          $contact-&gt;delete();
+        }
+      }
+</functionSave></defaultController111><editPage111 name="paymentplan" id_field="public_id" __ideNodeOpen="true" views="paymentplan"><content __ideNodeOpen="true"><column __ideNodeOpen="true"><fieldSet name="organization" __ideNodeOpen="true"><fields __ideNodeOpen="true"><parser name="fields" __ideNodeOpen="false">text;plan_status;;
+date;next_payment_due_date;;
+text;payment_plan_amount;;
+select;payment_frequency;;[["",""],["monthly","Monthly"],["weekly","Weekly"]]</parser></fields></fieldSet><tableResponsive name="invoice-table" data="invoice_items" __ideNodeOpen="true"><fields __ideNodeOpen="true"><parser name="tableResponsive" __ideNodeOpen="true">autocomplete;product_key;trans('texts.item');min-width:160px;;$industries, "name";;</parser></fields><tfoot/></tableResponsive></column></content></editPage111><defaultController11 name="paymentplan" RepositoryClass="redefined\repositories\ClientRepository" entityType="ENTITY_CLIENT" listTitle="trans('texts.clients')" columns="'checkbox', 'client', 'contact', 'email', 'date_created', 'last_login', 'balance', 'action'" showTitle="trans('texts.view_client')" views="paymentplan" createTitle="trans('texts.new_client')" id_field="public_id" __ideNodeOpen="false" showRelations="'contacts', 'size', 'industry'" editRelations="'contacts'" editTitle="trans('texts.edit_client')" model="client"><listColumns __ideNodeOpen="true"><parser name="listColumns" __ideNodeOpen="false">checkbox;checkbox;$model-&gt;public_id
+link;name;'clients/' . $model-&gt;public_id, $model-&gt;name
+link;first_name;'clients/' . $model-&gt;public_id, $model-&gt;first_name . ' ' . $model-&gt;last_name
+link;email;'clients/' . $model-&gt;public_id, $model-&gt;email
+date;created_at;
+date;last_login;
+money;balance;$model-&gt;currency_id
+action;dropdown;link|'clients/'.$model-&gt;public_id.'/edit'|trans('texts.edit_client'),divider,link|'invoices/create/'.$model-&gt;public_id|trans('texts.new_invoice')</parser></listColumns><actionLinks __ideNodeOpen="true"><parser name="actionLinks" __ideNodeOpen="false">trans('texts.create_quote');'quotes/create/' . $client-&gt;public_id;Utils::isPro()
+trans('texts.create_invoice');'invoices/create/' . $client-&gt;public_id;
+trans('texts.enter_payment');'payments/create/' . $client-&gt;public_id;
+trans('texts.enter_credit');'credits/create/' . $client-&gt;public_id;</parser></actionLinks><functionShow __ideNodeOpen="true">$data['credit'] = $client-&gt;getTotalCredit();
+$data['hasRecurringInvoices'] = Invoice::scope()-&gt;where('is_recurring', '=', true)-&gt;whereClientId($client-&gt;id)-&gt;count() &gt; 0;
+
+
+</functionShow><functionCreate __ideNodeOpen="true">		if (Client::scope()-&gt;count() &gt; Auth::user()-&gt;getMaxNumClients())
+		{
+			return View::make('error', ['hideHeader' =&gt; true, 'error' =&gt; "Sorry, you've exceeded the limit of " . Auth::user()-&gt;getMaxNumClients() . " clients"]);
+		}
+</functionCreate><functionEdit __ideNodeOpen="true"/><functionGetViewModel __ideNodeOpen="true">    return [
+      'sizes' =&gt; Size::remember(DEFAULT_QUERY_CACHE)-&gt;orderBy('id')-&gt;get(),
+      'paymentTerms' =&gt; PaymentTerm::remember(DEFAULT_QUERY_CACHE)-&gt;orderBy('num_days')-&gt;get(['name', 'num_days']),
+      'industries' =&gt; Industry::remember(DEFAULT_QUERY_CACHE)-&gt;orderBy('name')-&gt;get(array('name','id')),
+      'currencies' =&gt; Currency::remember(DEFAULT_QUERY_CACHE)-&gt;orderBy('name')-&gt;get(),
+      'countries' =&gt; Country::remember(DEFAULT_QUERY_CACHE)-&gt;orderBy('name')-&gt;get(),
+      'customLabel1' =&gt; Auth::user()-&gt;account-&gt;custom_client_label1,
+      'customLabel2' =&gt; Auth::user()-&gt;account-&gt;custom_client_label2,
+    ];
+</functionGetViewModel><saveRules __ideNodeOpen="true"><parser name="saveRules" __ideNodeOpen="false">required;email</parser></saveRules><saveFields __ideNodeOpen="true"><parser name="saveFields" __ideNodeOpen="false">text;name;
+text;work_phone;
+text;custom_value1;
+text;custom_value2;
+text;address1;
+text;address2;
+text;city;
+text;state;
+text;postal_code;
+text;country_id;
+text;private_notes;
+text;size_id;
+text;industry_id;
+text;currency_id;
+text;payment_terms;
+text;website;</parser></saveFields><functionSave __ideNodeOpen="true">      $data = json_decode(Input::get('data'));
+      $contactIds = [];
+      $isPrimary = true;
+      
+      foreach ($data-&gt;contacts as $contact)
+      {
+        if (isset($contact-&gt;public_id) &amp;&amp; $contact-&gt;public_id)
+        {
+          $record = Contact::scope($contact-&gt;public_id)-&gt;firstOrFail();
+        }
+        else
+        {
+          $record = Contact::createNew();
+        }
+
+        $record-&gt;email = trim(strtolower($contact-&gt;email));
+        $record-&gt;first_name = trim($contact-&gt;first_name);
+        $record-&gt;last_name = trim($contact-&gt;last_name);
+        $record-&gt;phone = trim($contact-&gt;phone);
+        $record-&gt;is_primary = $isPrimary;
+        $isPrimary = false;
+
+        $client-&gt;contacts()-&gt;save($record);
+        $contactIds[] = $record-&gt;public_id;          
+      }
+
+      foreach ($client-&gt;contacts as $contact)
+      {
+        if (!in_array($contact-&gt;public_id, $contactIds))
+        {  
+          $contact-&gt;delete();
+        }
+      }
+</functionSave></defaultController11><file name="views/paymentplan/edit.blade.php" preprocess="" __ideNodeOpen="true">@extends('header')
+
+@section('head')
+  @parent
+
+    &lt;script src="{{ asset('js/pdf_viewer.js') }}" type="text/javascript"&gt;&lt;/script&gt;
+    &lt;script src="{{ asset('js/compatibility.js') }}" type="text/javascript"&gt;&lt;/script&gt;
+@stop
+
+@section('content')
+  
+  @if ($invoice &amp;&amp; $invoice-&gt;id)
+    &lt;ol class="breadcrumb"&gt;
+      &lt;li&gt;{{ link_to(($entityType == ENTITY_QUOTE ? 'quotes' : 'invoices'), trans('texts.' . ($entityType == ENTITY_QUOTE ? 'quotes' : 'invoices'))) }}&lt;/li&gt;
+      &lt;li class='active'&gt;{{ $invoice-&gt;invoice_number }}&lt;/li&gt;
+    &lt;/ol&gt;  
+  @endif
+
+  {{ Former::open($url)-&gt;method($method)-&gt;addClass('warn-on-exit')-&gt;rules(array(
+    'client' =&gt; 'required',
+    'email' =&gt; 'required',
+    'product_key' =&gt; 'max:20',
+  )) }} 
+
+  &lt;input type="submit" style="display:none" name="submitButton" id="submitButton"&gt;
+
+  &lt;div data-bind="with: invoice"&gt;
+    &lt;div class="row" style="min-height:195px" onkeypress="formEnterClick(event)"&gt;
+      &lt;div class="col-md-4" id="col_1"&gt;
+
+        @if ($invoice &amp;&amp; $invoice-&gt;id)
+        &lt;div class="form-group"&gt;
+          &lt;label for="client" class="control-label col-lg-4 col-sm-4"&gt;Client&lt;/label&gt;
+          &lt;div class="col-lg-8 col-sm-8" style="padding-top: 7px"&gt;
+            &lt;a id="editClientLink" class="pointer" data-bind="click: $root.showClientForm, text: getClientDisplayName(ko.toJS(client()))"&gt;&lt;/a&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;            
+        &lt;div style="display:none"&gt;
+        @endif
+
+      {{ Former::select('client')-&gt;addOption('', '')-&gt;data_bind("dropdown: client")-&gt;addGroupClass('client_select closer-row') }}
+
+      &lt;div class="form-group" style="margin-bottom: 8px"&gt;
+        &lt;div class="col-lg-8 col-sm-8 col-lg-offset-4 col-sm-offset-4"&gt;
+          &lt;a id="createClientLink" class="pointer" data-bind="click: $root.showClientForm, text: $root.clientLinkText"&gt;&lt;/a&gt;         
+        &lt;/div&gt;
+      &lt;/div&gt;
+
+      @if ($invoice &amp;&amp; $invoice-&gt;id)
+        &lt;/div&gt;
+      @endif
+
+      &lt;div data-bind="with: client"&gt;
+        &lt;div style="display:none" class="form-group" data-bind="visible: contacts().length &gt; 0 &amp;amp;&amp;amp; contacts()[0].email(), foreach: contacts"&gt;
+          &lt;div class="col-lg-8 col-lg-offset-4"&gt;
+            &lt;label for="test" class="checkbox" data-bind="attr: {for: $index() + '_check'}"&gt;
+              &lt;input type="checkbox" value="1" data-bind="checked: send_invoice, attr: {id: $index() + '_check'}"&gt;
+                &lt;span data-bind="html: email.display"/&gt;
+            &lt;/label&gt;
+          &lt;/div&gt;        
+        &lt;/div&gt;
+      &lt;/div&gt;
+      
+    &lt;/div&gt;
+    &lt;div class="col-md-4" id="col_2"&gt;
+      &lt;div data-bind="visible: !is_recurring()"&gt;
+        {{ Former::text('invoice_date')-&gt;data_bind("datePicker: invoice_date, valueUpdate: 'afterkeydown'")-&gt;label(trans("texts.{$entityType}_date"))
+              -&gt;data_date_format(Session::get(SESSION_DATE_PICKER_FORMAT))-&gt;append('&lt;i class="glyphicon glyphicon-calendar" onclick="toggleDatePicker(\'invoice_date\')"&gt;&lt;/i&gt;') }}
+        {{ Former::text('due_date')-&gt;data_bind("datePicker: due_date, valueUpdate: 'afterkeydown'")
+              -&gt;data_date_format(Session::get(SESSION_DATE_PICKER_FORMAT))-&gt;append('&lt;i class="glyphicon glyphicon-calendar" onclick="toggleDatePicker(\'due_date\')"&gt;&lt;/i&gt;') }}              
+      &lt;/div&gt;
+      @if ($entityType == ENTITY_INVOICE)
+        &lt;div data-bind="visible: is_recurring" style="display: none"&gt;
+          {{ Former::select('frequency_id')-&gt;options($frequencies)-&gt;data_bind("value: frequency_id") }}
+          {{ Former::text('start_date')-&gt;data_bind("datePicker: start_date, valueUpdate: 'afterkeydown'")
+                -&gt;data_date_format(Session::get(SESSION_DATE_PICKER_FORMAT))-&gt;append('&lt;i class="glyphicon glyphicon-calendar" onclick="toggleDatePicker(\'start_date\')"&gt;&lt;/i&gt;') }}
+          {{ Former::text('end_date')-&gt;data_bind("datePicker: end_date, valueUpdate: 'afterkeydown'")
+                -&gt;data_date_format(Session::get(SESSION_DATE_PICKER_FORMAT))-&gt;append('&lt;i class="glyphicon glyphicon-calendar" onclick="toggleDatePicker(\'end_date\')"&gt;&lt;/i&gt;') }}
+        &lt;/div&gt;
+        @if ($invoice &amp;&amp; $invoice-&gt;recurring_invoice_id)
+          &lt;div class="pull-right" style="padding-top: 6px"&gt;
+            Created by a {{ link_to('/invoices/'.$invoice-&gt;recurring_invoice_id, 'recurring invoice') }}
+          &lt;/div&gt;
+        @else 
+        &lt;div data-bind="visible: invoice_status_id() &lt; CONSTS.INVOICE_STATUS_SENT"&gt;
+          {{ Former::checkbox('recurring')-&gt;text(trans('texts.enable').' &amp;nbsp;&amp;nbsp; &lt;a href="#" onclick="showLearnMore()"&gt;&lt;i class="glyphicon glyphicon-question-sign"&gt;&lt;/i&gt; '.trans('texts.learn_more').'&lt;/a&gt;')-&gt;data_bind("checked: is_recurring")
+            -&gt;inlineHelp($invoice &amp;&amp; $invoice-&gt;last_sent_date ? 'Last invoice sent ' . Utils::dateToString($invoice-&gt;last_sent_date) : '') }}
+        &lt;/div&gt;      
+        @endif
+      @endif
+      
+    &lt;/div&gt;
+
+    &lt;div class="col-md-4" id="col_2"&gt;
+      {{ Former::text('invoice_number')-&gt;label(trans("texts.{$entityType}_number_short"))-&gt;data_bind("value: invoice_number, valueUpdate: 'afterkeydown'") }}
+      {{ Former::text('po_number')-&gt;label(trans('texts.po_number_short'))-&gt;data_bind("value: po_number, valueUpdate: 'afterkeydown'") }}        
+      {{ Former::text('discount')-&gt;data_bind("value: discount, valueUpdate: 'afterkeydown'")-&gt;append('%') }}      
+      {{-- Former::select('currency_id')-&gt;addOption('', '')-&gt;fromQuery($currencies, 'name', 'id')-&gt;data_bind("value: currency_id") --}}
+      
+      &lt;div class="form-group" style="margin-bottom: 8px"&gt;
+        &lt;label for="recurring" class="control-label col-lg-4 col-sm-4"&gt;{{ trans('texts.taxes') }}&lt;/label&gt;
+        &lt;div class="col-lg-8 col-sm-8" style="padding-top: 7px"&gt;
+          &lt;a href="#" data-bind="click: $root.showTaxesForm"&gt;&lt;i class="glyphicon glyphicon-list-alt"&gt;&lt;/i&gt; {{ trans('texts.manage_rates') }}&lt;/a&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+
+    &lt;/div&gt;
+  &lt;/div&gt;
+
+  &lt;p&gt;&amp;nbsp;&lt;/p&gt;
+
+  &lt;ul class="nav nav-tabs nav-justified"&gt;
+    {{ HTML::tab_link('#newinvoice', trans('texts.invoice'), true) }}
+    {{ HTML::tab_link('#plan', trans('texts.payment_plan')) }}
+  &lt;/ul&gt;
+
+  &lt;div class="tab-content"&gt;
+
+        &lt;div class="tab-pane active" id="newinvoice"&gt;
+
+            {{ Former::hidden('data')-&gt;data_bind("value: ko.mapping.toJSON(model)") }}  
+
+            &lt;div class="table-responsive"&gt;
+            &lt;table class="table invoice-table" style="margin-bottom: 0px !important"&gt;
+              &lt;thead&gt;
+                &lt;tr&gt;
+                  &lt;th style="min-width:32px;" class="hide-border"&gt;&lt;/th&gt;
+                  &lt;th style="min-width:160px"&gt;{{ trans('texts.item') }}&lt;/th&gt;
+                  &lt;th style="width:100%"&gt;{{ trans('texts.description') }}&lt;/th&gt;
+                  &lt;th style="min-width:120px"&gt;{{ trans('texts.unit_cost') }}&lt;/th&gt;
+                  &lt;th style="{{ $account-&gt;hide_quantity ? 'display:none' : 'min-width:120px' }}"&gt;{{ trans('texts.quantity') }}&lt;/th&gt;
+                  &lt;th style="min-width:120px;display:none;" data-bind="visible: $root.invoice_item_taxes.show"&gt;{{ trans('texts.tax') }}&lt;/th&gt;
+                  &lt;th style="min-width:120px;"&gt;{{ trans('texts.line_total') }}&lt;/th&gt;
+                  &lt;th style="min-width:32px;" class="hide-border"&gt;&lt;/th&gt;
+                &lt;/tr&gt;
+              &lt;/thead&gt;
+              &lt;tbody data-bind="sortable: { data: invoice_items, afterMove: onDragged }"&gt;
+                &lt;tr data-bind="event: { mouseover: showActions, mouseout: hideActions }" class="sortable-row"&gt;
+                  &lt;td class="hide-border td-icon"&gt;
+                    &lt;i style="display:none" data-bind="visible: actionsVisible() &amp;amp;&amp;amp; $parent.invoice_items().length &gt; 1" class="fa fa-sort"&gt;&lt;/i&gt;
+                  &lt;/td&gt;
+                  &lt;td&gt;                
+                    {{ Former::text('product_key')-&gt;useDatalist($products, 'product_key')-&gt;onkeyup('onItemChange()')
+                    -&gt;raw()-&gt;data_bind("value: product_key, valueUpdate: 'afterkeydown'")-&gt;addClass('datalist') }}
+                  &lt;/td&gt;
+                  &lt;td&gt;
+                    &lt;textarea data-bind="value: wrapped_notes, valueUpdate: 'afterkeydown'" rows="1" cols="60" style="resize: none;" class="form-control word-wrap"&gt;&lt;/textarea&gt;
+                  &lt;/td&gt;
+                  &lt;td&gt;
+                    &lt;input onkeyup="onItemChange()" data-bind="value: prettyCost, valueUpdate: 'afterkeydown'" style="text-align: right" class="form-control"//&gt;
+                  &lt;/td&gt;
+                  &lt;td style="{{ $account-&gt;hide_quantity ? 'display:none' : '' }}"&gt;
+                    &lt;input onkeyup="onItemChange()" data-bind="value: prettyQty, valueUpdate: 'afterkeydown'" style="text-align: right" class="form-control"//&gt;
+                  &lt;/td&gt;
+                  &lt;td style="display:none;" data-bind="visible: $root.invoice_item_taxes.show"&gt;
+                    &lt;select class="form-control" style="width:100%" data-bind="value: tax, options: $root.tax_rates, optionsText: 'displayName'"&gt;&lt;/select&gt;
+                  &lt;/td&gt;
+                  &lt;td style="text-align:right;padding-top:9px !important"&gt;
+                    &lt;div class="line-total" data-bind="text: totals.total"&gt;&lt;/div&gt;
+                  &lt;/td&gt;
+                  &lt;td style="cursor:pointer" class="hide-border td-icon"&gt;
+                    &amp;nbsp;&lt;i style="display:none" data-bind="click: $parent.removeItem, visible: actionsVisible() &amp;amp;&amp;amp; $parent.invoice_items().length &gt; 1" class="fa fa-minus-circle redlink" title="Remove item"/&gt;
+                  &lt;/td&gt;
+                &lt;/tr&gt;
+              &lt;/tbody&gt;
+
+
+              &lt;tfoot&gt;
+                &lt;tr&gt;
+                  &lt;td class="hide-border"/&gt;
+                  &lt;td colspan="2" rowspan="6" style="vertical-align:top"&gt;
+                    &lt;br/&gt;
+                    {{ Former::textarea('public_notes')-&gt;data_bind("value: wrapped_notes, valueUpdate: 'afterkeydown'")
+                    -&gt;label(false)-&gt;placeholder(trans('texts.note_to_client'))-&gt;style('resize: none') }}      
+                    {{ Former::textarea('terms')-&gt;data_bind("value: wrapped_terms, valueUpdate: 'afterkeydown'")
+                    -&gt;label(false)-&gt;placeholder(trans('texts.invoice_terms'))-&gt;style('resize: none')
+                    -&gt;addGroupClass('less-space-bottom') }}
+                    &lt;label class="checkbox" style="width: 200px"&gt;
+                      &lt;input type="checkbox" style="width: 24px" data-bind="checked: set_default_terms"/&gt;{{ trans('texts.save_as_default_terms') }}
+                    &lt;/label&gt;
+                  &lt;/td&gt;
+                  &lt;td style="display:none" data-bind="visible: $root.invoice_item_taxes.show"/&gt;           
+                  &lt;td colspan="{{ $account-&gt;hide_quantity ? 1 : 2 }}"&gt;{{ trans('texts.subtotal') }}&lt;/td&gt;
+                  &lt;td style="text-align: right"&gt;&lt;span data-bind="text: totals.subtotal"/&gt;&lt;/td&gt;
+                &lt;/tr&gt;
+
+                &lt;tr style="display:none" data-bind="visible: discount() &gt; 0"&gt;
+                  &lt;td class="hide-border" colspan="3"/&gt;
+                  &lt;td style="display:none" class="hide-border" data-bind="visible: $root.invoice_item_taxes.show"/&gt;
+                  &lt;td colspan="{{ $account-&gt;hide_quantity ? 1 : 2 }}"&gt;{{ trans('texts.discount') }}&lt;/td&gt;
+                  &lt;td style="text-align: right"&gt;&lt;span data-bind="text: totals.discounted"/&gt;&lt;/td&gt;
+                &lt;/tr&gt;
+
+                @if (($account-&gt;custom_invoice_label1 || ($invoice &amp;&amp; floatval($invoice-&gt;custom_value1)) != 0) &amp;&amp; $account-&gt;custom_invoice_taxes1)
+                  &lt;tr&gt;
+                    &lt;td class="hide-border" colspan="3"/&gt;
+                    &lt;td style="display:none" class="hide-border" data-bind="visible: $root.invoice_item_taxes.show"/&gt;
+                    &lt;td colspan="{{ $account-&gt;hide_quantity ? 1 : 2 }}"&gt;{{ $account-&gt;custom_invoice_label1 }}&lt;/td&gt;
+                    &lt;td style="text-align: right;padding-right: 28px" colspan="2"&gt;&lt;input class="form-control" data-bind="value: custom_value1, valueUpdate: 'afterkeydown'"/&gt;&lt;/td&gt;
+                  &lt;/tr&gt;
+                @endif
+
+                @if (($account-&gt;custom_invoice_label2 || ($invoice &amp;&amp; floatval($invoice-&gt;custom_value2)) != 0) &amp;&amp; $account-&gt;custom_invoice_taxes2)
+                  &lt;tr&gt;
+                    &lt;td class="hide-border" colspan="3"/&gt;
+                    &lt;td style="display:none" class="hide-border" data-bind="visible: $root.invoice_item_taxes.show"/&gt;
+                    &lt;td colspan="{{ $account-&gt;hide_quantity ? 1 : 2 }}"&gt;{{ $account-&gt;custom_invoice_label2 }}&lt;/td&gt;
+                    &lt;td style="text-align: right;padding-right: 28px" colspan="2"&gt;&lt;input class="form-control" data-bind="value: custom_value2, valueUpdate: 'afterkeydown'"/&gt;&lt;/td&gt;
+                  &lt;/tr&gt;
+                @endif
+
+                &lt;tr style="display:none" data-bind="visible: $root.invoice_taxes.show"&gt;
+                  &lt;td class="hide-border" colspan="3"/&gt;
+                  &lt;td style="display:none" class="hide-border" data-bind="visible: $root.invoice_item_taxes.show"/&gt;           
+                  @if (!$account-&gt;hide_quantity)
+                    &lt;td&gt;{{ trans('texts.tax') }}&lt;/td&gt;
+                  @endif
+                  &lt;td style="min-width:120px"&gt;&lt;select class="form-control" style="width:100%" data-bind="value: tax, options: $root.tax_rates, optionsText: 'displayName'"&gt;&lt;/select&gt;&lt;/td&gt;
+                  &lt;td style="text-align: right"&gt;&lt;span data-bind="text: totals.taxAmount"/&gt;&lt;/td&gt;
+                &lt;/tr&gt;
+
+                @if (($account-&gt;custom_invoice_label1 || ($invoice &amp;&amp; floatval($invoice-&gt;custom_value1)) != 0) &amp;&amp; !$account-&gt;custom_invoice_taxes1)
+                  &lt;tr&gt;
+                    &lt;td class="hide-border" colspan="3"/&gt;
+                    &lt;td style="display:none" class="hide-border" data-bind="visible: $root.invoice_item_taxes.show"/&gt;
+                    &lt;td colspan="{{ $account-&gt;hide_quantity ? 1 : 2 }}"&gt;{{ $account-&gt;custom_invoice_label1 }}&lt;/td&gt;
+                    &lt;td style="text-align: right;padding-right: 28px" colspan="2"&gt;&lt;input class="form-control" data-bind="value: custom_value1, valueUpdate: 'afterkeydown'"/&gt;&lt;/td&gt;
+                  &lt;/tr&gt;
+                @endif
+
+                @if (($account-&gt;custom_invoice_label2 || ($invoice &amp;&amp; floatval($invoice-&gt;custom_value2)) != 0) &amp;&amp; !$account-&gt;custom_invoice_taxes2)
+                  &lt;tr&gt;
+                    &lt;td class="hide-border" colspan="3"/&gt;
+                    &lt;td style="display:none" class="hide-border" data-bind="visible: $root.invoice_item_taxes.show"/&gt;
+                    &lt;td colspan="{{ $account-&gt;hide_quantity ? 1 : 2 }}"&gt;{{ $account-&gt;custom_invoice_label2 }}&lt;/td&gt;
+                    &lt;td style="text-align: right;padding-right: 28px" colspan="2"&gt;&lt;input class="form-control" data-bind="value: custom_value2, valueUpdate: 'afterkeydown'"/&gt;&lt;/td&gt;
+                  &lt;/tr&gt;
+                @endif
+
+                @if (!$account-&gt;hide_paid_to_date)
+                  &lt;tr&gt;
+                    &lt;td class="hide-border" colspan="3"/&gt;
+                    &lt;td style="display:none" class="hide-border" data-bind="visible: $root.invoice_item_taxes.show"/&gt;           
+                    &lt;td colspan="{{ $account-&gt;hide_quantity ? 1 : 2 }}"&gt;{{ trans('texts.paid_to_date') }}&lt;/td&gt;
+                    &lt;td style="text-align: right" data-bind="text: totals.paidToDate"&gt;&lt;/td&gt;
+                  &lt;/tr&gt;         
+                @endif
+
+                &lt;tr&gt;
+                  &lt;td class="hide-border" colspan="3"/&gt;
+                  &lt;td style="display:none" class="hide-border" data-bind="visible: $root.invoice_item_taxes.show"/&gt;           
+                  &lt;td colspan="{{ $account-&gt;hide_quantity ? 1 : 2 }}"&gt;&lt;b&gt;{{ trans($entityType == ENTITY_INVOICE ? 'texts.balance_due' : 'texts.total') }}&lt;/b&gt;&lt;/td&gt;
+                  &lt;td style="text-align: right"&gt;&lt;span data-bind="text: totals.total"/&gt;&lt;/td&gt;
+                &lt;/tr&gt;
+
+              &lt;/tfoot&gt;
+
+
+            &lt;/table&gt;
+            &lt;/div&gt;
+
+        &lt;/div&gt;
+        &lt;div class="tab-pane" id="plan"&gt;
+<tableResponsive name="payment-plan" data="payment_plan" __ideNodeOpen="true"><fields __ideNodeOpen="true"><parser name="tableResponsive" __ideNodeOpen="true">input;mount;trans('texts.mount');min-width:160px;;;;
+date;due_date;trans('texts.due_date');min-width:180px;;;;
+label;total;trans('texts.total');min-width:180px;;;;</parser></fields><tfoot __ideNodeOpen="false"/></tableResponsive>            
+        &lt;/div&gt;
+  &lt;/div&gt;
+
+  &lt;p&gt;&amp;nbsp;&lt;/p&gt;
+  &lt;div class="form-actions"&gt;
+
+    &lt;div style="display:none"&gt;
+      {{ Former::populateField('entityType', $entityType) }}
+      {{ Former::text('entityType') }}
+      {{ Former::text('action') }}
+        
+      @if ($invoice &amp;&amp; $invoice-&gt;id)
+        {{ Former::populateField('id', $invoice-&gt;public_id) }}
+        {{ Former::text('id') }}    
+      @endif
+    &lt;/div&gt;
+
+
+
+    {{ Former::select('invoice_design_id')-&gt;style('display:inline;width:120px')-&gt;raw()
+          -&gt;fromQuery($invoiceDesigns, 'name', 'id')-&gt;data_bind("value: invoice_design_id") }}
+
+        
+    {{ Button::primary(trans('texts.download_pdf'), array('onclick' =&gt; 'onDownloadClick()'))-&gt;append_with_icon('download-alt'); }}  
+        
+    @if (!$invoice || (!$invoice-&gt;trashed() &amp;&amp; !$invoice-&gt;client-&gt;trashed()))           
+      @if ($invoice &amp;&amp; $invoice-&gt;id)    
+
+        &lt;div id="primaryActions" style="text-align:left" class="btn-group"&gt;
+          &lt;button class="btn-success btn" type="button"&gt;{{ trans("texts.save_{$entityType}") }}&lt;/button&gt;
+          &lt;button class="btn-success btn dropdown-toggle" type="button" data-toggle="dropdown"&gt; 
+            &lt;span class="caret"&gt;&lt;/span&gt;
+          &lt;/button&gt;
+          &lt;ul class="dropdown-menu"&gt;
+            &lt;li&gt;&lt;a href="javascript:onSaveClick()" id="saveButton"&gt;{{ trans("texts.save_{$entityType}") }}&lt;/a&gt;&lt;/li&gt;
+            &lt;li&gt;&lt;a href="javascript:onCloneClick()"&gt;{{ trans("texts.clone_{$entityType}") }}&lt;/a&gt;&lt;/li&gt;
+
+            @if ($invoice &amp;&amp; $entityType == ENTITY_QUOTE)     
+              &lt;li class="divider"&gt;&lt;/li&gt;
+              @if ($invoice-&gt;quote_invoice_id)
+                &lt;li&gt;&lt;a href="{{ URL::to("invoices/{$invoice-&gt;quote_invoice_id}/edit") }}"&gt;{{ trans("texts.view_invoice") }}&lt;/a&gt;&lt;/li&gt;
+              @else
+                &lt;li&gt;&lt;a href="javascript:onConvertClick()"&gt;{{ trans("texts.convert_to_invoice") }}&lt;/a&gt;&lt;/li&gt;
+              @endif
+            @elseif ($invoice &amp;&amp; $entityType == ENTITY_INVOICE)
+              @if ($invoice-&gt;quote_id)
+                &lt;li class="divider"&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href="{{ URL::to("quotes/{$invoice-&gt;quote_id}/edit") }}"&gt;{{ trans("texts.view_quote") }}&lt;/a&gt;&lt;/li&gt;
+              @endif
+            @endif
+
+            &lt;li class="divider"&gt;&lt;/li&gt;
+            &lt;li&gt;&lt;a href="javascript:onArchiveClick()"&gt;{{ trans("texts.archive_{$entityType}") }}&lt;/a&gt;&lt;/li&gt;
+            &lt;li&gt;&lt;a href="javascript:onDeleteClick()"&gt;{{ trans("texts.delete_{$entityType}") }}&lt;/a&gt;&lt;/li&gt;
+          &lt;/ul&gt;
+        &lt;/div&gt;    
+
+      @else
+        {{ Button::success(trans("texts.save_{$entityType}"), array('id' =&gt; 'saveButton', 'onclick' =&gt; 'onSaveClick()')) }}     
+      @endif
+
+      {{ Button::normal(trans("texts.email_{$entityType}"), array('id' =&gt; 'email_button', 'onclick' =&gt; 'onEmailClick()'))-&gt;append_with_icon('send'); }}   
+
+      @if ($invoice &amp;&amp; $invoice-&gt;id &amp;&amp; $entityType == ENTITY_INVOICE)   
+        {{ Button::primary(trans('texts.enter_payment'), array('onclick' =&gt; 'onPaymentClick()'))-&gt;append_with_icon('usd'); }}   
+      @endif
+    @endif
+
+  &lt;/div&gt;
+  &lt;p&gt;&amp;nbsp;&lt;/p&gt;
+  
+  &lt;!-- &lt;textarea rows="20" cols="120" id="pdfText" onkeyup="runCode()"&gt;&lt;/textarea&gt; --&gt;
+  &lt;!-- &lt;iframe frameborder="1" width="100%" height="600" style="display:block;margin: 0 auto"&gt;&lt;/iframe&gt; --&gt;
+  &lt;iframe id="theFrame" style="display:none" frameborder="1" width="100%" height="1180"&gt;&lt;/iframe&gt;
+  &lt;canvas id="theCanvas" style="display:none;width:100%;border:solid 1px #CCCCCC;"&gt;&lt;/canvas&gt;
+
+  @if (!Auth::user()-&gt;account-&gt;isPro())
+    &lt;div style="font-size:larger"&gt;
+      {{ trans('texts.pro_plan.remove_logo', ['link'=&gt;'&lt;a href="#" onclick="showProPlan(\'remove_logo\')"&gt;'.trans('texts.pro_plan.remove_logo_link').'&lt;/a&gt;']) }}
+    &lt;/div&gt;
+  @endif
+
+  &lt;div class="modal fade" id="clientModal" tabindex="-1" role="dialog" aria-labelledby="clientModalLabel" aria-hidden="true"&gt;
+    &lt;div class="modal-dialog large-dialog"&gt;
+      &lt;div class="modal-content"&gt;
+        &lt;div class="modal-header"&gt;
+          &lt;button type="button" class="close" data-dismiss="modal" aria-hidden="true"&gt;&amp;times;&lt;/button&gt;
+          &lt;h4 class="modal-title" id="clientModalLabel"&gt;{{ trans('texts.client') }}&lt;/h4&gt;
+        &lt;/div&gt;
+
+        &lt;div class="container" style="width: 100%"&gt;
+    &lt;div style="background-color: #fff" class="row" data-bind="with: client" onkeypress="clientModalEnterClick(event)"&gt;
+      &lt;div class="col-md-6" style="margin-left:0px;margin-right:0px" &gt;
+
+        {{ Former::legend('organization') }}
+        {{ Former::text('name')-&gt;data_bind("value: name, valueUpdate: 'afterkeydown', attr { placeholder: name.placeholder }") }}
+        {{ Former::text('website')-&gt;data_bind("value: website, valueUpdate: 'afterkeydown'") }}
+        {{ Former::text('work_phone')-&gt;data_bind("value: work_phone, valueUpdate: 'afterkeydown'") }}
+
+        @if (Auth::user()-&gt;isPro())       
+          @if ($account-&gt;custom_client_label1)
+            {{ Former::text('custom_value1')-&gt;label($account-&gt;custom_client_label1)
+              -&gt;data_bind("value: custom_value1, valueUpdate: 'afterkeydown'") }}
+          @endif
+          @if ($account-&gt;custom_client_label2)
+            {{ Former::text('custom_value2')-&gt;label($account-&gt;custom_client_label2)
+              -&gt;data_bind("value: custom_value2, valueUpdate: 'afterkeydown'") }}
+          @endif
+        @endif        
+        
+        {{ Former::legend('address') }}
+        {{ Former::text('address1')-&gt;data_bind("value: address1, valueUpdate: 'afterkeydown'") }}
+        {{ Former::text('address2')-&gt;data_bind("value: address2, valueUpdate: 'afterkeydown'") }}
+        {{ Former::text('city')-&gt;data_bind("value: city, valueUpdate: 'afterkeydown'") }}
+        {{ Former::text('state')-&gt;data_bind("value: state, valueUpdate: 'afterkeydown'") }}
+        {{ Former::text('postal_code')-&gt;data_bind("value: postal_code, valueUpdate: 'afterkeydown'") }}
+        {{ Former::select('country_id')-&gt;addOption('','')-&gt;addGroupClass('country_select')
+          -&gt;fromQuery($countries, 'name', 'id')-&gt;data_bind("dropdown: country_id") }}
+          
+      &lt;/div&gt;
+      &lt;div class="col-md-6" style="margin-left:0px;margin-right:0px" &gt;
+
+
+        {{ Former::legend('contacts') }}
+        &lt;div data-bind='template: { foreach: contacts,
+                                  beforeRemove: hideContact,
+                                  afterAdd: showContact }'&gt;
+          {{ Former::hidden('public_id')-&gt;data_bind("value: public_id, valueUpdate: 'afterkeydown'") }}
+          {{ Former::text('first_name')-&gt;data_bind("value: first_name, valueUpdate: 'afterkeydown'") }}
+          {{ Former::text('last_name')-&gt;data_bind("value: last_name, valueUpdate: 'afterkeydown'") }}
+          {{ Former::text('email')-&gt;data_bind('value: email, valueUpdate: \'afterkeydown\', attr: {id:\'email\'+$index()}') }}
+          {{ Former::text('phone')-&gt;data_bind("value: phone, valueUpdate: 'afterkeydown'") }} 
+
+          &lt;div class="form-group"&gt;
+            &lt;div class="col-lg-8 col-lg-offset-4"&gt;
+              &lt;span class="redlink bold" data-bind="visible: $parent.contacts().length &gt; 1"&gt;
+                {{ link_to('#', trans('texts.remove_contact').' -', array('data-bind'=&gt;'click: $parent.removeContact')) }}
+              &lt;/span&gt;         
+              &lt;span data-bind="visible: $index() === ($parent.contacts().length - 1)" class="pull-right greenlink bold"&gt;
+                {{ link_to('#', trans('texts.add_contact').' +', array('data-bind'=&gt;'click: $parent.addContact')) }}
+              &lt;/span&gt;
+            &lt;/div&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+
+        {{ Former::legend('additional_info') }}
+        {{ Former::select('payment_terms')-&gt;addOption('','0')-&gt;data_bind('value: payment_terms')
+          -&gt;fromQuery($paymentTerms, 'name', 'num_days') }}
+        {{ Former::select('currency_id')-&gt;addOption('','')-&gt;data_bind('value: currency_id')
+          -&gt;fromQuery($currencies, 'name', 'id') }}
+        {{ Former::select('size_id')-&gt;addOption('','')-&gt;data_bind('value: size_id')
+          -&gt;fromQuery($sizes, 'name', 'id') }}
+        {{ Former::select('industry_id')-&gt;addOption('','')-&gt;data_bind('value: industry_id')
+          -&gt;fromQuery($industries, 'name', 'id') }}
+        {{ Former::textarea('private_notes')-&gt;data_bind('value: private_notes') }}
+
+
+      &lt;/div&gt;
+    &lt;/div&gt;
+    &lt;/div&gt;
+
+       &lt;div class="modal-footer" style="margin-top: 0px"&gt;
+          &lt;span class="error-block" id="emailError" style="display:none;float:left;font-weight:bold"&gt;{{ trans('texts.provide_email') }}&lt;/span&gt;&lt;span&gt;&amp;nbsp;&lt;/span&gt;
+          &lt;button type="button" class="btn btn-default" data-dismiss="modal"&gt;{{ trans('texts.cancel') }}&lt;/button&gt;
+          &lt;button id="clientDoneButton" type="button" class="btn btn-primary" data-bind="click: $root.clientFormComplete"&gt;{{ trans('texts.done') }}&lt;/button&gt;          
+       &lt;/div&gt;
+        
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+
+  &lt;div class="modal fade" id="taxModal" tabindex="-1" role="dialog" aria-labelledby="taxModalLabel" aria-hidden="true"&gt;
+    &lt;div class="modal-dialog"&gt;
+      &lt;div class="modal-content"&gt;
+        &lt;div class="modal-header"&gt;
+          &lt;button type="button" class="close" data-dismiss="modal" aria-hidden="true"&gt;&amp;times;&lt;/button&gt;
+          &lt;h4 class="modal-title" id="taxModalLabel"&gt;{{ trans('texts.tax_rates') }}&lt;/h4&gt;
+        &lt;/div&gt;
+
+        &lt;div style="background-color: #fff" onkeypress="taxModalEnterClick(event)"&gt;
+      &lt;table class="table invoice-table sides-padded" style="margin-bottom: 0px !important"&gt;
+          &lt;thead&gt;
+              &lt;tr&gt;
+                &lt;th class="hide-border"&gt;&lt;/th&gt;
+                &lt;th class="hide-border"&gt;{{ trans('texts.name') }}&lt;/th&gt;
+                &lt;th class="hide-border"&gt;{{ trans('texts.rate') }}&lt;/th&gt;
+                &lt;th class="hide-border"&gt;&lt;/th&gt;
+              &lt;/tr&gt;
+          &lt;/thead&gt;
+          &lt;tbody data-bind="foreach: $root.tax_rates.filtered"&gt;
+            &lt;tr data-bind="event: { mouseover: showActions, mouseout: hideActions }"&gt;
+              &lt;td style="width:30px" class="hide-border"&gt;&lt;/td&gt;
+                  &lt;td style="width:60px"&gt;
+                    &lt;input onkeyup="onTaxRateChange()" data-bind="value: name, valueUpdate: 'afterkeydown'" class="form-control" onchange="refreshPDF()"//&gt;                   
+                  &lt;/td&gt;
+                  &lt;td style="width:60px"&gt;
+                    &lt;input onkeyup="onTaxRateChange()" data-bind="value: prettyRate, valueUpdate: 'afterkeydown'" style="text-align: right" class="form-control" onchange="refreshPDF()"//&gt;
+                  &lt;/td&gt;
+                &lt;td style="width:30px; cursor:pointer" class="hide-border td-icon"&gt;
+                  &amp;nbsp;&lt;i style="width:12px;" data-bind="click: $root.removeTaxRate, visible: actionsVisible() &amp;amp;&amp;amp; !isEmpty()" class="fa fa-minus-circle redlink" title="Remove item"/&gt;
+                &lt;/td&gt;
+              &lt;/tr&gt;
+        &lt;/tbody&gt;
+      &lt;/table&gt;
+      &amp;nbsp;
+      
+      {{ Former::checkbox('invoice_taxes')-&gt;text(trans('texts.enable_invoice_tax'))
+        -&gt;label(trans('texts.settings'))-&gt;data_bind('checked: $root.invoice_taxes, enable: $root.tax_rates().length &gt; 1') }}
+      {{ Former::checkbox('invoice_item_taxes')-&gt;text(trans('texts.enable_line_item_tax'))
+        -&gt;label('&amp;nbsp;')-&gt;data_bind('checked: $root.invoice_item_taxes, enable: $root.tax_rates().length &gt; 1') }}
+
+      &lt;br/&gt;
+
+    &lt;/div&gt;
+
+       &lt;div class="modal-footer" style="margin-top: 0px"&gt;
+          &lt;!-- &lt;button type="button" class="btn btn-default" data-dismiss="modal"&gt;Cancel&lt;/button&gt; --&gt;
+          &lt;button type="button" class="btn btn-primary" data-bind="click: $root.taxFormComplete"&gt;{{ trans('texts.done') }}&lt;/button&gt;         
+       &lt;/div&gt;
+        
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+
+  &lt;div class="modal fade" id="recurringModal" tabindex="-1" role="dialog" aria-labelledby="recurringModalLabel" aria-hidden="true"&gt;
+    &lt;div class="modal-dialog" style="min-width:150px"&gt;
+      &lt;div class="modal-content"&gt;
+        &lt;div class="modal-header"&gt;
+          &lt;button type="button" class="close" data-dismiss="modal" aria-hidden="true"&gt;&amp;times;&lt;/button&gt;
+          &lt;h4 class="modal-title" id="recurringModalLabel"&gt;{{ trans('texts.recurring_invoices') }}&lt;/h4&gt;
+        &lt;/div&gt;
+
+      &lt;div style="background-color: #fff; padding-left: 16px; padding-right: 16px"&gt;
+        &amp;nbsp; {{ trans('texts.recurring_help') }} &amp;nbsp;
+    &lt;/div&gt;
+
+       &lt;div class="modal-footer" style="margin-top: 0px"&gt;
+          &lt;button type="button" class="btn btn-primary" data-dismiss="modal"&gt;{{ trans('texts.close') }}&lt;/button&gt;
+       &lt;/div&gt;
+        
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+
+  {{ Former::close() }}
+
+
+  &lt;/div&gt;
+
+  &lt;script type="text/javascript"&gt;
+  
+  function showLearnMore() {
+    $('#recurringModal').modal('show');     
+  }
+
+  $(function() {
+    $('#country_id').combobox().on('change', function(e) {
+      var countryId = parseInt($('input[name=country_id]').val(), 10);  
+      var foundMatch = false;
+      $('#country_id option').each(function() {
+        var itemId = parseInt($(this).val(), 10);         
+        if (countryId === itemId) {
+          foundMatch = true;
+          var country = {id:countryId, name:$(this).text()};
+          model.invoice().client().country = country;
+          model.invoice().client().country_id(countryId);
+          return;         
+        }
+      });
+      if (!foundMatch) {
+        model.invoice().client().country = false;
+        model.invoice().client().country_id(0);
+      }
+    });
+
+    $('[rel=tooltip]').tooltip();
+
+    $('#invoice_date, #due_date, #start_date, #end_date').datepicker();
+
+    @if ($client &amp;&amp; !$invoice)
+      $('input[name=client]').val({{ $client-&gt;public_id }});
+    @endif
+
+    /*
+    if (clients.length == 0) {
+      $('.client_select input.form-control').prop('disabled', true);
+    }
+    */
+    
+    var $input = $('select#client');
+    $input.combobox().on('change', function(e) {
+      var clientId = parseInt($('input[name=client]').val(), 10);   
+      if (clientId &gt; 0) { 
+        model.loadClient(clientMap[clientId]);        
+      } else {
+        model.loadClient($.parseJSON(ko.toJSON(new ClientModel())));
+        model.invoice().client().country = false;       
+      }
+      refreshPDF();
+    });
+
+    // If no clients exists show the client form when clicking on the client select input
+    if (clients.length === 0) {
+      $('.client_select input.form-control').on('click', function() {
+        model.showClientForm();
+      });
+    }   
+
+    $('#terms, #public_notes, #invoice_number, #invoice_date, #due_date, #po_number, #discount, #currency_id, #invoice_design_id, #recurring').change(function() {
+      setTimeout(function() {
+        refreshPDF();
+      }, 1);
+    });
+
+    @if($client || $invoice || count($clients) == 0)
+      $('#invoice_number').focus();
+    @else
+      $('.client_select input.form-control').focus();     
+    @endif
+    
+    $('#clientModal').on('shown.bs.modal', function () {
+      $('#name').focus();     
+    }).on('hidden.bs.modal', function () {
+      if (model.clientBackup) {
+        model.loadClient(model.clientBackup);
+        refreshPDF();
+      }
+    })
+    
+    $('#taxModal').on('shown.bs.modal', function () {
+      $('#taxModal input:first').focus();     
+    }).on('hidden.bs.modal', function () {
+      // if the user changed the tax rates we need to trigger the
+      // change event on the selects for the model to get updated
+      $('table.invoice-table select').trigger('change');
+    })
+
+    $('#relatedActions &gt; button:first').click(function() {
+      onPaymentClick();
+    });
+
+    $('#primaryActions &gt; button:first').click(function() {
+      onSaveClick();
+    });
+
+    $('label.radio').addClass('radio-inline');
+
+    applyComboboxListeners();
+    
+    @if ($client)
+      $input.trigger('change');
+    @else 
+      refreshPDF();
+    @endif
+
+    var client = model.invoice().client();
+    setComboboxValue($('.client_select'), 
+      client.public_id(), 
+      client.name.display());
+    
+  }); 
+
+  function applyComboboxListeners() {
+    var selectorStr = '.invoice-table input, .invoice-table select, .invoice-table textarea';   
+    $(selectorStr).off('blur').on('blur', function() {
+      refreshPDF();
+    });
+
+    @if (Auth::user()-&gt;account-&gt;fill_products)
+      $('.datalist').on('input', function() {     
+        var key = $(this).val();
+        for (var i=0; i&lt;products.length; i++) {
+          var product = products[i];
+          if (product.product_key == key) {
+            var model = ko.dataFor(this);         
+            model.notes(product.notes);
+            model.cost(accounting.toFixed(product.cost,2));
+            //model.qty(product.qty);
+            break;
+          }
+        }
+      });
+    @endif
+  }
+
+  function createInvoiceModel() {
+    var invoice = ko.toJS(model).invoice;   
+    invoice.is_pro = {{ Auth::user()-&gt;isPro() ? 'true' : 'false' }};
+    invoice.is_quote = {{ $entityType == ENTITY_QUOTE ? 'true' : 'false' }};
+
+    @if (file_exists($account-&gt;getLogoPath()))
+      invoice.image = "{{ HTML::image_data($account-&gt;getLogoPath()) }}";
+      invoice.imageWidth = {{ $account-&gt;getLogoWidth() }};
+      invoice.imageHeight = {{ $account-&gt;getLogoHeight() }};
+    @endif
+
+    window.logoImages = {};
+    logoImages.imageLogo1 = "{{ HTML::image_data('images/report_logo1.jpg') }}";
+    logoImages.imageLogoWidth1 =120;
+    logoImages.imageLogoHeight1 = 40
+
+    logoImages.imageLogo2 = "{{ HTML::image_data('images/report_logo2.jpg') }}";
+    logoImages.imageLogoWidth2 =325/2;
+    logoImages.imageLogoHeight2 = 81/2;
+
+    logoImages.imageLogo3 = "{{ HTML::image_data('images/report_logo3.jpg') }}";
+    logoImages.imageLogoWidth3 =325/2;
+    logoImages.imageLogoHeight3 = 81/2;
+
+
+    return invoice;
+  }
+
+  /*
+  function refreshPDF() {
+    setTimeout(function() {
+      _refreshPDF();
+    }, 100);
+  } 
+  */
+
+  var isRefreshing = false;
+  var needsRefresh = false;
+
+  function getPDFString() {   
+    var invoice = createInvoiceModel();
+    var doc = generatePDF(invoice);
+    if (!doc) return;
+    return doc.output('datauristring');
+  }
+
+  function refreshPDF() {
+    if ({{ Auth::user()-&gt;force_pdfjs ? 'false' : 'true' }} &amp;&amp; (isFirefox || (isChrome &amp;&amp; !isChromium))) {
+      var string = getPDFString();
+      if (!string) return;
+      $('#theFrame').attr('src', string).show();    
+    } else {      
+      if (isRefreshing) {
+        needsRefresh = true;
+        exit() ;
+      }
+      var string = getPDFString();
+      if (!string) exit();
+      isRefreshing = true;
+      var pdfAsArray = convertDataURIToBinary(string);  
+      PDFJS.getDocument(pdfAsArray).then(function getPdfHelloWorld(pdf) {
+
+        pdf.getPage(1).then(function getPageHelloWorld(page) {
+          var scale = 1.5;
+          var viewport = page.getViewport(scale);
+
+          var canvas = document.getElementById('theCanvas');
+          var context = canvas.getContext('2d');
+          canvas.height = viewport.height;
+          canvas.width = viewport.width;
+
+          page.render({canvasContext: context, viewport: viewport});
+          $('#theCanvas').show();
+          isRefreshing = false;
+          if (needsRefresh) {
+            needsRefresh = false;
+            refreshPDF();
+          }
+        });
+      }); 
+    }
+  }
+
+  function onDownloadClick() {
+    trackUrl('/download_pdf');
+    var invoice = createInvoiceModel();
+    var doc = generatePDF(invoice, true);
+    doc.save('Invoice-' + $('#invoice_number').val() + '.pdf');
+  }
+
+  function onEmailClick() {
+    if (confirm('{{ trans("texts.confirm_email_$entityType") }}')) {    
+      submitAction('email');
+    }
+  }
+
+  function onSaveClick() {
+    if (model.invoice().is_recurring()) {
+      if (confirm('{{ trans("texts.confirm_recurring_email_$entityType") }}')) {    
+        submitAction('');
+      }     
+    } else {
+      submitAction('');
+    }
+  }
+
+  function submitAction(value) {
+    if (!isSaveValid()) {
+      model.showClientForm();
+      return;
+    }
+    $('#action').val(value);
+    $('#submitButton').click();   
+  }
+
+  function isSaveValid() {
+    var isValid = false;
+    for (var i=0; i&lt;model.invoice().client().contacts().length; i++) {
+      var contact = model.invoice().client().contacts()[i];
+      if (isValidEmailAddress(contact.email())) {
+        isValid = true;
+      } else {
+        isValid = false;
+        break;
+      }
+    }
+    return isValid;
+  }
+  
+  function isEmailValid() {
+    var isValid = false;
+    var sendTo = false;
+    var client = self.invoice().client();
+    for (var i=0; i&lt;client.contacts().length; i++) {
+      var contact = client.contacts()[i];           
+      if (isValidEmailAddress(contact.email())) {
+        isValid = true;
+        if (contact.send_invoice() || client.contacts().length == 1) {
+          sendTo = true;
+        }
+      } else {
+        isValid = false;
+        break;
+      }
+    }
+    return (isValid &amp;&amp; sendTo)
+  }
+
+  function onCloneClick() {
+    submitAction('clone');
+  }
+
+  function onConvertClick() {
+    submitAction('convert');    
+  }
+
+  @if ($client &amp;&amp; $invoice)
+  function onPaymentClick() {
+    window.location = '{{ URL::to('payments/create/' . $client-&gt;public_id . '/' . $invoice-&gt;public_id ) }}';
+  }
+
+  function onCreditClick() {
+    window.location = '{{ URL::to('credits/create/' . $client-&gt;public_id . '/' . $invoice-&gt;public_id ) }}';
+  }
+  @endif
+
+  function onArchiveClick() {
+    submitAction('archive');      
+  }
+
+  function onDeleteClick() {
+    if (confirm('Are you sure you want to delete this {{ $entityType }}?')) {
+      submitAction('delete');   
+    }   
+  }
+
+  function formEnterClick(event) {
+    if (event.keyCode === 13){
+      if (event.target.type == 'textarea') {
+        return;
+      }
+      event.preventDefault();               
+
+      submitAction('');   
+      return false;
+    }
+  }
+
+  function clientModalEnterClick(event) {   
+    if (event.keyCode === 13){
+      event.preventDefault();         
+            model.clientFormComplete();
+            return false;
+        }
+  }
+
+  function taxModalEnterClick(event) {    
+    if (event.keyCode === 13){
+      event.preventDefault();         
+            model.taxFormComplete();
+            return false;
+        }
+  }
+
+  function ViewModel(data) {
+    var self = this;
+    //self.invoice = data ? false : new InvoiceModel();
+    self.invoice = ko.observable(data ? false : new InvoiceModel());
+    self.tax_rates = ko.observableArray();
+
+    self.loadClient = function(client) {
+      ko.mapping.fromJS(client, model.invoice().client().mapping, model.invoice().client);
+      self.setDueDate();
+    }
+
+    self.setDueDate = function() {
+      var paymentTerms = parseInt(self.invoice().client().payment_terms());
+      if (paymentTerms &amp;&amp; !self.invoice().due_date())
+      {
+        var dueDate = $('#invoice_date').datepicker('getDate');
+        dueDate.setDate(dueDate.getDate() + paymentTerms);
+        self.invoice().due_date(dueDate); 
+        // We're using the datepicker to handle the date formatting 
+        self.invoice().due_date($('#due_date').val());
+      }     
+    }
+
+    self.invoice_taxes = ko.observable({{ Auth::user()-&gt;account-&gt;invoice_taxes ? 'true' : 'false' }});
+    self.invoice_item_taxes = ko.observable({{ Auth::user()-&gt;account-&gt;invoice_item_taxes ? 'true' : 'false' }});
+    
+    self.mapping = {
+        'invoice': {
+            create: function(options) {
+                return new InvoiceModel(options.data);
+            }
+        },
+        'tax_rates': {
+          create: function(options) {
+            return new TaxRateModel(options.data);
+          }
+        },
+    }   
+
+    if (data) {
+      ko.mapping.fromJS(data, self.mapping, self);
+    }
+
+    self.invoice_taxes.show = ko.computed(function() {
+      if (self.tax_rates().length &gt; 2 &amp;&amp; self.invoice_taxes()) {
+        return true;
+      }
+      if (self.invoice().tax_rate() &gt; 0) {
+        return true;
+      }     
+      return false;
+    });
+
+    self.invoice_item_taxes.show = ko.computed(function() {
+      if (self.tax_rates().length &gt; 2 &amp;&amp; self.invoice_item_taxes()) {
+        return true;
+      }
+      for (var i=0; i&lt;self.invoice().invoice_items().length; i++) {
+        var item = self.invoice().invoice_items()[i];
+        if (item.tax_rate() &gt; 0) {
+          return true;
+        }
+      }
+      return false;
+    });
+
+    self.tax_rates.filtered = ko.computed(function() {
+      var i = 0;
+      for (i; i&lt;self.tax_rates().length; i++) {
+        var taxRate = self.tax_rates()[i];
+        if (taxRate.isEmpty()) {
+          break;
+        }
+      }
+
+      var rates = self.tax_rates().concat();
+      rates.splice(i, 1);
+      return rates;
+    });
+    
+
+    self.removeTaxRate = function(taxRate) {
+      self.tax_rates.remove(taxRate);
+      //refreshPDF();
+    }
+
+    self.addTaxRate = function(data) {
+      var itemModel = new TaxRateModel(data);
+      self.tax_rates.push(itemModel); 
+      applyComboboxListeners();
+    }   
+
+    /*
+    self.getBlankTaxRate = function() {
+      for (var i=0; i&lt;self.tax_rates().length; i++) {
+        var taxRate = self.tax_rates()[i];
+        if (!taxRate.name()) {
+          return taxRate;
+        }
+      }
+    }
+    */
+
+    self.getTaxRate = function(name, rate) {
+      for (var i=0; i&lt;self.tax_rates().length; i++) {
+        var taxRate = self.tax_rates()[i];
+        if (taxRate.name() == name &amp;&amp; taxRate.rate() == parseFloat(rate)) {
+          return taxRate;
+        }     
+      }     
+
+      var taxRate = new TaxRateModel();
+      taxRate.name(name);
+      taxRate.rate(parseFloat(rate));
+      if (parseFloat(rate) &gt; 0) taxRate.is_deleted(true);
+      self.tax_rates.push(taxRate);
+      return taxRate;     
+    }   
+
+    self.showTaxesForm = function() {
+      self.taxBackup = ko.mapping.toJS(self.tax_rates);
+
+      $('#taxModal').modal('show'); 
+    } 
+
+    self.taxFormComplete = function() {
+      model.taxBackup = false;
+      $('#taxModal').modal('hide'); 
+    }
+
+    self.showClientForm = function() {
+      trackUrl('/view_client_form');
+      self.clientBackup = ko.mapping.toJS(self.invoice().client);
+
+      $('#emailError').css( "display", "none" );      
+      $('#clientModal').modal('show');      
+    }
+
+    self.clientFormComplete = function() {
+      trackUrl('/save_client_form');
+
+      var isValid = true;
+      $("input[name='email']").each(function(item, value) {
+        var email = $(value).val();
+        if (!email || !isValidEmailAddress(email)) {
+          isValid = false;          
+        }
+      });
+      if (!isValid) {
+        $('#emailError').css( "display", "inline" );
+        return;
+      }
+
+      var email = $('#email0').val();
+      var firstName = $('#first_name').val();
+      var lastName = $('#last_name').val();
+      var name = $('#name').val();
+
+      if (self.invoice().client().public_id() == 0) {
+        self.invoice().client().public_id(-1);
+      }
+
+      model.setDueDate();
+
+      if (name) {
+        //
+      } else if (firstName || lastName) {
+        name = firstName + ' ' + lastName;
+      } else {
+        name = email;
+      }
+
+      setComboboxValue($('.client_select'), -1, name);
+
+      //$('.client_select select').combobox('setSelected');
+      //$('.client_select input.form-control').val(name);
+      //$('.client_select .combobox-container').addClass('combobox-selected');
+
+      $('#emailError').css( "display", "none" );
+      //$('.client_select input.form-control').focus();           
+
+      refreshPDF();
+      model.clientBackup = false;
+      $('#clientModal').modal('hide');            
+    }   
+
+    self.clientLinkText = ko.computed(function() {
+      if (self.invoice().client().public_id())
+      {
+        return "{{ trans('texts.edit_client_details') }}";
+      }
+      else
+      {
+        if (clients.length &gt; {{ Auth::user()-&gt;getMaxNumClients() }})
+        {
+          return '';
+        }
+        else
+        {
+          return "{{ trans('texts.create_new_client') }}";
+        }
+      }
+    });
+  }
+
+  function InvoiceModel(data) {
+    var self = this;    
+    window.abc=this;
+    this.client = ko.observable(data ? false : new ClientModel());    
+    self.account = {{ $account }};    
+    this.id = ko.observable('');
+    self.discount = ko.observable('');
+    self.frequency_id = ko.observable(8);
+    //self.currency_id = ko.observable({{ $client &amp;&amp; $client-&gt;currency_id ? $client-&gt;currency_id : Session::get(SESSION_CURRENCY) }});
+    self.terms = ko.observable(wordWrapText('{{ str_replace(["\r\n","\r","\n"], '\n', addslashes($account-&gt;invoice_terms)) }}', 300));
+    self.set_default_terms = ko.observable(false);
+    self.public_notes = ko.observable('');    
+    self.po_number = ko.observable('');
+    self.invoice_date = ko.observable('{{ Utils::today() }}');
+    self.invoice_number = ko.observable('{{ isset($invoiceNumber) ? $invoiceNumber : '' }}');
+    self.due_date = ko.observable('');
+    self.start_date = ko.observable('{{ Utils::today() }}');
+    self.end_date = ko.observable('');
+    self.tax_name = ko.observable();
+    self.tax_rate = ko.observable();
+    self.is_recurring = ko.observable(true);
+    self.invoice_status_id = ko.observable(0);
+    self.invoice_items = ko.observableArray();
+    self.amount = ko.observable(0);
+    self.balance = ko.observable(0);
+    self.invoice_design_id = ko.observable({{ $account-&gt;invoice_design_id }});
+
+    self.custom_value1 = ko.observable(0);
+    self.custom_value2 = ko.observable(0);
+    self.custom_taxes1 = ko.observable(false);
+    self.custom_taxes2 = ko.observable(false);
+
+    self.mapping = {
+      'client': {
+            create: function(options) {
+                return new ClientModel(options.data);
+            }
+      },
+        'invoice_items': {
+            create: function(options) {
+                return new ItemModel(options.data);
+            }
+        },
+        'tax': {
+          create: function(options) {
+            return new TaxRateModel(options.data);
+          }
+        },
+    }
+
+    self.addItem = function() {
+      var itemModel = new ItemModel();
+      @if ($account-&gt;hide_quantity)
+        itemModel.qty(1);
+      @endif
+      if(abc.invoice_items().length==0){
+        itemModel.product_key("Payment Plan");
+        itemModel.notes({{ json_encode($notes) }});
+        itemModel.qty('1');
+        itemModel.cost({{ json_encode($ppCost) }});
+      }
+      self.invoice_items.push(itemModel); 
+      applyComboboxListeners();     
+    }
+
+    if (data) {
+      ko.mapping.fromJS(data, self.mapping, self);      
+      self.is_recurring(parseInt(data.is_recurring));
+    } else {
+      self.addItem();
+    }
+
+    self._tax = ko.observable();
+    this.tax = ko.computed({
+      read: function () {
+        return self._tax();
+      },
+      write: function(value) {
+        if (value) {
+          self._tax(value);               
+          self.tax_name(value.name());
+          self.tax_rate(value.rate());
+        } else {
+          self._tax(false);               
+          self.tax_name('');
+          self.tax_rate(0);
+        }
+      }
+    })
+
+    self.wrapped_terms = ko.computed({
+      read: function() {
+        $('#terms').height(this.terms().split('\n').length * 36);
+        return this.terms();
+      },
+      write: function(value) {
+        value = wordWrapText(value, 300);
+        self.terms(value);
+        $('#terms').height(value.split('\n').length * 36);
+      },
+      owner: this
+    });
+
+
+    self.wrapped_notes = ko.computed({
+      read: function() {
+        $('#public_notes').height(this.public_notes().split('\n').length * 36);
+        return this.public_notes();
+      },
+      write: function(value) {
+        value = wordWrapText(value, 300);
+        self.public_notes(value);
+        $('#public_notes').height(value.split('\n').length * 36);
+      },
+      owner: this
+    });
+
+
+    self.removeItem = function(item) {
+      self.invoice_items.remove(item);
+      refreshPDF();
+    }
+
+
+    this.totals = ko.observable();
+
+    this.totals.rawSubtotal = ko.computed(function() {
+        var total = 0;
+        for(var p=0; p &lt; self.invoice_items().length; ++p) {
+          var item = self.invoice_items()[p];
+          total += item.totals.rawTotal();
+        }
+        return total;
+    });
+
+    this.totals.subtotal = ko.computed(function() {
+        var total = self.totals.rawSubtotal();
+        return total &gt; 0 ? formatMoney(total, self.client().currency_id()) : '';
+    });
+
+    this.totals.rawDiscounted = ko.computed(function() {
+      return roundToTwo(self.totals.rawSubtotal() * (self.discount()/100));     
+    });
+
+    this.totals.discounted = ko.computed(function() {
+      return formatMoney(self.totals.rawDiscounted(), self.client().currency_id());
+    });
+
+    self.totals.taxAmount = ko.computed(function() {
+      var total = self.totals.rawSubtotal();
+
+      var discount = parseFloat(self.discount());
+      if (discount &gt; 0) {
+        total = roundToTwo(total * ((100 - discount)/100));
+      }
+
+      var customValue1 = roundToTwo(self.custom_value1());
+      var customValue2 = roundToTwo(self.custom_value2());
+      var customTaxes1 = self.custom_taxes1() == 1;
+      var customTaxes2 = self.custom_taxes2() == 1;
+      
+      if (customValue1 &amp;&amp; customTaxes1) {
+        total = REDEFINED.parseFloat(total) + customValue1;
+      }
+      if (customValue2 &amp;&amp; customTaxes2) {
+        total = REDEFINED.parseFloat(total) + customValue2;
+      }
+
+      var taxRate = parseFloat(self.tax_rate());
+      if (taxRate &gt; 0) {
+        var tax = roundToTwo(total * (taxRate/100));      
+            return formatMoney(tax, self.client().currency_id());
+          } else {
+            return formatMoney(0);
+          }
+      });
+
+    this.totals.rawPaidToDate = ko.computed(function() {
+      return accounting.toFixed(self.amount(),2) - accounting.toFixed(self.balance(),2);
+    });
+
+    this.totals.paidToDate = ko.computed(function() {
+      var total = self.totals.rawPaidToDate();
+        return total &gt; 0 ? formatMoney(total, self.client().currency_id()) : '';      
+    });
+
+    this.totals.total = ko.computed(function() {
+      var total = accounting.toFixed(self.totals.rawSubtotal(),2);      
+
+      var discount = parseFloat(self.discount());
+      if (discount &gt; 0) {
+        total = roundToTwo(total * ((100 - discount)/100));
+      }
+
+      var customValue1 = roundToTwo(self.custom_value1());
+      var customValue2 = roundToTwo(self.custom_value2());
+      var customTaxes1 = self.custom_taxes1() == 1;
+      var customTaxes2 = self.custom_taxes2() == 1;
+      
+      if (customValue1 &amp;&amp; customTaxes1) {
+        total = REDEFINED.parseFloat(total) + customValue1;
+      }
+      if (customValue2 &amp;&amp; customTaxes2) {
+        total = REDEFINED.parseFloat(total) + customValue2;
+      }
+
+      var taxRate = parseFloat(self.tax_rate());
+      if (taxRate &gt; 0) {
+        total = REDEFINED.parseFloat(total) + roundToTwo((total * (taxRate/100)));
+      }         
+
+      if (customValue1 &amp;&amp; !customTaxes1) {
+        total = REDEFINED.parseFloat(total) + customValue1;
+      }
+      if (customValue2 &amp;&amp; !customTaxes2) {
+        total = REDEFINED.parseFloat(total) + customValue2;
+      }
+      
+      var paid = self.totals.rawPaidToDate();
+      if (paid &gt; 0) {
+        total -= paid;
+      }
+
+      return total != 0 ? formatMoney(total, self.client().currency_id()) : '';
+    });
+
+    self.onDragged = function(item) {
+      refreshPDF();
+    } 
+  }
+
+  function ClientModel(data) {
+    var self = this;
+    self.public_id = ko.observable(0);
+    self.name = ko.observable('');
+    self.work_phone = ko.observable('');
+    self.custom_value1 = ko.observable('');
+    self.custom_value2 = ko.observable('');
+    self.private_notes = ko.observable('');
+    self.address1 = ko.observable('');
+    self.address2 = ko.observable('');
+    self.city = ko.observable('');
+    self.state = ko.observable('');
+    self.postal_code = ko.observable('');
+    self.country_id = ko.observable('');
+    self.size_id = ko.observable('');
+    self.industry_id = ko.observable('');
+    self.currency_id = ko.observable('');
+    self.website = ko.observable('');
+    self.payment_terms = ko.observable(0);
+    self.contacts = ko.observableArray();
+
+    self.mapping = {
+        'contacts': {
+            create: function(options) {
+                return new ContactModel(options.data);
+            }
+        }
+    }
+
+
+    self.showContact = function(elem) { if (elem.nodeType === 1) $(elem).hide().slideDown() }
+    self.hideContact = function(elem) { if (elem.nodeType === 1) $(elem).slideUp(function() { $(elem).remove(); }) }
+
+    self.addContact = function() {
+      var contact = new ContactModel();
+      contact.send_invoice(true);
+      self.contacts.push(contact);
+      return false;
+    }
+
+    self.removeContact = function() {
+      self.contacts.remove(this);     
+    }
+
+    self.name.display = ko.computed(function() {
+      if (self.name()) {
+        return self.name();
+      }
+      if (self.contacts().length == 0) return;
+      var contact = self.contacts()[0];     
+      if (contact.first_name() || contact.last_name()) {
+        return contact.first_name() + ' ' + contact.last_name();        
+      } else {
+        return contact.email();
+      }
+    });       
+  
+    self.name.placeholder = ko.computed(function() {
+      if (self.contacts().length == 0) return '';
+      var contact = self.contacts()[0];
+      if (contact.first_name() || contact.last_name()) {
+        return contact.first_name() + ' ' + contact.last_name();
+      } else {
+        return contact.email();
+      }
+    }); 
+
+    if (data) {
+      ko.mapping.fromJS(data, {}, this);
+    } else {
+      self.addContact();
+    }   
+  }
+
+  function ContactModel(data) {
+    var self = this;
+    self.public_id = ko.observable('');
+    self.first_name = ko.observable('');
+    self.last_name = ko.observable('');
+    self.email = ko.observable('');
+    self.phone = ko.observable('');   
+    self.send_invoice = ko.observable(false);
+    self.invitation_link = ko.observable('');   
+
+    self.email.display = ko.computed(function() {
+      var str = '';
+      if (self.first_name() || self.last_name()) {
+        str += self.first_name() + ' ' + self.last_name() + '&lt;br/&gt;';
+      }     
+      str += self.email();
+
+      @if (Utils::isConfirmed())
+      if (self.invitation_link()) {
+        str += '&lt;br/&gt;&lt;a href="' + self.invitation_link() + '" target="_blank"&gt;{{ trans('texts.view_as_recipient') }}&lt;/a&gt;';
+      }
+      @endif
+      
+      return str;
+    });   
+    
+    if (data) {
+      ko.mapping.fromJS(data, {}, this);    
+    }   
+  }
+
+  function TaxRateModel(data) {
+    var self = this;
+    self.public_id = ko.observable('');
+    self.rate = ko.observable(0);
+    self.name = ko.observable('');
+    self.is_deleted = ko.observable(false);
+    self.is_blank = ko.observable(false);
+    self.actionsVisible = ko.observable(false);
+
+    if (data) {
+      ko.mapping.fromJS(data, {}, this);    
+    }   
+
+    this.prettyRate = ko.computed({
+          read: function () {
+              return this.rate() ? parseFloat(this.rate()) : '';
+          },
+          write: function (value) {
+              this.rate(value);
+          },
+          owner: this
+      });       
+
+
+    self.displayName = ko.computed({
+      read: function () {
+        var name = self.name() ? self.name() : '';
+        var rate = self.rate() ? parseFloat(self.rate()) + '% ' : '';
+        return rate + name;
+      },
+          write: function (value) {
+              // do nothing
+          },
+          owner: this     
+    }); 
+
+      self.hideActions = function() {
+      self.actionsVisible(false);
+      }
+
+      self.showActions = function() {
+      self.actionsVisible(true);
+      }   
+
+      self.isEmpty = function() {
+        return !self.rate() &amp;&amp; !self.name();
+      }     
+  }
+
+  function ItemModel(data) {
+    var self = this;    
+    this.product_key = ko.observable('');
+    this.notes = ko.observable('');
+    this.cost = ko.observable(0);
+    this.qty = ko.observable(0);
+    self.tax_name = ko.observable('');
+    self.tax_rate = ko.observable(0);
+    this.actionsVisible = ko.observable(false);
+    
+    self._tax = ko.observable();
+    this.tax = ko.computed({
+      read: function () {
+        return self._tax();
+      },
+      write: function(value) {
+        self._tax(value);               
+        self.tax_name(value.name());
+        self.tax_rate(value.rate());
+      }
+    })
+
+    this.prettyQty = ko.computed({
+          read: function () {
+              return REDEFINED.parseFloat(this.qty()) ? REDEFINED.parseFloat(this.qty()) : '';
+          },
+          write: function (value) {
+              this.qty(value);
+          },
+          owner: this
+      });       
+
+    this.prettyCost = ko.computed({
+          read: function () {
+              return this.cost() ? this.cost() : '';
+          },
+          write: function (value) {
+              this.cost(value);
+          },
+          owner: this
+      });       
+
+    self.mapping = {
+        'tax': {
+          create: function(options) {
+            return new TaxRateModel(options.data);
+          }
+        }
+    }
+
+    if (data) {
+      ko.mapping.fromJS(data, self.mapping, this);      
+      //if (this.cost()) this.cost(formatMoney(this.cost(), model ? model.invoice().currency_id() : 1, true));
+    }
+
+    self.wrapped_notes = ko.computed({
+      read: function() {
+        return this.notes();
+      },
+      write: function(value) {
+        value = wordWrapText(value, 235);
+        self.notes(value);
+        onItemChange();
+      },
+      owner: this
+    });
+
+    this.totals = ko.observable();
+
+    this.totals.rawTotal = ko.computed(function() {
+      var cost = REDEFINED.parseFloat(self.cost());
+      var qty = REDEFINED.parseFloat(self.qty());
+      var taxRate = REDEFINED.parseFloat(self.tax_rate());
+      var value = cost * qty;         
+      if (taxRate &gt; 0) {
+        value += value * (taxRate/100);
+      }     
+      return value ? roundToTwo(value) : '';
+    });   
+
+    this.totals.total = ko.computed(function() {
+      var total = self.totals.rawTotal();
+      if (window.hasOwnProperty('model') &amp;&amp; model.invoice &amp;&amp; model.invoice() &amp;&amp; model.invoice().client()) {
+        return total ? formatMoney(total, model.invoice().client().currency_id()) : '';
+      } else {
+        return total ? formatMoney(total, 1) : '';
+      }
+    });
+
+    this.hideActions = function() {
+    this.actionsVisible(false);
+    }
+
+    this.showActions = function() {
+    this.actionsVisible(true);
+    }
+
+    this.isEmpty = function() {
+      return !self.product_key() &amp;&amp; !self.notes() &amp;&amp; !self.cost() &amp;&amp; (!self.qty() || {{ $account-&gt;hide_quantity ? 'true' : 'false' }});
+    }
+
+    this.onSelect = function(){              
+    }
+  }
+
+  function onItemChange()
+  {
+    var hasEmpty = false;
+    for(var i=0; i&lt;model.invoice().invoice_items().length; i++) {
+      var item = model.invoice().invoice_items()[i];
+      if (item.isEmpty()) {
+        hasEmpty = true;
+      }
+    }
+
+    if (!hasEmpty) {
+      model.invoice().addItem();
+    }
+
+    $('.word-wrap').each(function(index, input) {
+      $(input).height($(input).val().split('\n').length * 20);
+    });
+  }
+
+  function onTaxRateChange()
+  {
+    var emptyCount = 0;
+
+    for(var i=0; i&lt;model.tax_rates().length; i++) {
+      var taxRate = model.tax_rates()[i];
+      if (taxRate.isEmpty()) {
+        emptyCount++;
+      }
+    }
+
+    for(var i=0; i&lt;2-emptyCount; i++) {
+      model.addTaxRate();
+    }
+  }
+
+  var products = {{ $products }};
+  var clients = {{ $clients }}; 
+  var invoiceLabels = {{ json_encode($invoiceLabels) }};
+  var clientMap = {};
+  var $clientSelect = $('select#client');
+  
+  for (var i=0; i&lt;clients.length; i++) {
+    var client = clients[i];
+    for (var j=0; j&lt;client.contacts.length; j++) {
+      var contact = client.contacts[j];
+      contact.send_invoice = contact.is_primary;
+    }
+    clientMap[client.public_id] = client;
+    $clientSelect.append(new Option(getClientDisplayName(client), client.public_id)); 
+  }
+
+  @if ($data)
+    window.model = new ViewModel({{ $data }});        
+  @else 
+    window.model = new ViewModel();
+    model.addTaxRate();
+    @foreach ($taxRates as $taxRate)
+      model.addTaxRate({{ $taxRate }});
+    @endforeach
+    @if ($invoice)
+      var invoice = {{ $invoice }};
+      ko.mapping.fromJS(invoice, model.invoice().mapping, model.invoice);     
+      if (model.invoice().is_recurring() === '0') {
+        model.invoice().is_recurring(false);
+      }
+      var invitationContactIds = {{ json_encode($invitationContactIds) }};    
+      var client = clientMap[invoice.client.public_id];
+      if (client) { // in case it's deleted
+        for (var i=0; i&lt;client.contacts.length; i++) {
+          var contact = client.contacts[i];
+          contact.send_invoice = invitationContactIds.indexOf(contact.public_id) &gt;= 0;
+        }     
+      }
+      model.invoice().addItem();
+      //model.addTaxRate();     
+    @else 
+      model.invoice().custom_taxes1({{ $account-&gt;custom_invoice_taxes1 ? 'true' : 'false' }});
+      model.invoice().custom_taxes2({{ $account-&gt;custom_invoice_taxes2 ? 'true' : 'false' }});
+    @endif
+                // Add the first tax rate for new invoices
+                //if(model.invoice_taxes() &amp;&amp; model.tax_rates().length &gt; 0) {
+                //    var tax = model.tax_rates()[0];
+                //    model.invoice().tax(tax);
+                //}
+  @endif
+
+  model.invoice().tax(model.getTaxRate(model.invoice().tax_name(), model.invoice().tax_rate()));      
+  for (var i=0; i&lt;model.invoice().invoice_items().length; i++) {
+    var item = model.invoice().invoice_items()[i];
+    item.tax(model.getTaxRate(item.tax_name(), item.tax_rate()));
+    item.cost(REDEFINED.parseFloat(item.cost()) &gt; 0 ? roundToTwo(item.cost(), true) : '');
+  }
+  onTaxRateChange();
+
+  // display blank instead of '0'
+  if (!model.invoice().discount()) model.invoice().discount('');
+  if (!model.invoice().custom_value1()) model.invoice().custom_value1('');
+  if (!model.invoice().custom_value2()) model.invoice().custom_value2('');
+
+  ko.applyBindings(model);  
+  onItemChange();
+
+  &lt;/script&gt;
+
+@stop
+</file></path></root>

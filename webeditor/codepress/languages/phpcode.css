@@ -1,0 +1,12 @@
+/*
+ * CodePress color styles for PHP syntax highlighting
+ */
+
+b {color:#000080;} /* tags */
+big, big, big em, big ins, big s,  i,  i,  i s,  i u,  i a,  i a u,  i s u {color:gray;font-weight:normal;} /* comments */
+s, s,  s u,  s cite {color:#5656fa;font-weight:normal;} /* attributes and strings */
+ a,  a u {color:#006700;font-weight:bold;} /* variables */
+em {color:#800080;font-style:normal;} /* style */
+ins {color:#800000;} /* script */
+u {color:#7F0055;font-weight:bold;} /* reserved words */
+cite, s cite {color:red;font-weight:bold;} /* <?php and ?> */

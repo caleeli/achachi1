@@ -1,0 +1,3 @@
+var res={"pregunta":"\u00bfEn qu\u00e9 idioma fue escrito el Nuevo Testamento?","respuestas":["Griego","Hebreo","Arameo","Persa"],"correcta":"0","imagen":"img\/m062a_3601ab04.jpg"};
+dibujaPregunta($pregunta,$respuestas,$imagen,res);
+

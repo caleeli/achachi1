@@ -1,0 +1,333 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root><path path="./"><component name="box" transparent="">&lt;div&gt;
+&lt;span class="box" style="width:300"&gt;&lt;p&gt;@{$about}&lt;/p&gt;&lt;/span&gt;&lt;span class="box"&gt;&lt;div class="boxTitle"&gt;@{$name}&lt;/div&gt;&lt;div class="boxContent"&gt;
+&lt;center&gt;&lt;table class="listTable" width="80%" cellpadding="0" cellspacing="0"&gt;
+@{node::join("",$_)}
+&lt;/table&gt;&lt;/center&gt;&lt;/div&gt;&lt;/span&gt;
+&lt;/div&gt;
+&lt;br /&gt;
+</component><file name="index.php" preprocess="">&lt;?php
+header("Content-Type: text/html; charset=UTF-8");
+ini_set("display_errors","on");
+eval("?&gt;".file_get_contents("serverpassword.php"));
+if(md5("")!=$server_password){
+  if(!isset($_POST["password"])&amp;&amp;!isset($_GET["password"])){
+    require("servervalidation.php");
+    exit();
+  } else {
+    if(isset($_POST["password"])) $p=md5($_POST["password"]);
+    if(isset($_GET["password"])) $p=$_GET["password"];
+    if($p==$server_password){
+    } else {
+      require("servervalidation.php");
+      exit();
+    }
+  }
+}
+?&gt;
+&lt;html&gt;&lt;head&gt;&lt;style&gt;html{
+  background-color:SlateGray;
+}
+body{
+  text-align:center;
+}
+button{
+  border: 2px groove menu;
+  border-radius:8px;
+  -moz-border-radius:8px;
+  background-color:LightGrey;
+}
+.box{
+  border:1px inset SlateGray;
+  border-radius:8px;
+  -moz-border-radius:8px;
+  background-color:snow;
+  width:500px;
+  display:inline-block;
+  margin:8px;
+  vertical-align:top;
+  text-align:justify;
+  padding:0px;
+}
+.box p{
+  padding:0px 8px 0px 8px;
+  font-size:small;
+}
+.boxTitle{
+  border:1px outset SlateGray;
+  border-radius:8px 8px 0px 0px;
+  -moz-border-radius:8px 8px 0px 0px;
+  background-color:SteelBlue;
+  color:snow;
+  font-weight:bold;
+  vertical-align:middle;
+  text-align:center;
+}
+.boxContent{
+  border:1px outset SlateGray;
+  border-radius:0px 0px 8px 8px;
+  -moz-border-radius:0px 0px 8px 8px;
+  background-color:Azure;
+  padding-bottom:8px;
+}
+.listTable{
+  empty-cells:show;
+}
+.listTable th{
+  border-bottom:3px double SlateBlue;
+  padding-top:8px;
+  font-weight:normal;
+  text-align:left;
+}
+.listTable td{
+  padding-top:8px;
+}
+.ok{
+  color:green;
+  font-weight:bold;
+  cursor:help;
+}
+.nook{
+  color:red;
+  font-weight:bold;
+  cursor:help;
+}
+.note{
+  font-size:small;
+  color:DarkRed;
+}
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+<box about="Frameworks instalados actualmente en el servidor." name="FRAMEWORKS">&lt;tr&gt;&lt;th width="70%"&gt;Zend Framework&lt;/th&gt;&lt;th&gt;&lt;?php print ZendVersion() ? Installed("Version: ".ZendVersion()): Download("http://framework.zend.com/download/latest", "Zend Framework was not found in the include_path.") ?&gt;&lt;/th&gt;&lt;/tr&gt;
+
+&lt;tr&gt;&lt;th&gt;ExtJs&lt;/th&gt;&lt;th&gt;&lt;?php print ($extVer=ExtJsVersion()) ? Installed( "Version: $extVer" ): Download("http://www.sencha.com/products/extjs/download/", "It must be installed at ".$_SERVER["DOCUMENT_ROOT"]."/ext") ?&gt;&lt;/th&gt;&lt;/tr&gt;
+</box><box about="&lt;img src=&quot;developer.jpg&quot; /&gt;&lt;br /&gt;&lt;b&gt;Web Developer&lt;/b&gt;, le permitirá preparar un entorno de desarrollo acorde a sus necesidades, y desarrollar aplicaciones utilizando los frameworks que tenga disponible. Haga click en &quot;Iniciar&quot; para ingresar al entorno de desarrollo." name="WEB DEVELOPER">&lt;tr&gt;&lt;th width="70%"&gt;Web Developer&lt;/th&gt;&lt;th&gt;&lt;?php 
+
+function DeveloperVersion(){
+  if(file_exists("webeditor/")){
+    return file_get_contents("webeditor/version.txt");
+  }
+  return false;
+}
+
+print ($ver=DeveloperVersion()) ? Installed("Version: ".$ver): NotInstalled("Web Developer has been removed.") 
+
+?&gt;&lt;/th&gt;&lt;/tr&gt;
+
+&lt;?php if($ver): ?&gt;
+  &lt;tr&gt;&lt;td width="70%"&gt;&lt;/td&gt;&lt;td&gt;
+    &lt;button type="button" style="background-color:white;font-weight:bold" onclick="window.location.href='webeditor/zeditor.html'"&gt;
+      &lt;img src="developer.jpg" /&gt;Start
+    &lt;/button&gt;
+  &lt;/td&gt;&lt;/tr&gt;
+  &lt;tr&gt;&lt;td width="70%" class="note"&gt;If you will not use this server for development you could remove the Web Developer.&lt;/td&gt;&lt;td&gt;&lt;button type="button" onclick="if(confirm('Are you sure to remove Web Developer?'))window.location.href='webeditor/removewebeditor.php'"&gt;Remove&lt;/button&gt;&lt;/td&gt;&lt;/tr&gt;
+&lt;?php endif; ?&gt;</box><box name="WEB SERVER" about="&lt;img src=&quot;server.jpg&quot; /&gt;&lt;br /&gt;&lt;b&gt;Web Server&lt;/b&gt;, it will permits you to deploy applications created by Web Developer in this server.">&lt;tr&gt;&lt;th width="70%"&gt;Web Application Deployer&lt;/th&gt;&lt;th&gt;&lt;?php 
+
+function ServerVersion(){
+  if(file_exists("deployer.php")){
+    $dep = file_get_contents("deployer.php");
+    preg_match('/Version:\s*([\d\.]+)/', $dep, $ma);
+    return $ma[1];
+  }
+  return false;
+}
+
+print ($ver=ServerVersion()) ? ($deployer_disabled? Disabled("Deployer was disabled. Version: ".$ver):Installed("Version: ".$ver)): NotInstalled("Web Developer has been removed.") 
+
+?&gt;&lt;/th&gt;&lt;/tr&gt;
+
+&lt;?php if($ver): ?&gt;
+&lt;?php if(isset($deployer_disabled) &amp;&amp; $deployer_disabled): ?&gt;
+  &lt;tr&gt;&lt;td width="70%" class="note"&gt;
+    If you will deploy applications in this server you should enable this feature.
+    &lt;/td&gt;&lt;td&gt;&lt;button type="button" onclick="window.location.href='enabledeployer.php'"&gt;Enable&lt;/button&gt;&lt;/td&gt;&lt;/tr&gt;
+&lt;?php else: ?&gt;
+  &lt;tr&gt;&lt;td width="70%" class="note"&gt;
+    If you will not deploy applications in this server you could disable this feature.
+    &lt;/td&gt;&lt;td&gt;&lt;button type="button" onclick="window.location.href='disabledeployer.php'"&gt;Disable&lt;/button&gt;&lt;/td&gt;&lt;/tr&gt;
+&lt;?php endif; ?&gt;
+  &lt;tr&gt;&lt;td width="70%"&gt;Change Password
+  &lt;?php
+    if($server_password==md5("")){
+    ?&gt;
+    &lt;p class="note"&gt;Currently it is not defined a password for this server.&lt;/p&gt;
+    &lt;?php
+    }
+  ?&gt;
+  &lt;/td&gt;&lt;td&gt;
+    &lt;form action="changepassword.php" method="POST"&gt;
+      Old Password: &lt;input name="password" type="password"/&gt;
+      New Password: &lt;input name="newpassword" type="password"/&gt;
+      &lt;button type="submit"&gt;Change Password&lt;/button&gt;
+    &lt;/form&gt;
+  &lt;/td&gt;&lt;/tr&gt;
+&lt;?php endif; ?&gt;</box>
+&lt;/body&gt;&lt;/html&gt;&lt;?php
+
+function ZendVersion(){
+  @include_once("Zend/Version.php");
+  if(class_exists("Zend_Version")) return Zend_Version::VERSION;
+  return false;
+}
+
+function ExtJsVersion(){
+  if(file_exists( $_SERVER["DOCUMENT_ROOT"]."/ext/ext-all.js" )){
+    $ext=file_get_contents($_SERVER["DOCUMENT_ROOT"]."/ext/ext-all.js");
+    preg_match('/Ext JS Library ([\d\.]+)/', $ext, $ma);
+    return $ma[1];
+  }
+  return false;
+}
+
+function Installed($note=""){
+?&gt;&lt;span class="ok" title="&lt;?php print htmlentities($note, ENT_QUOTES, "utf-8") ?&gt;"&gt;Installed&lt;/span&gt;&lt;?php
+}
+
+function Download($url,$note=""){
+?&gt;&lt;span class="nook" title="&lt;?php print htmlentities($note, ENT_QUOTES, "utf-8") ?&gt;"&gt;Not Found (?)&lt;/span&gt; &lt;a href="&lt;?php print htmlentities($url, ENT_QUOTES, "utf-8") ?&gt;" target="_blank"&gt;Download&lt;/a&gt;&lt;?php
+}
+
+function notInstalled($note=""){
+?&gt;&lt;span class="nook" title="&lt;?php print htmlentities($note, ENT_QUOTES, "utf-8") ?&gt;"&gt;Not Installed (?)&lt;/span&gt;&lt;?php
+}
+
+function Disabled($note=""){
+?&gt;&lt;span class="nook" title="&lt;?php print htmlentities($note, ENT_QUOTES, "utf-8") ?&gt;"&gt;Disabled&lt;/span&gt;&lt;?php
+}
+
+function rrmdir($dir) {
+ if (is_dir($dir)) {
+   $objects = scandir($dir);
+   foreach ($objects as $object) {
+     if ($object != "." &amp;&amp; $object != "..") {
+       if (filetype($dir."/".$object) == "dir") rrmdir($dir."/".$object); else unlink($dir."/".$object);
+     }
+   }
+   reset($objects);
+   rmdir($dir);
+ }
+}</file><file name="disabledeployer.php" preprocess="">&lt;?php
+ini_set("display_errors","off");
+if(!isset($_POST["password"])){
+  require("servervalidation.php");
+} else {
+  eval("?&gt;".file_get_contents("serverpassword.php"));
+  if(md5($_POST["password"])==$server_password){
+    $deployer_disabled=true;
+    server_save_config();
+    print("&lt;script&gt;window.location.href='index.php?password=".urlencode($server_password)."'&lt;/script&gt;");
+  } else {
+    require("servervalidation.php");
+  }
+}</file><file name="enabledeployer.php" preprocess="">&lt;?php
+ini_set("display_errors","off");
+if(!isset($_POST["password"])){
+  require("servervalidation.php");
+} else {
+  eval("?&gt;".file_get_contents("serverpassword.php"));
+  if(md5($_POST["password"])==$server_password){
+    $deployer_disabled=false;
+    server_save_config();
+    print("&lt;script&gt;window.location.href='index.php?password=".urlencode($server_password)."'&lt;/script&gt;");
+  } else {
+    require("servervalidation.php");
+  }
+}</file><file name="serverpassword.php" preprocess="">&lt;?php
+function server_save_config(){
+  global $deployer_disabled;
+  global $server_password;
+  $c=file_get_contents(dirname(__FILE__)."/serverpassword.php");
+  $tag='//CONFIG';
+  $c=substr($c,0,strpos($c, $tag, strpos($c, $tag)+1)).$tag."\n";
+  $c.='$deployer_disabled='.var_export($deployer_disabled,true).";\n";
+  $c.='$server_password='.var_export($server_password,true).";\n";
+  file_put_contents(dirname(__FILE__)."/serverpassword.php",$c);
+}
+
+//CONFIG
+$deployer_disabled=false;
+$server_password=md5("");
+</file><file name="servervalidation.php" preprocess="">&lt;html&gt;&lt;head&gt;&lt;style&gt;html{
+  background-color:SlateGray;
+}
+body{
+  text-align:center;
+}
+button{
+  border: 2px groove menu;
+  border-radius:8px;
+  -moz-border-radius:8px;
+  background-color:LightGrey;
+}
+.box{
+  border:1px inset SlateGray;
+  border-radius:8px;
+  -moz-border-radius:8px;
+  background-color:SlateBlue;
+  width:500px;
+  display:inline-block;
+  margin:8px;
+}
+.boxTitle{
+  border:1px outset SlateGray;
+  border-radius:8px 8px 0px 0px;
+  -moz-border-radius:8px 8px 0px 0px;
+  background-color:SteelBlue;
+  color:snow;
+  font-weight:bold;
+}
+.boxContent{
+  border:1px outset SlateGray;
+  border-radius:0px 0px 8px 8px;
+  -moz-border-radius:0px 0px 8px 8px;
+  background-color:LightSteelBlue;
+  padding-bottom:8px;
+}
+.listTable{
+  empty-cells:show;
+}
+.listTable th{
+  border-bottom:3px double SlateBlue;
+  padding-top:8px;
+  font-weight:normal;
+  text-align:left;
+}
+.listTable td{
+  padding-top:8px;
+}
+.ok{
+  color:green;
+  font-weight:bold;
+  cursor:help;
+}
+.nook{
+  color:red;
+  font-weight:bold;
+  cursor:help;
+}
+.note{
+  font-size:small;
+  color:DarkRed;
+}
+&lt;/style&gt;&lt;/head&gt;&lt;body&gt;
+<box name="WEB SERVER LOGIN">  &lt;tr&gt;&lt;td&gt;
+    &lt;form method="POST"&gt;
+      Password: &lt;input name="password" type="password"/&gt;
+      &lt;button type="submit"&gt;Login&lt;/button&gt;
+    &lt;/form&gt;
+  &lt;/td&gt;&lt;/tr&gt;</box>
+&lt;/body&gt;&lt;/html&gt;&lt;?php
+
+</file><file name="changepassword.php" preprocess="">&lt;?php
+ini_set("display_errors","off");
+if(!isset($_POST["password"])){
+  require("servervalidation.php");
+} else {
+  eval("?&gt;".file_get_contents("serverpassword.php"));
+  if(md5($_POST["password"])==$server_password){
+    $server_password=md5($_POST["newpassword"]);
+    server_save_config();
+    print("&lt;script&gt;window.location.href='index.php?password=".urlencode($server_password)."'&lt;/script&gt;");
+  } else {
+    require("servervalidation.php");
+  }
+}</file><resource path="framework_main/developer.jpg" folder="./"/><resource path="framework_main/server.jpg" folder="./"/></path></root>

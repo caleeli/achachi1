@@ -1,0 +1,3 @@
+var res={"pregunta":"Como se llamaba el gigante que David mat\u00f3?","respuestas":["Goliat","Sanson","Tit","Ninguno"],"correcta":"0","imagen":"img\/Fugel_David_gegen_Goliath.jpg"};
+dibujaPregunta($pregunta,$respuestas,$imagen,res);
+

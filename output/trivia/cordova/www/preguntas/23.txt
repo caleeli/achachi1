@@ -1,0 +1,3 @@
+var res={"pregunta":"\u00bfCu\u00e1l es el tema principal de los cuatro evangelios?","respuestas":["La vida y las ense\u00f1anzas de Jes\u00fas","La vida y las ense\u00f1anzas de Juan el bautista","La vida y las ense\u00f1anzas de Pablo","La vida y las ense\u00f1anzas de Juan el bautista"],"correcta":"0","imagen":"img\/Tintoretto,_Jacopo_-_Christ_at_the_Sea_of_Galilee.jpg"};
+dibujaPregunta($pregunta,$respuestas,$imagen,res);
+

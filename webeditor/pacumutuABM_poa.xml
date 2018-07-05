@@ -1,0 +1,380 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root><path path="C:\Program Files (x86)\Zend\Apache2\htdocs\pacumutu\application\fuente" main="" __ideNodeOpen="true"><component name="abm" transparent="" precode="" __ideNodeOpen="false"><file name="@{$name}.var" preprocess="">array (
+  '_name' =&gt; '@{$name}',
+  '_template' =&gt; 'tpl_H0.0',
+  'title' =&gt; '@{$title}',
+  'icon' =&gt; 'window.gif',
+  'regionA1' =&gt; '@{$name}Grid',
+  'buttons' =&gt; '',
+  'script' =&gt; '',
+  'model' =&gt; '',
+  'where' =&gt; '',
+  'toolbar' =&gt; '',
+)</file><file name="@{$name}Add.var" preprocess="">array (
+  '_name' =&gt; '@{$name}Add',
+  '_template' =&gt; 'tpl_H0.0',
+  'toolbar' =&gt; '',
+  'title' =&gt; '',
+  'icon' =&gt; 'add.gif',
+  'regionA1' =&gt; '@{$name}AddFieldset',
+  'buttons' =&gt; 'Adicionar,insert',
+  'script' =&gt; '
+function insert(){
+  panel.zinsert();
+  panel.previousNode("window").destroy();
+}',
+  'model' =&gt; '@{$model}',
+  'where' =&gt; '',
+  'oninsert' =&gt; '',
+  'onupdate' =&gt; '',
+)</file><file name="@{$name}AddFieldset.var" preprocess="">array (
+  '_name' =&gt; '@{$name}AddFieldset',
+  '_template' =&gt; 'ide_fieldset',
+  'adapter' =&gt; 'connection',
+  'query' =&gt; '',
+  'model' =&gt; '',
+  'where' =&gt; '',
+  'onload' =&gt; '',
+  'oninsert' =&gt; '',
+  'fields' =&gt; '@{node::content($_nodes['fieldsAdd'])}',
+  'labelWidth' =&gt; '',
+  'title' =&gt; '',
+)</file><file name="@{$name}Delete.var" preprocess="">array (
+  '_name' =&gt; '@{$name}Delete',
+  '_template' =&gt; 'tpl_H0.0',
+  'toolbar' =&gt; '',
+  'title' =&gt; '',
+  'icon' =&gt; 'clear.gif',
+  'regionA1' =&gt; '@{$name}DeleteFieldset',
+  'buttons' =&gt; 'Borrar,remove',
+  'script' =&gt; '
+function remove(){
+  panel.zdelete();
+  panel.previousNode("window").destroy();
+}',
+  'model' =&gt; '@{$model}',
+  'where' =&gt; '@{empty($idField)?'id':$idField}=:@{$name}Grid_@{empty($idField)?'id':$idField}',
+  'oninsert' =&gt; '',
+  'onupdate' =&gt; '',
+)</file><file name="@{$name}DeleteFieldset.var" preprocess="">array (
+  '_name' =&gt; '@{$name}DeleteFieldset',
+  '_template' =&gt; 'ide_fieldset',
+  'adapter' =&gt; 'connection',
+  'query' =&gt; '',
+  'model' =&gt; '@{$model}',
+  'where' =&gt; '@{empty($idField)?'id':$idField}=:@{$name}Grid_@{empty($idField)?'id':$idField}',
+  'onload' =&gt; '',
+  'oninsert' =&gt; '',
+  'fields' =&gt; '@{node::content($_nodes['fieldsDelete'])}',
+  'labelWidth' =&gt; '',
+  'title' =&gt; '',
+)</file><file name="@{$name}Grid.var" preprocess="">array (
+  '_name' =&gt; '@{$name}Grid',
+  '_template' =&gt; '@{empty($groupField)?"ide_grilla":"ide_groupgrid"}',
+  'adapter' =&gt; 'connection',
+  'query' =&gt; @{var_export($query,true)},
+  'model' =&gt; '',
+  'where' =&gt; '',
+  'fields' =&gt; '@{node::content($_nodes['fieldsGrid'])}',
+  'columns' =&gt; '@{node::content($_nodes['columnsGrid'])}',
+  'toolbar' =&gt; '#{
+    $__tt=explode(';',$toolbar);
+    $_res=array();
+    if($__tt[0]!='') $_res[]=$__tt[0].',add.gif,'.$name.'Add,400,400,Nuevo';
+    if($__tt[1]!='') $_res[]=$__tt[1].',pencil.png,'.$name.'Modify,400,400,Editar';
+    if($__tt[2]!='') $_res[]=$__tt[2].',clear.gif,'.$name.'Delete,,,Eliminar';
+    for($_i=3,$_l=count($__tt);$_i&lt;$_l;$_i++):
+      $_res[]=$__tt[$_i];
+    endfor;
+    return implode("\n", $_res);
+}',
+#{
+  if(empty($groupField))
+    return '';
+  else
+    return "'groupField' =&gt; '$groupField',\n";
+}  'onload' =&gt; '',
+  'bindingCode' =&gt; @{var_export("".@node::content($_nodes['bindingCode']),true)},
+  'title' =&gt; '',
+)</file><file name="@{$name}Modify.var" preprocess="">array (
+  '_name' =&gt; '@{$name}Modify',
+  '_template' =&gt; 'tpl_H0.0',
+  'toolbar' =&gt; '',
+  'title' =&gt; '',
+  'icon' =&gt; 'pencil.png',
+  'regionA1' =&gt; '@{$name}ModifyFieldset',
+  'buttons' =&gt; 'Guardar Cambios,update',
+  'script' =&gt; '
+function update(){
+  panel.zupdate();
+  panel.previousNode("window").destroy()
+}
+',
+  'model' =&gt; '@{$model}',
+  'where' =&gt; '@{empty($idField)?'id':$idField}=:@{$name}Grid_@{empty($idField)?'id':$idField}',
+  'oninsert' =&gt; '',
+  'onupdate' =&gt; '',
+)</file><file name="@{$name}ModifyFieldset.var" preprocess="">array (
+  '_name' =&gt; '@{$name}ModifyFieldset',
+  '_template' =&gt; 'ide_fieldset',
+  'adapter' =&gt; 'connection',
+  'query' =&gt; '',
+  'model' =&gt; '@{$model}',
+  'where' =&gt; '@{empty($idField)?'id':$idField}=:@{$name}Grid_@{empty($idField)?'id':$idField}',
+  'onload' =&gt; '',
+  'oninsert' =&gt; '',
+  'fields' =&gt; '@{node::content($_nodes['fieldsModify'])}',
+  'labelWidth' =&gt; '',
+  'title' =&gt; '',
+)</file></component><component name="abmfilter" transparent="" precode="" __ideNodeOpen="false"><file name="@{$name}.var" preprocess="" __ideNodeOpen="true">array (
+  '_name' =&gt; '@{$name}',
+  '_template' =&gt; 'tpl_H1.1',
+  'title' =&gt; '@{$title}',
+  'icon' =&gt; 'window.gif',
+  'regionA1' =&gt; '@{$name}Filter',
+  'regionA2' =&gt; '@{$name}Grid',
+  'buttons' =&gt; '',
+  'script' =&gt; '',
+  'model' =&gt; '',
+  'where' =&gt; '',
+)</file><file name="@{$name}Add.var" preprocess="">array (
+  '_name' =&gt; '@{$name}Add',
+  '_template' =&gt; 'tpl_H0.0',
+  'toolbar' =&gt; '',
+  'title' =&gt; '',
+  'icon' =&gt; 'add.gif',
+  'regionA1' =&gt; '@{$name}AddFieldset',
+  'buttons' =&gt; 'Adicionar,insert',
+  'script' =&gt; '
+function insert(){
+  panel.zinsert();
+  panel.previousNode("window").destroy();
+}',
+  'model' =&gt; '@{$model}',
+  'where' =&gt; '',
+  'oninsert' =&gt; '',
+  'onupdate' =&gt; '',
+)</file><file name="@{$name}AddFieldset.var" preprocess="">array (
+  '_name' =&gt; '@{$name}AddFieldset',
+  '_template' =&gt; 'ide_fieldset',
+  'adapter' =&gt; 'connection',
+  'query' =&gt; '',
+  'model' =&gt; '',
+  'where' =&gt; '',
+  'onload' =&gt; '',
+  'oninsert' =&gt; '',
+  'fields' =&gt; '@{node::content($_nodes['fieldsAdd'])}',
+  'labelWidth' =&gt; '',
+  'title' =&gt; '',
+)</file><file name="@{$name}Delete.var" preprocess="">array (
+  '_name' =&gt; '@{$name}Delete',
+  '_template' =&gt; 'tpl_H0.0',
+  'toolbar' =&gt; '',
+  'title' =&gt; '',
+  'icon' =&gt; 'clear.gif',
+  'regionA1' =&gt; '@{$name}DeleteFieldset',
+  'buttons' =&gt; 'Borrar,remove',
+  'script' =&gt; '
+function remove(){
+  panel.zdelete();
+  panel.previousNode("window").destroy();
+}',
+  'model' =&gt; '@{$model}',
+  'where' =&gt; '',
+  'oninsert' =&gt; '',
+  'onupdate' =&gt; '',
+)</file><file name="@{$name}DeleteFieldset.var" preprocess="">array (
+  '_name' =&gt; '@{$name}DeleteFieldset',
+  '_template' =&gt; 'ide_fieldset',
+  'adapter' =&gt; 'connection',
+  'query' =&gt; '',
+  'model' =&gt; '@{$model}',
+  'where' =&gt; 'id=:@{$name}Grid_id',
+  'onload' =&gt; '',
+  'oninsert' =&gt; '',
+  'fields' =&gt; '@{node::content($_nodes['fieldsDelete'])}',
+  'labelWidth' =&gt; '',
+  'title' =&gt; '',
+)</file><file name="@{$name}Grid.var" preprocess="">array (
+  '_name' =&gt; '@{$name}Grid',
+  '_template' =&gt; '@{empty($groupField)?"ide_grilla":"ide_groupgrid"}',
+  'adapter' =&gt; 'connection',
+  'query' =&gt; @{var_export($query,true)},
+  'model' =&gt; '',
+  'where' =&gt; '',
+  'fields' =&gt; '@{node::content($_nodes['fieldsGrid'])}',
+  'columns' =&gt; '@{node::content($_nodes['columnsGrid'])}',
+  'toolbar' =&gt; '#{
+    $__tt=explode(';',$toolbar);
+    $_res=array();
+    if($__tt[0]!='') $_res[]=$__tt[0].',add.gif,'.$name.'Add,400,400,Nuevo';
+    if($__tt[1]!='') $_res[]=$__tt[1].',pencil.png,'.$name.'Modify,400,400,Editar';
+    if($__tt[2]!='') $_res[]=$__tt[2].',clear.gif,'.$name.'Delete,,,Eliminar';
+    for($_i=3,$_l=count($__tt);$_i&lt;$_l;$_i++):
+      $_res[]=$__tt[$_i];
+    endfor;
+    return implode("\n", $_res);
+}',
+#{
+  if(empty($groupField))
+    return '';
+  else
+    return "'groupField' =&gt; '$groupField',\n";
+}  'onload' =&gt; '',
+  'bindingCode' =&gt; @{var_export("".@node::content($_nodes['bindingCode']),true)},
+  'title' =&gt; '',
+)</file><file name="@{$name}Modify.var" preprocess="">array (
+  '_name' =&gt; '@{$name}Modify',
+  '_template' =&gt; 'tpl_H0.0',
+  'toolbar' =&gt; '',
+  'title' =&gt; '',
+  'icon' =&gt; 'pencil.png',
+  'regionA1' =&gt; '@{$name}ModifyFieldset',
+  'buttons' =&gt; 'Guardar Cambios,update',
+  'script' =&gt; '
+function update(){
+  panel.zupdate();
+  panel.previousNode("window").destroy()
+}
+',
+  'model' =&gt; '@{$model}',
+  'where' =&gt; 'id=:@{$name}Grid_id',
+  'oninsert' =&gt; '',
+  'onupdate' =&gt; '',
+)</file><file name="@{$name}ModifyFieldset.var" preprocess="">array (
+  '_name' =&gt; '@{$name}ModifyFieldset',
+  '_template' =&gt; 'ide_fieldset',
+  'adapter' =&gt; 'connection',
+  'query' =&gt; '',
+  'model' =&gt; '@{$model}',
+  'where' =&gt; 'id=:@{$name}Grid_id',
+  'onload' =&gt; '',
+  'oninsert' =&gt; '',
+  'fields' =&gt; '@{node::content($_nodes['fieldsModify'])}',
+  'labelWidth' =&gt; '',
+  'title' =&gt; '',
+)</file><file name="@{$name}Filter.var" preprocess="">array (
+  '_name' =&gt; '@{$name}Filter',
+  '_template' =&gt; 'ide_form',
+  'title' =&gt; '-',
+  'icon' =&gt; '',
+  'regionA1' =&gt; '@{$name}FilterFieldset',
+  'buttons' =&gt; 'Aceptar,update',
+  'script' =&gt; 'function update(){
+  var grid=panel.ownerCt.ownerCt.ownerCt.query("grid")[0];
+  panel.zupdate(function(){
+    grid.store.reload();
+  });
+}
+',
+  'model' =&gt; '',
+  'where' =&gt; '',
+)</file><file name="@{$name}FilterFieldset.var" preprocess="">array (
+  '_name' =&gt; '@{$name}FilterFieldset',
+  '_template' =&gt; 'ide_fieldset',
+  'adapter' =&gt; '',
+  'query' =&gt; '',
+  'model' =&gt; '',
+  'where' =&gt; '',
+  'onload' =&gt; '',
+  'oninsert' =&gt; '',
+  'fields' =&gt; '@{node::content($_nodes['fieldsFilter'])}',
+  'labelWidth' =&gt; '',
+  'title' =&gt; '',
+)</file></component><component name="grid" transparent="" precode="" __ideNodeOpen="false"><file name="@{$name}.var" preprocess="" __ideNodeOpen="false">array (
+  '_name' =&gt; '@{$name}',
+  '_template' =&gt; 'tpl_H0.0',
+  'title' =&gt; '@{$title}',
+  'icon' =&gt; 'window.gif',
+  'regionA1' =&gt; '@{$name}Grid',
+  'buttons' =&gt; '',
+  'script' =&gt; '',
+  'model' =&gt; '',
+  'where' =&gt; '',
+)</file><file name="@{$name}Grid.var" preprocess="">array (
+  '_name' =&gt; '@{$name}Grid',
+  '_template' =&gt; 'ide_grilla',
+  'adapter' =&gt; 'connection',
+  'query' =&gt; @{var_export($query,true)},
+  'model' =&gt; '',
+  'where' =&gt; '',
+  'fields' =&gt; '@{node::content($_nodes['fieldsGrid'])}',
+  'columns' =&gt; '@{node::content($_nodes['columnsGrid'])}',
+  'toolbar' =&gt; '',
+  'onload' =&gt; '',
+  'bindingCode' =&gt; '',
+  'title' =&gt; '',
+)</file></component><component name="fieldsGrid" transparent="" precode="" __ideNodeOpen="false">@{node::content($_)}</component><component name="columnsGrid" transparent="" precode="" __ideNodeOpen="false">@{node::content($_)}</component><component name="fieldsAdd" transparent="" precode="" __ideNodeOpen="false">@{node::content($_)}</component><component name="fieldsModify" transparent="" precode="" __ideNodeOpen="false">@{node::content($_)}</component><component name="fieldsDelete" transparent="" precode="" __ideNodeOpen="false">@{node::content($_)}</component><component name="fieldsFilter" transparent="" precode="" __ideNodeOpen="false">@{node::content($_)}</component><component name="bindingCode" transparent="" precode="" __ideNodeOpen="false">@{node::content($_)}</component><component name="combo" transparent="" precode="" __ideNodeOpen="false"><file name="@{$name}.var" preprocess="">array (
+  '_name' =&gt; '@{$name}',
+  '_template' =&gt; 'ide_combo',
+  'adapter' =&gt; '@{$adapter}',
+  'query' =&gt; '@{$query}',
+  'fields' =&gt; '@{implode("\n",explode(",",$fields))}',
+  'width' =&gt; '@{$width/*355*/}',
+)
+</file></component><combo name="auditoriaPOAResponsablesCombo" adapter="connection" query="select * from adusr where adrolcodi=5 or adrolcodi=3 order by adusrnomb" fields="adusrcodi,adusrnomb" width="355" __ideNodeOpen="true"/><abmfilter name="auditoriaPOAActividades" title="Registro de Actividades" query="select poa.*, (select adusrnomb from adusr where adusrcodi=responsable) responsable_desc, (select adusrnomb from adusr where adusrcodi=supervisor) supervisor_desc from poa where gestion=:auditoriaPOAActividadesFilter_gestion order by titulo asc" __ideNodeOpen="false" model="actividadespoa" toolbar="Nuevo;Editar;Eliminar;Excel,excel.gif,@gridToExcel,-1,-1,Exportar Excel;Imprimir,printer.png,@printGrid,-1,-1,Impresion" groupField="titulo"><fieldsGrid __ideNodeOpen="true">actividad
+responsable_desc
+supervisor_desc
+fecha_inicio
+fecha_final
+titulo
+id</fieldsGrid><columnsGrid __ideNodeOpen="true">Actividad,300,left,3,false
+Responsable,200,left,2,false
+Supervisor,200,left,2,false
+Fecha inicio,100,center,1,false
+Fecha final,100,center,1,false</columnsGrid><fieldsAdd __ideNodeOpen="true">titulo,Titulo
+actividad,Actividad,textarea
+responsable,Responsable,object,auditoriaPOAResponsablesCombo
+supervisor,Supervisor,object,auditoriaPOAResponsablesCombo
+fecha_inicio,Fecha Inicio,datefield
+fecha_final,Fecha Final,datefield</fieldsAdd><fieldsModify __ideNodeOpen="true">titulo,Titulo
+actividad,Actividad,textarea
+responsable,Responsable,object,auditoriaPOAResponsablesCombo
+supervisor,Supervisor,object,auditoriaPOAResponsablesCombo
+fecha_inicio,Fecha Inicio,datefield
+fecha_final,Fecha Final,datefield</fieldsModify><fieldsDelete __ideNodeOpen="true">actividad,actividad,label</fieldsDelete><fieldsFilter __ideNodeOpen="true">gestion,Gestion,textfield</fieldsFilter></abmfilter><abmfilterAAA name="auditoriaActividadesPOAMes" title="Seguimiento Mensual de Actividades" query="select * from poa where gestion=:auditoriaActividadesPOAMesFilter_gestion" __ideNodeOpen="false" model="" toolbar=";;;Guardar,_save.gif,@guardarPOAMes,-1,-1,Guardar POA Mes"><fieldsGrid __ideNodeOpen="true">actividad
+enero
+febrero
+marzo
+abril
+mayo
+junio
+julio
+agosto
+septiembre
+octubre
+noviembre
+diciembre</fieldsGrid><columnsGrid __ideNodeOpen="true">Actividad,300,left,3,false
+Enero,100,left,1,false,object:auditoriaActividadesPOAEstadosCombo
+Febrero,100,left,1,false,object:auditoriaActividadesPOAEstadosCombo
+Marzo,100,left,1,false,object:auditoriaActividadesPOAEstadosCombo
+Abril,100,left,1,false,object:auditoriaActividadesPOAEstadosCombo
+Mayo,100,left,1,false,object:auditoriaActividadesPOAEstadosCombo
+Junio,100,left,1,false,object:auditoriaActividadesPOAEstadosCombo
+Julio,100,left,1,false,object:auditoriaActividadesPOAEstadosCombo
+Agosto,100,left,1,false,object:auditoriaActividadesPOAEstadosCombo
+Septiembre,100,left,1,false,object:auditoriaActividadesPOAEstadosCombo
+Octubre,100,left,1,false,object:auditoriaActividadesPOAEstadosCombo
+Noviembre,100,left,1,false,object:auditoriaActividadesPOAEstadosCombo
+Diciembre,100,left,1,false,object:auditoriaActividadesPOAEstadosCombo</columnsGrid><fieldsAdd __ideNodeOpen="true">actividad,actividad</fieldsAdd><fieldsModify __ideNodeOpen="true">actividad,actividad</fieldsModify><fieldsDelete __ideNodeOpen="true">actividad,actividad,label</fieldsDelete><fieldsFilter __ideNodeOpen="true">gestion,Gestion,textfield</fieldsFilter></abmfilterAAA><abmfilter name="auditoriaPOARevision" title="Cumplimiento mensual de Actividades" query="select poa.*, (select adusrnomb from adusr where adusrcodi=responsable) responsable_desc, (select adusrnomb from adusr where adusrcodi=supervisor) supervisor_desc from poa where gestion=:auditoriaPOARevisionFilter_gestion and (responsable=:SesionUsuario_adusrcodi or supervisor=:SesionUsuario_adusrcodi) order by titulo asc" __ideNodeOpen="false" model="actividadespoa" toolbar=";Editar;;Excel,excel.gif,@gridToExcel,-1,-1,Exportar Excel;Imprimir,printer.png,@printGrid,-1,-1,Impresion" groupField="titulo"><fieldsGrid __ideNodeOpen="true">actividad
+responsable_desc
+supervisor_desc
+fecha_inicio
+fecha_final
+cumplimiento
+texto
+porcentaje
+titulo
+id</fieldsGrid><columnsGrid __ideNodeOpen="true">Actividad,300,left,3,false
+Responsable,200,left,2,false
+Supervisor,200,left,2,false
+Fecha inicio,100,center,1,false
+Fecha final,100,center,1,false
+Cumpl.,100,center,1,false
+Texto,300,left,3,false
+%,100,left,1,false</columnsGrid><fieldsAdd __ideNodeOpen="true"/><fieldsModify __ideNodeOpen="true">actividad,Actividad,label
+cumplimiento,Cumplimiento,object,auditoriaActividadesPOAEstadosCombo
+texto,Texto,textarea
+porcentaje,Porcentaje(vacio si NA)</fieldsModify><fieldsDelete __ideNodeOpen="true"/><fieldsFilter __ideNodeOpen="true">gestion,Gestion,textfield</fieldsFilter></abmfilter><abm name="auditoriaPOAPlanes" title="Planes" query="select * from poa_planes" __ideNodeOpen="true" model="poaplanes" toolbar="Nuevo;Editar;Eliminar" groupField=""><fieldsGrid __ideNodeOpen="true">id
+plan</fieldsGrid><columnsGrid __ideNodeOpen="true">Id,100,left,,false
+Plan,300,left,1,false</columnsGrid><fieldsAdd __ideNodeOpen="true">plan,Plan,textarea</fieldsAdd><fieldsModify __ideNodeOpen="true">plan,Plan,textarea</fieldsModify><fieldsDelete __ideNodeOpen="true">plan,Plan,label</fieldsDelete></abm></path></root>

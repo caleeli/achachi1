@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root><include src="$library/zend.xml"/><application name="hiro" main="index/index"><controller name="index" descripcion="" author=""><action name="index" noRender="false" descripcion="" loadParams=""/><phtml name="index">&lt;?php
+$w=2560;
+$h=1920;
+$img = imagecreatefromjpeg("hiro.jpg");
+$thumb = imagecreatetruecolor(2560*2, 1920*2);
+$x=0;$y=0;
+imagecopyresampled($thumb, $img, 0, 0, $x, $y, $w, $h, $w, $h);
+$x=$w;$y=0;
+imagecopyresampled($thumb, $img, 0, 0, $x, $y, $w, $h, $w, $h);
+$x=0;$y=$h;
+imagecopyresampled($thumb, $img, 0, 0, $x, $y, $w, $h, $w, $h);
+//header("Content-type: image/jpeg");
+imagepng($thumb,"test.jpg");
+?&gt;</phtml></controller></application></root>

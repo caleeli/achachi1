@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root><include src="$library/zend.xml"/><application name="newApplication" main="index/index"><controller name="index" descripcion="" author=""><action name="index" noRender="false" descripcion="" loadParams=""/><phtml name="index">HELLO WORLD!</phtml></controller></application></root>

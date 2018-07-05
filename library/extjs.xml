@@ -1,0 +1,1029 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root><definitions __ideNodeOpen="true"><bcomponent name="view" __ideNodeOpen="true"><!--#editor.plugin
+
+componentsIndex["extdocument"]={image:"images/16/extdocument.gif"};
+componentsIndex["ext.page"]={"name":"layout","image":"images/16/document.gif"};
+componentsIndex["ext.fragment"]={"name":"ext.fragment",image:"images/16/view.gif"};
+componentsIndex["extjs"]={"name":"extjs","attributes":[{"name":"class","value":"","domain":"extjs_classes"},{"name":"inputType","domain":"ext_form_field"},{"name":"region","domain":"ext_region"},{"name":"layout","domain":"ext_layout"}],"image":"images/16/_tag.gif"};
+componentsIndex["layout"]={"name":"layout","attributes":[{"name":"layout","value":"border","domain":"ext_layout"}],"image":"images/16/layout.jpg"};
+componentsIndex["window"]={"name":"window","attributes":[{"name":"title","value":"Title","domain":"string"},{"name":"width","value":"240","domain":"number"},{"name":"height","value":"200","domain":"number"}],"image":"images/16/window.gif"};
+componentsIndex["event"]={"name":"event","attributes":[{"name":"name","value":"eventname","domain":"string"}],"image":"images/16/event.gif"};
+componentsIndex["attribute"]={"name":"attribute","attributes":[{"name":"name","value":"eventname","domain":"string"},{"name":"isArray","value":"false","domain":"_boolean"},{"name":"isString","value":"false","domain":"_boolean"}],"image":"images/16/leaf.gif"};
+componentsIndex["expression"]={"name":"expression","attributes":[{"name":"name","value":"name","domain":"string"}],"image":"images/16/expression.gif"};
+
+var extjs_class=["Ext.form.BasicForm",
+"Ext.form.FormPanel",
+"Ext.form.TextField",
+"Ext.form.Checkbox",
+"Ext.form.CheckboxGroup",
+"Ext.form.ComboBox",
+"Ext.form.CompositeField",
+"Ext.form.DateField",
+"Ext.form.DisplayField",
+"Ext.form.Field",
+"Ext.form.FieldSet",
+"Ext.form.Hidden",
+"Ext.formEditor",
+"Ext.form.Label",
+"Ext.form.NumberField",
+"Ext.form.Radio",
+"Ext.form.RadioGroup",
+"Ext.form.SliderField",
+"Ext.form.TextArea",
+"Ext.form.TimeField",
+"Ext.Action",
+"Ext.Ajax",
+"Ext.BoxComponent",
+"Ext.Button",
+"Ext.ButtonGroup",
+"Ext.chart.Axis",
+"Ext.chart.BarChart",
+"Ext.chart.BarSeries",
+"Ext.chart.CartesianChart",
+"Ext.chart.CartesianSeries",
+"Ext.chart.CategoryAxis",
+"Ext.chart.Chart",
+"Ext.chart.ColumnChart",
+"Ext.chart.ColumnSeries",
+"Ext.chart.LineChart",
+"Ext.chart.LineSeries",
+"Ext.chart.NumericAxis",
+"Ext.chart.PieChart",
+"Ext.chart.PieSeries",
+"Ext.chart.Series",
+"Ext.chart.StackedBarChart",
+"Ext.chart.StackedColumnChart",
+"Ext.chart.TimeAxis",
+"Ext.ColorPalette",
+"Ext.Component",
+"Ext.ComponentMgr",
+"Ext.CompositeElement",
+"Ext.CompositeElementLite",
+"Ext.Container",
+"Ext.CycleButton",
+"Ext.data.Api.Error",
+"Ext.data.Api",
+"Ext.data.ArrayReader",
+"Ext.data.ArrayStore",
+"Ext.data.Connection",
+"Ext.data.DataProxy.Error",
+"Ext.data.DataProxy",
+"Ext.data.DataReader.Error",
+"Ext.data.DataReader",
+"Ext.data.DataWriter",
+"Ext.data.DirectProxy",
+"Ext.data.DirectStore",
+"Ext.data.Field",
+"Ext.data.GroupingStore",
+"Ext.data.HttpProxy",
+"Ext.data.JsonReader.Error",
+"Ext.data.JsonReader",
+"Ext.data.JsonStore",
+"Ext.data.JsonWriter",
+"Ext.data.MemoryProxy",
+"Ext.data.Node",
+"Ext.data.Record",
+"Ext.data.Request",
+"Ext.data.Response",
+"Ext.data.ScriptTagProxy",
+"Ext.data.SortTypes",
+"Ext.data.Store.Error",
+"Ext.data.Store",
+"Ext.data.Tree",
+"Ext.data.Types",
+"Ext.data.XmlReader",
+"Ext.data.XmlStore",
+"Ext.data.XmlWriter",
+"Ext.DataView",
+"Ext.DatePicker",
+"Ext.dd.DD",
+"Ext.dd.DDProxy",
+"Ext.dd.DDTarget",
+"Ext.dd.DragDrop",
+"Ext.dd.DragDropMgr",
+"Ext.dd.DragSource",
+"Ext.dd.DragTracker",
+"Ext.dd.DragZone",
+"Ext.dd.DropTarget",
+"Ext.dd.DropZone",
+"Ext.dd.PanelProxy",
+"Ext.dd.Registry",
+"Ext.dd.ScrollManager",
+"Ext.dd.StatusProxy",
+"Ext.Direct",
+"Ext.direct.JsonProvider",
+"Ext.direct.PollingProvider",
+"Ext.direct.Provider",
+"Ext.direct.RemotingProvider",
+"Ext.Direct.Transaction",
+"Ext.DomHelper",
+"Ext.DomQuery",
+"Ext.Editor",
+"Ext.Element",
+"Ext.Error",
+"Ext.EventManager",
+"Ext.EventObject",
+"Ext.FlashComponent",
+"Ext.FlashProxy",
+"Ext.form.Action.DirectLoad",
+"Ext.form.Action.DirectSubmit",
+"Ext.form.Action",
+"Ext.form.Action.Load",
+"Ext.form.Action.Submit",
+"Ext.form.BasicForm",
+"Ext.form.Checkbox",
+"Ext.form.CheckboxGroup",
+"Ext.form.ComboBox",
+"Ext.form.CompositeField",
+"Ext.form.DateField",
+"Ext.form.DisplayField",
+"Ext.form.Field",
+"Ext.form.FieldSet",
+"Ext.form.FormPanel",
+"Ext.form.Hidden",
+"Ext.formEditor",
+"Ext.form.Label",
+"Ext.form.NumberField",
+"Ext.form.Radio",
+"Ext.form.RadioGroup",
+"Ext.form.SliderField",
+"Ext.form.TextArea",
+"Ext.form.TextField",
+"Ext.form.TimeField",
+"Ext.form.TriggerField",
+"Ext.form.TwinTriggerField",
+"Ext.form.VTypes",
+"Ext.Fx",
+"Ext.grid.AbstractSelectionModel",
+"Ext.grid.BooleanColumn",
+"Ext.grid.CellSelectionModel",
+"Ext.grid.CheckboxSelectionModel",
+"Ext.grid.Column",
+"Ext.grid.ColumnModel",
+"Ext.grid.DateColumn",
+"Ext.grid.EditorGridPanel",
+"Ext.grid.GridDragZone",
+"Ext.grid.GridPanel",
+"Ext.grid.GridView",
+"Ext.grid.GroupingView",
+"Ext.grid.NumberColumn",
+"Ext.grid.PropertyColumnModel",
+"Ext.grid.PropertyGrid",
+"Ext.grid.PropertyRecord",
+"Ext.grid.PropertyStore",
+"Ext.grid.RowNumberer",
+"Ext.grid.RowSelectionModel",
+"Ext.grid.TemplateColumn",
+"Ext.History",
+"Ext",
+"Ext.KeyMap",
+"Ext.KeyNav",
+"Ext.Layer",
+"Ext.layout.AbsoluteLayout",
+"Ext.layout.AccordionLayout",
+"Ext.layout.AnchorLayout",
+"Ext.layout.AutoLayout",
+"Ext.layout.BorderLayout",
+"Ext.layout.BorderLayout.Region",
+"Ext.layout.BorderLayout.SplitRegion",
+"Ext.layout.BoxLayout",
+"Ext.layout.CardLayout",
+"Ext.layout.ColumnLayout",
+"Ext.layout.ContainerLayout",
+"Ext.layout.FitLayout",
+"Ext.layout.FormLayout",
+"Ext.layout.HBoxLayout",
+"Ext.layout.MenuLayout",
+"Ext.layout.TableLayout",
+"Ext.layout.ToolbarLayout",
+"Ext.layout.VBoxLayout",
+"Ext.list.BooleanColumn",
+"Ext.list.Column",
+"Ext.list.ColumnResizer",
+"Ext.list.DateColumn",
+"Ext.list.ListView",
+"Ext.list.NumberColumn",
+"Ext.list.Sorter",
+"Ext.Loader",
+"Ext.LoadMask",
+"Ext.menu.BaseItem",
+"Ext.menu.CheckItem",
+"Ext.menu.ColorMenu",
+"Ext.menu.DateMenu",
+"Ext.menu.Item",
+"Ext.menu.Menu",
+"Ext.menu.MenuMgr",
+"Ext.menu.Separator",
+"Ext.menu.TextItem",
+"Ext.MessageBox",
+"Ext.PagingToolbar",
+"Ext.Panel",
+"Ext.ProgressBar",
+"Ext.QuickTip",
+"Ext.QuickTips",
+"Ext.Resizable",
+"Ext.Shadow",
+"Ext.slider.MultiSlider",
+"Ext.slider.SingleSlider",
+"Ext.slider.Thumb",
+"Ext.slider.Tip",
+"Ext.Spacer",
+"Ext.SplitBar.AbsoluteLayoutAdapter",
+"Ext.SplitBar.BasicLayoutAdapter",
+"Ext.SplitBar",
+"Ext.SplitButton",
+"Ext.state.CookieProvider",
+"Ext.state.Manager",
+"Ext.state.Provider",
+"Ext.StoreMgr",
+"Ext.TabPanel",
+"Ext.TaskMgr",
+"Ext.Template",
+"Ext.Tip",
+"Ext.Toolbar.Fill",
+"Ext.Toolbar",
+"Ext.Toolbar.Item",
+"Ext.Toolbar.Separator",
+"Ext.Toolbar.Spacer",
+"Ext.Toolbar.TextItem",
+"Ext.ToolTip",
+"Ext.tree.AsyncTreeNode",
+"Ext.tree.DefaultSelectionModel",
+"Ext.tree.MultiSelectionModel",
+"Ext.tree.RootTreeNodeUI",
+"Ext.tree.TreeDragZone",
+"Ext.tree.TreeDropZone",
+"Ext.tree.TreeEditor",
+"Ext.tree.TreeFilter",
+"Ext.tree.TreeLoader",
+"Ext.tree.TreeNode",
+"Ext.tree.TreeNodeUI",
+"Ext.tree.TreePanel",
+"Ext.tree.TreeSorter",
+"Ext.Updater.BasicRenderer",
+"Ext.Updater.defaults",
+"Ext.Updater",
+"Ext.util.ClickRepeater",
+"Ext.util.Cookies",
+"Ext.util.CSS",
+"Ext.util.DelayedTask",
+"Ext.util.Format",
+"Ext.util.JSON",
+"Ext.util.MixedCollection",
+"Ext.util.Observable",
+"Ext.util.TaskRunner",
+"Ext.util.TextMetrics",
+"Ext.Viewport",
+"Ext.Window",
+"Ext.WindowGroup",
+"Ext.WindowMgr",
+"Ext.XTemplate"];
+extjs_inputType=["text","password","radio","file"];
+extjs_region=["center","north","south","west","east"];
+extjs_layout=[
+  "absolute",
+  "accordion",
+  "anchor",
+  "auto",
+  "border",
+  "region",
+  "splitregion",
+  "box",
+  "card",
+  "column",
+  "container",
+  "fit",
+  "form",
+  "hbox",
+  "menu",
+  "table",
+  "toolbar",
+  "vbox"
+];
+if(toolbar.load){
+  /**
+   * This adds ExtJs buttons to the toolbar.
+   **/
+  toolbar.add(
+  [
+    {"name":" ",tab:"ExtJs"},
+    [
+      {"name":"ext.page","action":function(){appendChildTag("ext.page",{name:"index"});},"image":"images/32/ext_page.gif","help":"An ExtJS Page."},
+      {"name":"ext.fragment","action":function(){appendChildTag("ext.fragment");},"image":"images/32/ext_fragment.gif","help":"ExtJS Page Fragment."},
+      {"name":"extdocument","action":function(){appendChildTag("extdocument",{name:"index"});},"image":"images/32/extdocument.gif","help":"Container for Ext JS components."},
+      {"name":"extjs","action":function(){appendChildTag("extjs");},"image":"images/32/extjs_component.gif","help":"Ext JS component."},
+      {"name":"attribute","action":function(){appendChildTag("attribute");},"image":"images/32/extjs_attribute.gif","help":"Define an attribute for an extjs component. Ex. buttons"},
+      {"name":"expression","action":function(){appendChildTag("expression",{},"{}");},"image":"images/32/extjs_expression.gif","help":"Defines an expression atribute for an extjs component. Equal to event. Example. handler:function(){...} "},
+      {"name":"layout","action":function(){appendChildTag("layout");},"image":"images/32/layout.jpg"},
+      {"name":"window","action":function(){appendChildTag("window");},"image":"images/32/window.gif"},
+      {"name":"TabPanel","help":"Ext.TabPanel",
+        "action":function(){
+          appendChildTag("extjs",{"class":"Ext.TabPanel",region:"center",title:"title",activeTab:"0",frame:"true"},[
+            "extjs",{"class":"Ext.Panel",title:"title",closable:"false"},[]
+          ]);
+        },
+        "image":"images/32/tabpanel.png"
+      },
+      {"name":"Panel","help":"Ext.Panel",
+        "action":function(){
+          appendChildTag("extjs",{"class":"Ext.Panel",region:"center",title:"title",frame:"true"},[]);
+        },
+        "image":"images/32/window.gif"
+      }
+    ],
+    [
+      {"name":"FormPanel","help":"Ext.form.FormPanel",
+        "action":function(){
+          appendChildTag("extjs",{"class":"Ext.form.FormPanel",region:"center",title:"title",frame:"true",url:"action",standardSubmit:"true"},[]);
+        },
+        "image":"images/32/form.jpg"
+      },
+      {"name":"TextField","help":"Ext.form.TextField",
+        "action":function(){
+          appendChildTag("extjs",{"class":"Ext.form.TextField",name:"name",fieldLabel:"fieldLabel",inputType:"text"},[]);
+        },
+        "image":"images/32/textfield.png"
+      },
+      {"name":"Button","help":"Ext.Button",
+        "action":function(){
+          appendChildTag("extjs",{"class":"Ext.Button",name:"name",text:"text",type:"submit"},[
+            "event",{name:"handler"},"function(a,b){this.ownerCt.ownerCt.getForm().submit();}"
+          ]);
+        },
+        "image":"images/32/button.png"
+      }
+    ],
+    [
+      {"name":"TreePanel",
+        "action":function(){
+          appendChildTag("extjs",{"class":"Ext.tree.TreePanel",region:"weast",title:"title",width:200,dataUrl:"dataurl"},[
+            "attribute",{name:"root"},["extjs",{"class":"Ext.tree.AsyncTreeNode",id:"root",text:"root"}]
+          ]);
+        },
+        "image":"images/32/treepanel.jpg"
+      },
+      {"name":"Data",
+        "action":function(){appendChildTag("action",{name:"dataurl",noRender:"true"},
+            "$tree=array(\n"+
+            "  array('id'=>'1','text'=>'node 1','leaf'=>true),\n"+
+            "  array('id'=>'2','text'=>'node 2','children'=>array(\n"+
+            "      array('id'=>'2.1','text'=>'node 2.1','leaf'=>true)\n"+
+            "    )\n"+
+            "  ),\n"+
+            ");\n"+
+            "print(json_encode($tree));"
+          );
+        },
+        "image":"images/32/treepanel_data.jpg"
+      },
+      {"name":"click",
+        "action":function(){appendChildTag("expression",{name:"listeners"},
+          "{click: function(node, event){\n"+
+          "    Ext.Msg.alert('Event','click on '+node.text);"+
+          "}}"
+          );
+        },
+        "image":"images/32/treepanel.jpg"
+      }
+    ],
+    {"name":"import",
+      "action":function(){
+        var url=prompt("Local URL","/ext/examples/form/dynamic.html");
+        extjs_capturer.start(url,function(xml){
+          var aNode = Z.xml2array(xml);
+          appendChildTag(aNode[0],aNode[1],aNode[2]);
+          document.getElementById("ExtJSEditor").firstChild.contentWindow.extjs_refresh()
+        });
+      },
+      "image":"images/32/extjs_inspect.gif"
+    }
+  ], true);
+}
+
+/**
+ * Captura de componentes ExtJs de otras paginas
+ * @author David Callizaya
+ */
+var extjs_capturer =
+{
+  start:function(url,success){
+    if(this.remoteWindow && this.remoteWindow.close) this.remoteWindow.close();
+    this.remoteWindow=window.open(url,"extjs_capturer_"+new Date().getTime()).onload=function(){
+      var remoteWindow=this;
+      this.document.body.onmousemove=function(e){
+        if(extjs_capturer.lastTarget){
+          //extjs_capturer.lastTarget.style.border=extjs_capturer.lastBorder;
+          extjs_capturer.lastTarget.className=extjs_capturer.lastTarget.className.split(" boxShadow").join("");
+        }
+        var target=e.target;
+        while(target && (!target.id || !remoteWindow.Ext.getCmp(target.id))){
+          target=target.parentNode;
+        }
+        if(target && target.id){
+          if(remoteWindow.Ext.getCmp(target.id)){
+            extjs_capturer.lastTarget=target;
+            //extjs_capturer.lastBorder=target.style.border;
+            //target.style.border="2px solid red";
+            extjs_capturer.lastTarget.className=extjs_capturer.lastTarget.className.split(" boxShadow").join("");
+            extjs_capturer.lastTarget.className+=" boxShadow";
+          }
+        }
+      };
+      this.document.body.ondblclick=function(){
+        var cmp,e;
+        if(extjs_capturer.lastTarget ){
+          try{
+            cmp=remoteWindow.Ext.getCmp(extjs_capturer.lastTarget.id);
+          } catch(e) {}
+          if(cmp) {
+            if(typeof(success)=="function") {
+              var cap=extjs_capturer.toXml2(cmp,extjs_capturer.createDom(""),[],[]);
+              success(cap);
+  //            success(extjs_capturer.createDom(extjs_capturer.toXml(cmp)).firstChild);
+            }
+          }
+          //console.debug(extjs_capturer.toXml(remoteWindow.Ext.getCmp(extjs_capturer.lastTarget.id)));
+        }
+      };
+      var style=".boxShadow {  "+
+      "    outline: 2px solid #15428B;"+
+      "    -moz-box-shadow: 5px 5px 5px #888;  "+
+      "    -webkit-box-shadow: 5px 5px 5px #888;  "+
+      '    -ms-filter: "progid:DXImageTransform.Microsoft.Shadow(color=#888888,direction=125,strength=5)"; /* IE8+ */  '+
+      "    filter: progid:DXImageTransform.Microsoft.Shadow(color=#888888,direction=125,strength=5); /* IE7 and lower */  "+
+      "    text-shadow: 1px 1px 1px #cccccc; /* CSS3-compatible browsers */  "+
+      "    filter: dropshadow(color=#cccccc, offx=1, offy=1); /* IE */  "+
+      "    opacity: 0.5;  "+
+      '    -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";/*IE8+*/  '+
+      "    filter: alpha(opacity=50); /* IE7 and lower */  "+
+      "}       ";
+      var o=this.document.createElement("style");
+      o.setAttribute("type", "text/css");
+      try{
+        o.innerHTML=style;
+      } catch (e) {
+        o.styleSheet.cssText=style;
+      }
+      this.document.body.appendChild(o);
+    };
+  },
+  list:{
+    'box':'Ext.BoxComponent',
+    'button':'Ext.Button',
+    'buttongroup':'Ext.ButtonGroup',
+    'colorpalette':'Ext.ColorPalette',
+    'component':'Ext.Component',
+    'container':'Ext.Container',
+    'cycle':'Ext.CycleButton',
+    'dataview':'Ext.DataView',
+    'datepicker':'Ext.DatePicker',
+    'editor':'Ext.Editor',
+    'editorgrid':'Ext.grid.EditorGridPanel',
+    'flash':'Ext.FlashComponent',
+    'grid':'Ext.grid.GridPanel',
+    'listview':'Ext.ListView',
+    'multislider':'Ext.slider.MultiSlider',
+    'panel':'Ext.Panel',
+    'progress':'Ext.ProgressBar',
+    'propertygrid':'Ext.grid.PropertyGrid',
+    'slider':'Ext.slider.SingleSlider',
+    'spacer':'Ext.Spacer',
+    'splitbutton':'Ext.SplitButton',
+    'tabpanel':'Ext.TabPanel',
+    'treepanel':'Ext.tree.TreePanel',
+    'viewport':'Ext.ViewPort',
+    'window':'Ext.Window',
+    'paging':'Ext.PagingToolbar',
+    'toolbar':'Ext.Toolbar',
+    'tbbutton':'Ext.Toolbar.Button',
+    'tbfill':'Ext.Toolbar.Fill',
+    'tbitem':'Ext.Toolbar.Item',
+    'tbseparator':'Ext.Toolbar.Separator',
+    'tbspacer':'Ext.Toolbar.Spacer',
+    'tbsplit':'Ext.Toolbar.SplitButton',
+    'tbtext':'Ext.Toolbar.TextItem',
+    'menu':'Ext.menu.Menu',
+    'colormenu':'Ext.menu.ColorMenu',
+    'datemenu':'Ext.menu.DateMenu',
+    'menubaseitem':'Ext.menu.BaseItem',
+    'menucheckitem':'Ext.menu.CheckItem',
+    'menuitem':'Ext.menu.Item',
+    'menuseparator':'Ext.menu.Separator',
+    'menutextitem':'Ext.menu.TextItem',
+    'form':'Ext.form.FormPanel',
+    'checkbox':'Ext.form.Checkbox',
+    'checkboxgroup':'Ext.form.CheckboxGroup',
+    'combo':'Ext.form.ComboBox',
+    'compositefield':'Ext.form.CompositeField',
+    'datefield':'Ext.form.DateField',
+    'displayfield':'Ext.form.DisplayField',
+    'field':'Ext.form.Field',
+    'fieldset':'Ext.form.FieldSet',
+    'hidden':'Ext.form.Hidden',
+    'htmleditor':'Ext.form.HtmlEditor',
+    'label':'Ext.form.Label',
+    'numberfield':'Ext.form.NumberField',
+    'radio':'Ext.form.Radio',
+    'radiogroup':'Ext.form.RadioGroup',
+    'textarea':'Ext.form.TextArea',
+    'textfield':'Ext.form.TextField',
+    'timefield':'Ext.form.TimeField',
+    'trigger':'Ext.form.TriggerField',
+    'chart':'Ext.chart.Chart',
+    'barchart':'Ext.chart.BarChart',
+    'cartesianchart':'Ext.chart.CartesianChart',
+    'columnchart':'Ext.chart.ColumnChart',
+    'linechart':'Ext.chart.LineChart',
+    'piechart':'Ext.chart.PieChart',
+    'arraystore':'Ext.data.ArrayStore',
+    'directstore':'Ext.data.DirectStore',
+    'groupingstore':'Ext.data.GroupingStore',
+    'jsonstore':'Ext.data.JsonStore',
+    'simplestore':'Ext.data.SimpleStore',
+    'store':'Ext.data.Store',
+    'xmlstore':'Ext.data.XmlStore'
+  },
+  capture:function(id){
+    var cmp=Ext.getCmp(id);
+    var cfg=this.serialize(cmp.initialConfig,[]);
+    return "(v=[],c=new "+this.list[cmp.getXType()]+"("+cfg+"),v.length=0,c)";
+  },
+  createDom:function(xml){
+    var xmlDoc;
+    if (window.DOMParser)
+    {
+      var parser=new DOMParser();
+      xmlDoc=parser.parseFromString(xml,"text/xml");
+    }
+    else // Internet Explorer
+    {
+      xmlDoc=new ActiveXObject("Microsoft.XMLDOM");
+      xmlDoc.async="false";
+      xmlDoc.loadXML(xml);
+    }
+    return xmlDoc;
+  },
+  toXml:function(obj){
+    var isArray=Object.prototype.toString.call(obj)=="[object Array]";
+    var $class="Object";
+    if(!isArray && typeof(obj.getXType)=="function"){
+      $class=this.list[obj.getXType()];
+    }
+    if(!isArray && typeof(obj.xtype)=="string"){
+      $class=this.list[obj.xtype];
+    }
+    if(typeof(obj.initialConfig)=="object")obj=obj.initialConfig;
+    var res=[],att=[];
+    for(var o in obj) if(!isArray || o==parseInt(o)){
+      if(!isArray) {
+        if(this.isArray(obj[o])){
+          if(o=="items") res.push(this.toXml(obj[o]));
+          else res.push('<attribute name='+this.encodeAttribute(o)+' isArray="true">'+this.toXml(obj[o])+'</attribute>');
+        } else if(typeof(obj[o])=="object"){
+          if(o=="items") res.push(this.toXml(obj[o]));
+          else res.push('<attribute name='+this.encodeAttribute(o)+'>'+this.toXml(obj[o])+'</attribute>');
+        } else if(typeof(obj[o])=="function") {
+        } else {
+          if(String(obj[o]).length<100) att.push(o+'='+this.encodeAttribute(obj[o]));
+          else res.push('<attribute name='+this.encodeAttribute(o)+' isString="true">'+this.encodeEntity(obj[o])+'</attribute>');
+        }
+      } else {
+        if(this.isArray(obj[o])){
+          res.push(this.toXml(obj[o]));
+        } else if(typeof(obj[o])=="object"){
+          res.push(this.toXml(obj[o]));
+        } else if(typeof(obj[o])=="function") {
+        } else {
+          //res.push('<extjs class="String">'+this.encodeEntity(obj[o])+'</attribute>');
+        }
+      }
+    }
+    if(isArray) return res.join("");
+    else return "<extjs class='"+$class+"' "+att.join(" ")+">"+res.join("")+"</extjs>";
+  },
+  //toXml
+  toXml2:function(obj,doc,domain,domain2){
+    if(obj==null){
+      return this.create3(doc,"#text",{},"null");
+    }
+    var idx;
+    if((idx=this.getIndexFrom(domain,obj))>=0){
+      if(domain2[idx].attributes){
+        var id=domain2[idx].getAttribute("id");
+        if(!id) id="cmp"+idx;
+        domain2[idx].setAttribute("id",id);
+        return this.create3(doc,"#text",{},"Ext.getCmp("+JSON.stringify(id)+")");
+      } else {
+        Z.console(domain[idx],domain2[idx]);
+        //throw "No se puede enlazar";
+        //console.debug("No se puede enlazar");
+      }
+    } else {
+      idx=domain.length;
+      domain.push(obj);
+    }
+    var isArray=Object.prototype.toString.call(obj)=="[object Array]";
+    var $class="Object";
+    if(!isArray && typeof(obj.getXType)=="function"){
+      $class=this.list[obj.getXType()];
+    }
+    if(!isArray && typeof(obj.xtype)=="string"){
+      $class=this.list[obj.xtype];
+    }
+    if(typeof(obj.initialConfig)=="object")obj=obj.initialConfig;
+    var create3=this.create3;
+    var result;
+    if(isArray) result = [];
+    else result = create3(doc,"extjs",{"class":$class},[]);
+    domain2[idx]=result;
+    for(var o in obj) if(!isArray || o==parseInt(o)){
+      try{
+        if(!isArray) {
+if(o=="viewConfig"){
+  console.debug(obj[o],Object.prototype.toString.call(obj[o]));
+}
+          if(this.isArray(obj[o])){
+            if(o=="items") {
+              var chs=this.toXml2(obj[o],doc,domain,domain2);
+              for(var i=0,l=chs.length;i<l;i++) {
+                result.appendChild(chs[i]);
+              }
+              chs=null;
+            }
+            else {
+              var chs=this.toXml2(obj[o],doc,domain,domain2);
+              var aA=result.appendChild(create3(doc,"attribute",{"name":o,isArray:"true"},[]));
+              for(var i=0,l=chs.length;i<l;i++) {
+                aA.appendChild(chs[i]);
+              }
+              aA=null;chs=null;
+            }
+          } else if(this.isObjectObject(obj[o])){
+            if(o=="items") result.push(this.toXml2(obj[o],doc,domain,domain2));
+            else result.appendChild(create3(doc,"attribute",{name:o},this.toXml2(obj[o],doc,domain,domain2)));
+          } else if(typeof(obj[o])=="function") {
+          } else {
+            if(String(obj[o]).length<100 && parseInt(o)!=o) result.setAttribute(o,obj[o]);
+            else result.appendChild(create3(doc,"attribute",{"name":o,isString:"true"},String(obj[o])));
+          }
+        } else {
+          if(this.isArray(obj[o])){
+            result.push(this.toXml2(obj[o],doc,domain,domain2));
+          } else if(this.isObjectObject(obj[o])){
+            result.push(this.toXml2(obj[o],doc,domain,domain2));
+          } else if(typeof(obj[o])=="function") {
+          } else {
+            //res.push('<extjs class="String">'+this.encodeEntity(obj[o])+'</attribute>');
+          }
+        }
+      } catch(e) {}
+    }
+    create3=null;
+    return result;
+  },
+  create3:function(doc,nodeName,atts,content){
+    if(nodeName=="#text") return doc.createTextNode(content);
+    var d=doc.createElement(nodeName);
+    for(var a in atts) d.setAttribute(a,atts[a]);
+    if(typeof(content)=="string") d.appendChild(doc.createTextNode(content));
+    else {
+      if(extjs_capturer.isArray(content)) {
+        if((content.length % 3)==0 && typeof(content[0])=="string"){
+          for(var i=0,l=content.length;i<l;i+=3){
+            d.appendChild(this.create3(doc,content[i],content[i+1],content[i+2]));
+          }
+        } else {
+          for(var i=0,l=content.length;i<l;i++){
+            d.appendChild(content[i]);
+          }
+        }
+      } else {
+        d.appendChild(content);
+      }
+    }
+    return d;
+  },
+  getIndexFrom:function(domain,obj){
+    if(typeof(domain.indexOf)=="function") return domain.indexOf(obj);
+    for(var i=0,l=domain.length;i<l;i++){
+      if(domain[i]===obj) return i;
+    }
+    return -1;
+  },
+  encodeAttribute:function(value){
+    var d=document.createElement("div");
+    d.appendChild(document.createElement("div")).setAttribute("a",value);
+    var s=d.innerHTML.substr(7);
+    return s.substr(0,s.length-7);
+  },
+  encodeEntity:function(value){
+    var d=document.createElement("div");
+    d.appendChild(document.createTextNode(value));
+    return d.innerHTML;
+  },
+  isArray:function(obj){
+    return Object.prototype.toString.call(obj)=="[object Array]";
+  },
+  isObjectObject:function(obj){
+    return Object.prototype.toString.call(obj)=="[object Object]";
+  }
+}-->
+<property name="template"><![CDATA[<html>
+<head>
+  #{
+    if(!isset($stylesheet)||$stylesheet=="")$stylesheet="/ext/resources/css/ext-all.css";
+    $_res="";
+    foreach(explode(";",$stylesheet) as $_l)
+      $_res.='<link rel="stylesheet" type="text/css" href="'.$_l.'">';
+    return $_res;
+  }
+  #{
+    if(!isset($library) || $library=="")$library="/ext/adapter/ext/ext-base.js;/ext/ext-all.js";
+    $__r="";
+    foreach(explode(";",$library) as $__lib)
+      $__r.='<script type="text/javascript" src="'.$__lib.'"></script>';
+    return $__r;
+  }
+  <style>
+        html, body {
+            font: normal 12px verdana;
+            margin: 0;
+            padding: 0;
+            border: 0 none;
+            overflow: hidden;
+            height: 100%;
+        }
+  </style>
+@{@node::join("\n",$_nodes['css'])}
+  <script>
+    Ext.QuickTips.init();
+    function extLoad(sClass,base,_construct)
+    {
+      var obj;
+      eval("obj=new "+sClass+"(base);");
+      if(_construct)eval(_construct);
+      return obj;
+    }
+    function main()
+    {
+      @{@node::join("\n      ",$_nodes['extdocument'])};
+    }
+    Ext.onReady(function(){ main(); });
+  </script>
+</head>
+<body>#{
+  $_nodes2=array();
+  foreach($_ as $_n):
+    if($_n[0]!="css" && $_n[0]!="extdocument")$_nodes2[]=$_n;
+  endforeach;
+  return node::content($_nodes2);
+}</body>
+</html>
+]]></property>
+<before><![CDATA[  $_nodes["#parent"]=$e->parentNode->getAttribute("name");
+]]></before>
+<after><![CDATA[  createFile("views/scripts/".$e->parentNode->getAttribute("name")."/".$e->getAttribute("name").".phtml",$template);
+]]></after>
+</bcomponent><def name="attribute" __ideNodeOpen="true"><function name="run" __ideNodeOpen="true">
+  $_r = node::run();
+  if(isset($values["isArray"]) &amp;&amp; $values["isArray"]=="true"){
+    $cnt=array();foreach($_r as $_i)$cnt[]=$_i[1];
+  } else if(isset($values["isString"]) &amp;&amp; $values["isString"]=="true"){
+    $cnt=ext::toExpression(ext::toJson(node::autoCast(node::content($_r))));
+  } else {
+    foreach($_r as $i =&gt; $v) if($v[0]!='extjs')$_r[$i][1]=ext::toExpression($_r[$i][1]);
+    $cnt=node::content($_r);
+  }
+  return Array(Array("attribute",Array($e-&gt;getAttribute("name"),$cnt)));
+</function></def><def name="event" __ideNodeOpen="true"><function name="run" __ideNodeOpen="true">
+  $_r = node::run();
+  $cnt=ext::toExpression(node::content($_r));
+
+  return Array(Array("event",Array($e-&gt;getAttribute("name"),$cnt)));
+</function></def><def name="expression" __ideNodeOpen="true"><function name="run" __ideNodeOpen="true">
+  $_r = node::run();
+  $cnt=ext::toExpression(node::content($_r));
+
+  return Array(Array("expression",Array($e-&gt;getAttribute("name"),$cnt)));
+</function></def><component name="ext.attribute" transparent="false" __ideNodeOpen="true"><!--#editor.plugin
+
+componentsIndex["ext.attribute"].editor=componentsIndex["extdocument"].editor;--><attribute name="@{$name}" isArray="@{isset($isArray)?$isArray:&quot;false&quot;}" isString="@{isset($isString)?$isString:&quot;false&quot;}"><clone value="${$_}"/></attribute></component><bcomponent name="extjs">
+<property name="transparent">true</property>
+<before><![CDATA[
+  require_once(ACH_PATH."/common/ext.class.php");
+  $res=ext::dom2array($e);
+  return $res;
+]]></before>
+</bcomponent>
+<bcomponent name="layout">
+<property name="transparent">true</property>
+<before><![CDATA[
+  require_once(ACH_PATH."/common/ext.class.php");
+  $res=ext::dom2array($e);
+  return $res;
+]]></before>
+</bcomponent>
+<bcomponent name="window">
+<property name="transparent">true</property>
+<before><![CDATA[
+  require_once(ACH_PATH."/common/ext.class.php");
+  return ext::dom2array($e);
+]]></before>
+</bcomponent>
+<bcomponent name="extdocument"><!--#editor.plugin
+
+installPlugin({
+  "name":"ExtJSEditor",
+  "nodesEditor":["extdocument","extjs","layout","window","attribute","event","expression","ext.attribute","ext.grid","ext.grid.column"],
+  "launch":function(node)
+    {
+      var xeditor=document.getElementById("ExtJSEditor").firstChild.contentWindow;
+      window.oExtJSEditor.currentNode=node;
+      var doc=node.nodeName=="extdocument"?node : window.oExtJSEditor.findParent(node,"extdocument");
+      if(doc && doc.firstChild){
+        doc = doc.firstChild;
+      }
+      if(window.oExtJSEditor.currentDocument!=null && window.oExtJSEditor.currentDocument!=doc){ 
+        window.oExtJSEditor.currentDocument=doc;
+        if(xeditor.extjs_refresh) xeditor.extjs_refresh();
+      } else {
+        window.oExtJSEditor.currentDocument=doc;
+      }
+      doc=null;
+      xeditor=null;
+      changeEditor("ExtJSEditor");
+      //To Fix a problem with IE6 when loading ExtJS Editor Template
+      setTimeout(function(){
+        var b = document.getElementById("ExtJSEditor").firstChild.contentWindow.document.body;
+        if(b==null || b.innerHTML==""){
+          document.getElementById("ExtJSEditor").firstChild.contentWindow.location.reload(true);
+        }
+      },1000);
+      return currentNode;
+    },
+  "create":function()
+    {
+      window.oExtJSEditor={
+        currentDocument:null,
+        currentNode:null,
+        findParent:function(node,nodeName){
+          while(node && node.parentNode && node.parentNode.nodeName!=nodeName) {
+            node=node.parentNode;
+          }
+          if(!node) return null;
+          return node.parentNode;
+        }
+      };
+      var div = document.createElement("div");
+      div.style.height="100%";
+      div.style.border="none";
+      draw3(div,[
+        "iframe",{src:"extjseditor2.php?"+new Date().getTime(),style:"border:none;width:100%;height:100%"},[]
+      ]);
+      return div;
+    }
+});
+-->
+<property name="template"><![CDATA[]]></property>
+<before><![CDATA[
+  require_once(ACH_PATH."/common/ext.class.php");
+  return $this->encode(ext::dom2array($e));
+]]></before>
+<after><![CDATA[]]></after>
+</bcomponent><component name="ext.fragment" transparent="true" __ideNodeOpen="true"><if condition="${ isset($outputType/*PHP_TAG|print*/) &amp;&amp; $outputType==&quot;print&quot; }"><if condition="${ !isset($language/*php|javascript*/) || $language==&quot;php&quot; }">@{isset($variable)?"$variable=":"print"}(eval('return "'.addcslashes( ${node::join("",$_)}, '"\\' ).'";'));</if><if condition="${ isset($language) &amp;&amp; $language==&quot;javascript&quot; }">@{isset($variable)?"$variable=":""}@{node::join("",$_)};</if></if><if condition="${ !isset($outputType) || $outputType==&quot;PHP_TAG&quot; }"><if condition="${ !isset($language/*php|javascript*/) || $language==&quot;php&quot; }">@{
+  isset($variable) &amp;&amp; $variable!="" ? 
+    "ob_start();"
+  : ""
+}
+?&gt;@{node::join("",$_)}&lt;?php
+@{
+  isset($variable) &amp;&amp; $variable!="" ? 
+    "$variable=ob_get_contents();ob_end_clean();"
+  : ""
+}</if><if condition="${ isset($language) &amp;&amp; $language==&quot;javascript&quot; }">@{isset($variable)?"$variable=":""}@{node::join("",$_)};?&gt;@{
+  isset($variable)&amp;&amp;$variable!=""?
+    "$variable="
+  : ""
+}@{node::join("",$_)}&lt;?php</if></if></component><component name="ext.page" transparent="" __ideNodeOpen="true"><controller name="@{$name}" descripcion="" author=""><if condition="#{ if(!isset($_nodes['action'])) return true; foreach($_e-&gt;getElementsByTagName(&quot;action&quot;) as $_naction) if($_naction-&gt;getAttribute(&quot;name&quot;)==&quot;index&quot;) return false; return true; }"><action name="index" descripcion="" loadParams="" this="" noRender=""/></if><file name="views/scripts/@{$name}/index.phtml" preprocess="" __ideNodeOpen="true">&lt;html&gt;
+&lt;head&gt;
+  #{
+    if(!isset($style)) $style="";
+    if(strpos($style, "ext-all")===false) $style.=";/ext/resources/css/ext-all.css";
+    $_res="";
+    foreach(explode(";",$style) as $_l)
+      if(trim($_l)) $_res.='&lt;link rel="stylesheet" type="text/css" href="'.$_l.'" /&gt;';
+    return $_res;
+  }
+  #{
+    if(!isset($script)) $script="";
+    if(strpos($script, "ext-base")===false) $script.=";/ext/adapter/ext/ext-base.js";
+    if(strpos($script, "ext-all")===false) $script.=";/ext/ext-all.js";
+    $__r="";
+    foreach(explode(";",$script) as $__lib)
+      if(trim($__lib)) $__r.='&lt;script type="text/javascript" src="'.$__lib.'"&gt;&lt;/script&gt;';
+    return $__r;
+  }
+  &lt;script&gt;
+    Ext.QuickTips.init();
+    function extLoad(sClass,base,_construct)
+    {
+      var obj;
+      eval("obj=new "+sClass+"(base);");
+      if(_construct)eval(_construct);
+      return obj;
+    }
+    function main()
+    {
+      @{@node::join("\n      ",$_nodes['extdocument'])};
+    }
+    Ext.onReady(function(){ main(); });
+  &lt;/script&gt;
+&lt;/head&gt;
+&lt;body&gt;#{
+  $_nodes2=array();
+  foreach($_ as $_n):
+    if($_n[0]=="#text")$_nodes2[]=$_n;
+  endforeach;
+  return node::content($_nodes2);
+}&lt;/body&gt;
+&lt;/html&gt;</file><clone value="${isset($_nodes['action'])?$_nodes['action']:array()}"/></controller></component><component name="ext.grid" transparent="" __ideNodeOpen="true"><!--#editor.plugin
+
+componentsIndex["ext.grid"].editor=componentsIndex["extdocument"].editor;--><extjs class="Ext.grid.GridPanel" height="@{$pageSize*21+53}" __ideNodeOpen="true"><foreach __ideNodeOpen="true" values="${$_attributes}"><if condition="${$_nodeName!=&quot;pageSize&quot; &amp;&amp; $_nodeName!=&quot;dataSource&quot; &amp;&amp; $_nodeName!=&quot;dataIndex&quot; &amp;&amp; substr($_nodeName,0,2)!=&quot;__&quot;}"><attribute name="@{$_nodeName}" isArray="false" isString="true" __ideNodeOpen="false">@{$_value}</attribute></if></foreach><attribute name="store"><extjs class="Ext.data.JsonStore" url="@{$dataSource}" root="data" remoteSort="true" _construct="window._store=obj;obj.load({params:{start:0, limit:@{$pageSize}}});" totalProperty="results"><event name="fields">[<foreach values="${node::_nodes($_e-&gt;getElementsByTagName(&quot;ext.grid.column&quot;))}">@{$_first?"":","}${$dataIndex}</foreach>]
+</event></extjs></attribute><attribute name="bbar"><extjs class="Ext.PagingToolbar" pageSize="@{$pageSize}" displayInfo="true" displayMsg="Registros {0} - {1} de {2}" emptyMsg="No existen registros" firstText="Primera página" prevText="Página anterior" nextText="Página siguiente" lastText="Última página" refreshText="Refrescar" afterPageText="de {0}" beforePageText="Página" prependButtons="true"><expression name="store">window._store</expression></extjs></attribute><attribute name="columns" isArray="true" isString="false"><clone value="${$_nodes['ext.grid.column']}"/></attribute><clone value="${isset($_nodes['ext.attribute'])?$_nodes['ext.attribute']:array()}"/></extjs></component><component name="ext.grid.column" transparent="" __ideNodeOpen="true"><!--#editor.plugin
+
+componentsIndex["ext.grid.column"].editor=componentsIndex["extdocument"].editor;--><extjs class="Object" header="@{$header}" width="@{$width}" dataIndex="@{$dataIndex}"><foreach name="" __ideNodeOpen="true" values="${$_attributes}"><if condition="${$_nodeName!=&quot;class&quot; &amp;&amp; $_nodeName!=&quot;dataIndex&quot; &amp;&amp;  $_nodeName!=&quot;width&quot; &amp;&amp;  $_nodeName!=&quot;header&quot; &amp;&amp; substr($_nodeName,0,2)!=&quot;__&quot;}"><attribute name="@{$_nodeName}" isArray="false" isString="true" __ideNodeOpen="false">@{$_value}</attribute></if></foreach></extjs></component><component name="ext.grid.ds" transparent="true" __ideNodeOpen="true"><!--#editor.plugin
+  if(toolbar.load){
+    /**
+     * This adds ExtJs buttons to the toolbar.
+     **/
+    toolbar.add(
+    [
+      [
+        {"name":"ext.grid","help":"Ext Grid Component",
+          "action":function(){
+            appendChildTag("ext.grid",{pageSize:"25",dataSource:"users"},[
+              "ext.grid.column",{header:"User Name",width:"100","dataIndex":"name",sortable:"false"},[],
+              "ext.grid.column",{header:"First Name",width:"200","dataIndex":"first_name",sortable:"false"},[],
+              "ext.grid.column",{header:"Last Name",width:"200","dataIndex":"last_name",sortable:"false"},[]
+            ]);
+          },
+          "image":"images/32/table.png"
+        },
+        {"name":".ds","help":"Ext Grid DataSource",
+          "action":function(){
+            appendChildTag("ext.grid.ds",{name:"users",model:"users"},[]);
+          },
+          "image":"images/32/default.gif"
+        },
+        {"name":"sample","help":"Ext Sample Connection",
+          "action":function(){
+            appendChildTag("resource",{path:"extjsdb/sample.sqlite",folder:"../db",name:"sample.sqlite"},[]);
+            appendChildTag("connection",{driver:"PDO_SQLITE",dbname:"../db/sample.sqlite",sqlite2:"true"},[]);
+            appendChildTag("table",{name:"name",table:"users"},[]);
+          },
+          "image":"images/32/connection.png"
+        }
+      ]
+    ], true);
+  }
+--><action name="@{$name}" loadParams="true" noRender="true" __ideNodeOpen="true"><select model="@{$model}" limit="" offset="" order="" columns="count(*) as C" criteria="@{$criteria}">if(is_array($rows)) $total=$rows[0]["C"];
+else {
+  $row=$rows-&gt;current();
+  $total=$row-&gt;__get("C");
+}
+</select><select model="@{$model}" limit="$limit" offset="$start" order="$sort $dir" columns="@{$columns}" criteria="@{$criteria}">        print(json_encode(
+          array(
+            "success" =&gt; true,
+            "results" =&gt; $total,
+            "data" =&gt; is_array($rows)?$rows:($rows-&gt;toArray()),
+          )
+        ));
+</select></action></component><component name="ext.page.html" transparent="" __ideNodeOpen="true">&lt;html&gt;
+&lt;head&gt;
+  &lt;link rel="stylesheet" type="text/css" href="/ext/resources/css/ext-all.css"&gt;
+  &lt;script type="text/javascript" src="/ext/adapter/ext/ext-base.js"&gt;&lt;/script&gt;
+  &lt;script type="text/javascript" src="/ext/ext-all.js"&gt;&lt;/script&gt;
+  &lt;script&gt;
+    Ext.QuickTips.init();
+    function extLoad(sClass,base,_construct)
+    {
+      var obj;
+      eval("obj=new "+sClass+"(base);");
+      if(_construct)eval(_construct);
+      return obj;
+    }
+    function main()
+    {
+      @{@node::join("\n      ",$_nodes['extdocument'])};
+    }
+    Ext.onReady(function(){ main(); });
+  &lt;/script&gt;
+&lt;/head&gt;
+&lt;body&gt;#{
+  $_nodes2=array();
+  foreach($_ as $_n):
+    if($_n[0]!="css" &amp;&amp; $_n[0]!="extdocument")$_nodes2[]=$_n;
+  endforeach;
+  return node::content($_nodes2);
+}&lt;/body&gt;
+&lt;/html&gt;</component></definitions></root>

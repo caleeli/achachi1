@@ -1,0 +1,7 @@
+@library{"class"}
+#class{
+	name:abc
+	#NewFunction{
+		name:123
+	}
+}

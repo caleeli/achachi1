@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root><include src="$library/zend.xml"/><application name="registro" main="index/index" __ideNodeOpen="true"><package name="" type="" __ideNodeOpen="true"><component name="grilla" transparent="" precode="" __ideNodeOpen="true">&lt;table&gt;
+&lt;tr&gt;
+&lt;th&gt;@{implode('&lt;/th&gt;&lt;th&gt;',explode(',',$titulos))}&lt;/th&gt;
+&lt;/tr&gt;
+&lt;?php
+foreach($this-&gt;rows as $row){
+?&gt;
+&lt;tr&gt;
+&lt;?php
+$cols=$row-&gt;toArray();
+foreach($cols as $col=&gt;$value){
+?&gt;
+&lt;td&gt;&lt;input name="&lt;?=htmlentities($col, ENT_QUOTES, 'utf-8') ?&gt;" value="&lt;?=htmlentities($value, ENT_QUOTES, 'utf-8')?&gt;"/&gt;&lt;/td&gt;
+&lt;?php
+}
+?&gt;
+&lt;td&gt;
+&lt;button type="button" onclick="$(this).saveRow('updatereg')"&gt;GUARDAR&lt;/button&gt;
+&lt;button type="button" onclick="$(this).saveRow('deletereg')"&gt;BORRAR&lt;/button&gt;
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;?php
+}
+?&gt;
+&lt;tr&gt;
+#{
+$res=array();
+foreach(explode(',',$campos) as $col):
+$res[]='&lt;td&gt;&lt;input name="'.htmlentities($col, ENT_QUOTES, 'utf-8').'" value=""/&gt;&lt;/td&gt;';
+endforeach;
+return implode('',$res);
+}
+&lt;td&gt;&lt;button type="button" onclick="$(this).saveRow('insertreg')"&gt;GUARDAR&lt;/button&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;</component>$mysql_host = "mysql6.000webhost.com";
+$mysql_database = "a6757340_moni";
+$mysql_user = "a6757340_moni";
+$mysql_password = "d1cc10n4r10";
+</package><controller name="index" descripcion="" author="" __ideNodeOpen="true"><action name="index" noRender="false" descripcion="" loadParams="" __ideNodeOpen="true"/><phtml name="index" __ideNodeOpen="true">&lt;html xmlns="http://www.w3.org/1999/xhtml"&gt;
+&lt;head&gt;
+&lt;meta http-equiv="Content-Type" content="text/html; charset=utf-8"/&gt;
+&lt;title&gt;&lt;?php print "New Page"; ?&gt;&lt;/title&gt;
+&lt;link type="text/css" href="/jquery/css/face/jquery-ui.custom.css" rel="stylesheet"/&gt;	
+&lt;script type="text/javascript" src="/jquery/js/jquery.min.js"&gt;&lt;/script&gt;
+&lt;script type="text/javascript" src="/jquery/js/jquery-ui.custom.min.js"&gt;&lt;/script&gt;
+&lt;style&gt;.qE{
+  display:inline-block;
+  position:absolute;
+}
+html{
+  height:100%;
+}
+body{
+  padding:0px;
+  margin:0px;
+  font-size:12px;
+}&lt;/style&gt;
+&lt;script type="text/javascript" id="jsloader"&gt;
+$(function(){
+$(".fragment").fragment();
+//qend//
+});
+$.fn.saveRow=function(url){
+  var $me=$(this);
+  var data={};
+  this.parents('tr:first').find('input').each(function(){
+    data[this.getAttribute("name")]=this.value;
+  });
+  $.ajax({
+    url:url,
+    data:data,
+    dataType:"text",
+    success:function(res){
+      eval(res);
+      $me.fragment();
+    }
+  });
+};
+$.fn.fragment=function(){
+  var $me=$(this);
+  $.ajax({
+    url:$me.attr("url"),
+    dataType:"text",
+    success:function(res){
+      $me.html(res);
+    }
+  });
+};
+&lt;/script&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;div class="fragment" url="grilla"&gt;&lt;/div&gt;&lt;/body&gt;
+&lt;/html&gt;
+</phtml><action name="insertreg" noRender="true" descripcion="" loadParams="$columna_a,$columna_b" __ideNodeOpen="true"><insert_row model="test" var="$values" values="columna_a=$columna_a;columna_b=$columna_b"/></action><action name="updatereg" noRender="true" descripcion="" loadParams="$columna_a,$columna_b" __ideNodeOpen="true"><update_row model="test" var="$row" values="columna_b=$columna_b" criteria="columna_a=$columna_a"/></action><action name="deletereg" noRender="true" descripcion="" loadParams="$columna_a,$columna_b" __ideNodeOpen="true"><delete_row model="test" var="$row" criteria="columna_a=$columna_a"/></action><action name="grilla" noRender="false" descripcion="" loadParams=""><select_table model="test" limit="" offset="" order="" columns="" var="$rows" criteria=""/>
+$this-&gt;view-&gt;rows=$rows;</action><phtml name="grilla"><grilla titulos="A,B" campos="columna_a,columna_b"/></phtml></controller><connection driver="PDO_MYSQL" host="127.0.0.1" username="root" password="root" dbname="a6757340_moni" __ideNodeOpen="true"><table name="test" table="test" primaryKey="" dependentTables=""/></connection></application></root>

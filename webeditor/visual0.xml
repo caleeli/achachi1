@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root><include src="$library/googleimages.xml"/><path path="output/visual" main="output/visual/index.php" __ideNodeOpen="true"><file name="index.php" preprocess="">&lt;html&gt;
+&lt;head&gt;
+  &lt;link type="text/css" href="/jquery/css/ui-lightness/jquery-ui-1.8.13.custom.css" rel="stylesheet" /&gt;	
+  &lt;script type="text/javascript" src="/jquery/js/jquery-1.5.1.min.js"&gt;&lt;/script&gt;
+  &lt;script type="text/javascript" src="/jquery/js/jquery-ui-1.8.13.custom.min.js"&gt;&lt;/script&gt;
+  &lt;link type="text/css" href="visual.css" rel="stylesheet" /&gt;	
+  &lt;script&gt;
+    var components;
+    $(function(){
+      $.ajax({
+        "url":"component.php",
+        "dataType":"html",
+        "success":function(res){
+          components=$(res);
+          components.find(".component").each(function(){
+            var tb=$("#toolbar");
+            tb.append('&lt;img src="images/'+this.id+'.png"/&gt;');
+            tb[0].lastChild.onclick=function(i){return function(){visual.insert(i)}}(this.id);
+          });
+          startVisual();
+        }
+      });
+    });
+  &lt;/script&gt;
+  &lt;script&gt;
+    var visual={
+      "insert":function(componentId){
+        var e,t;console.debug(componentId);
+        e=document.createElement("span");
+        e.className="vElement";
+        e.style.position="relative";
+        t=document.createElement("div");
+        t.style.position="absolute";
+        t.style.left="0px";
+        t.style.top="0px";
+        t.style.width="100%";
+        t.style.height="100%";
+        t.style.backgroundColor="transparent";
+        $(e).html(components.find("#"+componentId).html());
+        e.appendChild(t);
+        $(".lienzo").append(e);
+        e.ondblclick=function(){$(".vElement").each(function(){if(this.contentEditable){$(this).draggable({grid:[16,16]});};this.contentEditable=false;});this.contentEditable=true;this.focus();};
+        e.onblur=function(){contentEditable=false;};
+        $(e).draggable({grid:[16,16]});
+        delete e;
+        delete t;
+      }
+    };
+    function startVisual(){
+    }
+  &lt;/script&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;div id="toolbar"&gt;&lt;/div&gt;
+&lt;div class="lienzo"&gt;&lt;/div&gt;
+&lt;/body&gt;
+&lt;/html&gt;</file><file name="visual.css" preprocess="">.lienzo{
+  position:relative;
+}
+#draggable { }
+</file><file name="component.php" preprocess="">&lt;div&gt;
+&lt;div class="component" id="input_text"&gt;&lt;input style="width:144px;"/&gt;&lt;/div&gt;
+&lt;div class="component_script" id="input_text_script"&gt;&lt;/div&gt;
+&lt;div class="component" id="label"&gt;Label&lt;/div&gt;
+&lt;/div&gt;</file><images path="visual" folder="images"/></path></root>

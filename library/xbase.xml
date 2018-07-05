@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+<root><application name="aplicacion"><def name="xmlcomponent"><function name="run">  global $baseNode;
+  $e2 = $baseNode[$this-&gt;tagName]-&gt;cloneNode(true);
+  $vars = $values;
+  $_r = node::run();
+  $vars["_"] = $_r["#"];
+  $vars["_nodes"] = $_r;
+  unset($vars["_nodes"]["#"]);
+  $_res=array();
+  if($e2-&gt;hasChildNodes()) {
+    $this-&gt;evalChildNodes($e2,$vars);
+    foreach($e2-&gt;childNodes as $_ch0) {
+      $_ch = $_ch0-&gt;cloneNode(true);
+      $e-&gt;parentNode-&gt;insertBefore($_ch,$e);
+      $_r = $this-&gt;runChild($_ch);
+      foreach($_r as $r) {
+        $_res[] = array(
+          0 =&gt; $r[0], 1 =&gt; $r[1]
+        );
+      }
+    }
+  }
+  return $_res;
+</function><property name="transparent">true</property></def><def name="component"><function name="run">  global $baseNode;
+  $baseNode[$values["name"]]=$e;
+  $_tag = $e-&gt;getAttribute("name");
+  $_class = $this-&gt;getClassName($_tag);
+  $_code = 'class '.$_class.' extends node_xmlcomponent {public $tagName='.var_export($_tag,true).';}';
+  $this-&gt;createTagClass($_tag, $_class, $_code);</function></def><def name="foreach"><function name="run">  eval('$_values = '.$values["values"].';');
+  $_res=array();
+  foreach($_values as $vars) {
+    if($e-&gt;hasChildNodes()) {
+      foreach($e-&gt;childNodes as $_ch0) {
+        $_ch = $_ch0-&gt;cloneNode(true);
+        $this-&gt;evalChildNodes($_ch,$vars);
+        $e-&gt;parentNode-&gt;insertBefore($_ch,$e);
+        $_r = $this-&gt;runChild($_ch);
+        foreach($_r as $r) {
+          $_res[] = array(
+            0 =&gt; $r[0], 1 =&gt; $r[1]
+          );
+        }
+      }
+    }
+  }
+  return $_res;
+</function><property name="transparent">true</property></def><component name="test"><php>var_dump("hola mundo!!! mi papa es: " . $e-&gt;parentNode-&gt;nodeName);</php><foreach values="${$_nodes[&quot;hola&quot;]}"><php>var_dump(":p");</php></foreach></component><test><hola/><hola/></test><controller descripcion="" name="ejemplo"><action name="index"/><view name="index"><document>
+					<layout layout="border">
+						<extjs class="Ext.form.FormPanel" frame="true" region="center" title="holasss"></extjs>
+					</layout>
+				</document></view></controller></application></root>

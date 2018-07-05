@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root __ideNodeOpen="true"><component name="regexp" transparent="" precode="" engine="php" __ideNodeOpen="true">
+echo 123;
+</component><regexp __ideNodeOpen="true">     * $table-&gt;bigIncrements('id'); 	Incrementing ID using a "big integer" equivalent.
+     * $table-&gt;bigInteger('votes'); 	BIGINT equivalent to the table
+     * $table-&gt;binary('data'); 	BLOB equivalent to the table
+     * $table-&gt;boolean('confirmed'); 	BOOLEAN equivalent to the table
+     * $table-&gt;char('name', 4); 	CHAR equivalent with a length
+     * $table-&gt;date('created_at'); 	DATE equivalent to the table
+     * $table-&gt;dateTime('created_at'); 	DATETIME equivalent to the table
+     * $table-&gt;decimal('amount', 5, 2); 	DECIMAL equivalent with a precision and scale
+     * $table-&gt;double('column', 15, 8); 	DOUBLE equivalent with precision, 15 digits in total and 8 after the decimal point
+     * $table-&gt;enum('choices', array('foo', 'bar')); 	ENUM equivalent to the table
+     * $table-&gt;float('amount'); 	FLOAT equivalent to the table
+     * $table-&gt;increments('id'); 	Incrementing ID to the table (primary key).
+     * $table-&gt;integer('votes'); 	INTEGER equivalent to the table
+     * $table-&gt;longText('description'); 	LONGTEXT equivalent to the table
+     * $table-&gt;mediumInteger('numbers'); 	MEDIUMINT equivalent to the table
+     * $table-&gt;mediumText('description'); 	MEDIUMTEXT equivalent to the table
+     * $table-&gt;morphs('taggable'); 	Adds INTEGER taggable_id and STRING taggable_type
+     * $table-&gt;nullableTimestamps(); 	Same as timestamps(), except allows NULLs
+     * $table-&gt;smallInteger('votes'); 	SMALLINT equivalent to the table
+     * $table-&gt;tinyInteger('numbers'); 	TINYINT equivalent to the table
+     * $table-&gt;softDeletes(); 	Adds deleted_at column for soft deletes
+     * $table-&gt;string('email'); 	VARCHAR equivalent column
+     * $table-&gt;string('name', 100); 	VARCHAR equivalent with a length
+     * $table-&gt;text('description'); 	TEXT equivalent to the table
+     * $table-&gt;time('sunrise'); 	TIME equivalent to the table
+     * $table-&gt;timestamp('added_on'); 	TIMESTAMP equivalent to the table
+     * $table-&gt;timestamps(); 	Adds created_at and updated_at columns
+     * $table-&gt;rememberToken(); 	Adds remember_token as VARCHAR(100) NULL
+</regexp></root>

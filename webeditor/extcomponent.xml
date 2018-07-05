@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root><include src="$library/zend.xml"/><include src="$library/extjslib2.xml"/><application name="newcomponent" main="index/index" __ideNodeOpen="true"><controller name="index" descripcion="" author="" __ideNodeOpen="true"><action name="index" noRender="false" descripcion="" loadParams=""/><phtml name="index" __ideNodeOpen="true"><ext.document style="" script="../../abc.js" __ideNodeOpen="true"><ext class="Ext.Viewport" layout="border" __ideNodeOpen="true"><ext class="Ext.form.FormPanel" region="center" title="Hello World" frame="true" url="action" standardSubmit="true" __ideNodeOpen="true"><ext class="Ext.form.TextField" name="name" fieldLabel="New field" inputType="text"/><ext.attribute name="buttons" type="array"><ext class="Ext.Button" name="name" text="Hello" type="submit"><ext.attribute name="handler">function(a,b){Ext.Msg.alert('Hello', 'This is an Ext.msg.alert.');}</ext.attribute></ext></ext.attribute><ext class="ScrollMenu" __ideNodeOpen="true" name="holaaaa!!!"><ext class="Ext.Button" name="name" text="Boton1" type="submit"/><ext class="Ext.Button" name="name" text="Boton2" type="submit"/><ext class="Ext.Button" name="name" text="Boton3" type="submit"/></ext></ext></ext></ext.document></phtml></controller><file name="html/abc.js" preprocess="" __ideNodeOpen="true">/*
+  //constructor:function(config){
+  //  this.renderData=config;
+  //  ScrollMenu.superclass.constructor.call(this);		
+  //},
+//  autoEl: {
+//    tag: 'div',
+//    //html: '&lt;span&gt;Helloooo &lt;/span&gt;',
+//  },
+
+    Ext.applyIf(this.renderSelectors, {
+       span: 'span'
+    });
+
+*/
+var ScrollMenu = Ext.extend(Ext.Component, {
+  renderTpl: '{items}',
+  onRender:function(ct, position){
+    var items=[];
+    for(var i in this.items){
+      var option=this.items[i];
+      items.push("&lt;span class='dvbutton'&gt;&lt;a class='"+option.iconCls+"' href='javascript:void(0)' title='"+option.text+"'&gt;"+option.text+"&lt;/a&gt;&lt;/span&gt;");
+    }
+    Ext.applyIf(this.renderData, {items:items.join("")});
+    ScrollMenu.superclass.onRender.call(this, ct, position);
+    for(var i=0,l=this.el.dom.childNodes.length;i&lt;l;i++){
+      var option=this.items[i];
+      var btn=this.el.dom.childNodes[i];
+      $(btn).click((function(option){return function(event){
+        $.proxy(option.handler, option.scope)(option,event);
+      }})(option));
+    }
+  },
+});
+</file></application></root>

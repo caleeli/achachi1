@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root><include src="$library/zend.xml"/><application name="superai" main="index/index"><controller name="index" descripcion="" author=""><action name="index" noRender="false" descripcion="" loadParams=""/><phtml name="index">&lt;pre&gt;
+&lt;?php
+$last=60;
+for($i=1;$i&lt;=$last;$i++):
+?&gt;
+
+Trigger("All players"){
+Conditions:
+	Countdown Timer(Exactly, 0);
+	Bring("Current Player", "Terran SCV", "Anywhere", &lt;?=$i==$last?"At least":"Exactly" ?&gt;, &lt;?=$i+4 ?&gt;);
+
+Actions:
+	Set Resources("Current Player", Add, &lt;?=$i+4?&gt;, ore);
+	Preserve Trigger();
+}
+
+//-----------------------------------------------------------------//
+
+
+Trigger("All players"){
+Conditions:
+	Countdown Timer(Exactly, 0);
+	Bring("Current Player", "Zerg Drone", "Anywhere", &lt;?=$i==$last?"At least":"Exactly" ?&gt;, &lt;?=$i+4 ?&gt;);
+
+Actions:
+	Set Resources("Current Player", Add, &lt;?=$i+4?&gt;, ore);
+	Preserve Trigger();
+}
+
+//-----------------------------------------------------------------//
+
+
+Trigger("All players"){
+Conditions:
+	Countdown Timer(Exactly, 0);
+	Bring("Current Player", "Protoss Probe", "Anywhere", &lt;?=$i==$last?"At least":"Exactly" ?&gt;, &lt;?=$i+4 ?&gt;);
+
+Actions:
+	Set Resources("Current Player", Add, &lt;?=$i+4?&gt;, ore);
+	Preserve Trigger();
+}
+
+//-----------------------------------------------------------------//
+&lt;?php
+endfor;
+$last=10;
+for($i=1;$i&lt;=$last;$i++):
+?&gt;
+
+Trigger("All players"){
+Conditions:
+	Countdown Timer(Exactly, 0);
+	Bring("Current Player", "Terran Refinery", "Anywhere", &lt;?=$i==$last?"At least":"Exactly" ?&gt;, &lt;?=$i ?&gt;);
+
+Actions:
+	Set Resources("Current Player", Add, &lt;?=$i*4 ?&gt;, gas);
+	Preserve Trigger();
+}
+
+//-----------------------------------------------------------------//
+
+Trigger("All players"){
+Conditions:
+	Countdown Timer(Exactly, 0);
+	Bring("Current Player", "Zerg Extractor", "Anywhere", &lt;?=$i==$last?"At least":"Exactly" ?&gt;, &lt;?=$i ?&gt;);
+
+Actions:
+	Set Resources("Current Player", Add, &lt;?=$i*4 ?&gt;, gas);
+	Preserve Trigger();
+}
+
+//-----------------------------------------------------------------//
+
+Trigger("All players"){
+Conditions:
+	Countdown Timer(Exactly, 0);
+	Bring("Current Player", "Protoss Assimilator", "Anywhere", &lt;?=$i==$last?"At least":"Exactly" ?&gt;, &lt;?=$i ?&gt;);
+
+Actions:
+	Set Resources("Current Player", Add, &lt;?=$i*4 ?&gt;, gas);
+	Preserve Trigger();
+}
+
+//-----------------------------------------------------------------//
+
+&lt;?php
+endfor;
+?&gt;
+
+Trigger("All players"){
+Conditions:
+	Countdown Timer(Exactly, 0);
+
+Actions:
+	Set Countdown Timer(Add, 2);
+	Preserve Trigger();
+}
+
+//-----------------------------------------------------------------//
+
+</phtml></controller></application></root>

@@ -1,0 +1,2340 @@
+<?xml version="1.0" encoding="UTF-8"?><root><path path="/home/david/workspaceLRMemo/memo-cms/liferay-plugins-sdk-6.2/hooks/MemoShoppingCart-hook/docroot/custom_jsps/html/portlet/shopping" main="output/memo/index.html" __ideNodeOpen="true"><package name="components" type="" __ideNodeOpen="true"><component name="wizard" transparent="" precode="" __ideNodeOpen="true">&lt;br /&gt;
+&lt;div  class="memo-wizard-bar"&gt;
+&lt;table style="width:100%"&gt;
+&lt;tr&gt;
+@{node::content($_)}
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;/div&gt;</component><component name="wizard_button" transparent="" precode="" __ideNodeOpen="true">	&lt;td&gt;
+		&lt;div data-bind="css:{'memo-wizard-bar-button-active': tabName()=='#@{$name}'}" class="memo-wizard-bar-button@{@$active?' memo-wizard-bar-button-active':''}" @{@$active?' disabled="true"':''} onClick='@{$onclick}' &gt;&lt;a hrefDISABLED="#@{$name}"&gt;@{$title}&lt;/a&gt;&lt;/div&gt;
+	&lt;/td&gt;
+</component><component name="cart" transparent="" precode="" __ideNodeOpen="true">&lt;%--
+/**
+ * Copyright (c) Pepito Grillo 2015
+ */
+--%&gt;
+
+&lt;%@ include file="/html/portlet/shopping/init.jsp" %&gt;
+&lt;%@page import="com.liferay.portal.model.User"%&gt;
+&lt;link rel="stylesheet" type="text/css" href="/html/css/memo_cart.css" /&gt;
+&lt;script type="text/javascript" src="/html/js/DecimalFormat.js"&gt;&lt;/script&gt;
+&lt;script type="text/javascript" src="/html/js/knockout-3.3.0.js"&gt;&lt;/script&gt;
+&lt;script type="text/javascript" src="/html/js/knockout.validation.min.js"&gt;&lt;/script&gt;
+&lt;script type="text/javascript" src="/html/js/jquery.bpopup.min.js"&gt;&lt;/script&gt;
+
+
+
+@{node::content($_)}</component><component name="jsp" transparent="" precode="" __ideNodeOpen="true"><file name="@{$name}" preprocess="" __ideNodeOpen="true">@{node::content($_)}</file><file name="/home/david/liferay-portal-6.2-ce-ga4/tomcat-7.0.42/webapps/MemoShoppingCart-hook/custom_jsps/html/portlet/shopping/@{$name}" preprocess="" __ideNodeOpen="true">@{node::content($_)}</file><file name="/home/david/liferay-portal-6.2-ce-ga4/tomcat-7.0.42/webapps/ROOT/html/portlet/shopping/@{$name}" preprocess="" __ideNodeOpen="true">@{node::content($_)}</file></component><component name="progressTab" transparent="" precode="" __ideNodeOpen="true">&lt;div data-bind="visible: tabName()=='#@{$name}'"&gt;
+  &lt;h3 class="header-title"&gt; &lt;span&gt; @{$title} &lt;/span&gt; &lt;/h3&gt; 
+@{node::content($_)}
+&lt;/div&gt;</component><component name="addressView" transparent="" precode="" __ideNodeOpen="true">  &lt;h3 class="header-title"&gt; &lt;span&gt; @{$title} &lt;/span&gt; &lt;/h3&gt;
+  &lt;div data-bind="foreach: @{$name}"&gt;
+@{node::content($_)}
+  &lt;/div&gt;
+  &lt;br/&gt;
+</component><component name="addressViewCurrent" transparent="" precode="" __ideNodeOpen="true">&lt;aui:column columnWidth="30"&gt;
+  &lt;h3 class="header-title" style="display:inline"&gt; &lt;span&gt; @{$title} &lt;/span&gt; &lt;/h3&gt;
+  &lt;a href="javascript:void(0)" onclick="@{$onclick}" data-bind=""&gt;Change&lt;/a&gt;
+  &lt;div data-bind="foreach: @{$name}.getSelected()"&gt;
+@{node::content($_)}
+  &lt;/div&gt;
+  &lt;br/&gt;
+&lt;/aui:column&gt;</component><component name="paymentDetails" transparent="" precode="" __ideNodeOpen="true">&lt;div&gt;
+    &lt;aui:fieldset class="group"&gt;
+        &lt;aui:layout&gt;
+          &lt;aui:column columnWidth="100"&gt;
+              &lt;aui:input name="@{$name}_card_holder" data-bind="value: @{$name}_card_holder" placeholder="Cardholder" label=""/&gt;
+          &lt;/aui:column&gt;
+
+          &lt;aui:column columnWidth="100"&gt;
+              &lt;aui:input name="@{$name}_card_number" data-bind="value: @{$name}_card_number" placeholder="Number" label=""/&gt;
+          &lt;/aui:column&gt;
+
+          &lt;aui:column columnWidth="100"&gt;
+            &lt;aui:layout&gt;
+              &lt;aui:column columnWidth="30"&gt;
+                &lt;span&gt;EXPIRATION DATE&lt;/span&gt;
+              &lt;/aui:column&gt;
+              &lt;aui:column columnWidth="20"&gt;
+                &lt;select data-bind="value: @{$name}_card_month"&gt;
+                  &lt;option value="01"&gt;01&lt;/option&gt;
+                  &lt;option value="02"&gt;02&lt;/option&gt;
+                  &lt;option value="03"&gt;03&lt;/option&gt;
+                  &lt;option value="04"&gt;04&lt;/option&gt;
+                  &lt;option value="05"&gt;05&lt;/option&gt;
+                  &lt;option value="06"&gt;06&lt;/option&gt;
+                  &lt;option value="07"&gt;07&lt;/option&gt;
+                  &lt;option value="08"&gt;08&lt;/option&gt;
+                  &lt;option value="09"&gt;09&lt;/option&gt;
+                  &lt;option value="10"&gt;10&lt;/option&gt;
+                  &lt;option value="11"&gt;11&lt;/option&gt;
+                  &lt;option value="12"&gt;12&lt;/option&gt;
+                &lt;/select&gt;
+              &lt;/aui:column&gt;
+              &lt;aui:column columnWidth="20"&gt;
+                &lt;select data-bind="value: @{$name}_card_year"&gt;
+                  &lt;option value="15"&gt;15&lt;/option&gt;
+                  &lt;option value="16"&gt;16&lt;/option&gt;
+                  &lt;option value="17"&gt;17&lt;/option&gt;
+                  &lt;option value="18"&gt;18&lt;/option&gt;
+                  &lt;option value="19"&gt;19&lt;/option&gt;
+                  &lt;option value="20"&gt;20&lt;/option&gt;
+                &lt;/select&gt;
+              &lt;/aui:column&gt;
+              &lt;aui:column columnWidth="30"&gt;
+                &lt;aui:input name="@{$name}_card_cvv" data-bind="value: @{$name}_card_cvv" placeholder="CVV" label=""/&gt;
+              &lt;/aui:column&gt;
+            &lt;/aui:layout&gt;
+          &lt;/aui:column&gt;
+
+          &lt;aui:column columnWidth="100"&gt;
+            &lt;div class="checkbox"&gt;
+                &lt;aui:input class="checkbox" type="checkbox" name="@{$name}_terms" data-bind="checked: @{$name}_terms" label="" /&gt;
+                &lt;label for="@{$name}_cvv"&gt;I accept the &lt;a href="javascript:showTermsAndCondions(0)"&gt;Terms &amp;amp; Conditions&lt;/a&gt;&lt;/label&gt;
+            &lt;/div&gt;
+          &lt;/aui:column&gt;
+
+        &lt;/aui:layout&gt;
+    &lt;/aui:fieldset&gt;
+
+    &lt;br /&gt;&lt;br /&gt;
+    &lt;aui:layout cssClass="shopping-cart-buttons"&gt;
+        &lt;aui:column cssClass="shopping-cart-buttons-proceed" first="true"&gt;
+            &lt;button type="button" class="btn btn-default" onClick='location.hash="#Shopping_Cart"' &gt;BACK TO CART&lt;/button&gt;
+        &lt;/aui:column&gt;
+        &lt;aui:column last="true"&gt;
+            &lt;button type="button" class="btn btn-primary" onClick='shoppingCart.@{$name}_save();addressFlow.event("save");' &gt;PAY &lt;span data-bind="text: total"&gt;&lt;/span&gt;&lt;/button&gt;
+        &lt;/aui:column&gt;
+        &lt;aui:column last="true"&gt;
+            &lt;button type="button" class="btn btn-danger" onClick='' &gt;CANCEL&lt;/button&gt;
+        &lt;/aui:column&gt;
+    &lt;/aui:layout&gt;
+    &lt;script&gt;
+        shoppingCart.@{$name}_card_holder=ko.observable("");
+        shoppingCart.@{$name}_card_number=ko.observable("");
+        shoppingCart.@{$name}_card_month=ko.observable("01");
+        shoppingCart.@{$name}_card_year=ko.observable("15");
+        shoppingCart.@{$name}_card_cvv=ko.observable("");
+        shoppingCart.@{$name}_terms=ko.observable(false);
+
+        shoppingCart.@{$name}_save=function(){
+          if(shoppingCart.@{$name}_current()==null){
+            shoppingCart.@{$name}CreditCards.push(new CreditCardModel({
+/*              first_name: shoppingCart.@{$name}_first_name(),
+              last_name: shoppingCart.@{$name}_last_name(),
+              street1: shoppingCart.@{$name}_street1(),
+              street2: shoppingCart.@{$name}_street2(),
+              telephone: shoppingCart.@{$name}_telephone(),
+              city: shoppingCart.@{$name}_city(),
+              state: shoppingCart.@{$name}_state(),
+              zip: shoppingCart.@{$name}_zip()*/
+            }));
+          } else {
+              var o=shoppingCart.@{$name}_current();
+/*              o.first_name( shoppingCart.@{$name}_first_name() );
+              o.last_name( shoppingCart.@{$name}_last_name() );
+              o.street1( shoppingCart.@{$name}_street1() );
+              o.street2( shoppingCart.@{$name}_street2() );
+              o.telephone( shoppingCart.@{$name}_telephone() );
+              o.city( shoppingCart.@{$name}_city() );
+              o.state( shoppingCart.@{$name}_state() );
+              o.zip( shoppingCart.@{$name}_zip() );*/
+          }
+        }
+    &lt;/script&gt;
+&lt;/div&gt;</component><component name="editableContent" transparent="" precode="" __ideNodeOpen="true">  &lt;%
+    PortletPreferences prefs = renderRequest.getPreferences();
+    String @{$name} = (String) prefs.getValue("@{$name}","TERMS &amp;amp; CONDITIONS&lt;br/&gt;&lt;br/&gt; Welcome to our website. If you continue to browse and use this website, you are agreeing to comply with and be bound by the following terms and conditions of use, which together with our privacy policy govern [business name]’s relationship with you in relation to this website. &lt;br/&gt;&lt;br/&gt;If you disagree with any part of these terms and conditions, please do not use our website. The term ‘[business name]’ or ‘us’ or ‘we’ refers to the owner of the website whose registered office is [address]. Our company registration number is [company registration number and place of registration]. &lt;br/&gt;&lt;br/&gt;The term ‘you’ refers to the user or viewer of our website. The use of this website is subject to the following terms of use: The content of the pages of this website is for your general information and use only. It is subject to change without notice. &lt;br/&gt;&lt;br/&gt;This website uses cookies to monitor browsing preferences. If you do allow cookies to be used, the following personal information may be stored by us for use by third parties: [insert list of information]. Neither we nor any third parties provide any warranty or guarantee as to the accuracy, timeliness, performance, completeness or suitability of the information and materials found or offered on this website for any particular purpose. You acknowledge that such information and materials may contain inaccuracies or errors and we expressly exclude liability for any such inaccuracies or errors to the fullest extent permitted by law. Your use of any information or materials on this website is entirely at your own risk, for which we shall not be liable. &lt;br/&gt;&lt;br/&gt;It shall be your own responsibility to ensure that any products, services or information available through this website meet your specific requirements. This website contains material which is owned by or licensed to us. This material includes, but is not limited to, the design, layout, look, appearance and graphics. Reproduction is prohibited other than in accordance with the copyright notice, which forms part of these terms and conditions. All trademarks reproduced in this website, which are not the property of, or licensed to the operator, are acknowledged on the website. Unauthorised use of this website may give rise to a claim for damages and/or be a criminal offence. From time to time, this website may also include links to other websites. These links are provided for your convenience to provide further information. They do not signify that we endorse the website(s). We have no responsibility for the content of the linked website(s). Your use of this website and any dispute arising out of such use of the website is subject to the laws of England, Northern Ireland, Scotland and Wales.");   %&gt;
+  &lt;%= @{$name} %&gt;
+  &lt;portlet:renderURL var="@{$name}EditURL"&gt;
+    &lt;portlet:param name="mvcPath" value="/@{$name}Edit.jsp" /&gt;
+  &lt;/portlet:renderURL&gt;
+    &lt;p&gt;&lt;a style="display:none;" href="&lt;%= @{$name}EditURL %&gt;"&gt;Edit&lt;/a&gt;&lt;/p&gt;
+<jsp name="@{$name}Edit.jsp" __ideNodeOpen="true">&lt;%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet" %&gt;
+&lt;%@ taglib uri="http://liferay.com/tld/aui" prefix="aui" %&gt;
+
+&lt;%@ page import="javax.portlet.PortletPreferences" %&gt;
+
+&lt;portlet:defineObjects /&gt;
+
+&lt;%
+PortletPreferences prefs = renderRequest.getPreferences();
+String @{$name} = renderRequest.getParameter("@{$name}");
+
+if (@{$name} != null) {
+    prefs.setValue("@{$name}", @{$name});
+    prefs.store();
+%&gt;
+	&lt;p&gt;Greeting saved successfully!&lt;/p&gt;
+&lt;%
+}
+%&gt;
+
+&lt;%
+@{$name} = (String)prefs.getValue(
+    "@{$name}", "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer pretium lacinia laoreet. Ut eleifend nulla ligula. Nullam nec semper nulla, a dictum diam. Nam quis quam eget magna imperdiet hendrerit pellentesque quis felis. Nulla facilisi. Fusce finibus nibh sem, vitae ultricies ante iaculis vel. Nullam a elementum ligula, eu egestas neque. Mauris massa tellus, vehicula blandit lobortis ut, finibus vitae massa. Nam eget volutpat ante. Proin sit amet tincidunt libero, suscipit feugiat neque. Cras convallis, nulla ac tincidunt sodales, massa lacus placerat justo, a lobortis dui mi quis neque. Vestibulum ante lacus, molestie at ornare vulputate, pellentesque et ipsum. Suspendisse vel ornare nisl. Cras congue metus urna, sed mollis nunc mattis at. Donec mollis ut ex ut posuere. Phasellus eleifend ultrices ligula, eget vestibulum magna porttitor nec.");
+%&gt;
+
+
+&lt;portlet:renderURL var="@{$name}EditURL"&gt;
+    &lt;portlet:param name="mvcPath" value="/@{$name}Edit.jsp" /&gt;
+&lt;/portlet:renderURL&gt;
+
+&lt;aui:form action="&lt;%= @{$name}EditURL %&gt;" method="post"&gt;
+    &lt;aui:input label="@{$name}" name="@{$name}" type="text" value="&lt;%=@{$name} %&gt;" /&gt;
+    &lt;aui:button type="submit" /&gt;
+&lt;/aui:form&gt;
+
+&lt;portlet:renderURL var="@{$name}ViewURL"&gt;
+    &lt;portlet:param name="mvcPath" value="/view.jsp" /&gt;
+&lt;/portlet:renderURL&gt;
+
+&lt;p&gt;&lt;a href="&lt;%= @{$name}ViewURL %&gt;"&gt;&amp;larr; Back&lt;/a&gt;&lt;/p&gt;</jsp></component>&lt;div data-bind="visible: address_state()==2"&gt;
+  &lt;h3 class="header-title"&gt; &lt;span&gt; Your shipping address &lt;/span&gt; &lt;/h3&gt;
+  &lt;div data-bind="foreach: shippingAddresses"&gt;
+    &lt;div&gt;
+      &lt;b data-bind="text: first_name"&gt;&lt;/b&gt; &lt;b data-bind="text: last_name"&gt;&lt;/b&gt;
+    &lt;/div&gt;
+    &lt;div&gt;
+      &lt;span data-bind="text: street1"&gt;&lt;/span&gt;
+    &lt;/div&gt;
+    &lt;div&gt;
+      &lt;span data-bind="text: street2"&gt;&lt;/span&gt;
+    &lt;/div&gt;
+    &lt;div&gt;
+      &lt;span data-bind="text: city"&gt;&lt;/span&gt;
+      &lt;span data-bind="text: zip"&gt;&lt;/span&gt;
+    &lt;/div&gt;
+    &lt;div&gt;
+      Tel: &lt;span data-bind="text: telephone"&gt;&lt;/span&gt;
+    &lt;/div&gt;
+    &lt;div&gt;
+      &lt;button type="button" class="btn btn-primary" data-bind="disable: shipToThisAddress()"&gt;Ship to this address&lt;/button&gt;
+    &lt;/div&gt;
+    &lt;div&gt;
+      &lt;a href="javascript:voind(0)" onclick="addressFlow.event('shipping')"&gt;Add a new address&lt;/a&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+  &lt;br/&gt;
+  &lt;h3 class="header-title"&gt; &lt;span&gt; Your billing address &lt;/span&gt; &lt;/h3&gt;
+  &lt;div data-bind="foreach: billingAddresses"&gt;
+    &lt;div&gt;
+      &lt;b data-bind="text: first_name"&gt;&lt;/b&gt; &lt;b data-bind="text: last_name"&gt;&lt;/b&gt;
+    &lt;/div&gt;
+    &lt;div&gt;
+      &lt;span data-bind="text: street1"&gt;&lt;/span&gt;
+    &lt;/div&gt;
+    &lt;div&gt;
+      &lt;span data-bind="text: street2"&gt;&lt;/span&gt;
+    &lt;/div&gt;
+    &lt;div&gt;
+      &lt;span data-bind="text: city"&gt;&lt;/span&gt;
+      &lt;span data-bind="text: zip"&gt;&lt;/span&gt;
+    &lt;/div&gt;
+    &lt;div&gt;
+      Tel: &lt;span data-bind="text: telephone"&gt;&lt;/span&gt;
+    &lt;/div&gt;
+    &lt;div&gt;
+      &lt;button type="button" class="btn btn-primary" data-bind="disable: shipToThisAddress()"&gt;Ship to this address&lt;/button&gt;
+    &lt;/div&gt;
+    &lt;div&gt;
+      &lt;a href="javascript:voind(0)" onclick="addressFlow.event('billing')"&gt;Add a new address&lt;/a&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+  &lt;br /&gt;&lt;br /&gt;
+  &lt;aui:layout cssClass="shopping-cart-buttons"&gt;
+      &lt;aui:column cssClass="shopping-cart-buttons-proceed" last="true"&gt;
+          &lt;aui:button data-bind='click: nextTab' value="PROCEED TO PAYMENT" /&gt;
+      &lt;/aui:column&gt;
+      &lt;aui:column cssClass="shopping-cart-buttons-continue" last="true"&gt;
+          &lt;aui:button data-bind='click: gotoCart' value="BACK TO CART" /&gt;
+      &lt;/aui:column&gt;
+  &lt;/aui:layout&gt;
+&lt;/div&gt;<php __ideNodeOpen="true">function foreachLine($lines, $tpl){
+  $res="";
+  foreach(explode("\n", $lines) as $l){
+    $f=explode(" ", $l, 3);
+    foreach($f as $i=&gt; $v){
+      $ii='f'.$i;
+      $$ii = $v;
+    }
+    eval('$res.="'.$tpl.'";');
+  }
+  return $res;
+}</php><component name="addressModel" transparent="" precode="" __ideNodeOpen="true">        /**
+         * Initialize bindings
+         */
+@{foreachLine(node::content($_), '        shoppingCart.'.$name.'_$f0=ko.observable($f1)".@$f2.";'."\n")}
+        shoppingCart.@{$name}_current=ko.observable(null);
+
+        /**
+         * Create new @{$name}
+         */
+        shoppingCart.@{$name}_new=function(){
+@{foreachLine(node::content($_), '          shoppingCart.'.$name.'_$f0($f1);'."\n")}
+          shoppingCart.@{$name}_current(null);
+        };
+        /**
+         * Edit @{$name}
+         */
+        shoppingCart.@{$name}_edit=function(o){
+@{foreachLine(node::content($_), '            shoppingCart.'.$name.'_$f0(".($f0=="current"?"o":"o.$f0")."());'."\n")}
+          shoppingCart.@{$name}_current(o);
+        };
+        /**
+         * Save (insert/update) @{$name}
+         */
+        shoppingCart.@{$name}_save=function(callback){
+          var o;
+          if(shoppingCart.@{$name}_current()==null){
+            shoppingCart.@{$instance}.push(o=new @{$model}({
+@{foreachLine(node::content($_), '".$f0=="current"?"":"                $f0: shoppingCart.'.$name.'_$f0(),'."\n")}
+            }));
+      var $ajaxIcon=shoppingCartAjaxIcon("@{$icon}");
+      $.ajax("/c/shopping/cartStripe", {
+        data: {
+          action: "@{$name}Save",
+          userId: $("#userId").val(),
+@{foreachLine(node::content($_), '          $f0:o.$f0(),'."\n")}
+        },
+        success: function(res){
+          $ajaxIcon.close();
+          try{
+            var json=JSON.parse(res);
+            if(typeof json.error=="string"){
+              shoppingCartAlert(json.error);
+            } else {
+              o.id(json.id);
+              callback(o);
+            }
+          } catch(e) {}
+        },
+        error:function(){
+          $ajaxIcon.close();
+        }
+      });
+
+          } else {
+            var o=shoppingCart.@{$name}_current();
+@{foreachLine(node::content($_), '".($f0=="current" || $f0=="card_type")?"":"                o.$f0( shoppingCart.'.$name.'_$f0() );'."\n")}
+            var $ajaxIcon=shoppingCartAjaxIcon("@{$icon}");
+            $.ajax("/c/shopping/cartStripe", {
+              data: {
+                action: "@{$name}Save",
+                userId: $("#userId").val(),
+@{foreachLine(node::content($_), '          $f0:o.$f0(),'."\n")}
+              },
+              success: function(res){
+                $ajaxIcon.close();
+                try{
+                  var json=JSON.parse(res);
+                  if(typeof json.error=="string"){
+                    shoppingCartAlert(json.error);
+                  } else {
+                    callback(o);
+                  }
+                } catch(e) {}
+              },
+              error:function(){
+                $ajaxIcon.close();
+              }
+            });
+          }
+        }</component><package name="addresses" type=""><component name="address" transparent="" precode="" __ideNodeOpen="true">&lt;div data-bind="visible: address_state()==@{$state}"&gt;
+&lt;h3 class="header-title"&gt; &lt;span&gt; @{$title} &lt;/span&gt; &lt;/h3&gt;
+
+    &lt;aui:fieldset class="group"&gt;
+@{$name=='shipping'?'        &lt;div class="checkbox"&gt;
+            &lt;aui:input class="checkbox" type="checkbox" data-bind="checked: '.$name.'_sameShippingBilling" name="sameShippingBilling" label="" /&gt;
+            &lt;label for="sameShippingBilling"&gt;Use this address as my billing address.&lt;/label&gt;
+        &lt;/div&gt;':''}
+        &lt;aui:layout&gt;
+          &lt;aui:column columnWidth="50"&gt;
+              &lt;aui:input name="value: @{$name}_first_name" data-bind="value: @{$name}_first_name" placeholder="First" label=""/&gt;
+          &lt;/aui:column&gt;
+          &lt;aui:column columnWidth="50"&gt;
+              &lt;aui:input name="@{$name}_last_name" data-bind="value: @{$name}_last_name" placeholder="Last" label=""/&gt;
+          &lt;/aui:column&gt;
+
+          &lt;aui:column columnWidth="50"&gt;
+              &lt;aui:input name="@{$name}_street1" data-bind="value: @{$name}_street1" placeholder="Street line 1" label=""/&gt;
+          &lt;/aui:column&gt;
+          &lt;aui:column columnWidth="50"&gt;
+              &lt;aui:input name="@{$name}_telephone" data-bind="value: @{$name}_telephone" placeholder="Telephone" label=""/&gt;
+          &lt;/aui:column&gt;
+
+          &lt;aui:column columnWidth="50"&gt;
+              &lt;aui:input name="@{$name}_street2" data-bind="value: @{$name}_street2" placeholder="Street line 2" label=""/&gt;
+          &lt;/aui:column&gt;
+          &lt;aui:column columnWidth="50"&gt;
+              &lt;aui:input name="@{$name}_zip" data-bind="value: @{$name}_zip" placeholder="Zip" label=""/&gt;
+          &lt;/aui:column&gt;
+
+          &lt;aui:column columnWidth="50"&gt;
+              &lt;aui:input name="@{$name}_city" data-bind="value: @{$name}_city" placeholder="City" label=""/&gt;
+          &lt;/aui:column&gt;
+          &lt;aui:column columnWidth="50"&gt;
+&lt;aui:select name="@{$name}_state" data-bind="value: @{$name}_state" placeholder="State" label=""&gt;
+	&lt;aui:option value="AL"&gt;Alabama&lt;/aui:option&gt;
+	&lt;aui:option value="AK"&gt;Alaska&lt;/aui:option&gt;
+	&lt;aui:option value="AZ"&gt;Arizona&lt;/aui:option&gt;
+	&lt;aui:option value="AR"&gt;Arkansas&lt;/aui:option&gt;
+	&lt;aui:option value="CA"&gt;California&lt;/aui:option&gt;
+	&lt;aui:option value="CO"&gt;Colorado&lt;/aui:option&gt;
+	&lt;aui:option value="CT"&gt;Connecticut&lt;/aui:option&gt;
+	&lt;aui:option value="DE"&gt;Delaware&lt;/aui:option&gt;
+	&lt;aui:option value="DC"&gt;District Of Columbia&lt;/aui:option&gt;
+	&lt;aui:option value="FL"&gt;Florida&lt;/aui:option&gt;
+	&lt;aui:option value="GA"&gt;Georgia&lt;/aui:option&gt;
+	&lt;aui:option value="HI"&gt;Hawaii&lt;/aui:option&gt;
+	&lt;aui:option value="ID"&gt;Idaho&lt;/aui:option&gt;
+	&lt;aui:option value="IL"&gt;Illinois&lt;/aui:option&gt;
+	&lt;aui:option value="IN"&gt;Indiana&lt;/aui:option&gt;
+	&lt;aui:option value="IA"&gt;Iowa&lt;/aui:option&gt;
+	&lt;aui:option value="KS"&gt;Kansas&lt;/aui:option&gt;
+	&lt;aui:option value="KY"&gt;Kentucky&lt;/aui:option&gt;
+	&lt;aui:option value="LA"&gt;Louisiana&lt;/aui:option&gt;
+	&lt;aui:option value="ME"&gt;Maine&lt;/aui:option&gt;
+	&lt;aui:option value="MD"&gt;Maryland&lt;/aui:option&gt;
+	&lt;aui:option value="MA"&gt;Massachusetts&lt;/aui:option&gt;
+	&lt;aui:option value="MI"&gt;Michigan&lt;/aui:option&gt;
+	&lt;aui:option value="MN"&gt;Minnesota&lt;/aui:option&gt;
+	&lt;aui:option value="MS"&gt;Mississippi&lt;/aui:option&gt;
+	&lt;aui:option value="MO"&gt;Missouri&lt;/aui:option&gt;
+	&lt;aui:option value="MT"&gt;Montana&lt;/aui:option&gt;
+	&lt;aui:option value="NE"&gt;Nebraska&lt;/aui:option&gt;
+	&lt;aui:option value="NV"&gt;Nevada&lt;/aui:option&gt;
+	&lt;aui:option value="NH"&gt;New Hampshire&lt;/aui:option&gt;
+	&lt;aui:option value="NJ"&gt;New Jersey&lt;/aui:option&gt;
+	&lt;aui:option value="NM"&gt;New Mexico&lt;/aui:option&gt;
+	&lt;aui:option value="NY"&gt;New York&lt;/aui:option&gt;
+	&lt;aui:option value="NC"&gt;North Carolina&lt;/aui:option&gt;
+	&lt;aui:option value="ND"&gt;North Dakota&lt;/aui:option&gt;
+	&lt;aui:option value="OH"&gt;Ohio&lt;/aui:option&gt;
+	&lt;aui:option value="OK"&gt;Oklahoma&lt;/aui:option&gt;
+	&lt;aui:option value="OR"&gt;Oregon&lt;/aui:option&gt;
+	&lt;aui:option value="PA"&gt;Pennsylvania&lt;/aui:option&gt;
+	&lt;aui:option value="RI"&gt;Rhode Island&lt;/aui:option&gt;
+	&lt;aui:option value="SC"&gt;South Carolina&lt;/aui:option&gt;
+	&lt;aui:option value="SD"&gt;South Dakota&lt;/aui:option&gt;
+	&lt;aui:option value="TN"&gt;Tennessee&lt;/aui:option&gt;
+	&lt;aui:option value="TX"&gt;Texas&lt;/aui:option&gt;
+	&lt;aui:option value="UT"&gt;Utah&lt;/aui:option&gt;
+	&lt;aui:option value="VT"&gt;Vermont&lt;/aui:option&gt;
+	&lt;aui:option value="VA"&gt;Virginia&lt;/aui:option&gt;
+	&lt;aui:option value="WA"&gt;Washington&lt;/aui:option&gt;
+	&lt;aui:option value="WV"&gt;West Virginia&lt;/aui:option&gt;
+	&lt;aui:option value="WI"&gt;Wisconsin&lt;/aui:option&gt;
+	&lt;aui:option value="WY"&gt;Wyoming&lt;/aui:option&gt;
+&lt;/aui:select&gt;
+          &lt;/aui:column&gt;
+        &lt;/aui:layout&gt;
+    &lt;/aui:fieldset&gt;
+
+    &lt;br /&gt;&lt;br /&gt;
+    &lt;aui:layout cssClass="shopping-cart-buttons"&gt;
+        &lt;aui:column cssClass="shopping-cart-buttons-proceed" first="true"&gt;
+            &lt;button type="button" class="btn btn-default" onClick='location.hash="#Shopping_Cart"' &gt;BACK TO CART&lt;/button&gt;
+        &lt;/aui:column&gt;
+        &lt;aui:column last="true"&gt;
+            &lt;button type="button" class="btn btn-primary" onClick='shoppingCart.@{$name}_save(function(){addressFlow.event("save");});' &gt;SAVE&lt;/button&gt;
+        &lt;/aui:column&gt;
+        &lt;aui:column last="true"&gt;
+            &lt;button type="button" class="btn btn-danger" onClick='addressFlow.event("cancel");' &gt;CANCEL&lt;/button&gt;
+        &lt;/aui:column&gt;
+    &lt;/aui:layout&gt;
+    &lt;script&gt;
+<addressModel name="@{$name}" __ideNodeOpen="true" model="AddressModel" instance="@{$name}Addresses" icon="Location_pin_on_map_24.png">id 0
+shipToThisAddress false
+sameShippingBilling false
+first_name "" .extend({ required: true })
+last_name "" .extend({ required: true })
+street1 "" .extend({ required: true })
+street2 ""
+telephone "" .extend({ required: true, phoneUS : true })
+city "" .extend({ required: true })
+state "" 
+zip "" .extend({ required: true, minLength:5, maxLength:5, number:true })</addressModel>
+    &lt;/script&gt;
+&lt;/div&gt;</component><component name="addressMain" transparent="" precode="" __ideNodeOpen="true">&lt;div data-bind="visible: address_state()==2"&gt;
+  &lt;aui:layout&gt;
+      &lt;aui:column columnWidth="50"&gt;
+<addressView title="Your shipping address" name="shippingAddresses" __ideNodeOpen="true">    &lt;div&gt;
+      &lt;span class="shopping-names"&gt;&lt;b data-bind="text: first_name"&gt;&lt;/b&gt; &lt;b data-bind="text: last_name"&gt;&lt;/b&gt;&lt;/span&gt;
+      &lt;a href="javascript:void(0)" data-bind="click: editThisAddress"&gt;Edit&lt;/a&gt; | &lt;a href="javascript:void(0)" data-bind="click: deleteThisAddress"&gt;Delete&lt;/a&gt;
+    &lt;/div&gt;
+    &lt;div&gt;
+      &lt;span data-bind="text: street1"&gt;&lt;/span&gt;
+      &lt;span data-bind="text: street2"&gt;&lt;/span&gt;
+    &lt;/div&gt;
+    &lt;div&gt;
+      &lt;span data-bind="text: city"&gt;&lt;/span&gt;,
+      &lt;span data-bind="text: state"&gt;&lt;/span&gt;
+      &lt;span data-bind="text: zip"&gt;&lt;/span&gt;
+    &lt;/div&gt;
+    &lt;div&gt;
+      Tel: &lt;span data-bind="text: telephone"&gt;&lt;/span&gt;
+    &lt;/div&gt;
+    &lt;div class="checkbox"&gt;
+        &lt;aui:input class="checkbox" type="checkbox" data-bind="checked: sameShippingBilling" name="ssb" label="" /&gt;
+        &lt;label for="ssb" &gt;Use this address as my billing address.&lt;/label&gt;
+    &lt;/div&gt;
+    &lt;div&gt;
+      &lt;button type="button" class="btn btn-primary" data-bind="disable: shipToThisAddress(), click: setShipToThisAddress"&gt;Ship to this address&lt;/button&gt;
+    &lt;/div&gt;
+    &lt;br /&gt;</addressView>    &lt;div&gt;
+      &lt;a href="javascript:voind(0)" onclick="addressFlow.event('shipping')"&gt;+ Add a new address&lt;/a&gt;
+    &lt;/div&gt;
+      &lt;/aui:column&gt;
+      &lt;aui:column columnWidth="50"&gt;
+<addressView title="Your billing address" name="billingAddresses" __ideNodeOpen="true">    &lt;div&gt;
+      &lt;span class="shopping-names"&gt;&lt;b data-bind="text: first_name"&gt;&lt;/b&gt; &lt;b data-bind="text: last_name"&gt;&lt;/b&gt;&lt;/span&gt;
+      &lt;a href="javascript:void(0)" data-bind="click: editThisAddress"&gt;Edit&lt;/a&gt; | &lt;a href="javascript:void(0)" data-bind="click: deleteThisAddress"&gt;Delete&lt;/a&gt;
+    &lt;/div&gt;
+    &lt;div&gt;
+      &lt;span data-bind="text: street1"&gt;&lt;/span&gt;
+      &lt;span data-bind="text: street2"&gt;&lt;/span&gt;
+    &lt;/div&gt;
+    &lt;div&gt;
+      &lt;span data-bind="text: city"&gt;&lt;/span&gt;,
+      &lt;span data-bind="text: state"&gt;&lt;/span&gt;
+      &lt;span data-bind="text: zip"&gt;&lt;/span&gt;
+    &lt;/div&gt;
+    &lt;div&gt;
+      Tel: &lt;span data-bind="text: telephone"&gt;&lt;/span&gt;
+    &lt;/div&gt;
+    &lt;div&gt;
+      &lt;button type="button" class="btn btn-primary" data-bind="disable: shipToThisAddress(), click: setShipToThisAddress"&gt;Bill to this address&lt;/button&gt;
+    &lt;/div&gt;
+    &lt;br /&gt;</addressView>    &lt;div&gt;
+      &lt;a href="javascript:voind(0)" onclick="addressFlow.event('billing')"&gt;+ Add a new address&lt;/a&gt;
+    &lt;/div&gt;
+      &lt;/aui:column&gt;
+  &lt;/aui:layout&gt;
+
+  &lt;br /&gt;&lt;br /&gt;
+  &lt;script&gt;
+  function shoppingCartVerifyAddresses(callback){
+    if(shoppingCart.shippingAddresses.getSelected().length===1
+        &amp;&amp; (shoppingCart.billingAddresses.getSelected().length===1
+            || shoppingCart.shippingAddresses.getSelected()[0].sameShippingBilling())) {
+      callback();
+    } else {
+      shoppingCartAlert("Please select one shipping and one billing address");
+    }
+  }
+  &lt;/script&gt;
+  &lt;aui:layout cssClass="shopping-cart-buttons"&gt;
+      &lt;aui:column cssClass="shopping-cart-buttons-proceed" last="true"&gt;
+          &lt;button type="button" class="btn btn-primary" onclick='shoppingCartVerifyAddresses(function(){computeTax();shoppingCart.nextTab();});'&gt;PROCEED TO PAYMENT&lt;/button&gt;
+      &lt;/aui:column&gt;
+      &lt;aui:column cssClass="shopping-cart-buttons-continue" first="true"&gt;
+          &lt;button type="button" class="btn btn-default" data-bind='click: gotoCart'&gt;BACK TO CART&lt;/button&gt;
+      &lt;/aui:column&gt;
+  &lt;/aui:layout&gt;
+&lt;/div&gt;</component></package><package name="credit_cards" type="" __ideNodeOpen="true"><component name="paymentDetails" transparent="" precode="" __ideNodeOpen="true">&lt;div data-bind="visible: payment_state()==1"&gt;
+  &lt;h3 class="header-title" style="display:inline"&gt; &lt;span&gt; Payment Details &lt;/span&gt; &lt;/h3&gt;
+    &lt;aui:fieldset class="group"&gt;
+        &lt;aui:layout&gt;
+          &lt;aui:column columnWidth="100"&gt;
+              &lt;aui:input name="@{$name}_card_holder" data-bind="value: @{$name}_card_holder" placeholder="Cardholder" label=""/&gt;
+          &lt;/aui:column&gt;
+
+          &lt;aui:column columnWidth="100"&gt;
+              &lt;aui:input name="@{$name}_card_number" data-bind="value: @{$name}_card_number" placeholder="Number" label=""/&gt;
+          &lt;/aui:column&gt;
+
+          &lt;aui:column columnWidth="100"&gt;
+            &lt;aui:layout&gt;
+              &lt;aui:column columnWidth="30"&gt;
+                &lt;span&gt;EXPIRATION DATE&lt;/span&gt;
+              &lt;/aui:column&gt;
+              &lt;aui:column columnWidth="20"&gt;
+                &lt;select data-bind="value: @{$name}_card_month"&gt;
+                  &lt;option value="01"&gt;01&lt;/option&gt;
+                  &lt;option value="02"&gt;02&lt;/option&gt;
+                  &lt;option value="03"&gt;03&lt;/option&gt;
+                  &lt;option value="04"&gt;04&lt;/option&gt;
+                  &lt;option value="05"&gt;05&lt;/option&gt;
+                  &lt;option value="06"&gt;06&lt;/option&gt;
+                  &lt;option value="07"&gt;07&lt;/option&gt;
+                  &lt;option value="08"&gt;08&lt;/option&gt;
+                  &lt;option value="09"&gt;09&lt;/option&gt;
+                  &lt;option value="10"&gt;10&lt;/option&gt;
+                  &lt;option value="11"&gt;11&lt;/option&gt;
+                  &lt;option value="12"&gt;12&lt;/option&gt;
+                &lt;/select&gt;
+              &lt;/aui:column&gt;
+              &lt;aui:column columnWidth="20"&gt;
+                &lt;select data-bind="value: @{$name}_card_year"&gt;
+                  &lt;option value="15"&gt;15&lt;/option&gt;
+                  &lt;option value="16"&gt;16&lt;/option&gt;
+                  &lt;option value="17"&gt;17&lt;/option&gt;
+                  &lt;option value="18"&gt;18&lt;/option&gt;
+                  &lt;option value="19"&gt;19&lt;/option&gt;
+                  &lt;option value="20"&gt;20&lt;/option&gt;
+                &lt;/select&gt;
+              &lt;/aui:column&gt;
+              &lt;aui:column columnWidth="30"&gt;
+                &lt;aui:input name="@{$name}_card_cvv" data-bind="value: @{$name}_card_cvv" placeholder="CVV" label=""/&gt;
+              &lt;/aui:column&gt;
+            &lt;/aui:layout&gt;
+          &lt;/aui:column&gt;
+
+          &lt;aui:column columnWidth="100"&gt;
+            &lt;div class="checkbox"&gt;
+                &lt;aui:input class="checkbox" type="checkbox" name="@{$name}_terms" data-bind="checked: @{$name}_terms" label="" /&gt;
+                &lt;label for="@{$name}_cvv"&gt;I accept the &lt;a href="javascript:showTermsAndCondions(0)"&gt;Terms &amp;amp; Conditions&lt;/a&gt;&lt;/label&gt;
+            &lt;/div&gt;
+          &lt;/aui:column&gt;
+
+        &lt;/aui:layout&gt;
+    &lt;/aui:fieldset&gt;
+&lt;script&gt;
+function shoppingCartValidatePaymentCC(callback){
+  if(  shoppingCartValidateField(shoppingCart.@{$name}_card_holder)
+      &amp;&amp; shoppingCartValidateField(shoppingCart.@{$name}_card_number)
+      &amp;&amp; shoppingCartValidateField(shoppingCart.@{$name}_card_cvv)
+    ) {
+    if(!shoppingCart.@{$name}_terms()){
+      shoppingCartAlert("Please read and accept the Terms and Conditions");
+      return;
+    }
+    var aa=new Date();
+    if( parseInt(shoppingCart.@{$name}_card_year()) &gt; (aa.getFullYear() % 100)) {
+      callback();
+    } else if( parseInt(shoppingCart.@{$name}_card_year()) == (aa.getFullYear() % 100)) {
+      if( parseInt(shoppingCart.@{$name}_card_month()) &gt; (aa.getMonth()+1)) {
+        callback();
+      } else {
+        shoppingCartAlert("Invalid expiration date");
+      }
+    } else {
+      shoppingCartAlert("Invalid expiration date");
+    }
+  } else {
+  }
+}
+&lt;/script&gt;
+    &lt;br /&gt;&lt;br /&gt;
+    &lt;aui:layout cssClass="shopping-cart-buttons"&gt;
+        &lt;aui:column cssClass="shopping-cart-buttons-proceed" first="true"&gt;
+            &lt;button style="display:none;" type="button" class="btn btn-default" onClick='location.hash="#Shopping_Cart"' &gt;BACK TO CART&lt;/button&gt;
+        &lt;/aui:column&gt;
+        &lt;aui:column last="true"&gt;
+            &lt;button type="button" class="btn btn-primary" onClick='shoppingCartValidatePaymentCC(function(){ shoppingCart.@{$name}_save();paymentFlow.event("save"); });' &gt;SAVE&lt;/button&gt;
+        &lt;/aui:column&gt;
+        &lt;aui:column last="true"&gt;
+            &lt;button type="button" class="btn btn-danger" onClick='paymentFlow.event("cancel");' &gt;CANCEL&lt;/button&gt;
+        &lt;/aui:column&gt;
+    &lt;/aui:layout&gt;
+    &lt;script&gt;<addressModel name="@{$name}" __ideNodeOpen="true" model="CreditCardModel" instance="creditCards" icon="Credit_Cards_Payment_24.png">id 0
+card_holder "" .extend({ required: true })
+card_number "" .extend({ required: true, number:true })
+card_month "07"
+card_year "15"
+card_cvv "" .extend({ required: true, minLength:3, maxLength:4, number:true })
+card_type ""
+terms false .extend({ required: true })</addressModel>
+    &lt;/script&gt;
+&lt;/div&gt;</component><component name="paymentMain" transparent="" precode="" __ideNodeOpen="true">&lt;div data-bind="visible: payment_state()==2"&gt;
+<addressView title="Payment Details" name="creditCards" __ideNodeOpen="true">    &lt;div&gt;
+      &lt;span class="shopping-names"&gt;&lt;b data-bind="text: card_holder"&gt;&lt;/b&gt;&lt;/span&gt;
+      &lt;a href="javascript:void(0)" data-bind="click: editThis"&gt;Edit&lt;/a&gt; | &lt;a href="javascript:void(0)" data-bind="click: deleteThis"&gt;Delete&lt;/a&gt;
+    &lt;/div&gt;
+    &lt;div&gt;
+      &lt;img data-bind="attr:{src:card_image()}" style="height:32px"&gt; &lt;span data-bind="text: card_type()"&gt;&lt;/span&gt; &lt;span data-bind="text: card_number_hidden"&gt;&lt;/span&gt;
+    &lt;/div&gt;
+    &lt;br /&gt;
+    &lt;div&gt;
+      &lt;button type="button" class="btn btn-primary" data-bind="disable: billToThis(), click: setBillToThis"&gt;Choose this&lt;/button&gt;
+    &lt;/div&gt;
+</addressView>    &lt;div&gt;
+      &lt;a href="javascript:voind(0)" onclick="paymentFlow.event('new')"&gt;+ Add a new payment method&lt;/a&gt;
+    &lt;/div&gt;
+&lt;script&gt;
+function shoppingCartValidatePaymentSelected(callback){
+  if(shoppingCart.creditCards.getSelected().length===1){
+    callback();
+  } else {
+    shoppingCartAlert("Please select a payment method");
+  }
+}
+&lt;/script&gt;
+  &lt;br /&gt;&lt;br /&gt;
+  &lt;aui:layout cssClass="shopping-cart-buttons"&gt;
+      &lt;aui:column cssClass="shopping-cart-buttons-proceed" last="true"&gt;
+          &lt;button type="button" class="btn btn-primary" onclick='shoppingCartValidatePaymentSelected(function(){paymentFlow.event("confirm")});'&gt;PROCEED TO PAYMENT&lt;/button&gt;
+      &lt;/aui:column&gt;
+      &lt;aui:column cssClass="shopping-cart-buttons-continue" first="true"&gt;
+          &lt;button type="button" class="btn btn-default" onclick='location.hash="#Shopping_Shipping"'&gt;BACK TO DELIVERY&lt;/button&gt;
+      &lt;/aui:column&gt;
+  &lt;/aui:layout&gt;
+&lt;/div&gt;</component><component name="paymentConfirm" transparent="" precode="" __ideNodeOpen="true">&lt;div data-bind="visible: payment_state()==3"&gt;
+  &lt;h3 class="header-title" style="display:inline"&gt; &lt;span&gt; @{$title} &lt;/span&gt; &lt;/h3&gt;
+&lt;aui:layout&gt;<addressViewCurrent title="Your shipping address" name="shippingAddresses" __ideNodeOpen="true" onclick="paymentFlow.event('changeShipping');">    &lt;div&gt;
+      &lt;b data-bind="text: first_name"&gt;&lt;/b&gt; &lt;b data-bind="text: last_name"&gt;&lt;/b&gt;
+    &lt;/div&gt;
+    &lt;div&gt;
+      &lt;span data-bind="text: street1"&gt;&lt;/span&gt;
+      &lt;span data-bind="text: street2"&gt;&lt;/span&gt;
+    &lt;/div&gt;
+    &lt;div&gt;
+      &lt;span data-bind="text: city"&gt;&lt;/span&gt;,
+      &lt;span data-bind="text: state"&gt;&lt;/span&gt;
+      &lt;span data-bind="text: zip"&gt;&lt;/span&gt;
+    &lt;/div&gt;
+    &lt;div&gt;
+      Tel: &lt;span data-bind="text: telephone"&gt;&lt;/span&gt;
+    &lt;/div&gt;
+    &lt;br /&gt;
+
+</addressViewCurrent><addressViewCurrent title="Your billing address" name="billingAddresses" __ideNodeOpen="true" onclick="paymentFlow.event('changeBilling');">    &lt;div&gt;
+      &lt;b data-bind="text: first_name"&gt;&lt;/b&gt; &lt;b data-bind="text: last_name"&gt;&lt;/b&gt;
+    &lt;/div&gt;
+    &lt;div&gt;
+      &lt;span data-bind="text: street1"&gt;&lt;/span&gt;
+      &lt;span data-bind="text: street2"&gt;&lt;/span&gt;
+    &lt;/div&gt;
+    &lt;div&gt;
+      &lt;span data-bind="text: city"&gt;&lt;/span&gt;,
+      &lt;span data-bind="text: state"&gt;&lt;/span&gt;
+      &lt;span data-bind="text: zip"&gt;&lt;/span&gt;
+    &lt;/div&gt;
+    &lt;div&gt;
+      Tel: &lt;span data-bind="text: telephone"&gt;&lt;/span&gt;
+    &lt;/div&gt;
+    &lt;br /&gt;</addressViewCurrent><addressViewCurrent title="Payment Method" name="creditCards" __ideNodeOpen="true" onclick="paymentFlow.event('changeCC');">    &lt;div&gt;
+      &lt;b data-bind="text: card_holder"&gt;&lt;/b&gt;
+    &lt;/div&gt;
+    &lt;div&gt;
+      &lt;img data-bind="attr:{src:card_image()}" style="height:32px"&gt; &lt;span data-bind="text: card_type()"&gt;&lt;/span&gt; &lt;span data-bind="text: card_number_hidden"&gt;&lt;/span&gt;
+    &lt;/div&gt;
+    &lt;br /&gt;
+</addressViewCurrent>&lt;/aui:layout&gt;
+  &lt;div&gt;
+    &lt;table style="width:100%" class="table table-hover table-striped"&gt;
+      &lt;tbody&gt;
+        &lt;tr&gt;
+          &lt;th&gt;
+            &lt;b&gt;ADDED ITEMS&lt;/b&gt;
+          &lt;/th&gt;
+          &lt;th&gt;
+            &lt;b&gt;SIZE&lt;/b&gt;
+          &lt;/th&gt;
+          &lt;th&gt;
+            &lt;b&gt;QUANTITY&lt;/b&gt;
+          &lt;/th&gt;
+          &lt;th&gt;
+            &lt;b&gt;PRICE&lt;/b&gt;
+          &lt;/th&gt;
+          &lt;th&gt;
+            &lt;b&gt;TOTAL&lt;/b&gt;
+          &lt;/th&gt;
+        &lt;/tr&gt;
+      &lt;/tbody&gt;
+      &lt;tbody data-bind="foreach:items"&gt;
+        &lt;tr data-bind="if: quantity()&gt;0"&gt;
+          &lt;td&gt;
+            &lt;span style="display:inline-block;vertical-align:top;margin-bottom:8px;"&gt;&lt;img style="height:64px;" data-bind="attr:{src:image}"&gt;&lt;/span&gt;
+            &lt;span style="display:inline-block;vertical-align:top;margin-bottom:8px;"&gt;&lt;div data-bind="text:product"&gt;&lt;/div&gt;&lt;div data-bind="text:designer"&gt;&lt;/div&gt;&lt;/span&gt;
+          &lt;/td&gt;
+          &lt;td&gt;
+            &lt;span data-bind="text:size"&gt;&lt;/span&gt;
+          &lt;/td&gt;
+          &lt;td&gt;
+            &lt;span data-bind="text:quantity"&gt;&lt;/span&gt;
+          &lt;/td&gt;
+          &lt;td&gt;
+            &lt;span data-bind="text:currencyFormat.format(price())"&gt;&lt;/span&gt;
+          &lt;/td&gt;
+          &lt;td&gt;
+            &lt;span data-bind="text:total"&gt;&lt;/span&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+      &lt;/tbody&gt;
+    &lt;/table&gt;
+    &lt;aui:layout cssClass="shopping-cart-totals"&gt;
+        &lt;aui:column cssClass="shopping-cart-totals-label" first="true"&gt;
+            COUPON
+        &lt;/aui:column&gt;
+        &lt;aui:column cssClass="shopping-cart-totals-total" last="true"&gt;
+            &lt;input data-bind="value: coupon" style="width: 100%;"&gt;
+        &lt;/aui:column&gt;
+    &lt;/aui:layout&gt;
+    &lt;aui:layout cssClass="shopping-cart-totals"&gt;
+        &lt;aui:column cssClass="shopping-cart-totals-label" first="true"&gt;
+            TOTAL BEFORE TAX
+        &lt;/aui:column&gt;
+        &lt;aui:column cssClass="shopping-cart-totals-total" last="true"&gt;
+            &lt;span data-bind="text: totalBeforeTax"&gt;&lt;/span&gt;
+        &lt;/aui:column&gt;
+    &lt;/aui:layout&gt;
+    &lt;aui:layout cssClass="shopping-cart-totals"&gt;
+        &lt;aui:column cssClass="shopping-cart-totals-label" first="true"&gt;
+            TAX
+        &lt;/aui:column&gt;
+        &lt;aui:column cssClass="shopping-cart-totals-total" last="true"&gt;
+            &lt;span data-bind="text: tax()"&gt;&lt;/span&gt;
+        &lt;/aui:column&gt;
+    &lt;/aui:layout&gt;
+  &lt;/div&gt;
+  &lt;br /&gt;&lt;br /&gt;
+  &lt;aui:layout cssClass="shopping-cart-buttons"&gt;
+      &lt;aui:column cssClass="shopping-cart-buttons-proceed" last="true"&gt;
+          &lt;button type="button" class="btn btn-primary" data-bind='click: payForAll'&gt;PROCEED TO PAYMENT &lt;span data-bind="text: currencyFormat.format(finalTotal())"&gt;&lt;/span&gt;&lt;/button&gt;
+      &lt;/aui:column&gt;
+      &lt;aui:column cssClass="shopping-cart-buttons-continue" first="true"&gt;
+          &lt;button type="button" class="btn btn-default" onclick='location.hash="#Shopping_Shipping"'&gt;BACK TO DELIVERY&lt;/button&gt;
+      &lt;/aui:column&gt;
+  &lt;/aui:layout&gt;
+&lt;/div&gt;</component></package><component name="dun" transparent="" precode="" engine="js" __ideNodeOpen="true">print("Hola "+name);
+</component></package><jsp name="cart.jsp" preprocess="" __ideNodeOpen="true"><cart __ideNodeOpen="true"><wizard __ideNodeOpen="true"><wizard_button onclick="" name="Shopping_Cart" active="1" title="CART" __ideNodeOpen="true"/><wizard_button onclick="" name="Shopping_Shipping" active="0" title="DELIVERY"/><wizard_button onclick="" name="Shopping_Payment" active="0" title="PAYMENT"/><wizard_button onclick="" name="Shopping_Receipt" active="0" title="THANK YOU"/></wizard>&lt;style&gt;
+.shopping-cart-table * table thead tr th:nth-child(3){
+  width:20%;
+}
+.shopping-confirm-block {
+  display: inline-block;
+  vertical-align: top;
+  margin-right: 2em;
+}
+.shopping-form {
+  padding:2em;
+}
+.shopping-names{
+  font-size: 150%;
+  margin-right: 2em;
+}
+.validationMessage{
+  color: red;
+  font-size: 90%;
+}
+.validationElement{
+  outline: 1px solid red;
+}
+.tiembla{
+  -webkit-animation: tiembla 0.7s infinite;
+  -webkit-transition: tiembla 0.7s infinite;
+     -moz-transition: tiembla 0.7s infinite;
+      -ms-transition: tiembla 0.7s infinite;
+       -o-transition: tiembla 0.7s infinite;
+          transition: tiembla 0.7s infinite;
+}
+@-webkit-keyframes tiembla{
+	0%  { -webkit-transform:rotateZ(-5deg); }
+	50% { -webkit-transform:rotateZ( 0deg) scale(.8); }
+	100%{ -webkit-transform:rotateZ( 5deg); }
+}
+&lt;/style&gt;
+&lt;i class="shopping-cart-portlet"&gt;&lt;/i&gt;
+&lt;script&gt;
+ko.validation.configuration.decorateInputElement=true;
+var vendors = ['-moz-','-webkit-','-o-','-ms-','-khtml-',''];
+function toCamelCase(str){
+  return str.toLowerCase().replace(/(\-[a-z])/g, function($1){return $1.toUpperCase().replace('-','');});
+};
+function setCss3Style(el,prop,val){
+  for(var i=0,l=vendors.length;i&lt;l;i++)
+    el.style[toCamelCase(vendors[i] + prop)] = val;
+};
+Liferay.on('&lt;portlet:namespace /&gt;:portletRefreshed', function(){
+  console.log('Please document me.');
+});
+$.fn.animatePortlet=function(){
+  var $me=this;
+  var $content=this.find(".portlet-content-container");
+  var o={
+    "$me":$me,
+    id:$me.find("span:first").attr("id"),
+    left:$me.offset().left,
+    top:$me.offset().top,
+    width:$me.width(),
+    height:$me.height(),
+    hideMe:function(){
+      $me.addClass("portlet-minimized");
+      $content.addClass("hide");
+    },
+    showMe:function(){
+      $me.removeClass("portlet-minimized");
+      $content.removeClass("hide");
+    },
+    refreshPortlet:function(id){
+      Liferay.Portlet.refresh('#p_p_id&lt;portlet:namespace /&gt;');
+      //location.hash="#Shopping_Cart";
+    },
+    add2cart:function(img, callback){
+      try{
+        this.showMe();
+        $from=$(img);
+        $aa=$("&lt;img /&gt;");
+        $aa.attr("src",$from.attr("src"));
+        var left=$from.offset().left;
+        var top=$from.offset().top;
+        var width=$from.width();
+        var height=$from.height();
+        $aa.css({
+          position:"absolute",
+          left:left,
+          top:top,
+          width:width,
+          height:height
+        });
+        $("body").append($aa);
+        setCss3Style($aa[0],'transition','transform 2s');
+        var diffX=this.left+this.width/2-(left+width/2);
+        var diffY=this.top+100-(top+height/2);
+        var diffZ=Math.min(16/width,16/height);
+        console.log("translate("+diffX+"px,"+diffY+"px) scale("+diffZ+")");
+        setTimeout(function(){$aa.css("transform","translate("+diffX+"px,"+diffY+"px) scale("+diffZ+")");}, 200);
+      } catch(ee) {
+      }
+      setTimeout(function(){
+        //TODO: Add item to shopping cart
+        callback();
+        $aa.remove();
+      }, 2200);
+      return $aa;
+    }
+  };
+  return o;
+};
+var hiddenShoppingCart;
+hiddenShoppingCart=$(".shopping-cart-portlet").parents(".portlet-boundary").animatePortlet();
+function hideShoppingCart(){
+  hiddenShoppingCart.hideMe();
+}
+function shoppingCartAlert(msg){
+  $('&lt;div class="memo-wizard-bar" style="background:white;color:red;padding:2em;"&gt;'+msg+'&lt;/div&gt;').bPopup({
+            opacity:0.05,
+            transition: 'slideIn',
+	    transitionClose: 'slideBack'
+        });
+}
+function shoppingCartAjaxIcon(img){
+  return $('&lt;img class="tiembla" src="/html/css/'+img+'" /&gt;').bPopup({
+            opacity:0.1
+        });
+}
+function shoppingCartValidateField(koObservable){
+  var aa=koObservable();
+  !koObservable.isValid()?(aa===false?koObservable(true):koObservable(false)):false;
+  koObservable(aa);
+  return koObservable.isValid();
+}
+&lt;/script&gt;
+&lt;!--
+---------------------------------------------------------------------------------
+This calls the cart in Trial Mode:
+---------------------------------------------------------------------------------
+
+&lt;portlet:renderURL var="redirectURL"&gt;
+    &lt;portlet:param name="struts_action" value="/shopping/cart" /&gt;
+    &lt;portlet:param name="redirect" value="&lt;%= currentURL %&gt;" /&gt;
+    &lt;portlet:param name="cart_mode" value="trial" /&gt;
+&lt;/portlet:renderURL&gt;
+
+This calls the cart in Retail Mode:
+&lt;portlet:renderURL var="redirectURL"&gt;
+    &lt;portlet:param name="struts_action" value="/shopping/cart" /&gt;
+    &lt;portlet:param name="redirect" value="&lt;%= currentURL %&gt;" /&gt;
+    &lt;portlet:param name="cart_mode" value="retail" /&gt;
+&lt;/portlet:renderURL&gt;
+---------------------------------------------------------------------------------
+--&gt;
+
+&lt;script&gt;
+    currencyFormat = new DecimalFormat('$ #,###.00');
+    var shoppingCart = {
+        items: ko.observableArray(),
+    };
+    function ShoppingItem(init) {
+        var me = this;
+        this.id = ko.observable(init.id);
+        this.image = ko.observable(init.image);
+        this.product = ko.observable(init.product);
+        this.designer = ko.observable(init.designer);
+        this.size = ko.observable(init.size);
+        this.quantity = ko.observable(init.quantity).extend({ required: true, number:true, min:1 });
+        this.price = ko.observable(init.price);
+        this.total = ko.computed(function () {
+            return currencyFormat.format(this.quantity() * this.price());
+        }, this);
+        this.quantity.subscribe(function(){
+          shoppingCartUpdate();
+        });
+        this.size.subscribe(function(){
+          shoppingCartUpdate();
+        });
+    }
+    function AddressModel(init) {
+        var me=this;
+        this.id=ko.observable(init.id);
+        this.shipToThisAddress=ko.observable(init.shipToThisAddress);
+        this.sameShippingBilling=ko.observable(init.sameShippingBilling);
+        this.first_name=ko.observable(init.first_name).extend({ required: true });
+        this.last_name=ko.observable(init.last_name).extend({ required: true });
+        this.street1=ko.observable(init.street1).extend({ required: true });
+        this.street2=ko.observable(init.street2);
+        this.telephone=ko.observable(init.telephone).extend({ required: true });
+        this.city=ko.observable(init.city).extend({ required: true });
+        this.state=ko.observable(init.state).extend({ required: true });
+        this.zip=ko.observable(init.zip).extend({ required: true });
+        this.setShipToThisAddress=function(){
+          var i=shoppingCart.shippingAddresses().indexOf(me);
+          var j=shoppingCart.billingAddresses().indexOf(me);
+          if(i&gt;=0){
+            shoppingCart.shippingAddresses().forEach(function(address){
+              address.shipToThisAddress(false);
+            });
+          } else if(j&gt;=0){
+            shoppingCart.billingAddresses().forEach(function(address){
+              address.shipToThisAddress(false);
+            });
+          }
+          me.shipToThisAddress(true);
+        }
+        this.editThisAddress=function(){
+          var i=shoppingCart.shippingAddresses().indexOf(me);
+          if(i&gt;=0){
+            addressFlow.event('shipping');
+            shoppingCart.shipping_edit(me);
+          }
+          i=shoppingCart.billingAddresses().indexOf(me);
+          if(i&gt;=0){
+            addressFlow.event('billing');
+            shoppingCart.billing_edit(me);
+          }
+        }
+        this.deleteThisAddress=function(){
+          var i=shoppingCart.shippingAddresses().indexOf(me);
+          if(i&gt;=0){
+            shoppingCart.shippingAddresses.splice(i,1);
+            $.ajax("/c/shopping/cartStripe", {
+              data: {
+                "action": "shippingDelete",
+                "id": me.id()
+              },
+              success: function(res){
+                try {
+                  var json=JSON.parse(res);
+                  if(typeof json.error=="string"){
+                    console.log(json.error);
+                  } else {
+                    addressFlow.state(0);
+                    addressFlow.event("start");
+                  }
+                } catch(e) {}
+              }
+            });
+            addressFlow.event('delete');
+          }
+          i=shoppingCart.billingAddresses().indexOf(me);
+          if(i&gt;=0){
+            shoppingCart.billingAddresses.splice(i,1);
+            $.ajax("/c/shopping/cartStripe", {
+              data: {
+                "action": "billingDelete",
+                "id": me.id()
+              },
+              success: function(res){
+                try{
+                  var json=JSON.parse(res);
+                  if(typeof json.error=="string"){
+                    console.log(json.error);
+                  } else {
+                    addressFlow.state(0);
+                    addressFlow.event("start");
+                  }
+                } catch(e) {}
+              }
+            });
+            addressFlow.event('delete');
+          }
+        }
+    }
+    function CreditCardModel(init) {
+        var me=this;
+        this.id=ko.observable(init.id);
+        this.card_holder=ko.observable(init.card_holder);
+        this.card_number=ko.observable(init.card_number);
+        this.card_month=ko.observable(init.card_month);
+        this.card_year=ko.observable(init.card_year);
+        this.card_cvv=ko.observable(init.card_cvv);
+        this.terms=ko.observable(init.terms);
+        this.billToThis=ko.observable(false);
+        this.card_image = ko.computed(function() {
+            var ccImages={
+              "Visa":"visa.png",
+              "Mastercard":"mastercard.png",
+              "AMEX":"amex.png",
+              "Discover":"discover.png",
+              "Diners":"diners.png",
+              "Diners - Carte Blanche":"diners-carteblanche.png",
+              "JCB":"jcb.png",
+              "Visa Electron":"visa.png"
+            }
+            return "/html/css/"+ccImages[GetCardType(me.card_number())];
+        }, this);
+        this.card_type = ko.computed(function() {
+            return GetCardType(me.card_number());
+        }, this);
+        this.card_number_hidden = ko.computed(function() {
+            var l=me.card_number().length;
+            return "****"+me.card_number().substr(l/3,l/3)+"****";
+        }, this);
+        this.setBillToThis=function(){
+          shoppingCart.creditCards().forEach(function(cc){
+            cc.billToThis(false);
+          });
+          me.billToThis(true);
+        }
+        this.editThis=function(){
+          var i=shoppingCart.creditCards().indexOf(me);
+          if(i&gt;=0){
+            shoppingCart.payment_edit(me);
+            paymentFlow.event('edit');
+          }
+        }
+        this.deleteThis=function(){
+          var i=shoppingCart.creditCards().indexOf(me);
+          if(i&gt;=0){
+            shoppingCart.creditCards.splice(i,1);
+            $.ajax("/c/shopping/cartStripe", {
+              data: {
+                "action": "paymentDelete",
+                "id": me.id()
+              },
+              success: function(res){
+                try{
+                  var json=JSON.parse(res);
+                  if(typeof json.error=="string"){
+                    console.log(json.error);
+                  } else {
+                    paymentFlow.state(0);
+                    paymentFlow.event("start");
+                  }
+                } catch(e) {}
+              }
+            });
+            paymentFlow.event('delete');
+          }
+        }
+        function GetCardType(number)
+        {
+            // visa
+            var re = new RegExp("^4");
+            if (number.match(re) != null)
+                return "Visa";
+        
+            // Mastercard
+            re = new RegExp("^5[1-5]");
+            if (number.match(re) != null)
+                return "Mastercard";
+        
+            // AMEX
+            re = new RegExp("^3[47]");
+            if (number.match(re) != null)
+                return "AMEX";
+        
+            // Discover
+            re = new RegExp("^(6011|622(12[6-9]|1[3-9][0-9]|[2-8][0-9]{2}|9[0-1][0-9]|92[0-5]|64[4-9])|65)");
+            if (number.match(re) != null)
+                return "Discover";
+        
+            // Diners
+            re = new RegExp("^36");
+            if (number.match(re) != null)
+                return "Diners";
+        
+            // Diners - Carte Blanche
+            re = new RegExp("^30[0-5]");
+            if (number.match(re) != null)
+                return "Diners - Carte Blanche";
+        
+            // JCB
+            re = new RegExp("^35(2[89]|[3-8][0-9])");
+            if (number.match(re) != null)
+                return "JCB";
+        
+            // Visa Electron
+            re = new RegExp("^(4026|417500|4508|4844|491(3|7))");
+            if (number.match(re) != null)
+                return "Visa Electron";
+        
+            return "";
+        }
+    }
+    &lt;%
+  String mode=request.getParameter("mode");
+  if(mode==null) mode="trial";
+  if(mode.equals("")) mode="trial";
+
+  StringBundler script=new StringBundler();
+    %&gt;
+&lt;/script&gt;
+&lt;%
+String redirect = ParamUtil.getString(request, "redirect");
+
+ShoppingCart cart = ShoppingUtil.getCart(renderRequest);
+
+Map&lt;ShoppingCartItem, Integer&gt; items = cart.getItems();
+
+ShoppingCoupon coupon = cart.getCoupon();
+
+boolean minQuantityMultiple = PrefsPropsUtil.getBoolean(company.getCompanyId(), PropsKeys.SHOPPING_CART_MIN_QTY_MULTIPLE);
+%&gt;
+
+&lt;aui:script position="inline"&gt;
+    var itemsInStock = true;
+
+    function &lt;portlet:namespace /&gt;checkout() {
+      if (!itemsInStock) {
+        if (confirm("&lt;%= UnicodeLanguageUtil.get(pageContext, "your-cart-has-items-that-are-out-of-stock") %&gt;")) {
+          document.&lt;portlet:namespace /&gt;fm.&lt;portlet:namespace /&gt;&lt;%= Constants.CMD %&gt;.value = "&lt;%= Constants.CHECKOUT %&gt;";
+          document.&lt;portlet:namespace /&gt;fm.&lt;portlet:namespace /&gt;redirect.value = "&lt;portlet:actionURL&gt;&lt;portlet:param name="struts_action" value="/shopping/checkout" /&gt;&lt;/portlet:actionURL&gt;";
+          &lt;portlet:namespace /&gt;updateCart();
+        }
+      }
+      else {
+        document.&lt;portlet:namespace /&gt;fm.&lt;portlet:namespace /&gt;&lt;%= Constants.CMD %&gt;.value = "&lt;%= Constants.CHECKOUT %&gt;";
+        document.&lt;portlet:namespace /&gt;fm.&lt;portlet:namespace /&gt;redirect.value = "&lt;portlet:actionURL&gt;&lt;portlet:param name="struts_action" value="/shopping/checkout" /&gt;&lt;/portlet:actionURL&gt;";
+        &lt;portlet:namespace /&gt;updateCart();
+      }
+    }
+
+    function &lt;portlet:namespace /&gt;emptyCart() {
+      document.&lt;portlet:namespace /&gt;fm.&lt;portlet:namespace /&gt;itemIds.value = "";
+      document.&lt;portlet:namespace /&gt;fm.&lt;portlet:namespace /&gt;couponCodes.value = "";
+  
+      submitForm(document.&lt;portlet:namespace /&gt;fm);
+    }
+
+    function &lt;portlet:namespace /&gt;updateCart() {
+    var count = 0;
+    var invalidSKUs = "";
+    var itemIds = "";
+    var subtotal = 0;
+
+    &lt;%
+    int itemsCount= 0;
+
+    for (ShoppingCartItem cartItem : items.keySet()) {
+            ShoppingItem item = cartItem.getItem();
+
+            ShoppingItemPrice[] itemPrices = (ShoppingItemPrice[])ShoppingItemPriceLocalServiceUtil.getItemPrices(item.getItemId()).toArray(new ShoppingItemPrice[0]);
+
+            int maxQuantity = _getMaxQuantity(itemPrices);
+    %&gt;
+
+    count = document.&lt;portlet:namespace /&gt;fm.&lt;portlet:namespace /&gt;item_&lt;%= item.getItemId() %&gt;_&lt;%= itemsCount %&gt;_count.value;
+
+    subtotal += &lt;%= ShoppingUtil.calculateActualPrice(item, 1) %&gt; * count;
+
+    if ((count == "") || isNaN(count) || (count &lt; 0) || ((count &gt; &lt;%= maxQuantity %&gt;) &amp;&amp; (&lt;%= maxQuantity %&gt; &gt; 0))) {
+    if (invalidSKUs != "") {
+    invalidSKUs += ", ";
+    }
+
+    invalidSKUs += "&lt;%= HtmlUtil.escapeJS(item.getSku()) %&gt;";
+    }
+
+    for (var i = 0; i &lt; count; i++) {
+    itemIds += "&lt;%= HtmlUtil.escapeJS(cartItem.getCartItemId()) %&gt;,";
+    }
+
+    count = 0;
+
+    &lt;%
+            itemsCount++;
+    }
+    %&gt;
+
+    if (document.&lt;portlet:namespace /&gt;fm.&lt;portlet:namespace /&gt;&lt;%= Constants.CMD %&gt;.value == '&lt;%= Constants.CHECKOUT %&gt;') {
+    if (subtotal &lt; &lt;%= shoppingPrefs.getMinOrder() %&gt;) {
+    document.&lt;portlet:namespace /&gt;fm.&lt;portlet:namespace /&gt;&lt;%= Constants.CMD %&gt;.value = '&lt;%= Constants.UPDATE %&gt;'
+    document.&lt;portlet:namespace /&gt;fm.&lt;portlet:namespace /&gt;redirect.value = '&lt;%= currentURL %&gt;';
+
+    alert('&lt;%= UnicodeLanguageUtil.format(pageContext, "your-order-cannot-be-processed-because-it-falls-below-the-minimum-required-amount-of-x", currencyFormat.format(shoppingPrefs.getMinOrder()), false) %&gt;');
+
+    return;
+    }
+    }
+
+    document.&lt;portlet:namespace /&gt;fm.&lt;portlet:namespace /&gt;itemIds.value = itemIds;
+
+    if (invalidSKUs == "") {
+    submitForm(document.&lt;portlet:namespace /&gt;fm);
+    }
+    else {
+    alert("&lt;%= UnicodeLanguageUtil.get(pageContext, "please-enter-valid-quantities-for-the-following-skus") %&gt;" + invalidSKUs);
+    }
+    }
+&lt;/aui:script&gt;
+
+&lt;portlet:actionURL var="cartURL"&gt;
+    &lt;portlet:param name="struts_action" value="/shopping/cart" /&gt;
+&lt;/portlet:actionURL&gt;
+&lt;portlet:actionURL var="submitToShipping"&gt;
+    &lt;portlet:param name="struts_action" value="/shopping/cartShipping" /&gt;
+&lt;/portlet:actionURL&gt;
+&lt;portlet:renderURL var="gotoShipping"&gt;
+    &lt;portlet:param name="struts_action" value="/shopping/cartShipping" /&gt;
+    &lt;portlet:param name="redirect" value="&lt;%= currentURL %&gt;" /&gt;
+&lt;/portlet:renderURL&gt;
+
+&lt;aui:form cssClass="shopping-form" action="&lt;%= cartURL %&gt;" method="post" name="fm" onSubmit='&lt;%= "event.preventDefault(); " + renderResponse.getNamespace() + "saveCart();" %&gt;'&gt;
+    &lt;aui:input name="&lt;%= Constants.CMD %&gt;" type="hidden" value="&lt;%= Constants.UPDATE %&gt;" /&gt;
+    &lt;aui:input name="redirect" type="hidden" value="&lt;%= currentURL %&gt;" /&gt;
+    &lt;aui:input name="itemIds" type="hidden" /&gt;
+    &lt;input id="userId" type="hidden" value="${user.userId}"/&gt;
+    &lt;input id="groupId" type="hidden" value="${user.groupId}"/&gt;
+<progressTab name="Shopping_Cart" title="Shopping Cart" __ideNodeOpen="true">
+    &lt;liferay-ui:error exception="&lt;%= CartMinQuantityException.class %&gt;"&gt;
+
+        &lt;%
+        CartMinQuantityException cmqe = (CartMinQuantityException)errorException;
+
+        long[] badItemIds = StringUtil.split(cmqe.getMessage(), 0L);
+        %&gt;
+
+        &lt;liferay-ui:message key="all-quantities-must-be-greater-than-the-minimum-quantity-of-the-item" /&gt;&lt;br /&gt;
+
+        &lt;c:if test="&lt;%= minQuantityMultiple %&gt;"&gt;
+            &lt;br /&gt;
+
+            &lt;liferay-ui:message key="all-quantities-must-be-a-multiple-of-the-minimum-quantity-of-the-item" /&gt;&lt;br /&gt;
+        &lt;/c:if&gt;
+
+        &lt;liferay-ui:message key="please-reenter-your-quantity-for-the-items-with-the-following-skus" /&gt;
+
+        &lt;%
+        for (int i = 0; i &lt; badItemIds.length; i++) {
+                ShoppingItem item = ShoppingItemServiceUtil.getItem(badItemIds[i]);
+        %&gt;
+
+        &lt;strong&gt;&lt;%= HtmlUtil.escape(item.getSku()) %&gt;&lt;/strong&gt;&lt;c:if test="&lt;%= i + 1 &lt; badItemIds.length %&gt;"&gt;,&lt;/c:if&gt;
+
+        &lt;%
+        }
+        %&gt;
+
+    &lt;/liferay-ui:error&gt;
+    &lt;liferay-ui:error exception="&lt;%= CouponActiveException.class %&gt;" message="the-specified-coupon-is-not-active" /&gt;
+    &lt;liferay-ui:error exception="&lt;%= CouponEndDateException.class %&gt;" message="the-specified-coupon-is-no-longer-available" /&gt;
+    &lt;liferay-ui:error exception="&lt;%= CouponStartDateException.class %&gt;" message="the-specified-coupon-is-no-yet-available" /&gt;
+    &lt;liferay-ui:error exception="&lt;%= NoSuchCouponException.class %&gt;" message="please-enter-a-valid-coupon-code" /&gt;
+
+    &lt;div class="shopping-cart-table"&gt;
+        &lt;img id="shoppingCartSyncImg" class="tiembla" src="/html/css/Transport_Cart_32.png" style="float: right;margin-top: -34px; display:none;"&gt;
+        &lt;%
+        SearchContainer searchContainer = new SearchContainer();
+	
+        List&lt;String&gt; headerNames = new ArrayList&lt;String&gt;();
+
+        searchContainer.setClassName("shopping-cart-items");
+        headerNames.add("ADDED ITEMS");
+        //headerNames.add("");
+        headerNames.add("SIZE");
+        headerNames.add("QUANTITY");
+        headerNames.add("PRICE ("+mode+")");
+        headerNames.add("TOTAL");
+        headerNames.add("");
+
+        searchContainer.setHeaderNames(headerNames);
+        searchContainer.setEmptyResultsMessage("your-cart-is-empty");
+        searchContainer.setHover(true);
+
+        int total = items.size();
+
+        searchContainer.setTotal(total);
+
+        List resultRows = searchContainer.getResultRows();
+
+        int itemsCount = 0;
+
+        for (Map.Entry&lt;ShoppingCartItem, Integer&gt; entry : items.entrySet()) {
+                ShoppingCartItem cartItem = entry.getKey();
+                Integer count = entry.getValue();
+
+                ShoppingItem item = cartItem.getItem();
+
+                item = item.toEscapedModel();
+
+                String[] fieldsArray = cartItem.getFieldsArray();
+
+                ShoppingItemField[] itemFields = (ShoppingItemField[])ShoppingItemFieldLocalServiceUtil.getItemFields(item.getItemId()).toArray(new ShoppingItemField[0]);
+                ShoppingItemPrice[] itemPrices = (ShoppingItemPrice[])ShoppingItemPriceLocalServiceUtil.getItemPrices(item.getItemId()).toArray(new ShoppingItemPrice[0]);
+
+                if (!SessionErrors.isEmpty(renderRequest)) {
+                        count = new Integer(ParamUtil.getInteger(request, "item_" + item.getItemId() + "_" + itemsCount + "_count"));
+                }
+
+                ResultRow row = new ResultRow(item, item.getItemId(), itemsCount);
+
+                PortletURL rowURL = renderResponse.createRenderURL();
+
+                rowURL.setParameter("struts_action", "/shopping/view_item");
+                rowURL.setParameter("itemId", String.valueOf(item.getItemId()));
+
+                // SKU and small image
+                String image="a";
+                String product="";
+                String designer="";
+                StringBundler sb = new StringBundler();
+                sb.append("&lt;span class='shopping-cart-table-image'&gt;");
+                if (item.isSmallImage()) {
+                        sb.append("&lt;br /&gt;");
+                        sb.append("&lt;img style=\"height:64px;\" alt=\"");
+                        sb.append(item.getSku());
+                        sb.append("\" border=\"0\" src=\"");
+
+                        if (Validator.isNotNull(item.getSmallImageURL())) {
+                          image=item.getSmallImageURL();
+                                sb.append(item.getSmallImageURL());
+                        }
+                        else {
+                                sb.append(themeDisplay.getPathImage());
+                                sb.append("/shopping/item?img_id=");
+                                sb.append(item.getSmallImageId());
+                                sb.append("&amp;t=");
+                                sb.append(WebServerServletTokenUtil.getToken(item.getSmallImageId()));
+                          image=themeDisplay.getPathImage()+
+                                "/shopping/item?img_id="+
+                                item.getSmallImageId()+
+                                "&amp;t="+
+                                WebServerServletTokenUtil.getToken(item.getSmallImageId());
+                        }
+
+                        sb.append("\"&gt;");
+                }
+                else {
+                        sb.append(item.getSku());
+                }
+                sb.append("&lt;/span&gt;");
+
+                //row.addText(sb.toString());
+
+                // Description
+
+                //sb = new StringBundler();
+
+                sb.append("&lt;span class='shopping-cart-table-name'&gt;");
+                sb.append(item.getName());
+                product=item.getName();
+
+                if (Validator.isNotNull(item.getDescription())) {
+                        sb.append("&lt;br /&gt;");
+                        sb.append(item.getCategory().getName());
+                        designer=item.getCategory().getName();
+                }
+
+                sb.append("&lt;/span&gt;");
+                row.addText(sb.toString()/*, rowURL*/);
+
+                //Get Field: Size
+                sb = new StringBundler();
+                String size;
+                size="";
+                if(cartItem.getFieldsArray().length&gt;0){
+                        for(String cartItemField : cartItem.getFieldsArray()){
+                                String[] nameValue = cartItemField.split("\\s*=\\s*");
+                                if(nameValue.length==2){
+                                        if(nameValue[0].toLowerCase().equals("size")){
+                                                size = nameValue[1];
+                                        }
+                                }
+                        }
+                }
+                sb.append("&lt;input name=\"");
+                sb.append(renderResponse.getNamespace());
+                sb.append("item_");
+                sb.append(item.getItemId());
+                sb.append("_");
+                sb.append(itemsCount);
+                sb.append("_size\" size=\"2\" type=\"text\" autocomplete=\"off\" value=\"");
+                sb.append(size);
+                sb.append("\" data-bind='value: items()["+itemsCount+"].size'&gt;");
+                row.addText(sb.toString());
+
+                // Quantity
+
+                sb.setIndex(0);
+
+                int maxQuantity = _getMaxQuantity(itemPrices);
+
+                if (minQuantityMultiple &amp;&amp; (item.getMinQuantity() &gt; 1) &amp;&amp; (maxQuantity != 0)) {
+                        sb.append("&lt;select name=\"");
+                        sb.append(renderResponse.getNamespace());
+                        sb.append("item_");
+                        sb.append(item.getItemId());
+                        sb.append("_");
+                        sb.append(itemsCount);
+                        sb.append("_count\" autocomplete=\"off\"&gt;");
+
+                        sb.append("&lt;option value=\"0\"&gt;0&lt;/option&gt;");
+
+                        for (int j = 1; j &lt;= (maxQuantity / item.getMinQuantity()); j++) {
+                                int curQuantity = item.getMinQuantity() * j;
+
+                                sb.append("&lt;option ");
+
+                                if (curQuantity == count.intValue()) {
+                                        sb.append("selected ");
+                                }
+
+                                sb.append("value=\"");
+                                sb.append(curQuantity);
+                                sb.append("\"&gt;");
+                                sb.append(curQuantity);
+                                sb.append("&lt;/option&gt;");
+                        }
+
+                        sb.append("&lt;/select&gt;");
+                }
+                else {
+                        sb.append("&lt;input name=\"");
+                        sb.append(renderResponse.getNamespace());
+                        sb.append("item_");
+                        sb.append(item.getItemId());
+                        sb.append("_");
+                        sb.append(itemsCount);
+                        sb.append("_count\" size=\"2\" type=\"text\" autocomplete=\"off\" value=\"");
+                        sb.append(count);
+                        sb.append("\" data-bind='value: items()["+itemsCount+"].quantity'&gt;");
+                }
+
+                row.addText(sb.toString());
+
+                // Price
+                Double unitaryPrice;
+
+                if(mode.equals("trial")){
+                  unitaryPrice = item.getItemPrices().get(0).getPrice();
+                } else {
+                  unitaryPrice = item.getItemPrices().get(1).getPrice();
+                }
+
+                row.addText(currencyFormat.format(unitaryPrice), rowURL);
+
+                // Total Price
+                sb = new StringBundler();
+                sb.append("&lt;span data-bind='text: items()["+itemsCount+"].total'&gt;")
+                  .append(currencyFormat.format(unitaryPrice*count))
+                  .append("&lt;/span&gt;");
+                row.addText(sb.toString(), rowURL);
+
+                script.append("shoppingCart.items.push(new ShoppingItem({")
+                  .append("id:")
+                  .append("'")
+                  .append(item.getItemId())
+                  .append("'")
+                  .append(",")
+                  .append("image:")
+                  .append("'")
+                  .append(image.replaceAll("'","\\'"))
+                  .append("'")
+                  .append(",")
+                  .append("product:")
+                  .append("'")
+                  .append(product.replaceAll("'","\\'"))
+                  .append("'")
+                  .append(",")
+                  .append("designer:")
+                  .append("'")
+                  .append(designer.replaceAll("'","\\'"))
+                  .append("'")
+                  .append(",")
+                  .append("size:")
+                  .append("'")
+                  .append(size)
+                  .append("'")
+                  .append(",")
+                  .append("quantity:")
+                  .append("'")
+                  .append(count)
+                  .append("'")
+                  .append(",")
+                  .append("price:")
+                  .append(unitaryPrice)
+                  .append("}));");
+
+                // Close
+		
+                row.addText("&lt;a href='javascript:void(0)' onclick='shopping_cart_remove_item(this)'&gt;x&lt;/a&gt;");
+
+                // Add result row
+
+                resultRows.add(row);
+
+                itemsCount++;
+        }
+        %&gt;
+
+        &lt;script&gt;
+            function shopping_cart_remove_item(a) {
+                var $tr = $(a).parents("tr:first");
+                $tr.find("input").eq(1).val("0");
+                $tr.find("input").eq(1).trigger("change");
+                $tr.css('display', 'none');
+                shoppingCartUpdate();
+            }
+        &lt;/script&gt;
+        &lt;liferay-ui:search-iterator paginate="&lt;%= false %&gt;" searchContainer="&lt;%= searchContainer %&gt;" /&gt;
+    &lt;/div&gt;
+
+    &lt;aui:fieldset&gt;
+
+        &lt;%
+        double subtotal = ShoppingUtil.calculateSubtotal(items);
+        double actualSubtotal = ShoppingUtil.calculateActualSubtotal(items);
+        double discountSubtotal = ShoppingUtil.calculateDiscountSubtotal(items);
+        %&gt;
+
+
+        &lt;!-- Totals Row --&gt;
+        &lt;aui:layout cssClass="shopping-cart-totals"&gt;
+            &lt;aui:column cssClass="shopping-cart-totals-label" first="true"&gt;
+                TOTAL
+            &lt;/aui:column&gt;
+            &lt;aui:column cssClass="shopping-cart-totals-total" last="true"&gt;
+                &lt;span data-bind="text: total"&gt;&lt;%= currencyFormat.format(actualSubtotal) %&gt;&lt;/span&gt;
+            &lt;/aui:column&gt;
+        &lt;/aui:layout&gt;
+
+    &lt;/aui:fieldset&gt;
+
+    &lt;br /&gt;&lt;br /&gt;
+    &lt;script&gt;
+    function shoppingCartValidateItems(callback){
+      var items=0;
+      var max=shoppingCart.maxTrial();
+      if("&lt;%=mode%&gt;"!=="trial") max=-1;
+      shoppingCart.items().forEach(function(item){
+        items+=item.quantity();
+      });
+      if(max!=-1 &amp;&amp; items&gt;max) {
+        shoppingCartAlert('You cannot trial more than '+shoppingCart.maxTrial()+' additional items');
+      } else {
+        callback();
+      }
+    }
+    &lt;/script&gt;
+    &lt;aui:layout cssClass="shopping-cart-buttons"&gt;
+        &lt;aui:column cssClass="shopping-cart-buttons-proceed" last="true"&gt;
+            &lt;!-- &lt;aui:button onClick='&lt;%= renderResponse.getNamespace() + "checkout();" %&gt;' value="PROCEED TO CHECKOUT" /&gt; --&gt;
+            &lt;aui:button onclick='shoppingCartValidateItems(function(){ shoppingCart.nextTab(); });' value="PROCEED TO CHECKOUT" /&gt;
+        &lt;/aui:column&gt;
+        &lt;aui:column cssClass="shopping-cart-buttons-continue" last="true"&gt;
+            &lt;aui:button onClick='shoppingCart.continueShopping()' value="CONTINUE SHOPPING" /&gt;
+        &lt;/aui:column&gt;
+    &lt;/aui:layout&gt;</progressTab><progressTab name="Shopping_Shipping" title="" __ideNodeOpen="true"><addressMain/><address title="Add a Shipping Address" name="shipping" state="1" __ideNodeOpen="false"/><address title="Add a Billing Address" name="billing" state="3" __ideNodeOpen="true"/>&lt;script&gt;
+var addressFlow={
+  state:ko.observable(0),
+  shipping:ko.observableArray([]),
+  billing:ko.observableArray([]),
+  event:function(event){
+    if(event==="cancel"){
+      this.state(2);
+      return;
+    }
+    switch(this.state()){
+      case 0:
+        this.loadAddresses("shippingList", this.shipping);
+        this.loadAddresses("billingList", this.billing);
+        if(this.shipping().length==0){
+          shoppingCart.shipping_new();
+          this.state(1);
+        } else if(this.billing().length==0){
+          shoppingCart.billing_new();
+          this.state(3);
+        } else {
+          this.state(2);
+        }
+        break;
+      case 1:
+        if(this.shipping().length&gt;0){
+          this.shipping()[this.shipping().length-1].setShipToThisAddress();
+        }
+        if(this.billing().length==0 &amp;&amp; !this.sameShippingBilling()){
+          this.state(3);
+        } else {
+          this.state(2);
+        }
+        break;
+      case 2:
+        if(event==="shipping"){
+          shoppingCart.shipping_new();
+          this.state(1);
+        } else if(event==="billing"){
+          shoppingCart.billing_new();
+          this.state(3);
+        } else if(event==="delete"){
+          //moved inside the model
+          //this.state(0);
+          //this.event(event);
+        }
+        break;
+      case 3:
+        if(this.billing().length&gt;0){
+          this.billing()[this.billing().length-1].setShipToThisAddress();
+        }
+        this.state(2);
+        break;
+    }
+  },
+  loadAddresses:function(action, binding){
+      $.ajax("/c/shopping/cartStripe", {
+        async: false,
+        data: {
+          action: action,
+          userId: $("#userId").val(),
+        },
+        success: function(res){
+          try{
+            var json=JSON.parse(res);
+            if(typeof json.error=="string"){
+              console.log(json.error);
+            } else {
+              binding.splice(0, binding().length);
+              for(var i=0,l=json.list.length;i&lt;l;i++){
+                binding.push(new AddressModel(json.list[i]));
+              }
+            }
+          } catch(e) {
+          }
+        }
+      });
+    binding.push();
+  },
+  sameShippingBilling:function(){
+    var ok=false;
+    this.shipping().forEach(function(address){
+      if(address.sameShippingBilling()){
+        ok= true;
+      }
+    });
+    return ok;
+  }
+};
+
+&lt;/script&gt;</progressTab><progressTab name="Shopping_Payment" title="" __ideNodeOpen="true"><paymentMain __ideNodeOpen="false"/><paymentDetails name="payment" __ideNodeOpen="false"/><paymentConfirm name="payment" __ideNodeOpen="false" title="Confirm your order"/>&lt;script&gt;
+var paymentFlow={
+  state:ko.observable(0),
+  creditCards:ko.observableArray([]),
+  event:function(event){
+    if(event==="cancel"){
+      this.state(2);
+      return;
+    }
+    switch(this.state()){
+      case 0:
+        this.loadCreditCards("paymentList", this.creditCards);
+        if(this.creditCards().length==0){
+          shoppingCart.payment_new();
+          this.state(1);
+        } else {
+          this.state(2);
+        }
+        break;
+      case 1:
+        if(this.creditCards().length&gt;0){
+          this.creditCards()[this.creditCards().length-1].setBillToThis();
+        }
+        this.state(2);
+        break;
+      case 2:
+        if(event==="new"){
+          shoppingCart.payment_new();
+          this.state(1);
+        } else if(event==="edit"){
+          this.state(1);
+        } else if(event==="delete"){
+          //this.state(0);
+          //this.event(event);
+        } else if(event==="confirm"){
+          computeTax();
+          this.state(3);
+        }
+        break;
+      case 3:
+        if(event==="changeShipping"){
+          location.hash="#Shopping_Shipping";
+//          addressFlow.event(?);
+        } else if(event==="changeBilling"){
+          location.hash="#Shopping_Shipping";
+//          addressFlow.event(?);
+        } else if(event==="changeCC"){
+          this.state(2);
+        }
+        break;
+    }
+  },
+  loadCreditCards:function(action, binding){
+      $.ajax("/c/shopping/cartStripe", {
+        async: false,
+        data: {
+          action: action,
+          userId: $("#userId").val(),
+        },
+        success: function(res){
+          try{
+            var json=JSON.parse(res);
+            if(typeof json.error=="string"){
+              console.log(json.error);
+            } else {
+              binding.splice(0, binding().length);
+              for(var i=0,l=json.list.length;i&lt;l;i++){
+                binding.push(new CreditCardModel(json.list[i]));
+              }
+            }
+          } catch(e) {
+          }
+        }
+      });
+    binding.push();
+  },
+};
+
+&lt;/script&gt;</progressTab><progressTab name="Shopping_Receipt" title="You ordered:" __ideNodeOpen="true">&lt;table width="100%"&gt;
+&lt;tr&gt;
+  &lt;td&gt;
+    &lt;table style="width:100%"&gt;
+      &lt;tbody data-bind="foreach:items"&gt;
+        &lt;tr data-bind="if: quantity()&gt;0"&gt;
+          &lt;td&gt;
+            &lt;span style="display:inline-block;vertical-align:top;margin-bottom:8px;"&gt;&lt;img style="height:64px;" data-bind="attr:{src:image}"&gt;&lt;/span&gt;
+            &lt;span style="display:inline-block;vertical-align:top;margin-bottom:8px;"&gt;&lt;div data-bind="text:product"&gt;&lt;/div&gt;&lt;div data-bind="text:designer"&gt;&lt;/div&gt;&lt;/span&gt;
+          &lt;/td&gt;
+        &lt;/tr&gt;
+      &lt;/tbody&gt;
+    &lt;/table&gt;
+  &lt;/td&gt;
+  &lt;td style="text-align:center;"&gt;
+    &lt;h2&gt;Thank you for your order!&lt;/h2&gt;
+    &lt;div&gt;An email will be send with the arrival time details&lt;/div&gt;
+    &lt;div data-bind="html: purchanseMessage"&gt;&lt;/div&gt;
+    &lt;button type="button" class="btn btn-default" onclick='shoppingCart.continueShopping()' &gt;CONTINUE SHOPPING&lt;/button&gt;
+  &lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+</progressTab>&lt;/aui:form&gt;
+&lt;%!
+private static int _getMaxQuantity(ShoppingItemPrice[] itemPrices) {
+        int maxQuantity = 0;
+
+        for (ShoppingItemPrice itemPrice : itemPrices) {
+                if (itemPrice.getMaxQuantity() == 0) {
+                        return 0;
+                }
+
+                if (maxQuantity &lt; itemPrice.getMaxQuantity()) {
+                        maxQuantity = itemPrice.getMaxQuantity();
+                }
+        }
+
+        return maxQuantity;
+}
+%&gt;
+&lt;div data-role="popup" id="termsAndConditions" style="display:none;"&gt;
+&lt;div style="background-color:white;padding:4em;"&gt;
+<editableContent name="editableTermsAndConditions" __ideNodeOpen="true"/>  &lt;br /&gt;&lt;br /&gt;
+  &lt;aui:layout cssClass="shopping-cart-buttons"&gt;
+      &lt;aui:column &gt;
+          &lt;aui:button data-bind='click: termsDecline' value="DECLINE" /&gt;
+      &lt;/aui:column&gt;
+      &lt;aui:column &gt;
+          &lt;aui:button data-bind='click: termsAccept' value="ACCEPT" /&gt;
+      &lt;/aui:column&gt;
+  &lt;/aui:layout&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;!--- JAVASCRIPT ---&gt;
+&lt;script&gt;
+    &lt;%=script.toString() %&gt;
+/*
+ * This rules checks the given array of objects/observables and returns 
+ * true if at least one of the elements validates agains the the default
+ * 'required' rules
+ * 
+ * Example:
+ * 
+ *
+ * self.mobilePhone.extend({ requiresOneOf: [self.homePhone, self.mobilePhone] });
+ * self.homePhone.extend({ requiresOneOf: [self.homePhone, self.mobilePhone] }); 
+ *
+*/
+
+ko.validation.rules['requiresOneOf'] = {
+  getValue: function (o) {
+    return (typeof o === 'function' ? o() : o);
+  },
+  validator: function (val, fields) {
+    var self = this;
+
+    var anyOne = ko.utils.arrayFirst(fields, function (field) {
+      var stringTrimRegEx = /^\s+|\s+$/g,
+                testVal;
+
+      var val = self.getValue(field);
+
+      if (val === undefined || val === null) 
+        return !required;
+
+      testVal = val;
+      if (typeof (val) == "string") {
+        testVal = val.replace(stringTrimRegEx, '');
+      }
+
+      return ((testVal + '').length &gt; 0);
+
+    });
+
+    return (anyOne != null);
+  },
+  message: 'One of these fields is required'
+
+};
+
+    var finalTotal=0;
+    function shoppingCartCalcTotal(callback){
+      var total = 0;
+      if (typeof shoppingCart !== "undefined") {
+          shoppingCart.items().forEach(function (item) {
+              total += item.price() * item.quantity();
+          })
+      }
+      //coupon discount
+      if(shoppingCart.coupon()) {
+        $.ajax("/c/shopping/cartStripe", {
+          data: {
+            "action": "calculateDiscount",
+            "amount": total,
+            "coupon": shoppingCart.coupon(),
+          },
+          success: function(res){
+            try{
+              var json=JSON.parse(res);
+              if(typeof json.error=="string"){
+                console.log(json.error);
+                shoppingCart.totalBeforeTax("..");
+                setTimeout(function(){shoppingCartCalcTotal(callback)},1000);
+              } else {
+                total=json.afterDiscount;
+                shoppingCart.totalBeforeTax(currencyFormat.format(total));
+                callback(total);
+              }
+            } catch(e) {}
+          }
+        });
+      } else {
+        shoppingCart.totalBeforeTax(currencyFormat.format(total));
+        callback(total);
+      }
+    }
+    var computeTax=function (total) {
+      if(typeof shoppingCart.shippingAddresses=="undefined") return;
+      var address=shoppingCart.shippingAddresses.getSelected();
+      if(typeof address=="undefined" || !address || address.length&lt;1){
+        return;
+      }
+      address=address[0];
+      if (typeof shoppingCart !== "undefined") {
+        shoppingCartCalcTotal(function(total){
+          finalTotal=0;
+          shoppingCart.tax("...");
+          $.ajax("/c/shopping/cartStripe", {
+            data: {
+              "action": "calculateTax",
+              "amount": total,
+              "address1": address.street1(),
+              "city": address.city(),
+              "region": address.state(),
+              "postalCode": address.zip(),
+            },
+            success: function(res){
+              try{
+                var json=JSON.parse(res);
+                if(typeof json.error=="string"){
+                  console.log(json.error);
+                  shoppingCart.tax("..");
+                  setTimeout(function(){computeTax()},1000);
+                } else {
+                  finalTotal=parseFloat(total)+parseFloat(json.taxAmount);
+                  shoppingCart.tax( currencyFormat.format( parseFloat(json.taxAmount) ) );
+                  shoppingCart.finalTotal(finalTotal);
+                  shoppingCart.finalTax(parseFloat(json.taxAmount));
+                }
+              } catch(e) {}
+            },
+            error:function(){
+              console.log(json.error);
+              shoppingCart.tax(".");
+              setTimeout(function(){computeTax()},3000);
+            }
+          });
+        });
+      }
+    };
+
+    shoppingCart.totalBeforeTax = ko.observable(0);
+    shoppingCart.coupon = ko.observable("");
+    shoppingCart.coupon.subscribe(function(){
+      computeTax();
+    });
+    shoppingCart.subTotal = ko.observable(0);
+    shoppingCart.finalTotal = ko.observable(0);
+    shoppingCart.finalTax = ko.observable(0);
+    shoppingCart.purchanseMessage = ko.observable("");
+    shoppingCart.total = ko.computed(function () {
+      var total = 0;
+      if (typeof shoppingCart !== "undefined") {
+          shoppingCart.items().forEach(function (item) {
+              total += item.price() * item.quantity();
+          })
+      }
+      shoppingCart.subTotal(total);
+      return currencyFormat.format(total);
+    });
+
+    shoppingCart.tax = ko.observable("...");
+
+    shoppingCart.nextTab=function(){
+      switch(location.hash){
+        case "#Shopping_Shipping":
+          location.hash="#Shopping_Payment";
+          break;
+        case "#Shopping_Payment":
+          location.hash="#Shopping_Receipt";
+          break;
+        case "#Shopping_Receipt":
+          location.hash="#Shopping_Receipt";
+          break;
+        default:
+          location.hash="#Shopping_Shipping";
+      }
+    }
+
+    shoppingCart.maxTrial=ko.observable(-1);
+    $.ajax("/c/shopping/cartStripe", {
+      data: {
+        "action": "getMaxTrial",
+        "userId": $("#userId").val(),
+      },
+      success: function(res){
+        try{
+          var json=JSON.parse(res);
+          if(typeof json.error=="string"){
+            console.log(json.error);
+          } else {
+            shoppingCart.maxTrial(json.maxTrial);
+          }
+        } catch(e) {}
+      }
+    });
+
+    shoppingCart.gotoCart=function(){
+      location.hash="#Shopping_Cart";
+    };
+    shoppingCart.termsDecline=function(){
+      shoppingCart.payment_terms(false);
+      $shoppingCartTermsAndCondions.close();
+    };
+    shoppingCart.termsAccept=function(){
+      shoppingCart.payment_terms(true);
+      $shoppingCartTermsAndCondions.close();
+    };
+    shoppingCart.gotoCart=function(){
+      location.hash="#Shopping_Cart";
+    };
+
+    shoppingCart.payForAll=function(){
+      var $ajaxIcon=shoppingCartAjaxIcon("Transport_Cart_32.png");
+      shoppingCart.purchanseMessage("");
+      if(finalTotal&lt;=0) {
+        alert("Please wait until tax is calculated or change the shipping address");
+        return;
+      }
+      if(typeof shoppingCart.creditCards=="undefined") return;
+      var card=shoppingCart.creditCards.getSelected();
+      if(typeof card=="undefined" || !card || card.length&lt;1){
+        alert("Please select one payment method");
+        return;
+      }
+      card=card[0];
+      var billing=shoppingCart.billingAddresses.getSelected()[0];
+      var shipping=shoppingCart.shippingAddresses.getSelected()[0];
+      if(!billing) billing=shipping;
+      var items=shoppingCart.items();
+
+      document.&lt;portlet:namespace /&gt;fm.&lt;portlet:namespace /&gt;&lt;%= Constants.CMD %&gt;.value = "&lt;%= Constants.UPDATE %&gt;";
+      document.&lt;portlet:namespace /&gt;fm.&lt;portlet:namespace /&gt;redirect.value = "";// "&lt;portlet:actionURL&gt;&lt;portlet:param name="struts_action" value="/shopping/cart" /&gt;&lt;/portlet:actionURL&gt;";
+      //save cart
+      submitFormAjax(function(){
+        var itemsJson=[];
+        for(var i=0,l=items.length;i&lt;l;i++){
+          itemsJson.push({
+            id:""+items[i].id(),
+            size:""+items[i].size(),
+            quantity:items[i].quantity(),
+            price:parseFloat(items[i].price())
+          });
+        }
+        //save order
+        $.ajax("/c/shopping/cartStripe", {
+          data: {
+            "action": "saveOrder",
+            jsonItems:JSON.stringify(itemsJson),
+            billingFirstName:billing.first_name(),
+            billingLastName:billing.last_name(),
+            billingEmailAddress:"test@liferay.com",
+            billingCompany:"",
+            billingStreet:billing.street1()+" "+billing.street2(),
+            billingCity:billing.city(),
+            billingStateSel:billing.state(),
+            billingState:billing.state(),
+            billingZip:billing.zip(),
+            billingCountry:"US",
+            billingPhone:billing.telephone(),
+            shippingFirstName:shipping.first_name(),
+            shippingLastName:shipping.last_name(),
+            shippingEmailAddress:"test@liferay.com",
+            shippingCompany:"",
+            shippingStreet:shipping.street1()+" "+shipping.street2(),
+            shippingCity:shipping.city(),
+            shippingStateSel:shipping.state(),
+            shippingState:shipping.state(),
+            shippingZip:shipping.zip(),
+            shippingCountry:"US",
+            shippingPhone:shipping.telephone(),
+            shipToBilling:billing.sameShippingBilling()?"1":"0",
+            shipToBillingCheckbox:"off",
+
+            ccName:card.card_holder(),
+            ccType:card.card_type().toLocaleLowerCase(),
+            ccNumber:card.card_number(),
+            ccExpMonth:card.card_month(),
+            ccExpYear:"20"+card.card_year(),
+            ccVerNumber:card.card_cvv(),
+            comments:"",
+
+            userId: $("#userId").val(),
+            groupId: $("#groupId").val(),
+            tax:parseFloat(shoppingCart.finalTax()),
+
+            state:"&lt;%=mode %&gt;",
+            shipping_id: shoppingCart.shippingAddresses.getSelected()[0].id(),
+            billing_id: shoppingCart.billingAddresses.getSelected()[0].id(),
+            payment_id: shoppingCart.creditCards.getSelected()[0].id(),
+          },
+          success:function(res){
+            try{
+              var json=JSON.parse(res);
+              if(typeof json.error==="string"){
+                $ajaxIcon.close();
+                shoppingCartAlert(json.error);
+              } else if(typeof json.order_number==="undefined" || !json.order_number) {
+                $ajaxIcon.close();
+                shoppingCartAlert("It was unable to create your order at this moment");
+              } else {
+                //charge
+                $.ajax("/c/shopping/cartStripe", {
+                  data: {
+                    "action": "charge",
+                    ccName:card.card_holder(),
+                    ccType:card.card_type().toLocaleLowerCase(),
+                    ccNumber:card.card_number(),
+                    ccExpMonth:card.card_month(),
+                    ccExpYear:"20"+card.card_year(),
+                    ccVerNumber:card.card_cvv(),
+                    comments:"",
+                    amount: finalTotal,
+                    subtotal: shoppingCart.subTotal(),
+                    order_number: json.order_number,
+                    shippingEmailAddress:"test@liferay.com",
+                    billingEmailAddress:"test@liferay.com",
+                    shipping_id: shoppingCart.shippingAddresses.getSelected()[0].id(),
+                    billing_id: shoppingCart.billingAddresses.getSelected()[0].id(),
+                    payment_id: shoppingCart.creditCards.getSelected()[0].id(),
+                    state:"&lt;%=mode %&gt;",
+                    userId: $("#userId").val(),
+                    groupId: $("#groupId").val(),
+                    coupon:shoppingCart.coupon(),
+                  },
+                  success:function(res){
+                    try{
+                      var json=JSON.parse(res);
+                      if(typeof json.error==="string"){
+                        $ajaxIcon.close();
+                        shoppingCartAlert(json.error);
+                      } else {
+                        //SUCCESS!!!!!!!!
+                        $ajaxIcon.close();
+                        shoppingCart.nextTab();
+                      }
+                    } catch(e) {
+                      $ajaxIcon.close();
+                      shoppingCartAlert("It was unable to charge for your selected paymente method");
+                      console.log(e);
+                    }
+                  },
+                  error:function(e){
+                    console.log(e);
+                    $ajaxIcon.close();
+                    shoppingCartAlert("It was unable to charge for your selected paymente method");
+                  }
+                });
+              }
+            } catch(e){
+              $ajaxIcon.close();
+              shoppingCartAlert("It was unable to create your order at this moment");
+              console.log(e);
+            }
+          },
+          error:function(e){
+            console.log(e);
+            $ajaxIcon.close();
+            shoppingCartAlert("It was unable to create your order at this moment");
+          }
+        });
+      });
+
+    }
+    function submitFormAjax(callback){
+      var url = document.&lt;portlet:namespace /&gt;fm.action;
+      $.ajax({
+        type: "POST",
+        url: url,
+        data: $(document.&lt;portlet:namespace /&gt;fm).serialize(),
+        success: function(data)
+        {
+          callback(data);
+        },
+        error: function(data){
+          callback(data);
+        }
+      });
+    }
+
+    shoppingCart.address_state=addressFlow.state;
+    shoppingCart.payment_state=paymentFlow.state;
+    shoppingCart.creditCards=paymentFlow.creditCards;
+    shoppingCart.shippingAddresses=addressFlow.shipping;
+    shoppingCart.billingAddresses=addressFlow.billing;
+
+    shoppingCart.shippingAddresses.getSelected=function(){
+      var selected=null;
+      shoppingCart.shippingAddresses().forEach(function(n){
+        if(n.shipToThisAddress()){
+          selected=n;
+        }
+      });
+      return selected?[selected]:[];
+    };
+    shoppingCart.billingAddresses.getSelected=function(){
+      var selected=null;
+      shoppingCart.billingAddresses().forEach(function(n){
+        if(n.shipToThisAddress()){
+          selected=n;
+        }
+      });
+      return selected?[selected]:[];
+    };
+    shoppingCart.creditCards.getSelected=function(){
+      var selected=null;
+      shoppingCart.creditCards().forEach(function(n){
+        if(n.billToThis()){
+          selected=n;
+        }
+      });
+      return selected?[selected]:[];
+    };
+
+    addressFlow.event("start");
+    paymentFlow.event("start");
+
+    if(location.hash==""){
+      location.hash="#Shopping_Cart";
+    }
+    shoppingCart.tabName=ko.observable(location.hash);
+
+    ko.applyBindings(shoppingCart);
+
+    $(window).on('hashchange', function(){
+      console.log(location.hash);
+      switch(location.hash){
+        case "#Shopping_Cart":
+        case "#Shopping_Shipping":
+        case "#Shopping_Payment":
+        case "#Shopping_Receipt":
+          shoppingCart.tabName(location.hash);
+          break;
+        case "#"+hiddenShoppingCart.id:
+          location.hash="#Shopping_Cart";
+      }
+    } );
+    var $shoppingCartTermsAndCondions;
+    function showTermsAndCondions(){
+        $shoppingCartTermsAndCondions=$('#termsAndConditions').bPopup();
+    }
+  shoppingCart.continueShopping=function(){
+    location.href="/group/guest/designers";
+  }
+  function shoppingCartItemIds(){
+    var itemIds="";
+    shoppingCart.items().forEach(function(a){
+      for(var i=0,l=a.quantity();i&lt;l;i++) itemIds+=a.id()+"|Size="+a.size()+"&amp;,";
+    });
+    return itemIds;
+  }
+  function shoppingCartUpdate(){
+    document.&lt;portlet:namespace /&gt;fm.&lt;portlet:namespace /&gt;&lt;%= Constants.CMD %&gt;.value = "&lt;%= Constants.UPDATE %&gt;";
+    document.&lt;portlet:namespace /&gt;fm.&lt;portlet:namespace /&gt;redirect.value = "";// "&lt;portlet:actionURL&gt;&lt;portlet:param name="struts_action" value="/shopping/cart" /&gt;&lt;/portlet:actionURL&gt;";
+    document.&lt;portlet:namespace /&gt;fm.&lt;portlet:namespace /&gt;itemIds.value = shoppingCartItemIds();
+    //save cart
+    $("#shoppingCartSyncImg").show();
+    submitFormAjax(function(){
+      $("#shoppingCartSyncImg").hide();
+    });
+  }
+  /**
+   * Ex.: itemId=21484  fields=Size=1&amp;  imgDOM=#myImage
+   * ShoppingAddToCart(21484, "Size=1&amp;", "#myImage");
+   */
+    function ShoppingAddToCart(itemId, fields, imgDOM) {
+        if(typeof hiddenShoppingCart=="object"){
+          hiddenShoppingCart.add2cart(imgDOM,function(){
+            $.ajax({
+              url:"&lt;%=cartURL%&gt;",
+              method:"post",
+              data:{
+                &lt;portlet:namespace /&gt;formDate:new Date().getTime(),
+                &lt;portlet:namespace /&gt;cmd:"add",
+                &lt;portlet:namespace /&gt;itemId:itemId,
+                &lt;portlet:namespace /&gt;fields:fields,
+              },
+              success:function(data){
+                hiddenShoppingCart.refreshPortlet();
+              }
+            });
+          });
+        }
+    }
+  /**
+   * ShoppingAddToCart2(21484, "Size=1&amp;", "retail", "/group/guest/cart");
+   */
+    function ShoppingAddToCart2(itemId, fields, mode, redirect) {
+      $.ajax({
+        url:"&lt;%=cartURL%&gt;",
+        method:"post",
+        data:{
+          &lt;portlet:namespace /&gt;formDate:new Date().getTime(),
+          &lt;portlet:namespace /&gt;cmd:"add",
+          &lt;portlet:namespace /&gt;itemId:itemId,
+          &lt;portlet:namespace /&gt;fields:fields,
+        },
+        success:function(data){
+          location.href=redirect+(redirect.indexOf("?")&gt;=0?"&amp;":"?")+"mode="+mode;
+        }
+      });
+    }
+&lt;/script&gt;</cart></jsp></path></root>

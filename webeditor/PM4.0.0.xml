@@ -1,0 +1,513 @@
+<?xml version="1.0" encoding="UTF-8"?><root __ideNodeOpen="true"><php __ideNodeOpen="true">require_once '../nano2/Nano2.php';
+
+function query($query){
+    return Nano2::query(Nano2::getConnection($schema), $query);
+}
+function str2array($str){
+    return explode("\n", $str);
+}
+</php><package name="components" type="" __ideNodeOpen="true"><component name="nano2" transparent="" precode="" __ideNodeOpen="true">#{htmlentities(Nano2::build(node::content($_)));}</component><component name="print" transparent="" precode="" __ideNodeOpen="true">#{print(node::content($_));}</component><component name="reverseTable" transparent="" precode="" __ideNodeOpen="true">#{echo Nano2::reverseTable('BPMN_PROJECT');}</component><component name="model" transparent="" precode="" __ideNodeOpen="true"><nano2 __ideNodeOpen="true">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;root xmlns:v-bind='http://nano.com/vue'&gt;
+&lt;script type="Model"&gt;
+{
+	"module": "ProcessMaker",
+	"name": "@{$name}",
+	"table": "@{$table}",
+        "primaryKey": "@{$uid}",
+        "logicalKey": "@{$uid}",
+        "timestamps": false,
+	"events": {
+	},
+
+	"fields": @{json_encode(Nano2::reverseTable($table))},
+
+	"relationships": @{node::content($_)},
+
+	"methods": [
+        ]
+}
+&lt;/script&gt;
+&lt;/root&gt;
+</nano2>    /**
+     * @return @{ucfirst($name)}RepositoryInterface
+     */
+    public function get@{ucfirst($name)}Repository();
+
+{
+	"module": "ProcessMaker",
+	"name": "@{$name}",
+	"table": "@{$table}",
+        "primaryKey": "@{$uid}",
+        "logicalKey": "@{$uid}",
+        "timestamps": false,
+	"events": {
+	},
+
+	"fields": @{json_encode(Nano2::reverseTable($table))},
+
+	"relationships": @{node::content($_)},
+
+	"methods": [
+        ]
+}
+</component><print name="pm400" transparent="" precode="" __ideNodeOpen="true"><nano2TMP __ideNodeOpen="false">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;root xmlns:v-bind='http://nano.com/vue'&gt;
+&lt;script type="Model"&gt;
+{
+	"module": "ProcessMaker",
+	"name": "role",
+	"table": "RBAC_ROLES",
+	"events": {
+	},
+
+	"fields": [
+		{"name":"ROL_UID","type":"string","nullable":false,"typeParams":[32]},
+		{"name":"ROL_PARENT","type":"string","nullable":false,"default":"","typeParams":[32]},
+		{"name":"ROL_SYSTEM","type":"string","nullable":false,"default":"00000000000000000000000000000002","typeParams":[32]},
+		{"name":"ROL_CODE","type":"string","nullable":false,"typeParams":[32]},
+		{"name":"ROL_CREATE_DATE","type":"dateTime","nullable":true,"typeParams":[]},
+		{"name":"ROL_UPDATE_DATE","type":"dateTime","nullable":true,"typeParams":[]},
+		{"name":"ROL_STATUS","type":"integer","nullable":false,"default":1,"typeParams":[]}
+	],
+
+	"relationships": [
+		{"type":"hasMany","name":"users","model":"user"}
+	],
+
+	"methods": []
+}
+&lt;/script&gt;
+&lt;script type="Model"&gt;
+{
+	"module": "ProcessMaker",
+	"name": "user",
+	"table": "USERS",
+	"events": {
+	},
+
+	"fields": [
+		{"name":"ROL_STATUS","type":"integer","nullable":false,"default":"","typeParams":[]}
+	],
+
+	"relationships": [
+		{"type":"belongsTo","name":"role","model":"role"}
+	],
+
+	"methods": [
+        ]
+}
+&lt;/script&gt;
+&lt;script type="Model"&gt;
+{
+	"module": "ProcessMaker",
+	"name": "process_file",
+	"table": "PROCESS_FILES",
+	"events": {
+	},
+
+	"fields": @{json_encode(Nano2::reverseTable('PROCESS_FILES'))},
+
+	"relationships": [
+		{"type":"belongsTo","name":"process","model":"process","foreignKey":"PRO_UID","localKey":"PRO_UID"},
+		{"type":"belongsTo","name":"user","model":"user","foreignKey":"USR_UID","localKey":"USR_UID"},
+		{"type":"hasMany","name":"emailEvents","model":"email_event","foreignKey":"PRF_UID","localKey":"PRF_UID"}
+	],
+
+	"methods": [
+        ]
+}
+&lt;/script&gt;
+&lt;script type="Model"&gt;
+{
+	"module": "ProcessMaker",
+	"name": "email_event",
+	"table": "EMAIL_EVENT",
+        "primaryKey": "EMAIL_EVENT_ID",
+        "logicalKey": "EMAIL_EVENT_UID",
+	"events": {
+	},
+
+	"fields": @{json_encode(Nano2::reverseTable('EMAIL_EVENT'))},
+
+	"relationships": [
+		{"type":"belongsTo","name":"processFile","model":"process_file","foreignKey":"PRF_UID","localKey":"PRF_UID"}
+	],
+
+	"methods": [
+        ]
+}
+&lt;/script&gt;
+&lt;script type="Model"&gt;
+{
+	"module": "ProcessMaker",
+	"name": "role",
+	"table": "RBAC_ROLES",
+        "primaryKey": "ROL_UID",
+        "logicalKey": "ROL_UID",
+	"events": {
+	},
+
+	"fields": @{json_encode(Nano2::reverseTable('RBAC_ROLES'))},
+
+	"relationships": [
+		{"type":"belongsToMany","name":"permissions","model":"permission","foreignKey":"PER_UID","localKey":"ROL_UID","table":"RBAC_ROLES_PERMISSIONS"}
+	],
+
+	"methods": [
+        ]
+}
+&lt;/script&gt;
+&lt;script type="Model"&gt;
+{
+	"module": "ProcessMaker",
+	"name": "permission",
+	"table": "RBAC_PERMISSIONS",
+        "primaryKey": "PER_UID",
+        "logicalKey": "PER_UID",
+	"events": {
+	},
+
+	"fields": @{json_encode(Nano2::reverseTable('RBAC_PERMISSIONS'))},
+
+	"relationships": [
+		{"type":"belongsToMany","name":"roles","model":"role","foreignKey":"ROL_UID","localKey":"PER_UID","table":"RBAC_ROLES_PERMISSIONS"}
+	],
+
+	"methods": [
+        ]
+}
+&lt;/script&gt;
+&lt;script type="Model"&gt;
+{
+	"module": "ProcessMaker",
+	"name": "task",
+	"table": "TASK",
+        "primaryKey": "TAS_ID",
+        "logicalKey": "TAS_UID",
+	"events": {
+	},
+
+	"fields": @{json_encode(Nano2::reverseTable('TASK'))},
+
+	"relationships": [
+	],
+
+	"methods": [
+        ]
+}
+&lt;/script&gt;
+&lt;script type="Model"&gt;
+{
+	"module": "ProcessMaker\\Model",
+	"name": "process_category",
+	"table": "PROCESS_CATEGORY",
+        "primaryKey": "CATEGORY_ID",
+        "logicalKey": "CATEGORY_UID",
+	"events": {
+	},
+
+	"fields": @{json_encode(Nano2::reverseTable('PROCESS_CATEGORY'))},
+
+	"relationships": [
+		{"type":"hasMany","name":"processes","model":"process","foreignKey":"PRO_CATEGORY","localKey":"CATEGORY_UID","table":"PROCESS"}
+	],
+
+	"methods": [
+        ]
+}
+&lt;/script&gt;
+&lt;script type="Model"&gt;
+{
+	"module": "ProcessMaker\\Model",
+	"name": "process",
+	"table": "PROCESS",
+        "primaryKey": "PRO_ID",
+        "logicalKey": "PRO_UID",
+        "createdAt": "PRO_CREATE_DATE",
+        "updatedAt": "PRO_UPDATE_DATE",
+	"events": {
+	},
+
+	"fields": @{json_encode(Nano2::reverseTable('PROCESS'))},
+
+	"relationships": [
+	],
+
+	"methods": [
+        ]
+}
+&lt;/script&gt;
+&lt;script type="Model"&gt;
+{
+	"module": "ProcessMaker\\Model",
+	"name": "bpmnProcess",
+	"table": "BPMN_PROCESS",
+        "primaryKey": "PRO_UID",
+        "logicalKey": "PRO_UID",
+	"events": {
+	},
+
+	"fields": @{json_encode(Nano2::reverseTable('BPMN_PROCESS'))},
+
+	"relationships": [
+	],
+
+	"methods": [
+        ]
+}
+&lt;/script&gt;
+&lt;script type="Model"&gt;
+{
+	"module": "ProcessMaker\\Model",
+	"name": "project",
+	"table": "BPMN_PROJECT",
+        "primaryKey": "PRJ_UID",
+        "logicalKey": "PRJ_UID",
+        "createdAt": "PRJ_CREATE_DATE",
+        "updatedAt": "PRJ_UPDATE_DATE",
+	"events": {
+	},
+
+	"fields": @{json_encode(Nano2::reverseTable('BPMN_PROJECT'))},
+
+	"relationships": [
+		{"type":"belongsTo","name":"process","model":"process","foreignKey":"PRO_UID","localKey":"PRJ_UID"}
+	],
+
+	"methods": [
+        ]
+}
+&lt;/script&gt;
+&lt;script type="Model"&gt;
+{
+	"module": "ProcessMaker\\Model",
+	"name": "activity",
+	"table": "BPMN_ACTIVITY",
+        "primaryKey": "ACT_UID",
+        "logicalKey": "ACT_UID",
+        "createdAt": null,
+        "updatedAt": null,
+	"events": {
+	},
+
+	"fields": @{json_encode(Nano2::reverseTable('BPMN_ACTIVITY'))},
+
+	"relationships": [
+		{"type":"belongsTo","name":"process","model":"process","foreignKey":"PRO_UID","localKey":"PRJ_UID"}
+	],
+
+	"methods": [
+        ]
+}
+&lt;/script&gt;
+&lt;script type="Model"&gt;
+{
+	"module": "ProcessMaker\\Event",
+	"name": "event",
+	"table": "BPMN_EVENT",
+        "primaryKey": "EVN_UID",
+        "logicalKey": "EVN_UID",
+        "timestamps": false,
+	"events": {
+	},
+
+	"fields": @{json_encode(Nano2::reverseTable('BPMN_EVENT'))},
+
+	"relationships": [
+		{"type":"belongsTo","name":"process","model":"process","foreignKey":"PRO_ID","localKey":"PRO_ID"}
+	],
+
+	"methods": [
+        ]
+}
+&lt;/script&gt;
+&lt;script type="Model"&gt;
+{
+	"module": "ProcessMaker\\Model",
+	"name": "diagram",
+	"table": "BPMN_DIAGRAM",
+        "primaryKey": "DIA_UID",
+        "logicalKey": "DIA_UID",
+        "createdAt": null,
+        "updatedAt": null,
+	"events": {
+	},
+
+	"fields": @{json_encode(Nano2::reverseTable('BPMN_DIAGRAM'))},
+
+	"relationships": [
+		{"type":"belongsTo","name":"process","model":"process","foreignKey":"PRO_ID","localKey":"PRO_ID"}
+	],
+
+	"methods": [
+        ]
+}
+&lt;/script&gt;
+&lt;script type="Model"&gt;
+{
+	"module": "ProcessMaker\\Model",
+	"name": "shape",
+	"table": "BPMN_BOUND",
+        "primaryKey": "BOU_UID",
+        "logicalKey": "BOU_UID",
+        "timestamps": false,
+	"events": {
+	},
+
+	"fields": @{json_encode(Nano2::reverseTable('BPMN_BOUND'))},
+
+	"relationships": [
+		{"type":"belongsTo","name":"diagram","model":"diagram","foreignKey":"DIA_UID","localKey":"DIA_UID"}
+	],
+
+	"methods": [
+        ]
+}
+&lt;/script&gt;
+&lt;script type="Model"&gt;
+{
+	"module": "ProcessMaker\\Model",
+	"name": "event",
+	"table": "BPMN_EVENT",
+        "primaryKey": "EVN_UID",
+        "logicalKey": "EVN_UID",
+        "timestamps": false,
+	"events": {
+	},
+
+	"fields": @{json_encode(Nano2::reverseTable('BPMN_EVENT'))},
+
+	"relationships": [
+		{"type":"belongsTo","name":"process","model":"process","foreignKey":"PRO_ID","localKey":"PRO_ID"},
+		{"type":"morphOne","name":"shape","model":"shape","morphType":"BOU_ELEMENT_TYPE","foreignKey":"ELEMENT_UID","localKey":"EVN_UID"}
+	],
+
+	"methods": [
+        ]
+}
+&lt;/script&gt;
+&lt;script type="Model"&gt;
+{
+	"module": "ProcessMaker\\Model",
+	"name": "gateway",
+	"table": "BPMN_GATEWAY",
+        "primaryKey": "GAT_UID",
+        "logicalKey": "GAT_UID",
+        "timestamps": false,
+	"events": {
+	},
+
+	"fields": @{json_encode(Nano2::reverseTable('BPMN_GATEWAY'))},
+
+	"relationships": [
+		{"type":"belongsTo","name":"process","model":"process","foreignKey":"PRO_ID","localKey":"PRO_ID"},
+		{"type":"morphOne","name":"shape","model":"shape","morphType":"BOU_ELEMENT_TYPE","foreignKey":"ELEMENT_UID","localKey":"GAT_UID"}
+	],
+
+	"methods": [
+        ]
+}
+&lt;/script&gt;
+&lt;script type="Model"&gt;
+{
+	"module": "ProcessMaker\\Model",
+	"name": "flow",
+	"table": "BPMN_FLOW",
+        "primaryKey": "FLO_UID",
+        "logicalKey": "FLO_UID",
+        "timestamps": false,
+	"events": {
+	},
+
+	"fields": @{json_encode(Nano2::reverseTable('BPMN_FLOW'))},
+
+	"relationships": [
+		{"type":"belongsTo","name":"process","model":"process","foreignKey":"PRO_ID","localKey":"PRO_ID"},
+		{"type":"morphOne","name":"shape","model":"shape","morphType":"BOU_ELEMENT_TYPE","foreignKey":"ELEMENT_UID","localKey":"FLO_UID"}
+	],
+
+	"methods": [
+        ]
+}
+&lt;/script&gt;
+&lt;script type="Model"&gt;
+{
+	"module": "ProcessMaker\\Model",
+	"name": "artifact",
+	"table": "BPMN_ARTIFACT",
+        "primaryKey": "ART_UID",
+        "logicalKey": "ART_UID",
+        "timestamps": false,
+	"events": {
+	},
+
+	"fields": @{json_encode(Nano2::reverseTable('BPMN_ARTIFACT'))},
+
+	"relationships": [
+	],
+
+	"methods": [
+        ]
+}
+&lt;/script&gt;
+&lt;script type="Manager"&gt;
+{
+	"module": "ProcessMaker",
+	"model": "ProcessMaker\\Model\\Process",
+	"modelSelect": "Process::select()",
+        "modelFilter": "where('PRO_NAME', 'like', \"%$filter%\")",
+        "validate": {
+            "prj_name" : "required"
+        },
+        "modelUid": "PRO_UID",
+        "fields": {
+            "PRO_NAME" : "prj_name",
+            "PRO_DESCRIPTION" : "prj_description",
+            "PRO_CATEGORY": "prj_category",
+            "PRO_TYPE": "prj_type",
+            "PRO_CREATE_DATE": "prj_create_date",
+            "PRO_UPDATE_DATE": "prj_update_date"
+        }
+}
+&lt;/script&gt;
+&lt;/root&gt;
+</nano2TMP><model name="process" table="PROCESS" uid="PRO_UID" __ideNodeOpen="true">[
+    {"type":"hasOne","name":"diagram","model":"diagram","foreignKey":"PRO_ID","localKey":"PRO_ID"},
+    {"type":"hasMany","name":"activities","model":"activity","foreignKey":"PRO_ID","localKey":"PRO_ID"},
+    {"type":"hasMany","name":"gateways","model":"gateway","foreignKey":"PRO_ID","localKey":"PRO_ID"},
+    {"type":"hasMany","name":"events","model":"event","foreignKey":"PRO_ID","localKey":"PRO_ID"},
+    {"type":"hasMany","name":"artifacts","model":"artifact","foreignKey":"PRO_ID","localKey":"PRO_ID"},
+    {"type":"hasMany","name":"flows","model":"flow","foreignKey":"PRO_ID","localKey":"PRO_ID"},
+    {"type":"hasMany","name":"applications","model":"application","foreignKey":"PRO_ID","localKey":"PRO_ID"}
+]</model><model name="activity" table="BPMN_ACTIVITY" uid="ACT_UID" __ideNodeOpen="true">[
+    {"type":"belongsTo","name":"process","model":"process","foreignKey":"PRO_ID","localKey":"PRO_ID"}
+]</model><model name="gateway" table="BPMN_GATEWAY" uid="GAT_UID" __ideNodeOpen="true">[
+    {"type":"belongsTo","name":"process","model":"process","foreignKey":"PRO_ID","localKey":"PRO_ID"}
+]</model><model name="event" table="BPMN_EVENT" uid="EVN_UID" __ideNodeOpen="true">[
+    {"type":"belongsTo","name":"process","model":"process","foreignKey":"PRO_ID","localKey":"PRO_ID"}
+]</model><model name="diagram" table="BPMN_DIAGRAM" uid="DIA_UID" __ideNodeOpen="true">[
+    {"type":"hasMany","name":"shapes","model":"shape","foreignKey":"DIA_UID","localKey":"DIA_UID"},
+    {"type":"belongsTo","name":"process","model":"process","foreignKey":"PRO_ID","localKey":"PRO_ID"}
+]</model><model name="artifact" table="BPMN_ARTIFACT" uid="ART_UID" __ideNodeOpen="true">[
+    {"type":"belongsTo","name":"process","model":"process","foreignKey":"PRO_ID","localKey":"PRO_ID"}
+]</model><model name="flow" table="BPMN_FLOW" uid="FLO_UID" __ideNodeOpen="true">[
+    {"type":"belongsTo","name":"process","model":"process","foreignKey":"PRO_ID","localKey":"PRO_ID"}
+]</model><model name="shape" table="BPMN_BOUND" uid="BOU_UID" __ideNodeOpen="true">[
+    {"type":"belongsTo","name":"process","model":"process","foreignKey":"PRO_ID","localKey":"PRO_ID"},
+    {"type":"belongsTo","name":"diagram","model":"diagram","foreignKey":"DIA_UID","localKey":"DIA_UID"}
+]</model><model name="task" table="TASK" uid="TAS_UID" __ideNodeOpen="true">[
+    {"type":"hasMany","name":"incoming","model":"route","foreignKey":"ROU_NEXT_TASK","localKey":"TAS_UID"},
+    {"type":"hasMany","name":"outgoing","model":"route","foreignKey":"TAS_UID","localKey":"TAS_UID"}
+]</model><model name="route" table="ROUTE" uid="ROU_UID" __ideNodeOpen="true">[
+    {"type":"belongsTo","name":"origin","model":"task","foreignKey":"TAS_UID","localKey":"TAS_UID"},
+    {"type":"belongsTo","name":"target","model":"task","foreignKey":"TAS_UID","localKey":"ROU_NEXT_TASK"}
+]</model><model name="application" table="APPLICATION" uid="APP_UID" __ideNodeOpen="true">[
+    {"type":"belongsTo","name":"process","model":"process","foreignKey":"PRO_ID","localKey":"PRO_ID"}
+]</model><model name="laneset" table="BPMN_LANESET" uid="LNS_UID" __ideNodeOpen="true">[
+    {"type":"belongsTo","name":"process","model":"process","foreignKey":"PRO_ID","localKey":"PRO_ID"}
+]</model><model name="lane" table="BPMN_LANE" uid="LAN_UID" __ideNodeOpen="true">[
+    {"type":"belongsTo","name":"process","model":"process","foreignKey":"PRO_ID","localKey":"PRO_ID"},
+    {"type":"belongsTo","name":"laneset","model":"laneset","foreignKey":"LNS_UID","localKey":"LNS_UID"}
+]</model></print><component name="QUERY" transparent="" precode="" __ideNodeOpen="true">#{
+    return Nano2::query(Nano2::getConnection($schema), $query);
+}</component></package><pm400/><print __ideNodeOpen="true"><QUERY schema="information_schema" query="SELECT distinct TABLE_NAME FROM `COLUMNS` WHERE `TABLE_SCHEMA` = 'test' AND (`COLUMN_NAME` = 'PRO_UID' OR `COLUMN_NAME` = 'PRJ_UID')" __ideNodeOpen="false"/></print></root>

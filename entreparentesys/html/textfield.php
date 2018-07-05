@@ -1,0 +1,1 @@
+<?php $DATA['type']='text';Router::resolveRoute('html/input.php', $DATA, $CONTENT ); ?>

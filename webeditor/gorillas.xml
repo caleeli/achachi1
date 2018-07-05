@@ -1,0 +1,306 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root><path path="output/gorilla" main="output/gorilla/gorilla.html" __ideNodeOpen="true"><include src="diagramPlugin.xml"/><package name="objects" __ideNodeOpen="true"><component name="sprite" transparent="" precode="" __ideNodeOpen="true">&lt;i class="@{$name}" direction="@{@$direction}" style="
+#{
+  $_p=json_decode($_e-&gt;ownerDocument-&gt;getElementsByTagName("diagram")-&gt;item(1)-&gt;childNodes-&gt;item(0)-&gt;nodeValue);
+  $_i=$_e-&gt;getAttribute("__ideDiagramId");
+  foreach(explode(";",$_p-&gt;$_i) as $_s):
+    if(trim($_s)):
+      list($_name, $_value)=explode(":",$_s);
+      $_name=trim($_name);
+      if($_name=="left") $_x=$_value*1;
+      if($_name=="top") $_y=$_value*1;
+      if($_name=="width") $_w=$_value*1;
+      if($_name=="height") $_h=$_value*1;
+    endif;
+  endforeach;
+  return ($size/*true|false*/=='true'?"width:$_w;height:$_h;": "")."left:$_x;top:$_y;";
+}"&gt;&lt;/i&gt;</component><component name="diagram" transparent="" precode="" __ideNodeOpen="true">&lt;body&gt;
+&lt;style&gt;
+html, body{
+  overflow:hidden;
+  width:100%;
+  height:100%;
+  margin:0px;
+  padding:0px;
+}
+.gorilla{
+  background-image:url(gorilla.png);
+  width:32px;
+  height:33px;
+  position:absolute;
+}
+.banana{
+  background-image:url(banana.gif);
+  width:12px;
+  height:12px;
+  position:absolute;
+}
+.floor{
+  background-color:lightgray;
+  position:absolute;
+}
+.building{
+  background-color:gray;
+  position:absolute;
+}
+.spin{
+  -webkit-animation: spin 2s infinite linear;
+  animation: spin 2s infinite linear;
+  -moz-animation: spin 2s infinite linear;
+}
+@-moz-keyframes spin {
+    from { -moz-transform: rotate(0deg); }
+    to { -moz-transform: rotate(360deg); }
+}
+@-webkit-keyframes spin {
+    from { -webkit-transform: rotate(0deg); }
+    to { -webkit-transform: rotate(360deg); }
+}
+@keyframes spin {
+    from {transform:rotate(0deg);}
+    to {transform:rotate(360deg);}
+}
+.explode{
+  -webkit-animation: explode 0.5s 1 linear;
+          animation: explode 0.5s 1 linear;
+     -moz-animation: explode 0.5s 1 linear;
+}
+@-moz-keyframes explode {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
+@-webkit-keyframes explode {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
+@keyframes explode {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
+.blink{
+  -webkit-animation: blink 1s 1 linear;
+          animation: blink 1s 1 linear;
+     -moz-animation: blink 1s 1 linear;
+}
+@-moz-keyframes blink {
+    from { opacity: 1; }
+    40% { opacity: 0.5; }
+    60% { opacity: 1; }
+    80% { opacity: 0.5; }
+    to { opacity: 1; }
+}
+@-webkit-keyframes blink {
+    from { opacity: 1; }
+    40% { opacity: 0.5; }
+    60% { opacity: 1; }
+    80% { opacity: 0.5; }
+    to { opacity: 1; }
+}
+@keyframes blink {
+    from { opacity: 1; }
+    40% { opacity: 0.5; }
+    60% { opacity: 1; }
+    80% { opacity: 0.5; }
+    to { opacity: 1; }
+}
+&lt;/style&gt;
+&lt;script&gt;
+var g=0.5;
+var timers=[];
+var PI=Math.atan(1)*4;
+var int=setInterval(function(){
+  for(var j=2;j&gt;0;j--){
+    timers.forEach(function(e){
+        e(e);
+    });
+  }
+},100);
+function getX(e){return parseFloat(e.style.left);}
+function getY(e){return parseFloat(e.style.top);}
+function fireBanana(gorilla,ang,vel,callback){
+  var x=getX(gorilla)+16;
+  var y=getY(gorilla)-12;
+  var e=document.createElement("i");
+  var velx=(gorilla.getAttribute('direction')=='-1'?-1:1)*Math.cos(ang/180*PI)*vel;
+  var vely=-Math.sin(ang/180*PI)*vel;
+  var t=0;
+  e.className="banana spin";
+  e.style.left=x;
+  e.style.top=y;
+  document.body.appendChild(e);
+  timers.push(function(me){
+    t++;
+    e.style.left=x+t*velx;
+    e.style.top=y+t*vely+0.5*t*t*g;
+    var choco=false;
+    chocaCon(e, function(c){
+      if(c!=gorilla){
+        explode(e);blink(c);
+        choco=true;
+        if(typeof callback=='function')callback(getX(e), getY(e), c);
+      }
+    })
+    if(choco) {
+      timers.splice(timers.indexOf(me),1);
+    }
+  });
+}
+function chocaCon(e,fn){
+  if(getX(e)&gt;window.innerWidth) return fn(document.body);
+  if(getY(e)&gt;window.innerHeight) return fn(document.body);
+  if(getX(e)&lt;0) return fn(document.body);
+  var ee=document.getElementsByTagName("i");
+  for(var i=0,l=ee.length;i&lt;l;i++){
+    if(ee[i]!==e){
+      if(isCollide(ee[i], e)) fn(ee[i]);
+    }
+  }
+}
+function isCollide(a, b) {
+    /*return !(
+        ((a.clientTop + a.clientHeight) &lt; (b.clientTop)) ||
+        (a.clientTop &gt; (b.clientTop + b.clientHeight)) ||
+        ((a.clientLeft + a.clientWidth) &lt; b.clientLeft) ||
+        (a.clientLeft &gt; (b.clientLeft + b.clientWidth))
+    );*/
+    return !(
+        ((parseFloat(a.style.top) + a.clientHeight) &lt; (parseFloat(b.style.top))) ||
+        (parseFloat(a.style.top) &gt; (parseFloat(b.style.top) + b.clientHeight)) ||
+        ((parseFloat(a.style.left) + a.clientWidth) &lt; parseFloat(b.style.left)) ||
+        (parseFloat(a.style.left) &gt; (parseFloat(b.style.left) + b.clientWidth))
+    );
+}
+function explode(e){
+  e.className+=" explode";
+  var fn=function(){
+    e.remove();
+  }
+  e.addEventListener("animationend", fn, false);
+  e.addEventListener("webkitAnimationEnd", fn, false);
+  e.addEventListener("oanimationend", fn, false);
+  e.addEventListener("MSAnimationEnd", fn, false);
+}
+function blink(e){
+  e.className+=" blink";
+  var fn=function(){
+    removeClass(e,"blink");
+  }
+  e.addEventListener("animationend", fn, false);
+  e.addEventListener("webkitAnimationEnd", fn, false);
+  e.addEventListener("oanimationend", fn, false);
+  e.addEventListener("MSAnimationEnd", fn, false);
+}
+function removeClass(e,sclass){
+  var base=e.className;
+  base=base.split(" ");
+  if(base.indexOf(sclass)&gt;=0) base.splice(base.indexOf(sclass),1);
+  e.className=base.join(" ");
+}
+//GORILLA IA
+function calcSpeed(source,dest,ang){
+  var x1=getX(source),y1=getY(source);
+  var x2=getX(dest),y2=getY(dest);
+  var vx=(source.getAttribute('direction')=='-1'?-1:1)*Math.cos(ang/180*PI);
+  var vy=-Math.sin(ang/180*PI);
+
+  if(vx==0) return 100;
+  var vel1=Math.sqrt(2)*(x2-x1)*Math.sqrt(-g/(vx*(vy*x2-vx*y2-x1*vy+vx*y1)))/(2);
+  var vel2=Math.sqrt(2)*(x1-x2)*Math.sqrt(-g/(vx*(vy*x2-vx*y2-x1*vy+vx*y1)))/(2);
+
+  var vel=isNaN(vel1)||vel1&lt;=0?vel2:vel1;
+
+  return (isNaN(vel)?100:vel);
+}
+function escogeEnemigo(gorilla){
+  var ee=document.getElementsByTagName("i");
+  var dir=gorilla.getAttribute('direction')*1;
+  for(var i=0,l=ee.length;i&lt;l;i++){
+    if(ee[i].getAttribute('direction')*1==-dir){
+      return ee[i];
+    }
+  }
+  return null;
+}
+function runWithIA(gorilla){
+  var enemigo=escogeEnemigo(gorilla);
+  var ang=45;
+  var speed=calcSpeed(gorilla,enemigo,ang);
+  speed=speed*(1+(Math.random()*2-1)*0.5);
+  speed=Math.round(speed*4)/4;
+  var x0=getX(gorilla);
+  var y0=getY(gorilla);
+  var ciclo=0;
+
+  var probarTiro=function(x0,y0){
+    console.log(ang,speed*4);
+    fireBanana(gorilla,ang,speed, function(x,y,c){
+      if(c!=enemigo){
+        corregirTiro(x, y, x0, y0);
+      }
+    });
+  }
+  var corregirTiro=function(x, y, x0, y0){
+    var x2=getX(enemigo);
+    var y2=getY(enemigo);
+    var h=(x-x2)*(x-x2)+(y-y2)*(y-y2);
+    var h0=(x0-x2)*(x0-x2)+(y0-y2)*(y0-y2);
+    var mejoro=h&lt;h0;
+    if(!mejoro)ciclo=(ciclo+1)%6
+    switch(ciclo){
+      case 0://+v
+        speed++;
+        break;
+      case 1://-v
+        speed--;
+        break;
+      case 2://+a
+        ang+=10;
+        break;
+      case 3://+v
+        speed++;
+        break;
+      case 4://-v
+        speed--;
+        break;
+      case 5://+a
+        ang-=10;
+        break;
+    }
+    probarTiro(x,y);
+    /*fireBanana(gorilla,ang,speed, function(x1,y1,c){
+      if(c!=enemigo){
+        corregirTiro(gorilla,enemigo, ang, speed, x1, y1, x, y, ciclo);
+      }
+    });*/
+  }
+  probarTiro(x0,y0);
+}
+&lt;/script&gt;
+Angle:&lt;input id="angle" value="45"&gt;&lt;/br&gt;
+Speed:&lt;input id="speed" value="60"&gt;&lt;/br&gt;
+Click Gorilla to fire.
+@{node::content($_)}
+&lt;script&gt;
+(function(){
+  var angle=document.getElementById("angle");
+  var speed=document.getElementById("speed");
+  var ee=document.getElementsByTagName("i");
+  for(var i=0,l=ee.length;i&lt;l;i++){
+    ee[i].onclick=function(){
+      fireBanana(this,angle.value,speed.value/4)
+    }
+  }
+})();
+
+(function(){
+//Corre IA en los dir=1
+  var ee=document.getElementsByTagName("i");
+  for(var i=0,l=ee.length;i&lt;l;i++){
+    if(ee[i].getAttribute('direction')*1==-1){
+      runWithIA(ee[i]);
+    }
+  }
+})();
+
+&lt;/script&gt;
+&lt;/body&gt;</component></package><file name="gorilla.html" preprocess="" __ideNodeOpen="true"><diagram __ideNodeOpen="true" id="diagram"><!--{"diagram":{"zoom":1,"scrollTop":0,"scrollLeft":0},"dg098742138b444033a68acf218b0c3be6":"position: absolute; height: 8px; left: 87px; top: 96px; width: 66px;","dg76adb359fcc743508e98efa7c48b7e3e":"position: absolute; height: 28px; left: 829px; top: 189px; width: 40px;","dg84eb036355ca407fa34f34a9da3a5a84":"position: absolute; height: 21px; left: -7px; top: 350px; width: 918px;","dg776a53d68905451bb41da8dfa0467360":"position: absolute; height: 73px; left: 759.333px; top: 248px; width: 131px;","dgc3161895a4e74bf6a68838f868d1a3d9":"position: absolute; height: 248px; left: 531.75px; top: 73px; width: 117px;","dg3af8d76be2b54e818a620ddbc91242b3":"position: absolute; height: 80px; left: 370.167px; top: 248px; width: 81px;","dgae661fd21f7c4072b06dafb902c9daf0":"position: absolute; height: 143px; left: 221.583px; top: 184px; width: 77px;","dg8a5d7613d0ac493e9f95139ddfb6b7b5":"position: absolute; height: 198px; left: 76px; top: 125px; width: 95px;","dg35950378069547e786ce8e4f5568e396":"position: absolute; height: 42px; left: 389px; top: 184px;"}--><sprite __ideDiagramId="dg098742138b444033a68acf218b0c3be6" name="gorilla" size="false" direction="1"/><sprite __ideDiagramId="dg76adb359fcc743508e98efa7c48b7e3e" name="gorilla" size="false" direction="-1"/><sprite __ideDiagramId="dg84eb036355ca407fa34f34a9da3a5a84" name="floor" size="true"/><sprite __ideDiagramId="dg8a5d7613d0ac493e9f95139ddfb6b7b5" name="building" direction="" size="true"/><sprite __ideDiagramId="dgae661fd21f7c4072b06dafb902c9daf0" name="building" direction="" size="true"/><sprite __ideDiagramId="dg3af8d76be2b54e818a620ddbc91242b3" name="building" direction="" size="true"/><sprite __ideDiagramId="dgc3161895a4e74bf6a68838f868d1a3d9" name="building" direction="" size="true"/><sprite __ideDiagramId="dg776a53d68905451bb41da8dfa0467360" name="building" direction="" size="true"/><sprite __ideDiagramId="dg35950378069547e786ce8e4f5568e396" name="gorilla" direction="-1" size="false"/></diagram></file></path></root>

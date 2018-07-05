@@ -1,0 +1,8 @@
+content preflight  chrome/content/
+ 
+locale  preflight  en-US chrome/locale/en-US/
+ 
+overlay chrome://selenium-ide/content/selenium-ide-common.xul chrome://preflight/content/view/optionsOverlay.xul
+
+<!-- toolbar button -->
+overlay chrome://selenium-ide/content/selenium-ide.xul chrome://preflight/content/view/toolbarOverlay.xul

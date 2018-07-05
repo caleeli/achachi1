@@ -1,0 +1,3 @@
+var res={"pregunta":"Adan a los cuantos a\u00f1os tuvo a Set","respuestas":["140 a\u00f1os","180 a\u00f1os","130 a\u00f1os"],"correcta":"2","imagen":"img\/adam-and-eve-and-child.jpg"};
+dibujaPregunta($pregunta,$respuestas,$imagen,res);
+

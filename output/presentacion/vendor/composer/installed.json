@@ -1,0 +1,392 @@
+[
+    {
+        "name": "symfony/console",
+        "version": "v2.7.3",
+        "version_normalized": "2.7.3.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/symfony/Console.git",
+            "reference": "d6cf02fe73634c96677e428f840704bfbcaec29e"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/symfony/Console/zipball/d6cf02fe73634c96677e428f840704bfbcaec29e",
+            "reference": "d6cf02fe73634c96677e428f840704bfbcaec29e",
+            "shasum": ""
+        },
+        "require": {
+            "php": ">=5.3.9"
+        },
+        "require-dev": {
+            "psr/log": "~1.0",
+            "symfony/event-dispatcher": "~2.1",
+            "symfony/phpunit-bridge": "~2.7",
+            "symfony/process": "~2.1"
+        },
+        "suggest": {
+            "psr/log": "For using the console logger",
+            "symfony/event-dispatcher": "",
+            "symfony/process": ""
+        },
+        "time": "2015-07-28 15:18:12",
+        "type": "library",
+        "extra": {
+            "branch-alias": {
+                "dev-master": "2.7-dev"
+            }
+        },
+        "installation-source": "dist",
+        "autoload": {
+            "psr-4": {
+                "Symfony\\Component\\Console\\": ""
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "MIT"
+        ],
+        "authors": [
+            {
+                "name": "Fabien Potencier",
+                "email": "fabien@symfony.com"
+            },
+            {
+                "name": "Symfony Community",
+                "homepage": "https://symfony.com/contributors"
+            }
+        ],
+        "description": "Symfony Console Component",
+        "homepage": "https://symfony.com"
+    },
+    {
+        "name": "hoa/core",
+        "version": "2.15.09.01",
+        "version_normalized": "2.15.09.01",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/hoaproject/Core.git",
+            "reference": "020d38ca75b2164ba2651127542748f8d4263bad"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/hoaproject/Core/zipball/020d38ca75b2164ba2651127542748f8d4263bad",
+            "reference": "020d38ca75b2164ba2651127542748f8d4263bad",
+            "shasum": ""
+        },
+        "require": {
+            "ext-spl": "*",
+            "php": ">=5.4.0"
+        },
+        "require-dev": {
+            "hoa/test": "~1.0"
+        },
+        "suggest": {
+            "ext-mbstring": "ext/mbstring must be present (or a third implementation).",
+            "hoa/cli": "To use the `hoa` script."
+        },
+        "time": "2015-09-01 14:08:10",
+        "bin": [
+            "Bin/hoa"
+        ],
+        "type": "library",
+        "extra": {
+            "branch-alias": {
+                "dev-master": "2.x-dev"
+            }
+        },
+        "installation-source": "dist",
+        "autoload": {
+            "psr-4": {
+                "Hoa\\Core\\": "."
+            },
+            "files": [
+                "Core.php"
+            ]
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "BSD-3-Clause"
+        ],
+        "authors": [
+            {
+                "name": "Ivan Enderlin",
+                "email": "ivan.enderlin@hoa-project.net"
+            },
+            {
+                "name": "Hoa community",
+                "homepage": "http://hoa-project.net/"
+            }
+        ],
+        "description": "The Hoa\\Core library.",
+        "homepage": "http://hoa-project.net/",
+        "keywords": [
+            "consistency",
+            "core",
+            "data",
+            "event",
+            "library",
+            "listener",
+            "parameter",
+            "protocol"
+        ]
+    },
+    {
+        "name": "hoa/ustring",
+        "version": "3.15.08.03",
+        "version_normalized": "3.15.08.03",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/hoaproject/Ustring.git",
+            "reference": "261d5bfc53df8e895793d330f0fb96929fca355d"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/hoaproject/Ustring/zipball/261d5bfc53df8e895793d330f0fb96929fca355d",
+            "reference": "261d5bfc53df8e895793d330f0fb96929fca355d",
+            "shasum": ""
+        },
+        "require": {
+            "hoa/core": "~2.0"
+        },
+        "require-dev": {
+            "hoa/test": "~1.0"
+        },
+        "suggest": {
+            "ext-iconv": "ext/iconv must be present (or a third implementation) to use Hoa\\Ustring::transcode().",
+            "ext-intl": "To get a better Hoa\\Ustring::toAscii() and Hoa\\Ustring::compareTo()."
+        },
+        "time": "2015-08-03 07:49:50",
+        "type": "library",
+        "extra": {
+            "branch-alias": {
+                "dev-master": "3.x-dev"
+            }
+        },
+        "installation-source": "dist",
+        "autoload": {
+            "psr-4": {
+                "Hoa\\Ustring\\": "."
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "BSD-3-Clause"
+        ],
+        "authors": [
+            {
+                "name": "Ivan Enderlin",
+                "email": "ivan.enderlin@hoa-project.net"
+            },
+            {
+                "name": "Hoa community",
+                "homepage": "http://hoa-project.net/"
+            }
+        ],
+        "description": "The Hoa\\Ustring library.",
+        "homepage": "http://hoa-project.net/",
+        "keywords": [
+            "library",
+            "search",
+            "string",
+            "unicode"
+        ]
+    },
+    {
+        "name": "hoa/stream",
+        "version": "0.15.08.28",
+        "version_normalized": "0.15.08.28",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/hoaproject/Stream.git",
+            "reference": "cbd0f4749e447f4d31001e7c898f5e794c5861cb"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/hoaproject/Stream/zipball/cbd0f4749e447f4d31001e7c898f5e794c5861cb",
+            "reference": "cbd0f4749e447f4d31001e7c898f5e794c5861cb",
+            "shasum": ""
+        },
+        "require": {
+            "hoa/core": "~2.0"
+        },
+        "time": "2015-08-28 07:31:43",
+        "type": "library",
+        "extra": {
+            "branch-alias": {
+                "dev-master": "0.x-dev"
+            }
+        },
+        "installation-source": "dist",
+        "autoload": {
+            "psr-4": {
+                "Hoa\\Stream\\": "."
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "BSD-3-Clause"
+        ],
+        "authors": [
+            {
+                "name": "Ivan Enderlin",
+                "email": "ivan.enderlin@hoa-project.net"
+            },
+            {
+                "name": "Hoa community",
+                "homepage": "http://hoa-project.net/"
+            }
+        ],
+        "description": "The Hoa\\Stream library.",
+        "homepage": "http://hoa-project.net/",
+        "keywords": [
+            "Context",
+            "bucket",
+            "composite",
+            "filter",
+            "in",
+            "library",
+            "out",
+            "protocol",
+            "stream",
+            "wrapper"
+        ]
+    },
+    {
+        "name": "hoa/console",
+        "version": "2.15.07.27",
+        "version_normalized": "2.15.07.27",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/hoaproject/Console.git",
+            "reference": "3b871f5f1059a3664acb5380ebadd988daa7a0db"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/hoaproject/Console/zipball/3b871f5f1059a3664acb5380ebadd988daa7a0db",
+            "reference": "3b871f5f1059a3664acb5380ebadd988daa7a0db",
+            "shasum": ""
+        },
+        "require": {
+            "hoa/core": "~2.0",
+            "hoa/stream": "~0.0",
+            "hoa/ustring": "~3.0"
+        },
+        "require-dev": {
+            "hoa/test": "~1.0"
+        },
+        "suggest": {
+            "ext-pcntl": "To enable hoa://Event/Console/Window:resize.",
+            "hoa/dispatcher": "To use the console kit.",
+            "hoa/router": "To use the console kit."
+        },
+        "time": "2015-07-27 07:52:10",
+        "type": "library",
+        "extra": {
+            "branch-alias": {
+                "dev-master": "2.x-dev"
+            }
+        },
+        "installation-source": "dist",
+        "autoload": {
+            "psr-4": {
+                "Hoa\\Console\\": "."
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "BSD-3-Clause"
+        ],
+        "authors": [
+            {
+                "name": "Ivan Enderlin",
+                "email": "ivan.enderlin@hoa-project.net"
+            },
+            {
+                "name": "Hoa community",
+                "homepage": "http://hoa-project.net/"
+            }
+        ],
+        "description": "The Hoa\\Console library.",
+        "homepage": "http://hoa-project.net/",
+        "keywords": [
+            "autocompletion",
+            "chrome",
+            "cli",
+            "console",
+            "cursor",
+            "getoption",
+            "library",
+            "option",
+            "parser",
+            "processus",
+            "readline",
+            "terminfo",
+            "tput",
+            "window"
+        ]
+    },
+    {
+        "name": "hoathis/symfony-console-bridge",
+        "version": "1.15.01.06",
+        "version_normalized": "1.15.01.06",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/hoaproject/Contributions-Symfony-ConsoleBridge.git",
+            "reference": "f891b6e0f29e1ed14cc00c71d3cdc47f02411c1c"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/hoaproject/Contributions-Symfony-ConsoleBridge/zipball/f891b6e0f29e1ed14cc00c71d3cdc47f02411c1c",
+            "reference": "f891b6e0f29e1ed14cc00c71d3cdc47f02411c1c",
+            "shasum": ""
+        },
+        "require": {
+            "hoa/console": ">=1.0,<3.0",
+            "php": ">=5.3.3",
+            "symfony/console": "~2.3,>=2.3.6|~3.0.0"
+        },
+        "require-dev": {
+            "atoum/atoum": "~1.0"
+        },
+        "time": "2015-01-06 11:50:54",
+        "type": "library",
+        "extra": {
+            "branch-alias": {
+                "dev-master": "1.x-dev"
+            }
+        },
+        "installation-source": "dist",
+        "autoload": {
+            "psr-4": {
+                "Hoathis\\SymfonyConsoleBridge\\": "."
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "BSD-3-Clause"
+        ],
+        "authors": [
+            {
+                "name": "Ivan Enderlin",
+                "email": "ivan.enderlin@hoa-project.net"
+            },
+            {
+                "name": "Hoa community",
+                "homepage": "http://hoa-project.net/"
+            },
+            {
+                "name": "Julien Bianchi",
+                "email": "julien.bianchi@hoa-project.net"
+            }
+        ],
+        "description": "The Hoa\\Console to Symfony\\Console bridge.",
+        "homepage": "http://hoa-project.net/",
+        "keywords": [
+            "Bridge",
+            "console",
+            "hoa",
+            "library",
+            "symfony"
+        ]
+    }
+]

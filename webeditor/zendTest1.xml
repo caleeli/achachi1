@@ -1,0 +1,1388 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root __ideNodeOpen="true"><include src="$library/zend.xml" __ideNodeOpen="true"/><include src="$library/extjslib2.xml"/><include src="$library/googleimages.xml"/><component name="zfapplication" transparent="" __ideNodeOpen="false" precode="chdir(ACH_PATH);createDir(ACH_OUTPUT_PATH.'/'.$name);chdir(ACH_OUTPUT_PATH.'/'.$name);var_dump(realpath(&quot;.&quot;));">#{
+  createDir('application');
+    createDir('application/configs');
+    createDir('application/controllers');
+    createDir('application/models');
+    createDir('application/views');
+    createDir('application/views/helpers');
+    createDir('application/views/scripts');
+    createDir('application/layouts');
+  createDir('library');
+  createDir('public');
+  if(!empty($main)) echo "&lt;script&gt;window.location.href=".json_encode("output/".$name."/public/index.php/".$main)."&lt;/script&gt;";
+}<file name="index.php" preprocess="" __ideNodeOpen="true">&lt;?php
+/**
+ *
+ *  Achachi XML Builder - Framework and applications builder tool
+ *  Copyright (C) 2010-2012, Llankay Achachi
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ *
+ */
+
+header("Location: public/index.php/index/index");</file><file name="public/index.php" preprocess="" __ideNodeOpen="true">&lt;?php
+/**
+ *
+ *  Achachi XML Builder - Framework and applications builder tool
+ *  Copyright (C) 2010-2012, Achachi
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ *
+ */
+
+@include_once("config.php");
+// Define path to application directory
+defined('APPLICATION_PATH')
+    || define('APPLICATION_PATH', realpath(dirname(__FILE__) . '/../application'));
+
+// Define application environment
+defined('APPLICATION_ENV')
+    || define('APPLICATION_ENV', (getenv('APPLICATION_ENV') ? getenv('APPLICATION_ENV') : 'production'));
+
+// Ensure library/ is on include_path
+set_include_path(implode(PATH_SEPARATOR, array(
+    realpath(APPLICATION_PATH . '/../library'),
+    get_include_path(),
+)));
+
+/** Zend_Application */
+require_once 'Zend/Application.php';  
+
+// Create application, bootstrap, and run
+$application = new Zend_Application(
+    APPLICATION_ENV, 
+    APPLICATION_PATH . '/configs/application.ini'
+);
+$application-&gt;bootstrap()
+            -&gt;run();</file></component><component name="format_string" transparent="" precode="" __ideNodeOpen="false">@{format_string(node::content($_))}</component><component name="controller" transparent="" __ideNodeOpen="false"><file name="application/controllers/@{UpperCamelCase($name)}Controller.php" preprocess="format_string" __ideNodeOpen="true">&lt;?php
+require_once 'Zend/Controller/Action.php';
+require_once 'Zend/Loader.php';
+
+class @{UpperCamelCase($name)}Controller extends Zend_Controller_Action
+{
+@{node::content($_)}
+}</file></component><component name="view" transparent="" __ideNodeOpen="false"><file name="application/views/scripts/@{$_e-&gt;parentNode-&gt;getAttribute(&quot;name&quot;)}/@{$name}.phtml" preprocess="" __ideNodeOpen="true">@{node::content($_)}</file></component><component name="layout" transparent="" __ideNodeOpen="false"><file name="application/views/scripts/@{$name}.phtml" preprocess="" __ideNodeOpen="true">@{node::content($_)}</file></component><component name="action" transparent="" __ideNodeOpen="true">  public function @{$name}Action()
+  {
+#{
+if(isset($loadParams) &amp;&amp; ($loadParams=="true"))
+  return 'foreach($'.'this-&gt;getRequest()-&gt;getParams() as $_ =&gt; $__) if(substr($_,0,1)!="_") $$_=$__;';
+if(isset($loadParams) &amp;&amp; ($loadParams!="") &amp;&amp; ($loadParams!="false") &amp;&amp; ($loadParams!="true")):
+  $_loadParams = "";
+  foreach(explode(",",$loadParams) as $_p):
+    $_loadParams.=$_p.'=$this-&gt;getRequest()-&gt;getParam("'.substr(trim($_p),1).'"); ';
+  endforeach;
+  return $_loadParams;
+endif;
+}@{node::content($_)}
+  }
+
+</component><zfapplication name="zend" main="index/index" __ideNodeOpen="true"><package name="wizards" type="" __ideNodeOpen="true"><file name="application/extjs/ide.js" preprocess="" __ideNodeOpen="true">(function(){
+var panel,A;
+return panel=new Ext.form.Panel({
+  title: 'Componente',
+  closable:true,
+  frame:true,
+  url:"../ide/create",
+  tbar:[
+    new Ext.Button({
+      text:"Limpiar",
+      handler:function(a,b){
+        this.ownerCt.ownerCt.getForm()._fields.items[0].setValue("");
+        this.ownerCt.ownerCt.getForm()._fields.items[1].setValue("");
+      }
+    }),
+    new Ext.Button({
+      text:"Compilar",
+      handler:function(a,b){
+        this.ownerCt.ownerCt.getForm().submit();
+      }
+    }),
+    new Ext.Button({
+      text:"Probar",
+      handler:function(a,b){
+        var page=this.ownerCt.ownerCt.getForm().findField('_name').getValue();
+        runPage(page,'formulario');
+      }
+    }),
+    new Ext.form.ComboBox({
+      fieldLabel:"Abrir",
+      name:"_open",
+      mode:"local",
+      displayField:"label",
+      valueField:"id",
+      store:new Ext.data.JsonStore({
+        proxy: {
+          type: 'ajax',
+          url: '../ide/fuentes',
+          reader: {
+            type: 'json',
+            root: 'data'
+          }
+        },
+        autoLoad:true,
+        remoteSort:true,
+        fields:['id', 'label']
+      }),
+      listeners:{
+        change:function(me,val){
+          var form=this.ownerCt.ownerCt.getForm();
+          Ext.Ajax.request({
+            url: '../ide/fuente',
+            params: {fuente:val},
+            success: function (response){
+              try {
+                var fn;
+                eval('fn=function(){'+response.responseText+'};');
+                fn();setTimeout(function(){fn()},500);
+              } catch(e) {
+                Ext.Msg.alert(e.message, response.responseText);
+              }
+            },
+            failure: function (response){
+              Ext.Msg.alert("Error",response.responseText);
+            }
+          });
+        }
+      }
+    }),
+  ],
+  items:[
+    new Ext.form.Text({
+      fieldLabel:"Nombre",
+      name:"_name"
+    }),
+    new Ext.form.ComboBox({
+      fieldLabel:"Tipo",
+      name:"_template",
+      mode:"local",
+      displayField:"label",
+      valueField:"id",
+      store:new Ext.data.JsonStore({
+        proxy: {
+          type: 'ajax',
+          url: '../ide/templates',
+          reader: {
+            type: 'json',
+            root: 'data'
+          }
+        },
+        autoLoad:true,
+        remoteSort:true,
+        fields:['id', 'label']
+      }),
+      listeners:{
+        change:function(me,val){
+          A.removeAll();
+          if(val)loadFragment(A,{fragment:val});
+        }
+      }
+    }),
+    A=new Ext.Panel({title:"Contenido",layout:"fit"})
+  ]
+});
+})()</file><component name="cmpEditor" transparent="" precode="" __ideNodeOpen="true"><file name="application/bindings/@{$name}.php" preprocess="" __ideNodeOpen="false">&lt;?php
+
+require_once("../library/ziterator.php");
+
+class @{$name} extends zIterator {
+}
+  </file><file name="application/extjs/@{$name}.js" preprocess="" __ideNodeOpen="false">(function(){
+  var A;
+  return new Ext.Panel({
+    frame:true,
+    layout: 'anchor',
+    defaults: {
+        anchor: '100%'
+    },
+    items:[
+#{
+$_res='';
+foreach(explode(",",$fields) as $_f):
+  if(preg_match('/(\w+)\[(\w+)\]/',$_f,$_ma)):
+    switch($_ma[2]):
+    case 'textarea':
+    $_res.="
+      new Ext.form.TextArea(\x7b
+        fieldLabel:".json_encode($_ma[1]).",
+        name:".json_encode($_ma[1]).",
+      \x7d),";
+    break;
+    case 'button':
+    $_res.="
+      new Ext.Button(\x7b
+        text:".json_encode($_ma[1]).",
+        anchor:'10%'
+      \x7d),";
+    break;
+    case 'objects':
+    $_res.="
+      new Ext.form.ComboBox(\x7b
+        fieldLabel:".json_encode($_ma[1]).",
+        name:".json_encode($_ma[1]).",
+        mode:'local',
+        displayField:'label',
+        valueField:'id',
+        store:new Ext.data.JsonStore(\x7b
+          proxy: \x7b
+            type: 'ajax',
+            url: '../ide/objects',
+            reader: \x7b
+              type: 'json',
+              root: 'data'
+            \x7d
+          \x7d,
+          autoLoad:true,
+          remoteSort:true,
+          fields:['id', 'label']
+        \x7d),
+      \x7d),";
+    break;
+    case 'textfield':
+    default:
+    $_res.="
+      new Ext.form.TextField(\x7b
+        fieldLabel:".json_encode($_ma[1]).",
+        name:".json_encode($_ma[1]).",
+      \x7d),";
+    endswitch;
+  endif;
+endforeach;
+return $_res;
+}
+    ]
+  });
+})()</file><file name="application/templates/@{$name}.js" preprocess="" __ideNodeOpen="false">@{node::content($_)}</file><file name="application/templates/@{$name}.bin" preprocess="" __ideNodeOpen="true">&lt;?='&lt;?php'?&gt;
+
+require_once("../library/ziterator.php");
+
+class &lt;?=$_name?&gt; extends zIterator {
+@{$adapter?'  public $adapter = '.$adapter.';':''}
+@{$query?'  public $query = '.$query.';':''}
+}
+</file></component><cmpEditor name="ide_grilla" __ideNodeOpen="true" fields="title[textfield],adapter[connections],query[textarea],cargar[button],fields[textarea],columns[textarea],toolbar[textarea]" adapter="&lt;?=var_export($adapter,true)?&gt;" query="&lt;?=var_export($query,true)?&gt;">&lt;?php
+$fields=explode("\n",$fields);
+$columns0=explode("\n",$columns);
+$columns=array();
+foreach($columns0 as $i=&gt;$col0){
+  $col=explode(",",$col0);
+  $c=array(
+    "text"=&gt;$col[0],
+    "sortable"=&gt;true,
+    "dataIndex"=&gt;$fields[$i],
+    "align"=&gt;(@$col[2]?$col[2]:'left'),
+  );
+  if($col[1])$c["width"]=$col[1]*1;
+  else $c["flex"]=1;
+  $columns[]=$c;
+}
+$toolbar0=explode("\n",$toolbar);
+$toolbar=array();
+foreach($toolbar0 as $i=&gt;$v)if($v){
+  $u=explode(",",$v);
+  $o=new StdClass();
+  $o-&gt;text=$u[0];
+  $o-&gt;icon=$u[1];
+  $o-&gt;link=$u[2];
+  $o-&gt;title=@$u[3]?$u[3]:$u[0];
+  $toolbar[]=$o;
+}
+?&gt;
+(function(){
+var grilla=Ext.create('Ext.grid.Panel', {
+  title: &lt;?=json_encode($title)?&gt;,
+  store: new Ext.data.JsonStore({
+    proxy: {
+      type: 'ajax',
+      url: '../grilla/data?_zdata=&lt;?='&lt;?= URLencode( $_zdata ) ?&gt;' ?&gt;',
+      reader: {
+        type: 'json',
+        root: 'data'
+      }
+    },         
+    autoLoad:true,
+    remoteSort:true,
+    fields:&lt;?=json_encode($fields)?&gt;
+  }),
+  columns: &lt;?=json_encode($columns) ?&gt;,
+  tbar:[
+&lt;?php
+  foreach($toolbar as $tb) if($tb){
+?&gt;
+    {
+      text:&lt;?=$json_encode($tb-&gt;text)?&gt;,
+      icon:"../../images/16/&lt;?=$tb-&gt;icon?&gt;",
+      handler:function($this){
+        loadWindow($this.ownerCt.ownerCt,
+          {fragment:&lt;?=json_encode($tb-&gt;link)?&gt;},
+          {
+            title:&lt;?=$json_encode($tb-&gt;title)?&gt;,
+            listeners:{
+              destroy:function(){
+                grilla.store.load();
+              }
+            }
+          }
+        );
+      }
+    },
+&lt;?php
+  }
+?&gt;
+  ],
+  viewConfig: {
+    stripeRows: true
+  }
+});
+return grilla;
+})()</cmpEditor><cmpEditor name="ide_templeta_a" __ideNodeOpen="true" fields="title[textfield],regionA[objects]">(function(){
+  return Ext.Panel,{
+    title:&lt;?=json_encode($title)?&gt;,
+    closable:true,
+    layout:"border",
+    items:[
+      Ext.create("Ext.Fragment",{
+        fragment:&lt;?=json_encode($regionA)?&gt;,
+        region:"center",
+        params:{}
+      })
+    ]
+  };
+})()</cmpEditor><cmpEditor name="ide_Template1" __ideNodeOpen="true" fields="title[textfield],regionA1[objects],regionA2[objects],regionA3[objects],regionA4[objects]">(function(){
+  return new Ext.Panel({
+    title:&lt;?=json_encode($title)?&gt;,
+    closable:true,
+    items:[
+      new Ext.Panel({
+        layout:{type:"table",columns:2},
+        frame:true,
+        defaults:{width:400},
+        items:[
+          Ext.create("Ext.Fragment",{
+            fragment:&lt;?=json_encode($regionA1)?&gt;,
+            params:{}
+          }),
+          Ext.create("Ext.Fragment",{
+            fragment:&lt;?=json_encode($regionA2)?&gt;,
+            params:{}
+          }),
+          Ext.create("Ext.Fragment",{
+            fragment:&lt;?=json_encode($regionA3)?&gt;,
+            params:{}
+          }),
+          Ext.create("Ext.Fragment",{
+            fragment:&lt;?=json_encode($regionA4)?&gt;,
+            params:{}
+          }),
+        ]
+      })
+    ]
+  });
+})()</cmpEditor></package><file name="application/configs/application.ini" preprocess="" __ideNodeOpen="false">[production]
+phpSettings.display_startup_errors = 1
+phpSettings.display_errors = 1
+includePaths.library = APPLICATION_PATH "/../library"
+bootstrap.path = APPLICATION_PATH "/Bootstrap.php"
+bootstrap.class = "Bootstrap"
+resources.frontController.controllerDirectory = APPLICATION_PATH "/controllers"
+; resources.layout.layout = "home"
+
+[staging : production]
+
+[testing : production]
+phpSettings.display_startup_errors = 1
+phpSettings.display_errors = 1
+
+[development : production]
+phpSettings.display_startup_errors = 1
+phpSettings.display_errors = 1</file><file name="application/Bootstrap.php" preprocess="" __ideNodeOpen="false">&lt;?php
+
+class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
+{
+
+
+}
+
+</file><controller name="error" descripcion="" author="" __ideNodeOpen="false"><action name="error" noRender="false" descripcion="" loadParams="" __ideNodeOpen="true">        $errors = $this-&gt;_getParam('error_handler');
+        
+        switch ($errors-&gt;type) { 
+            case Zend_Controller_Plugin_ErrorHandler::EXCEPTION_NO_CONTROLLER:
+            case Zend_Controller_Plugin_ErrorHandler::EXCEPTION_NO_ACTION:
+        
+                // 404 error -- controller or action not found
+                $this-&gt;getResponse()-&gt;setHttpResponseCode(404);
+                $this-&gt;view-&gt;message = 'Page not found';
+                break;
+            default:
+                // application error 
+                $this-&gt;getResponse()-&gt;setHttpResponseCode(500);
+                $this-&gt;view-&gt;message = 'Application error';
+                break;
+        }
+        
+        $this-&gt;view-&gt;exception = $errors-&gt;exception;
+        $this-&gt;view-&gt;request   = $errors-&gt;request;
+        if(isset($this-&gt;_helper-&gt;layout)) $this-&gt;_helper-&gt;layout-&gt;disableLayout();
+</action><view name="error">  &lt;b&gt;&lt;?= $this-&gt;message ?&gt;&lt;/b&gt;
+
+  &lt;? if (true or 'development' == APPLICATION_ENV): ?&gt; 
+  
+  &lt;h3&gt;Exception information:&lt;/h3&gt; 
+  &lt;p&gt; 
+      &lt;b&gt;Message:&lt;/b&gt; &lt;?= $this-&gt;exception-&gt;getMessage() ?&gt; 
+  &lt;/p&gt; 
+
+  &lt;h3&gt;Stack trace:&lt;/h3&gt; 
+  &lt;pre&gt;&lt;?= $this-&gt;exception-&gt;getTraceAsString() ?&gt; 
+  &lt;/pre&gt; 
+
+  &lt;h3&gt;Request Parameters:&lt;/h3&gt; 
+  &lt;pre&gt;&lt;? var_dump($this-&gt;request-&gt;getParams()) ?&gt; 
+  &lt;/pre&gt; 
+  &lt;? else: ?&gt;
+  &lt;p&gt;
+      &lt;b&gt;Message:&lt;/b&gt; &lt;?= $this-&gt;exception-&gt;getMessage() ?&gt; 
+  &lt;/p&gt;
+  &lt;? endif ?&gt;
+  </view></controller><layout name="home" preprocess="" __ideNodeOpen="false">&lt;?php echo $this-&gt;layout()-&gt;content; ?&gt;</layout><controller name="login" __ideNodeOpen="false"><action name="login" loadParams="" __ideNodeOpen="false">session_start();
+session_destroy();</action><view name="login" __ideNodeOpen="false">&lt;html&gt;
+&lt;head&gt;
+&lt;meta http-equiv="Content-Type" content="text/html; charset=utf-8"&gt;
+&lt;title&gt;NetBank&lt;/title&gt;
+&lt;link rel="stylesheet" type="text/css" href="/ext/resources/css/ext-all.css" /&gt;
+&lt;script type="text/javascript" src="/ext/bootstrap.js"&gt;&lt;/script&gt;
+&lt;script type="text/javascript" src="../../js/base.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+Ext.onReady(function()
+{
+<ext.fragment encode="" __ideNodeOpen="true"><ext class="Ext.Window" autoShow="true" title="Ingrese Código" __ideNodeOpen="true" closable="false" movable="false"><ext class="Ext.form.Panel" layout="border" id="winLogin" width="400" height="210" border="true" iconCls="lock" frame="true" __ideNodeOpen="true"><ext class="Ext.form.Panel" xtype="form" region="west" border="false" __ideNodeOpen="true" width="132"><ext.attribute name="bodyStyle" isArray="false" isString="false" type="string" __ideNodeOpen="true">padding: 15 5 5 5; background: url(data:image/gif;base64,R0lGODlhAQABAID/AMDAwAAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==);</ext.attribute><ext.attribute name="html" type="string" __ideNodeOpen="true">&lt;img src="../../images/gembok.png"/&gt;</ext.attribute></ext><ext class="Ext.Panel" region="center" labelAlign="top" id="frmLogin" labelWidth="50" border="false" defaultType="textfield" __ideNodeOpen="false"><ext.attribute name="bodyStyle" type="string" __ideNodeOpen="true">padding: 15 5 5 5; background: url(data:image/gif;base64,R0lGODlhAQABAID/AMDAwAAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==);</ext.attribute><ext.attribute name="defaults" isArray="false" isString="false"><ext class="Object" anchor="97%" labelSeparator=""/></ext.attribute><ext class="Object" fieldLabel="Nombre de Usuario" name="username" id="username" allowBlank="false" anchor="97%" labelSeparator=""/><ext class="Object" fieldLabel="Password" name="pwd" id="pwd" inputType="password" allowBlank="false" enableKeyEvents="true" anchor="97%" labelSeparator=""/></ext><ext.attribute name="buttons" isArray="false" isString="false" type="array"><ext class="Object" text="Entrar" iconCls="login" id="btn-login" scale="medium" minWidth="75" removeMode="container" hideParent="true" __ideNodeOpen="true"><ext.attribute name="handler" __ideNodeOpen="true">function($this){
+  saveForm($this.ownerCt.ownerCt,{url:"verify"})
+}</ext.attribute></ext></ext.attribute></ext></ext></ext.fragment>;
+});
+&lt;/script&gt;
+&lt;/head&gt;
+&lt;body&gt;&lt;img src="../../images/bg/city.jpg" style="width:100%" /&gt;&lt;/body&gt;
+&lt;/html&gt;
+</view><action name="verify" loadParams="$username,$pwd" __ideNodeOpen="true"><select_row model="usuario" var="$row" criteria="usr_login=$username;usr_password=@md5($pwd)" __ideNodeOpen="true">$this-&gt;getHelper('viewRenderer')-&gt;setNoRender(true); 
+if($row) { 
+  session_start();
+  $_SESSION["usuario"] = $row-&gt;toArray();
+  echo 'window.location.href='.json_encode("../index/index").';';
+} else {
+  echo 'Ext.Msg.alert("Error", "Usuario/Contraseña incorrectos");';
+}</select_row></action></controller><controller name="index" descripcion="" author="" __ideNodeOpen="true"><action name="index" noRender="false" descripcion="" loadParams="" __ideNodeOpen="false">session_start();
+if(empty($_SESSION["usuario"])){
+  header("Location: ../login/login");
+  die();
+}
+$this-&gt;view-&gt;usuario = new StdClass();
+foreach($_SESSION["usuario"] as $a =&gt; $b) {
+  $this-&gt;view-&gt;usuario-&gt;$a = $b;
+}
+</action><view name="index" __ideNodeOpen="true">&lt;?php echo $this-&gt;doctype(); ?&gt;
+&lt;html&gt;
+&lt;head&gt;
+&lt;meta http-equiv="Content-Type" content="text/html; charset=utf-8"&gt;
+&lt;title&gt;ExtJs-ZF&lt;/title&gt;
+&lt;link type="image/x-icon" href="../../images/16/favicon.ico" rel="icon" /&gt;
+&lt;link rel="stylesheet" type="text/css" href="/ext/resources/css/ext-all.css" /&gt;
+&lt;link rel="stylesheet" type="text/css" href="../../base.css" /&gt;
+&lt;script type="text/javascript" src="/ext/bootstrap.js"&gt;&lt;/script&gt;
+&lt;script type="text/javascript" src="../../js/base.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+Ext.onReady(function()
+{
+<ext.fragment encode="" __ideNodeOpen="true"><ext class="Ext.Viewport" layout="border" __ideNodeOpen="true"><ext class="Ext.Panel" region="north" title="" frame="false" __ideNodeOpen="true"><ext.attribute name="html" __ideNodeOpen="true" type="string">&lt;div class="title"&gt;
+&lt;div style="position:absolute;"&gt;Motor ExtJs-ZF&lt;/div&gt;
+&lt;div style="text-align:right;font-size:12px;"&gt;&lt;a href="../login/login" style="color:white;"&gt;&lt;img src="../../images/16/close.gif" /&gt; Cerrar&lt;/a&gt;&lt;/div&gt;
+&lt;div style="text-align:right;font-size:12px;"&gt;&lt;img src="../../images/16/user.png" /&gt; &lt;?=$this-&gt;usuario-&gt;usr_login ?&gt;&lt;/div&gt;
+&lt;div style="text-align:right;font-size:12px;"&gt;&lt;b&gt;código:&lt;/b&gt; &lt;?=$this-&gt;usuario-&gt;codigo ?&gt;&lt;/div&gt;
+&lt;/div&gt;</ext.attribute></ext><ext class="Ext.Panel" region="west" title="Opciones de Menu" frame="true" width="250" collapsible="true" __ideNodeOpen="true" layout="fit"><ext class="Ext.tree.Panel" __ideNodeOpen="true"><ext.attribute name="store" isArray="false" isString="false" __ideNodeOpen="true"><ext class="Ext.data.TreeStore" __ideNodeOpen="true" autoSync="true"><ext.attribute name="proxy" isArray="false" isString="false" __ideNodeOpen="true">{
+  type:'ajax',
+  reader:'json',
+  url:'../menu/menu'
+}</ext.attribute><ext.attribute name="root" isArray="false" isString="false" __ideNodeOpen="true">{
+    text: 'Opciones',
+    draggable: false,
+    expanded: true,
+    id: 'root'
+}</ext.attribute></ext></ext.attribute><ext.attribute name="listeners" isArray="false" isString="false" __ideNodeOpen="true">{
+  //select
+  beforeitemclick:function(row, record){
+    var id = record.getId();
+    var page = record.raw.page;
+    var type = record.raw.type;
+    if(!record.data.leaf) return;
+    Ext.Ajax.request({
+        url: type=="controlador"?page:("../"+type+"/index?_zdata="+encodeURIComponent(page)),
+        params: {
+        },
+        success: function (response){
+          try {
+            Ext.getCmp("regioncentral").add(eval(response.responseText)).show();
+          } catch(e) {
+            Ext.Msg.alert(e.message, response.responseText);
+          }
+        },
+        failure: function (response){
+          Ext.Msg.alert(response.responseText);
+        }
+    });
+  }
+}
+</ext.attribute></ext></ext><ext class="Ext.tab.Panel" region="center" __ideNodeOpen="false" id="regioncentral"/></ext></ext.fragment>;
+});
+&lt;/script&gt;
+&lt;/head&gt;
+&lt;body&gt;&lt;/body&gt;
+&lt;/html&gt;
+</view></controller><controller name="menu" descripcion="" author="" __ideNodeOpen="false"><action name="menu" noRender="false" descripcion="" loadParams="$node" __ideNodeOpen="true"><select_table model="menu" columns="ID,PARENT,TEXT,LEAF,TYPE" var="$rows" criteria="PARENT=$node" __ideNodeOpen="true" order="POSITION">$nodes = array();
+foreach($rows as $row){
+  $nodes[]=array(
+    "text"=&gt;$row-&gt;TEXT,
+    "id"=&gt;$row-&gt;ID,
+    "page"=&gt;$row-&gt;PAGE,
+    "leaf"=&gt;$row-&gt;LEAF?true:false,
+    "type"=&gt;$row-&gt;TYPE,
+  );
+}
+$this-&gt;view-&gt;nodes = $nodes;
+</select_table></action><view name="menu" __ideNodeOpen="true">&lt;?= json_encode($this-&gt;nodes) ?&gt;</view><action name="editor" __ideNodeOpen="false"/><view name="editor" __ideNodeOpen="false"><ext.fragment encode="" __ideNodeOpen="true"><ext class="Ext.tree.Panel" __ideNodeOpen="true" title="Edicion de Menu" closable="true"><ext.attribute name="store" isArray="false" isString="false" __ideNodeOpen="true"><ext class="Ext.data.TreeStore" __ideNodeOpen="true" autoSync="true"><ext.attribute name="proxy" isArray="false" isString="false" __ideNodeOpen="true">{
+  type:'ajax',
+  reader:'json',
+  url:'../menu/menu'
+}</ext.attribute><ext.attribute name="root" isArray="false" isString="false" __ideNodeOpen="true">{
+    text: 'Opciones',
+    draggable: false,
+    expanded: true,
+    id: 'root'
+}</ext.attribute></ext></ext.attribute><ext.attribute name="listeners" isArray="false" isString="false" __ideNodeOpen="true">{
+  //select
+  beforeitemclick:function(row, record){
+  }
+}</ext.attribute><ext.attribute name="tbar" isArray="false" isString="false" __ideNodeOpen="true">[
+/*  {
+    text:"Nuevo",
+    handler:function($this){
+      window.currentNode=$this.ownerCt.ownerCt.getSelectionModel().getSelection()[0];
+      if(!window.currentNode) {
+        Ext.Msg.alert("Debe seleccionar un nodo.");
+        return ;
+      }
+      loadFragment($this.ownerCt.ownerCt,{
+        url:"../menu/nuevofrm",
+        params:{},
+        success:function(){
+          Ext.getCmp("nuevofrm").show();
+        }
+      });
+    }
+  },*/
+  {
+    text:"Nuevo",
+    handler:function($this){
+      var parentNode = window.currentNode=$this.ownerCt.ownerCt.getSelectionModel().getSelection()[0];
+      if(!window.currentNode) {
+        Ext.Msg.alert("Debe seleccionar un nodo.");
+        return ;
+      }
+      loadWindow($this.ownerCt.ownerCt,{
+        url:"../formulario/index?_zdata=menu_editar",
+        params:{parentNode:parentNode.getId()},
+      },{title:"Edición",modal:true});
+    }
+  },
+  {
+    text:"Editar",
+    handler:function($this){
+      var node=window.currentNode=$this.ownerCt.ownerCt.getSelectionModel().getSelection()[0];
+      if(!window.currentNode) {
+        Ext.Msg.alert("Debe seleccionar un nodo.");
+        return ;
+      }
+      
+      loadWindow($this.ownerCt.ownerCt,{
+        url:"../formulario/index?_zdata=menu_editar",
+        params:{node:node.getId()},
+      },{title:"Edición",modal:true});
+    }
+  },
+  {
+    text:"Eliminar",
+    handler:TREE.REMOVE("menu")
+  }
+]</ext.attribute></ext></ext.fragment></view><action name="nuevofrm" loadParams="" __ideNodeOpen="false"/><view name="nuevofrm" __ideNodeOpen="true"><ext.fragment encode="" __ideNodeOpen="true"><ext class="Ext.Window" id="nuevofrm" width="300" title="Nuevo Nodo" __ideNodeOpen="true"><ext class="Ext.Panel" region="center" frame="true" __ideNodeOpen="true"><ext class="Ext.form.TextField" name="text" fieldLabel="Texto" inputType="text" id="nuevofrm_text"/><ext class="Ext.form.ComboBox" name="type" fieldLabel="Tipo" inputType="text" id="nuevofrm_type" __ideNodeOpen="true" mode="local" displayField="label"><ext.attribute name="store" __ideNodeOpen="true">new Ext.data.SimpleStore({
+    fields: ['id', 'label'],
+    data : [['formulario','Formulario'],['controlador','Controlador']]
+})</ext.attribute></ext><ext class="Ext.form.TextField" name="page" fieldLabel="Pagina" inputType="text" id="nuevofrm_page"/></ext><ext.attribute name="buttons" type="array"><ext class="Ext.Button" text="Guardar" type="button" __ideNodeOpen="true"><ext.attribute name="handler" isArray="false" isString="false">function(a,b){
+  TREE.NEW("menu", {
+    text: Ext.getCmp("nuevofrm_text").getValue(),
+    page: Ext.getCmp("nuevofrm_page").getValue(),
+    type: Ext.getCmp("nuevofrm_type").getValue()
+  })(window.currentNode);
+  Ext.getCmp("nuevofrm").destroy();
+}</ext.attribute></ext></ext.attribute></ext></ext.fragment></view><action name="new" __ideNodeOpen="true" loadParams="$text,$page,$node,$parent"><select_row model="menulast" var="$menulast" criteria=""/>if(!empty($menulast)){
+  $max = $menulast["maximo"];
+} else {
+  $max = 0;
+}
+
+$id="foo".($max+1);
+//$text="foo";
+//$page="../new/new";
+
+$this-&gt;view-&gt;id=$id;
+$this-&gt;view-&gt;text=$text;
+$this-&gt;view-&gt;page=$page;
+<insert_row model="menu" var="$values" values="ID=$id;LEAF=1;TEXT=$text;PARENT=$parent;PAGE=$page"/></action><view name="new" __ideNodeOpen="true">TREE.newNode(node, {id: &lt;?=json_encode($this-&gt;id)?&gt;, text: &lt;?=json_encode($this-&gt;text)?&gt;, page: &lt;?=json_encode($this-&gt;page)?&gt;, leaf: true});</view><action name="remove" __ideNodeOpen="true" loadParams="$node,$parent"><delete_row model="menu" var="$row" criteria="id=$node"/></action><view name="remove" __ideNodeOpen="true">TREE.removeNode(node);</view></controller><controller name="formulario" __ideNodeOpen="false"><action name="index" loadParams="$_zdata" __ideNodeOpen="true">session_start();
+$this-&gt;view-&gt;zdata=$_zdata;</action><view name="index" __ideNodeOpen="true">&lt;?php
+global $_zdata;
+global $data;
+$clase = $this-&gt;zdata;
+include("../application/bindings/{$this-&gt;zdata}.php");
+$_zdata = $clase::createDataInstance($clase);
+$clase::onload($_zdata);
+$data = $_SESSION[$_zdata];
+include("../application/extjs/{$this-&gt;zdata}.js");
+</view><action name="data" loadParams="$_zdata" __ideNodeOpen="true">try{
+  session_start();
+  $this-&gt;getHelper('viewRenderer')-&gt;setNoRender(true); 
+  list($clase,$id)=explode(",",$_zdata);
+  require_once("../application/bindings/".$clase.".php");
+  $binding = new $clase($_zdata);
+  $row = $binding-&gt;fetchRow($_zdata);
+  if($row) {
+    echo json_encode(is_array($row)?$row:$row-&gt;toArray());
+  } else {
+    echo '{}';
+  }
+} catch (Exception $ex) {
+  echo '{}';
+}</action><action name="save" loadParams="$_zdata" __ideNodeOpen="true">session_start();
+$this-&gt;getHelper('viewRenderer')-&gt;setNoRender(true); 
+list($clase,$id)=explode(",",$_zdata);
+require_once("../application/bindings/".$clase.".php");
+$binding = new $clase($_zdata);
+$row = $binding-&gt;fetchRow($_zdata);
+$row-&gt;setFromArray($this-&gt;getRequest()-&gt;getParams());
+$row-&gt;save();
+</action><action name="insert" loadParams="$_zdata" __ideNodeOpen="true">session_start();
+$this-&gt;getHelper('viewRenderer')-&gt;setNoRender(true); 
+list($clase,$id)=explode(",",$_zdata);
+require_once("../application/bindings/".$clase.".php");
+$binding = new $clase($_zdata);
+$values = $this-&gt;getRequest()-&gt;getParams();
+$values = $clase::oninsert($_zdata, $values);
+$binding-&gt;insert($values);
+</action></controller><controller name="grilla" __ideNodeOpen="false"><action name="index" loadParams="$_zdata" __ideNodeOpen="true">session_start();
+$this-&gt;view-&gt;zdata=$_zdata;</action><view name="index" __ideNodeOpen="true">&lt;?php
+global $_zdata;
+global $data;
+$clase = $this-&gt;zdata;
+include("../application/bindings/{$this-&gt;zdata}.php");
+$_zdata = $clase::createDataInstance($clase);
+$clase::onload($_zdata);
+$data = $_SESSION[$_zdata];
+include("../application/extjs/{$this-&gt;zdata}.js");
+</view><action name="data" loadParams="$_zdata,$start,$limit,$page,$sort" __ideNodeOpen="true">try{
+  session_start();
+  $this-&gt;getHelper('viewRenderer')-&gt;setNoRender(true); 
+  list($clase,$id)=explode(",",$_zdata);
+  require_once("../application/bindings/".$clase.".php");
+  $binding = new $clase($_zdata);
+  if(!empty($sort)){
+    $sort = json_decode($sort);
+  } else {
+    $sort = array();
+  }
+  $binding-&gt;onread($_zdata);
+  $rows = $binding-&gt;fetchAll($_zdata,$start,$limit,$page,$sort);
+  $count = $binding-&gt;count($_zdata);
+  if($rows) {
+    echo '{data:[';
+    $first=true;
+    foreach($rows as $row){
+      if(!$first) echo ',';
+      echo json_encode(is_array($row)?$row:$row-&gt;toArray());
+      $first=false;
+    }
+    echo '],TotalResults:'.json_encode($count).',success:true}';
+  } else {
+    echo '{data:[]}';
+  }
+} catch (Exception $ex) {
+  echo $ex-&gt;getMessage();
+  //echo '{data:[]}';
+}</action><action name="save" loadParams="$_zdata" __ideNodeOpen="true">session_start();
+$this-&gt;getHelper('viewRenderer')-&gt;setNoRender(true); 
+list($clase,$id)=explode(",",$_zdata);
+require_once("../application/bindings/".$clase.".php");
+$binding = new $clase($_zdata);
+$row = $binding-&gt;fetchRow($_zdata);
+$row-&gt;setFromArray($this-&gt;getRequest()-&gt;getParams());
+$row-&gt;save();
+</action><action name="insert" loadParams="$_zdata" __ideNodeOpen="true">session_start();
+$this-&gt;getHelper('viewRenderer')-&gt;setNoRender(true); 
+list($clase,$id)=explode(",",$_zdata);
+require_once("../application/bindings/".$clase.".php");
+$binding = new $clase($_zdata);
+$values = $this-&gt;getRequest()-&gt;getParams();
+$values = $clase::oninsert($_zdata, $values);
+$binding-&gt;insert($values);
+</action></controller><file name="public/js/base.js" preprocess="" __ideNodeOpen="true">var TREE={
+  NEW:function(controller,data){
+    return function(node/*$this*/){
+      Ext.Ajax.request({
+          url: "../"+controller+"/new",
+          method: "GET",
+          params: {
+            text: data.text,
+            page: data.page,
+            node: ""/*node.getId()*/,
+            parent: node.getId()/*node.parentNode.getId()*/
+          },
+          success: function(response){
+            eval('(function(){'+response.responseText+'})();');
+          }
+      });
+    };
+  },
+  REMOVE:function(controller){
+    return function($this){
+      var node = $this.ownerCt.ownerCt.getSelectionModel().getSelection()[0];
+      Ext.Ajax.request({
+          url: "../"+controller+"/remove",
+          method: "GET",
+          params: {
+            node: node.getId(),
+            parent: node.parentNode.getId()
+          },
+          success: function(response){
+            eval('(function(){'+response.responseText+'})();');
+          }
+      });
+    };
+  },
+  newNode:function(node,newNode){
+    node.appendChild(newNode);
+  },
+  removeNode:function(node){
+    if(node==null || node.parentNode==null) {
+      Ext.Msg.alert("Debe seleccionar un nodo.");
+      return ;
+    }
+    node.parentNode.removeChild(node);
+  }
+};
+
+function loadFragment(cmp,config){
+    if(!config.url &amp;&amp; config.fragment) {
+      config.url="../formulario/index?_zdata="+encodeURIComponent(config.fragment);
+    }
+    if(!config.params) config.params={};
+    Ext.Ajax.request({
+        url: config.url,
+        params: config.params,
+        success: function (response){
+          try{
+            cmp.add(eval(response.responseText));
+            if(config.success)config.success(response);
+          } catch(e) {
+            Ext.Msg.alert(e.message, response.responseText);
+          }
+        },
+        failure: function (response){
+          Ext.Msg.alert("Error",response.responseText);
+          if(config.failure)config.failure(response);
+        }
+    });
+}
+
+function loadWindow(cmpBase,config,configWindow){
+    //configWindow.renderTo=cmpBase.body;
+    var cmp = new Ext.Window(configWindow);
+    cmpBase.add(cmp);
+    cmp.opener = cmpBase;
+    var success0=config.success;
+    config.success=function(response){
+      cmp.show();
+    };
+    loadFragment(cmp,config);
+}
+
+function loadForm(cmp,config){
+    Ext.Ajax.request({
+        url: config.url,
+        params: config.params,
+        success: function (response){
+          try{
+            var o, form=cmp.getForm();
+            eval("o="+response.responseText);
+            for(name in o){
+              var field = form.findField(name);
+              if(field) field.setValue(o[name]);
+            }
+            if(config.success)config.success(response);
+          } catch(e) {
+            Ext.Msg.alert(e.message, response.responseText);
+          }
+        },
+        failure: function (response){
+          Ext.Msg.alert("Error",response.responseText);
+          if(config.failure)config.failure(response);
+        }
+    });
+}
+
+function saveForm(cmp,config){
+    var params = {};
+    if(cmp &amp;&amp; cmp.getForm &amp;&amp; cmp.getForm()) {
+      params = cmp.getForm().getFieldValues();
+      var a;
+      if(config.params)for(a in config.params) {
+        if(!params[a]) params[a]=config.params[a];
+      }
+    }
+    Ext.Ajax.request({
+        url: config.url,
+        params: params,
+        success: function (response){
+          try {
+            eval(response.responseText);
+            if(config.success)config.success(response);
+          } catch(e) {
+            Ext.Msg.alert(e.message, response.responseText);
+          }
+        },
+        failure: function (response){
+          Ext.Msg.alert("Error",response.responseText);
+          if(config.failure)config.failure(response);
+        }
+    });
+}
+
+function createProxy(zdata){
+  return {
+    type: 'ajax',
+    url: '../grilla/data?_zdata='+encodeURIComponent(zdata),
+    reader: {
+      type: 'json',
+      root: 'data'
+    }
+  };
+}
+
+Ext.define('Ext.Fragment', {
+  extend:'Ext.panel.Panel',
+  config:{
+  },
+  constructor:function(config) {
+    var configAjax = {};
+    configAjax.url = "../formulario/index?_zdata=" + encodeURIComponent(config.fragment);
+    configAjax.params = config.params;
+    if(!config.listeners) config.listeners = {};
+    config.listeners.render = function($this){
+        loadFragment($this,configAjax)
+      };
+    if(typeof(config.border)=="undefined")config.border=false;
+    if(typeof(config.frame)=="undefined")config.frame=false;
+    var cmp = new Ext.Panel(config);
+    return cmp;
+  }
+});
+function runPage(page,type){
+    Ext.Ajax.request({
+        url: type=="controlador"?page:("../"+type+"/index?_zdata="+encodeURIComponent(page)),
+        params: {
+        },
+        success: function (response){
+          try {
+            Ext.getCmp("regioncentral").add(eval(response.responseText)).show();
+          } catch(e) {
+            Ext.Msg.alert(e.message, response.responseText);
+          }
+        },
+        failure: function (response){
+          Ext.Msg.alert(response.responseText);
+        }
+    });
+}</file><file name="library/ziterator.php" preprocess="" __ideNodeOpen="true">&lt;?php
+require_once("zparser.php");
+
+/**
+ * $columns: COL1, COL2, COLX AS COL3
+ * $columns separado por comas
+ * $where: codicion1, condicion2, condicion3 ==&gt; condicion1 and condicion2 and condicion3
+ * $where separado por comas
+ */
+class zIterator {
+  public $adapter = 'connection';
+  public $query = '';
+  public $model = '';
+  public $columns = '';
+  public $where = '';
+  public $report = '';
+  public $security = '';
+
+  function onload($dataId){
+    $_SESSION[$dataId]=new stdClass();
+  }
+  function onread($id){}
+  function oncount($id){return null;}
+  function oninsert($id,$values){return $values;}
+
+  static function createDataInstance($name){
+    $id = uniqid("$name,");
+    return $id;
+  }
+
+  function fetchRow($dataId){
+    $data = $_SESSION[$dataId];
+    //var_dump($data, $dataId);
+    if(!empty($this-&gt;query)){
+      require_once("Zend/Db/Table/Row.php");
+      require_once("../model/{$this-&gt;adapter}.php");
+      $db = Zend_Db_Table_Abstract::getDefaultAdapter();
+      $values = array();
+      foreach((array)$data as $a=&gt;$b){
+        $values[":$a"]=$b;
+      }
+      $stmt = $db-&gt;query($this-&gt;query,$values);
+      return $stmt-&gt;fetch();
+    }
+    if(empty($this-&gt;model)) return null;
+    $model = $this-&gt;model;
+    $columns = $this-&gt;columns;
+    $where = $this-&gt;where;
+    require_once("../model/{$model}.php");
+    $_table=new $model();
+    $select=$_table-&gt;select();
+    @$_limit = null;
+    @$_offset = null;
+    @$_order = null;
+    $select-&gt;limit($_limit,$_offset);
+    if(isset($_order) &amp;&amp; (trim($_order)!="")) $select-&gt;order($_order);
+    $select-&gt;from($_table);
+    $eColumns = zparser::columns($columns, '$select');
+    foreach($eColumns as $c) eval($c);
+    $eWhere = zparser::where(str_replace('$data-&gt;','$data_',$where), '$select');
+    //var_dump($where,str_replace('$data_','$data-&gt;',$eWhere));
+    foreach($eWhere as $w) eval(str_replace('$data_','$data-&gt;', $w));
+
+    $row = $_table-&gt;fetchRow($select);
+    return $row;
+  }
+  function fetchAll($dataId,$start=null,$limit=null,$page=1,$sort=null){
+    $data = $_SESSION[$dataId];
+    if(!empty($this-&gt;query)){
+      require_once("Zend/Db/Statement.php");
+      require_once("../model/{$this-&gt;adapter}.php");
+      $db = Zend_Db_Table_Abstract::getDefaultAdapter();
+      $values = array();
+      foreach((array)$data as $a=&gt;$b){
+        $values[":".$a]=$b;
+      }
+      $stmt = $db-&gt;query($this-&gt;query, $values);
+      $rows = array();
+      while(true){
+        $data = $stmt-&gt;fetch();
+        if(!$data) break;
+        $rows[] = $data;
+      }
+      return $rows;
+    }
+    if(empty($this-&gt;model)) return null;
+    $model = $this-&gt;model;
+    $columns = $this-&gt;columns;
+    $where = $this-&gt;where;
+    require_once("../model/{$model}.php");
+    $_table=new $model();
+    $select=$_table-&gt;select();
+    @$_limit = $limit;
+    @$_offset = $start;
+    $select-&gt;limit($_limit,$_offset);
+    $select-&gt;from($_table);
+    $eColumns = zparser::columns($columns, '$select');
+    foreach($eColumns as $c) eval($c);
+    $eWhere = zparser::where(str_replace('$data-&gt;','$data_',$where), '$select');
+    //var_dump($where,str_replace('$data_','$data-&gt;',$eWhere));
+    foreach($eWhere as $w) eval(str_replace('$data_','$data-&gt;', $w));
+    /**
+     * AGREGA FILTRO AUTOMATICO DE CODIGO
+     */
+    if(array_search('CODIGO',explode(',',strtoupper($this-&gt;security)))!==false){
+      $select-&gt;where("CODIGO=?",$_SESSION["usuario"]["codigo"]);
+    }
+    ////
+    if($sort){
+      foreach($sort as $s) {
+        $select-&gt;order($s-&gt;property . " " . $s-&gt;direction);
+      }
+    }
+
+    $rows = $_table-&gt;fetchAll($select);
+    return $rows;
+  }
+  function count($dataId){
+    $c = $this-&gt;onread($dataId);
+    if(isset($c)) return $c;
+    $data = $_SESSION[$dataId];
+    if(!empty($this-&gt;query)){
+    }
+    if(empty($this-&gt;model)) return null;
+    $model = $this-&gt;model;
+    $where = $this-&gt;where;
+    require_once("../model/{$model}.php");
+
+    $_tableC=new $model();
+    $selectC=$_tableC-&gt;select();
+    $selectC-&gt;from($_tableC);
+    $selectC-&gt;columns(array('C'=&gt;'count(*)'));
+    $eWhereC = zparser::where(str_replace('$data-&gt;','$data_',$where), '$selectC');
+    foreach($eWhereC as $w) eval(str_replace('$data_','$data-&gt;', $w));
+    
+    $row = $_tableC-&gt;fetchRow($selectC);
+    $c = (0+@$row-&gt;C);
+    return $c;
+  }
+  function insert($values){
+    if(empty($this-&gt;model)) return null;
+    $model = $this-&gt;model;
+    require_once("../model/{$model}.php");
+    $table=new $model();
+    $info = $table-&gt;info();
+    $dbValues = array();
+    foreach($info["cols"] as $col){
+      if(!empty($values[$col])) $dbValues[$col]=$values[$col];
+    }
+    $table -&gt;insert ($dbValues);
+  }
+  function report($dataId, $values){
+    $report = '../application/reports/' . $this-&gt;report;
+    $data = $this-&gt;onreport($dataId, $values);
+    $file = uniqid("proc");
+    $outputFile = realpath("reports/")."/".$file.".pdf";
+    $f=fopen("../tmp/$file","w");
+    fwrite($f, realpath($report)."\n");
+    fwrite($f, $outputFile."\n");
+    fwrite($f, 'com.mysql.jdbc.Driver'."\n");
+    fwrite($f, 'jdbc:mysql://localhost/test'."\n");
+    fwrite($f, 'root'."\n");
+    fwrite($f, 'root'."\n");
+    foreach($data as $name =&gt; $value){
+      fwrite($f, $name."\n");
+      fwrite($f, $value."\n");
+    }
+    fclose($f);
+    $file = realpath("../tmp/$file");
+    $path = getcwd();
+    chdir(realpath('../library/jasper/'));
+    $res = exec('run.bat '.escapeshellarg($file));
+    chdir($path);
+    return $outputFile;
+  }
+}
+</file><file name="library/zparser.php" preprocess="" __ideNodeOpen="false">&lt;?php
+
+  class zParser {
+    /**
+     * Parse a criteria expresion like:
+     *  field1 &gt; dbfunction($phpvariable), field2 = @phpfunction($phpvariable), field3 = @phpfn(phpconstant)
+     * convertion:
+     *  $select-&gt;where('field1 &gt; dbfunction(?)',$phpvariable);
+     *  $select-&gt;where('field2 = ?',phpfunction($phpvariable));
+     *  $select-&gt;where('field3 = ?',phpfn(phpconstant));
+     */
+    public static function where($criteria,$select='$select'){
+      $res=array();
+      if(isset($criteria)) {
+        $token = token_get_all('&lt;?php '.$criteria.';');
+        $vars=array();
+        $exp="";
+        for($i=1,$l=count($token);$i&lt;$l;$i++){
+          $t=$token[$i];
+          if(is_string($t) &amp;&amp; $t!=";" &amp;&amp; $t!="@") $exp.=$t;
+          elseif($t==="@" || (is_array($t) &amp;&amp; $t[0]==T_VARIABLE)){
+            $exp.="%s";
+            $cont=$t=="@"?array(array(307,309)):array();
+            if($t=="@")$i++;
+            $lasti=$i;
+            for($j=$i;$j&lt;$l;$j++){
+              if(is_string($token[$j])) {$e=$token[$j];$k=0;} else {$e=$token[$j][1];$k=$token[$j][0];}
+              if(trim($e)=="") {}
+              elseif(@$e=="-&gt;") $cont[]=array(307,309);
+              elseif(@$e=="[") $cont[]=array("]");
+              elseif(@$e=="(") $cont[]=array(")");
+              elseif(count($cont)==0) break;
+              elseif(count($cont)&gt;0){
+                foreach($cont as $kco =&gt; $co){
+                  foreach($co as $coi){
+                    if($coi===$e || ($coi==$k &amp;&amp; !is_string($coi))){
+                      $lasti=$j;
+                      unset($cont[$kco]);
+                    }
+                  }
+                }
+              }
+            }
+            $var="";
+            for($j=$i;$j&lt;=$lasti;$j++) $var.=is_string($token[$j])?$token[$j]:$token[$j][1];
+            $vars[]=$var;
+            $i=$lasti;
+          } elseif(is_array($t)) {
+            $exp.=$t[1];
+          }
+          elseif($t==";") {
+            if(trim($exp)) {
+              $exp=var_export($exp,true);
+              if($vars){
+                $xvars=$vars;
+                foreach($xvars as &amp;$xvar) $xvar=var_export("'.{$select}-&gt;getAdapter()-&gt;quote($xvar).'",true);
+                $xvars[0]='"?"';
+                eval('$exp=sprintf($exp,'.implode(',',$xvars).');');
+                $res[]="{$select}-&gt;where($exp,$vars[0]);\n";
+              } else {
+                $res[]="{$select}-&gt;where($exp);\n";
+              }
+            }
+            $vars=array();
+            $exp="";
+          }
+        }
+      }
+      return $res;
+    }
+    public static function parse($str,$separator=';'){
+      $res='';
+      if(isset($str)) {
+        $tks=array();
+        $token = token_get_all('&lt;?php '.$str.$separator);
+        $cont0=array();
+        $tk=array();
+        for($i=1,$l=count($token);$i&lt;$l;$i++){
+          $t=$token[$i];
+          if(is_string($token[$i])) {$e=$token[$i];$k=0;} else {$e=$token[$i][1];$k=$token[$i][0];}
+          //Verifica () [] y {} en la expresion de base de datos
+          if($e=="(")$cont0[]=array(")");
+          if($e=="[")$cont0[]=array("]");
+          if($e=="{")$cont0[]=array("}");
+          if(count($cont0)&gt;0){
+            foreach($cont0 as $kco =&gt; $co){
+              foreach($co as $coi){
+                if($coi===$e || ($coi==$k &amp;&amp; !is_string($coi))){
+                  unset($cont0[$kco]);
+                }
+              }
+            }
+          }
+          if(is_string($t) &amp;&amp; $t!=$separator &amp;&amp; $t!="@") $tk[]=array(0,$t);
+          elseif($t==="@" || (is_array($t) &amp;&amp; $t[0]==T_VARIABLE)){
+            $cont=$t=="@"?array(array(307,309)):array();
+            if($t=="@")$i++;
+            $lasti=$i;
+            for($j=$i;$j&lt;$l;$j++){
+              if(is_string($token[$j])) {$e=$token[$j];$k=0;} else {$e=$token[$j][1];$k=$token[$j][0];}
+              //Verifica -&gt; () [] y {} en la expresion php
+              if(trim($e)=="") {}
+              elseif(@$e=="-&gt;") $cont[]=array(307,309);
+              elseif(@$e=="[") $cont[]=array("]");
+              elseif(@$e=="(") $cont[]=array(")");
+              elseif(@$e=="{") $cont[]=array("}");
+              elseif(count($cont)==0) break;
+              elseif(count($cont)&gt;0){
+                foreach($cont as $kco =&gt; $co){
+                  foreach($co as $coi){
+                    if($coi===$e || ($coi==$k &amp;&amp; !is_string($coi))){
+                      $lasti=$j;
+                      unset($cont[$kco]);
+                    }
+                  }
+                }
+              }
+            }
+            $var="";
+            for($j=$i;$j&lt;=$lasti;$j++) $var.=is_string($token[$j])?$token[$j]:$token[$j][1];
+            $tk[]=array(1,$var);
+            $i=$lasti;
+          } elseif(is_array($t)) {
+            $tk[]=array(0,$t[1]);
+          }
+          elseif($t==$separator &amp;&amp; (count($cont0)==0)) { //valid separator
+            if(count($tk)) $tks[]=$tk;
+            $tk=array();
+          }
+          else { //invalid separador
+            $tk[]=array(0,$t);
+          }
+        }
+      }
+      return $tks;
+    }
+    protected static function quote($xvar,$select='$select'){
+      return "{$select}-&gt;getAdapter()-&gt;quote($xvar)";
+    }
+    protected static function quoteIdentifier($xvar,$select='$select'){
+      return "{$select}-&gt;getAdapter()-&gt;quoteIdentifier($xvar)";
+    }
+    /**
+     * Parse from
+     */
+    public static function from($columns,$select='$select'){
+      $tks = zparser::parse($columns,',');
+      $cols=array();
+      foreach($tks as $tk){
+        $res='';$exp='';
+        foreach($tk as $i=&gt;$t){
+          if($t[0]==1){
+            //php
+            $res.="'.".zparser::quoteIdentifier($t[1],$select).".'";
+          } elseif(strtoupper($t[1])=="AS") {
+            $exp = $res;
+            $res='';
+          } else {
+            //sql
+            $res.=substr(var_export($t[1],true),1,-1);
+          }
+        }
+        if($exp){
+          //alias
+          $cols[]="array('".trim($res)."'=&gt;'".trim($exp)."')";
+        } else {
+          $cols[]="'$res'";
+        }
+      }
+      $res=array();
+      foreach($cols as $t){
+        $t=str_replace(array("''.",".''"),"",$t);
+        $res[]="{$select}-&gt;from($t);";
+      }
+      return $res;
+    }
+    /**
+     * Parse Columns
+     */
+    public static function columns($columns,$select='$select'){
+      $tks = zparser::parse($columns,',');
+      $cols=array();
+      foreach($tks as $tk){
+        $res='';$exp='';
+        $quoter="quote";
+        foreach($tk as $i=&gt;$t){
+          if($t[0]==1){
+            //php
+            $res.="'.".zparser::$quoter($t[1],$select).".'";
+          } elseif(strtoupper($t[1])=="AS") {
+            $exp = $res;
+            $res='';
+            $quoter="quoteIdentifier";
+          } else {
+            //sql
+            $res.=substr(var_export($t[1],true),1,-1);
+          }
+        }
+        if($exp){
+          //alias and expression: new Zend_Db_Expr('p.cost * 1.08') === '(p.cost * 1.08)'
+          $cols[]="array(".str_replace(array("''.",".''"),"","'".trim($res)."'")."=&gt;'(".trim($exp).")')";
+        } else {
+          $cols[]="'$res'";
+        }
+      }
+      $res=array();
+      foreach($cols as $c){
+        $t=str_replace(array("''.",".''"),"",$c);
+        $res[]="{$select}-&gt;columns($c);";
+      }
+      return $res;
+    }
+  }
+</file><file name="public/base.css" preprocess="" __ideNodeOpen="false">.title{
+  background-image:url('images/top.jpg');
+  height:64px;
+  color:white;
+  font-size:16px;
+  padding: 2px 8px;
+}</file><connection driver="Pdo_Mysql" host="127.0.0.1" username="root" password="root" dbname="test" __ideNodeOpen="false"><table name="menu" table="menu" dependentTables=""/><query name="menulast" from="menu" columns="max(0+SUBSTR(id,4)) as maximo" criteria="id like 'foo%'"/><table name="usuario" table="usuario" dependentTables=""/><table name="prueba" table="prueba" dependentTables=""/></connection><connection driver="Pdo_Mysql" host="127.0.0.1" username="root" password="root" dbname="test2" __ideNodeOpen="false" name="dbcentral.php"><table name="lista" table="lista" dependentTables=""/></connection><controller name="reporte" __ideNodeOpen="false"><action name="generar" loadParams="$_zdata" __ideNodeOpen="true">session_start();
+
+list($clase,$id)=explode(",",$_zdata);
+require_once("../application/bindings/".$clase.".php");
+$binding = new $clase($_zdata);
+$row = $binding-&gt;fetchRow($_zdata);
+if(!$row) $row = array();
+else $row = is_array($row)?$row:$row-&gt;toArray();
+//$this-&gt;getRequest()-&gt;getParams()
+$outputFile = $binding-&gt;report($_zdata, $row);
+$this-&gt;view-&gt;reportName = basename($outputFile);
+</action><view name="generar" __ideNodeOpen="true"><ext.fragment encode="" __ideNodeOpen="true"><ext class="Ext.Window" title="Reporte" autoShow="true" width="412" height="551" __ideNodeOpen="true"><ext.attribute name="html" type="string" __ideNodeOpen="true">&lt;iframe src="../../reports/&lt;?=$this-&gt;reportName?&gt;" style="border:none;width:100%;height:100%;"&gt;&lt;/iframe&gt;</ext.attribute></ext></ext.fragment></view></controller><images path="freeness/16" folder="public/images/16"/><package name="" type=""/><controller name="ide" __ideNodeOpen="true"><action name="objects" loadParams="" __ideNodeOpen="true">
+$this-&gt;getHelper('viewRenderer')-&gt;setNoRender(true); 
+$res=array();
+foreach(glob("../application/bindings/*.php") as $f){
+  $name=basename($f,'.php');
+  $res[]=array("id"=&gt;$name,"label"=&gt;$name);
+}
+echo json_encode($res);
+</action><action name="templates" loadParams="" __ideNodeOpen="true">
+$this-&gt;getHelper('viewRenderer')-&gt;setNoRender(true); 
+$res=array();
+foreach(glob("../application/bindings/ide_*.php") as $f){
+  $name=basename($f,'.php');
+  $res[]=array("id"=&gt;$name,"label"=&gt;$name);
+}
+echo json_encode($res);
+</action><action name="create" loadParams="" __ideNodeOpen="true">
+$this-&gt;getHelper('viewRenderer')-&gt;setNoRender(true); 
+unset($_REQUEST["_open"]);
+unset($_REQUEST["PHPSESSID"]);
+unset($_REQUEST["ZDEDebuggerPresent"]);
+foreach($_REQUEST as $k=&gt;&amp;$v){
+  $$k=$v;
+}
+mkdir("../application/fuente");
+file_put_contents("../application/fuente/".$_name.".var", var_export($_REQUEST, true));
+ob_start();
+eval("?&gt;".file_get_contents("../application/templates/".$_template.".js"));
+$_js=ob_get_contents();
+ob_end_clean();
+ob_start();
+eval("?&gt;".file_get_contents("../application/templates/".$_template.".bin"));
+$_bin=ob_get_contents();
+ob_end_clean();
+file_put_contents("../application/extjs/".$_name.".js", $_js);
+file_put_contents("../application/bindings/".$_name.".php", $_bin);</action><action name="fuentes" loadParams="" __ideNodeOpen="true">
+$this-&gt;getHelper('viewRenderer')-&gt;setNoRender(true); 
+$res=array();
+foreach(glob("../application/fuente/*.var") as $f){
+  $name=basename($f,'.var');
+  $res[]=array("id"=&gt;$name,"label"=&gt;$name);
+}
+echo json_encode($res);
+</action><action name="fuente" loadParams="$fuente" __ideNodeOpen="true">
+$this-&gt;getHelper('viewRenderer')-&gt;setNoRender(true); 
+$res=array();
+$var = file_get_contents("../application/fuente/".$fuente.".var");
+eval('$var = '. $var . ';');
+foreach($var as $k=&gt; $v){
+  echo 'var f=form.findField('.json_encode($k).');if(f)f.setValue('.json_encode($v).');';
+}
+</action></controller></zfapplication></root>

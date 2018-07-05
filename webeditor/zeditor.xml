@@ -1,0 +1,2938 @@
+<?xml version="1.0" encoding="UTF-8"?><root __ideNodeOpen="true"><path path="webeditor" __ideNodeOpen="true"><component name="jscompiler" transparent="true" __ideNodeOpen="false">#{
+/**
+ * It executes the Closure Compiler (http://code.google.com/intl/es/closure/compiler/)
+ * to minify the code of a "js" file.
+ */
+
+$jar = ACH_LIBRARY_PATH.'/compiler.jar';
+$code = node::join("",$_);
+$file = ACH_PATH.'/output/compiler.jar.xfile.js';
+$errfile = ACH_PATH.'/output/compiler.jar.err';
+
+file_put_contents($file, $code);
+
+/* 2&gt;&amp;1: Add redirection so we can get stderr too. 
+   note: --help is send to stderr :p
+ */
+$cmd='java -jar '.escapeshellarg($jar).' --js='.escapeshellarg($file).' 2&gt;'.escapeshellarg($errfile);
+
+exec($cmd, $output);
+
+$err=file_get_contents($errfile);
+if($err)print("\nCompilation Results:\n".$err);
+
+return implode("",$output);
+}</component><def name="file" __ideNodeOpen="false"><property name="template">@{node::join("",$_)}</property><function name="run">//@{$name}
+$_r = node::run();
+$values["_"] = $_r;
+$template=$this-&gt;doTemplate($this-&gt;template,$values);
+//@{$preprocess}
+if(isset($values["preprocess"]) &amp;&amp; trim($values["preprocess"])!=""){
+  $np=$e-&gt;ownerDocument-&gt;createElement($values["preprocess"]);
+  $np-&gt;appendChild($e-&gt;ownerDocument-&gt;createTextNode($template));
+  $e-&gt;appendChild($np);
+  $nnp=node::factory($np);
+  $template=node::join("",$nnp-&gt;run());
+  $e-&gt;removeChild($np);
+  unset($np);
+  unset($nnp);
+}
+createFile($values["name"], $template);
+return $this-&gt;encodeEmpty();
+</function></def><component name="module" transparent="true" __ideNodeOpen="false">@{node::join("",$_)  /*$name*/}</component><file name="zeditor.html">&lt;html style="overflow:hidden;background-image:url(images/loading.gif);background-position:center center;background-repeat:no-repeat"&gt;
+&lt;head&gt;
+&lt;meta http-equiv="Content-Type" content="text/html; charset=utf-8"&gt;
+&lt;link type="image/x-icon" rel="icon" href="favicon.png" id="page_favicon"&gt;
+&lt;script src="draw3.js"&gt;&lt;/script&gt;
+&lt;script src="jquery/js/jquery-1.5.1.min.js"&gt;&lt;/script&gt;
+&lt;script src="jquery/js/jquery-ui-1.8.13.custom.min.js"&gt;&lt;/script&gt;
+&lt;script src="webResource.js"&gt;&lt;/script&gt;
+&lt;script src="zutil.js"&gt;&lt;/script&gt;
+&lt;script src="zeditor.tree.js"&gt;&lt;/script&gt;
+&lt;script src="zdefaultEditors.js"&gt;&lt;/script&gt;
+&lt;script src="components.js"&gt;&lt;/script&gt;
+&lt;script src="toolbar.js"&gt;&lt;/script&gt;
+&lt;script src="extjs.js"&gt;&lt;/script&gt;
+&lt;link rel="stylesheet" type="text/css" href="zeditor.css" /&gt;
+&lt;script src="zeditor.js"&gt;&lt;/script&gt;
+&lt;style&gt;
+html{
+background:white !important;
+}
+&lt;/style&gt;
+&lt;/head&gt;
+&lt;body onload="Z.onload();"&gt;&lt;/body&gt;
+&lt;/html&gt;
+</file><file name="zeditor.js" preprocess="" __ideNodeOpen="true">var componentsIndex={};
+var Z={
+_console:null,
+console:function(txt){
+  this._console.appendChild(document.createElement("pre")).appendChild(document.createTextNode(txt));
+  this._console.scrollTop=this._console.scrollHeight;
+},
+consoleClear:function(){
+  while(Z._console.firstChild)Z._console.removeChild(Z._console.firstChild);
+},
+consoleHTML:function(html){
+  this._console.appendChild(document.createElement("pre")).innerHTML=html;
+},
+serverConsole:function(txt){
+  var pp=this._serverconsole.appendChild(document.createElement("pre")).appendChild(document.createTextNode(txt));
+  this._serverconsole.scrollTop=this._serverconsole.scrollHeight;
+},
+serverConsoleClear:function(){
+  while(Z._serverconsole.firstChild)Z._serverconsole.removeChild(Z._serverconsole.firstChild);
+},
+serverConsoleHTML:function(html){
+  this._serverconsole.appendChild(document.createElement("pre")).innerHTML=html;
+},
+databaseClear:function(){
+  while(Z._database.firstChild)Z._database.removeChild(Z._database.firstChild);
+},
+databaseConsole:function(data){
+  var p=this._database.appendChild(document.createElement("pre"));
+  p.style.overflow="hidden";
+  p.innerHTML=data;
+  this._database.scrollTop=this._database.scrollHeight;
+},
+databaseConnectTo:function(){
+  var connections,list=[];
+  var driver;
+  var host;
+  var username;
+  var password;
+  var dbname;
+  eval("connections="+ajax_call("database.php","x=","POST",true));
+  list.push({value:"",label:"&lt;nuevo&gt;"});
+  for(var i=0;i&lt;connections.length;i++){
+    list.push({value:i,label:JSON.stringify(connections[i])});
+  }
+  Z.popupList(list,"Select/Create connection","",function(x){
+    if(x==""){
+      driver=prompt("driver(Mysqli|Oracle|Db2|PDO_MYSQL|PDO_PGSQL|PDO_OCI|PDO_MSSQL|PDO_SQLITE|PDO_IBM):");
+      if(driver) host=prompt("host:");
+      if(host!=null) username=prompt("username:");
+      if(username!=null) password=prompt("password:");
+      if(password!=null) dbname=prompt("dbname:");
+      if(dbname!=null) {
+        Z.databaseConsole(ajax_call("database.php","driver="+driver+"&amp;host="+host+"&amp;username="+username+"&amp;password="+password+"&amp;dbname="+dbname,null,true));
+      }
+    } else {
+      Z.databaseConsole(ajax_call("database.php","x="+x,null,true));
+    }
+  });
+},
+popupList:function(list,title,description,action){
+  if(document.getElementById("popupListDiv")) document.getElementById("popupListDiv").parentNode.removeChild(document.getElementById("popupListDiv"));
+  draw3(document.body,[
+    "div",{id:"popupListDiv",style:"position:absolute;left:40%;top:150;width:20%;height:70%;background:menu;border:2px outset menu;"},[
+      "div",{style:"border:1px inset menu"},["#text",{},title,"button",{style:"position:absolute;right:1px;font-size:10;",onclick:function(){this.parentNode.parentNode.parentNode.removeChild(this.parentNode.parentNode)}},"X"],
+      "div",{style:"padding:4px;"},[
+        "div",{},description,
+        "input",{
+          id:"popupListInput",
+          style:"width:100%",
+          onkeyup:function(event){
+            var k=window.event?window.event.keyCode:event.which;
+            if(k==13){this.parentNode.parentNode.parentNode.removeChild(this.parentNode.parentNode);action(this.value)}
+            Z._filterList(this.nextSibling,this.value);
+            if(k==40){this.nextSibling.focus();this.nextSibling.onchange();}
+          }
+        },[],
+        "select",{
+          style:"width:100%;height:80%;",size:10,
+          onkeydown:function(event){
+            var k=window.event?window.event.keyCode:event.which;
+            if(k==8){return false;}
+            if(k==13){this.parentNode.parentNode.parentNode.removeChild(this.parentNode.parentNode);action(this.value)}
+            if(k==38 &amp;&amp; this.selectedIndex==0){this.previousSibling.focus();}
+          },
+          onchange:function(){this.previousSibling.value=this.value;},
+          ondblclick:function(event){this.parentNode.parentNode.parentNode.removeChild(this.parentNode.parentNode);action(this.value)}
+        },
+          function(){var res=[];for(i=0;i&lt;list.length;i++)res.push("option",{value:list[i].value},list[i].label);return res;}()
+      ]
+    ]
+  ]);
+  document.getElementById("popupListInput").focus();
+  Z._filterList(document.getElementById("popupListInput").nextSibling,"*");
+},
+_filterList:function(select,criteria){
+  var ops=[];
+  var e=select.firstChild;
+  while(e){
+    if(e.value.indexOf(criteria)==-1){
+      ops.push(e);
+      e=e.nextSibling;
+      select.removeChild(ops[ops.length-1]);
+      continue;
+    }
+    e=e.nextSibling;
+  }
+  for(var i=0,l=ops.length;i&lt;l;i++){
+    for(var j=i+1,k=ops.length;j&lt;k;j++){
+      if(ops[j].value&lt;ops[i].value){
+        var s=ops[j];
+        ops[j]=ops[i];
+        ops[i]=s;
+      }
+    }
+  }
+  for(var i=0,l=ops.length;i&lt;l;i++){
+    select.appendChild(ops[i]);
+  }
+  select.value=select.firstChild.value;
+},
+_fixSize:function(tdDiv){
+  var d=[]
+  for(var i=0,l=tdDiv.childNodes.length;i&lt;l;i++)
+    d.push(tdDiv.childNodes[i].style.display);
+  var h0=tdDiv.offsetHeight;
+  tdDiv.style.height=h0+"px";
+  var dh=h0-tdDiv.offsetHeight;
+  tdDiv.style.height=(h0+dh)+"px";
+  var w0=tdDiv.offsetWidth;
+  tdDiv.style.width=w0+"px";
+  var dw=w0-tdDiv.offsetWidth;
+  tdDiv.style.width=(w0+dw)+"px";
+  for(var i=0,l=tdDiv.childNodes.length;i&lt;l;i++)
+    tdDiv.childNodes[i].style.display=d[i];
+},
+_fixAll:function(){
+var p;
+while(p=Z._toFixSize.pop()){
+//  if(!document.getElementById(p)) console.debug(p);
+  Z._fixSize(document.getElementById(p));
+}
+},
+_toFixSize:[],
+getUID:function(){
+return "_"+((new Date()).getTime()+Math.random());
+},
+_panel:function(title,content,idContent){
+var id=Z.getUID(),id1=Z.getUID(),id2=Z.getUID();
+if(!idContent)idContent=Z.getUID();
+Z._toFixSize.push(idContent);
+Z._toFixSize.push(id2);
+Z._toFixSize.push(id1);
+Z._toFixSize.push(id);
+return ["table",{id:id,border:"0",cellPadding:0,cellSpacing:0,width:"100%",height:"100%","class":"panel"},["tbody",{},
+  [
+   "tr",{"style":"height:24px;"},["th",{id:id2},["div",{style:"overflow:hidden;height:100%;"},title]],
+   "tr",{},["td",{id:id1},["div",{id:idContent,"style":"height:100%;overflow:auto"},content]]
+  ]
+ ]];
+},
+_imgbutton:function(fn,src){
+  return ["a",{"class":"imgbutton",href:"javascript:void(0)",onclick:fn},["img",{src:src},[]]];
+},
+_loadToolbar:function(){
+  var i;
+  var b,im;
+  var res=[];
+  var parentToolbar=res;
+  for(i=0;i&lt;toolbar.length;i++) if(typeof(toolbar[i])!="undefined"){
+    if(typeof(toolbar[i].name)=="undefined"){
+      res.push(
+        "h",{"style":"height:42px"},
+          function(){
+            var res=[];
+            for(var j=0,jl=toolbar[i].length;j&lt;jl;j++) if(typeof(toolbar[i][j])!="undefined"){
+              if(toolbar[i][j].name==" "){
+                res.push("div",{style:"height:4px;border:1px inset activeBorder"},"&amp;nbsp;");
+              } else {
+                res.push("a",{href:"javascript: void(0)",title:(toolbar[i][j].help?toolbar[i][j].help:toolbar[i][j].name),onclick:toolbar[i][j].action},[
+                  "img",{src:toolbar[i][j].image},[],
+                  "br",{},[],
+                  "#text",{},toolbar[i][j].name
+                ]
+                );
+              }
+            }
+            return res;
+          }(),
+        "img",{},[],
+        "a",{href:"javascript: void(0)","class":"toolbarDropdown",onclick:function(){
+          if(this.previousSibling.previousSibling.style.height==""){
+            this.previousSibling.previousSibling.style.height="42px"
+            this.previousSibling.previousSibling.style.border="none";
+          } else {
+            this.previousSibling.previousSibling.style.height="";
+            this.previousSibling.previousSibling.style.border="1px outset activeborder";
+          }
+        },
+        onblur:function(){
+          var a=this;
+          setTimeout(function(){
+            a.previousSibling.previousSibling.style.height="42px";
+            a.previousSibling.previousSibling.style.border="none";
+          },500);
+        }},["img",{src:"images/32/a-down.png"},[]]
+      );
+    } else if(toolbar[i].name==" " &amp;&amp; typeof(toolbar[i].tab)==="undefined") {
+      res.push("a",{"class":"hSpacer"},["img",{"class":"imgW8"},[]]);
+    } else if(toolbar[i].name==" " &amp;&amp; typeof(toolbar[i].tab)==="string") {
+      if(parentToolbar===res) {res=["#text",{},toolbar[i].tab,"br",{},[]].concat(res);parentToolbar=["span",{"class":"toolbarBlock"},res];}
+      else {res=["#text",{},toolbar[i].tab,"br",{},[]];parentToolbar.push("span",{"class":"toolbarBlock"},res);}
+    } else {
+      res.push("h",{},[
+        "a",{onclick:toolbar[i].action,title:(toolbar[i].help?toolbar[i].help:toolbar[i].name),href:"javascript: void(0)"},[
+          "img",{src:toolbar[i].image},[],
+          "br",{},[],
+          "#text",{},toolbar[i].name
+        ]
+      ],"img",{},[]);
+    }
+  }
+  return parentToolbar;
+},
+emptyNode:function(n){
+  while(n.firstChild) n.removeChild(n.firstChild);
+},
+loadProperties:function(n){
+ this.emptyNode(this.divProperties);
+ draw3(this.divProperties,zgridprop.createFromNode(n));
+},
+_loadWorkspace:function(){
+file="";
+var id1=Z.getUID(),id2=Z.getUID(),id3=Z.getUID(),id4=Z.getUID();
+Z._toFixSize.push(id3);
+Z._toFixSize.push(id4);
+return ["tr",{id:id1},[
+ "td",{width:"25%",rowSpan:2},Z._panel("Structure",[],"structure"),
+ "td",{},Z._panel("Content",[],"content")
+],"tr",{height:"30%"},[
+ "td",{id:id2},Z._panel( 
+    ztab.create(
+      [
+        ["#text",{},"Properties "].concat(Z._imgbutton(function(){appendProperty()},"images/16/add.gif")),
+        ["#text",{},"Console "].concat(Z._imgbutton(function(){Z.consoleClear()},"images/16/clear.gif")),
+        ["#text",{},"Server Console "].concat(Z._imgbutton(function(){Z.serverConsoleClear()},"images/16/clear.gif")),
+        ["#text",{},"Database"].concat(Z._imgbutton(function(){Z.databaseClear()},"images/16/clear.gif"),Z._imgbutton(function(){Z.databaseConnectTo()},"images/16/connection.png")),
+        ["#text",{},"Help "].concat(Z._imgbutton(function()
+          {
+            if(!currentNode) return;
+            var d={};
+            if(currentNode.attributes)
+              for(var i=0,l=currentNode.attributes.length;i&lt;l;i++)d[currentNode.attributes[i].nodeName]=currentNode.attributes[i].nodeValue;
+            document.getElementById("help").innerHTML=ajax_call("help.php","n="+encodeURIComponent(currentNode.nodeName)+"&amp;d="+encodeURIComponent(JSON.stringify(d)),null,true)
+          },"images/16/_go.gif"))
+      ],0,"log", minimizeTab(function(){var c=document.getElementById("content"),p=c;while(p.nodeName.toLowerCase()!="table")p=p.parentNode;resizePanel(p)}) ),
+      [
+        //Properties Panel
+        "div",{id:"properties",style:"display:none"},[],
+        //Console Panel
+        "div",{id:"console",style:"display:none"},[],
+        //Server Console Panel
+        "div",{style:"display:none"},["table",{width:"100%",height:"100%"},["tbody",{},[
+          "tr",{},["td",{id:id3},["div",{id:"serverconsole",style:"height:100%;overflow:auto"},"_"]],
+          "tr",{height:"1%"},["td",{height:"1%"},
+            ["#text",{},"code:","input",{style:"width:100%",
+              onkeypress:function(event){
+                event=window.event?window.event:event;
+                var key=event.keyCode?event.keyCode:event.which;
+                if(key==13) {
+                  Z.serverConsole(ajax_call("serverconsole.php","c="+encodeURIComponent(this.value),"POST",true));
+                  return false;
+                }
+              }},[]
+            ]]
+        ]]],
+        //Database Panel
+        "div",{style:"display:none"},["table",{width:"100%",height:"100%"},["tbody",{},[
+          "tr",{},["td",{id:id4},["div",{id:"database",style:"height:100%;overflow:auto"},"_"]],
+          "tr",{height:"1%"},["td",{height:"1%"},
+            ["#text",{},"code:","input",{style:"width:100%",
+              onkeypress:function(event){
+                event=window.event?window.event:event;
+                var key=event.keyCode?event.keyCode:event.which;
+                if(key==13) {
+                  Z.databaseConsole(ajax_call("database.php","c="+encodeURIComponent(this.value),"POST",true));
+                  return false;
+                }
+              }},[]
+            ]]
+        ]]],
+        "div",{id:"help",style:"display:none"},[]
+      ],"log")
+]];
+},
+/* LOADING ...*/
+loadComponents:function(){
+  for(var i=0;i&lt;components.length;i++) {
+    if(typeof(componentsIndex[components[i].name])==="undefined") {
+      componentsIndex[components[i].name]=components[i];
+    } else {
+      for(var oa in componentsIndex[components[i].name]){
+        components[i][oa]=componentsIndex[components[i].name][oa];
+      }
+      componentsIndex[components[i].name]=components[i];
+    }
+  }
+},
+onload:function(){
+  draw3(document.body,["div",{id:"now loading",style:"z-index:100;text-align:center;background:white;border:1px outset black;position:absolute;width:256;height:128;left:"+((document.body.offsetWidth-256)/2)+";top:50%"},[
+    "img",{src:"images/loading.gif"},[],
+    "br",{},[],
+    "#text",{},"xFreppe",
+    "br",{},[],
+    "br",{},[],
+    "#text",{},"loading..."
+  ]]);
+  var id1=Z.getUID();
+  this.loadComponents();
+  var ws=Z._loadWorkspace();
+  draw3(document.body,[
+   "table",{id:"zeditorbody",border:"1",cellPadding:0,cellSpacing:0,width:"100%",height:"100%"},["tbody",{},[
+    "tr",{height:"46px"},["td",{id:id1,colSpan:2},["div",{"id":"toolbar"},Z._loadToolbar()]],
+    ws[0],ws[1],ws[2],ws[3],ws[4],ws[5]
+   ]]
+  ]);
+  //Fix editor size
+  Z._toFixSize.push(id1);
+  Z._toFixSize.push("zeditorbody");
+  Z._fixAll();
+  
+  //Loads current path
+  if(document.location.protocol=="file:") {
+    dirBase=window.location.href.split("/");
+    dirBase.pop();
+    dirBase=dirBase.join("/").substr(8)+"/";
+  } else {
+    dirBase=ajax_call("fileIO.php",null,null,true);
+  }
+  
+  this.divProperties=document.getElementById("properties");
+  this._console=document.getElementById("console");
+  this._serverconsole=document.getElementById("serverconsole");
+  this._database=document.getElementById("database");
+  this.divProperties.style.display="block";
+  //Loads zeditors properties
+  loadDefaultEditors();
+  
+  //Load Default Library
+  loadLibrary("$library/base.xml");
+  changeEditor("default");
+
+  //Load aditional dictionary for zpad
+  zpad.loadDictionary2(ajax_call("php.dic",null,null,true));
+
+  var nl=document.getElementById("now loading");
+  nl.parentNode.removeChild(nl);
+  nl=null;
+},
+loadToolbar:function(){
+  Z.emptyNode(document.getElementById("toolbar"));
+  draw3(document.getElementById("toolbar"), Z._loadToolbar());
+},
+addToolbarButton:function(def,isArray,region,position){
+  var i0=toolbar.length;
+  var nextRegion=false;
+  if(typeof(position)!=="undefined")position=1;
+  if(typeof(region)!=="undefined"){
+    for(var i=0,l=toolbar.length;i&lt;l;i++){
+      if(typeof(toolbar[i].name)==="string" &amp;&amp; toolbar[i].name==" " &amp;&amp; typeof(toolbar[i].tab)==="string"){
+        if(nextRegion){
+          i0=i;break;
+        }
+        else if(toolbar[i].tab==region){
+          if(position==0){i0=i+1;break;}
+          else nextRegion=true;
+        }
+      }
+    }
+  }
+  if(isArray) toolbar=toolbar.slice(0,i0).concat(def).concat(toolbar.slice(i0));
+  else toolbar=toolbar.slice(0,i0).concat([def]).concat(toolbar.slice(i0));
+  getToolbar();
+},
+resetToolbar:function(){
+  toolbar=originalToolbar.slice(0);
+  getToolbar();
+},
+pasteFromClipboard:function(){
+  var xml = ajax_call("clipboard.php","paste=xml").getElementsByTagName("root")[0].firstChild;
+  ztree._joinTextNodes(xml);
+  var aNode = Z.xml2array(xml);
+  appendChildTag(aNode[0],aNode[1],aNode[2]);
+},
+copyToClipboard:function(){
+  var c="&lt;root&gt;"+getXml(currentNode)+"&lt;/root&gt;";
+  ajax_call("clipboard.php","copy="+encodeURIComponent(c));
+},
+xml2array:function(xml){
+  /*Convert xml to array*/
+  var arr=[],atts={},chs=[];
+  if(xml.attributes){
+    for(var i=0,l=xml.attributes.length;i&lt;l;i++){
+      atts[xml.attributes[i].nodeName]=xml.attributes[i].nodeValue;
+    }
+  }
+  if(xml.childNodes){
+    for(var i=0,l=xml.childNodes.length;i&lt;l;i++){
+      var ch=Z.xml2array(xml.childNodes[i]);
+      chs.push(ch[0],ch[1],ch[2]);
+    }
+  }
+  if(typeof(xml.nodeValue)=="string")chs=xml.nodeValue;
+  arr.push(xml.nodeName,atts,chs);
+  return arr;
+}
+}
+/***********************************/
+var loadComponents=Z.loadComponents;
+var loadToolbar=Z.loadToolbar;
+var originalToolbar=toolbar.slice(0);
+function getToolbar(){
+  toolbar.reset=Z.resetToolbar;
+  toolbar.load=Z.loadToolbar;
+  toolbar.add=Z.addToolbarButton;
+  return toolbar;
+};
+getToolbar();
+function getXPath(node){
+  return getXPath_(node).join("/");
+}
+function getXPath_(node, path) {
+  path = path || [];
+  if(node.parentNode) {
+    path = getXPath_(node.parentNode, path);
+  }
+
+  var ns=node;
+  while(ns.previousSibling!=null) ns=ns.previousSibling;
+  var index=0,count=0;
+  while(ns){
+    if(ns.nodeName==node.nodeName) count++;
+    if(ns===node)index=count;
+    ns=ns.nextSibling;
+  }
+  path.push(node.nodeName.toLowerCase() + (node.id ? "[@id='"+node.id+"']" : count &gt; 1 ? "["+index+"]" : ''));
+  
+  return path;
+};
+/**
+ * Loads an application
+ */
+function structure(panel,src){
+  while(panel.firstChild)panel.removeChild(panel.firstChild);
+  toolbar.reset();
+  draw3(panel,ztree.createFromSrc(src));
+  ztree.loadDragAnDropFunctionality();
+  var title=panel.parentNode.parentNode.previousSibling.firstChild.firstChild;
+  while(title.firstChild)title.removeChild(title.firstChild);
+  var name=file.split("\\").join("/").split("/");
+  title.appendChild(document.createTextNode(name[name.length-1]));
+  getToolbar().load();
+  /*Change node*/
+  if((initNodes=currentNode.getElementsByTagName("extdocument")) &amp;&amp; typeof(initNodes)!="undefined" &amp;&amp; initNodes[0]){
+    currentNode=initNodes[0];
+  } else if((initNodes=currentNode.getElementsByTagName("phtml")) &amp;&amp; typeof(initNodes)!="undefined" &amp;&amp; initNodes[0]){
+    if(initNodes[0].firstChild) currentNode=initNodes[0].firstChild; 
+    else currentNode=initNodes[0];
+  } else if((initNodes=currentNode.getElementsByTagName("application")) &amp;&amp; typeof(initNodes)!="undefined" &amp;&amp; initNodes[0]){
+    currentNode=initNodes[0];
+  }
+  /*Load Node Editor*/
+  loadNodeEditor();
+}
+/***/
+function appendChildTag(name,attributes,content) {
+  var owner=currentNode;
+  function create(owner,name,attributes,content){
+    var n,i,j;
+    if(name=="#text") return owner.appendChild(owner.ownerDocument.createTextNode(content?content:name));
+    else if(name=="#comment") return owner.appendChild(owner.ownerDocument.createComment(content?content:name));
+    else if(name=="#cdata-section") return owner.appendChild(owner.ownerDocument.createCDATASection(content?content:name));
+    else n=owner.ownerDocument.createElement(name);
+    owner.appendChild(n);
+    for(i=0;i&lt;components.length;i++){
+      if(components[i].name==name) {
+        if(components[i].attributes) {
+          for(j=0;j&lt;components[i].attributes.length;j++) {
+            if(typeof(components[i].attributes[j].value)!="undefined") {
+              n.setAttribute(components[i].attributes[j].name,components[i].attributes[j].value);
+            }
+          }
+        }
+        break;
+      }
+    }
+    if(attributes)
+    for(i in attributes)if(typeof(attributes[i])=="string" || typeof(attributes[i])=="number"){
+      n.setAttribute(i,attributes[i]);
+    }
+    if(typeof(content)=="object"){
+      for(i=0;i&lt;content.length;i+=3){
+        create(n,content[i],content[i+1],content[i+2]);
+      }
+    } else if(typeof(content)=="string"){
+      n.appendChild(n.ownerDocument.createTextNode(content));
+    }
+    return n;
+  }
+  var n=create(owner,name,attributes,content);
+  ztree.openNode(owner);
+  ztree.redrawNode(owner);
+  return n;
+}
+function duplicateCurrentNode(){
+  var n,i,j;
+  n=currentNode.cloneNode(true);
+  currentNode.parentNode.appendChild(n);
+  ztree.redrawNode(currentNode.parentNode);
+}
+function changeCurrentNodeName(nodeName){
+  if(!nodeName) return;
+  if(nodeName.substr(0,1)=="#") return;
+  var n,i,j;
+  n=currentNode.ownerDocument.createElement(nodeName);
+  if(currentNode.childNodes) {
+    for(i=0,l=currentNode.childNodes.length;i&lt;l;i++){
+      n.appendChild(currentNode.childNodes[i].cloneNode(true));
+    }
+  }
+  if(currentNode.attributes) {
+    for(i=0,l=currentNode.attributes.length;i&lt;l;i++){
+      n.setAttribute(currentNode.attributes[i].nodeName, currentNode.attributes[i].nodeValue);
+    }
+  }
+  currentNode.parentNode.insertBefore(n,currentNode);
+  currentNode.parentNode.removeChild(currentNode);
+  currentNode=n;
+  ztree.redrawNode(currentNode.parentNode);
+}
+function removeCurrentChildTag() {
+  removeChildTag(currentNode);
+}
+function removeChildTag(node) {
+  if(node.nodeType==1) {
+    while(node.childNodes.length) {
+      removeChildTag(node.firstChild);
+    }
+  }
+  ztree.removeNode(node);
+  node.parentNode.removeChild(node);
+}
+
+var winExplorer;
+function openFileExplorer(path) {
+  if(!winExplorer)winExplorer=document.createElement("div");
+  else while(winExplorer.firstChild) winExplorer.removeChild(winExplorer.firstChild);
+  if(path &amp;&amp; path.substr(0,1)==":") {
+    winExplorer.style.display="none";
+    openProject(path.substr(1));
+    return;
+  }
+  winExplorer.style.display="block";
+  winExplorer.className="explorer";
+  winExplorer.style.position="absolute";
+  winExplorer.style.left="16px";
+  winExplorer.style.top="64px";
+  document.body.appendChild(winExplorer);
+  var div=document.createElement("div");
+  div.innerHTML=ajax_call("explorer.php",(path?("p="+encodeURIComponent(path)):""),"GET",true);
+  var ns=div.firstChild;
+  while(ns) {
+    winExplorer.appendChild(ns);
+    ns=ns.nextSibling;
+  }
+  document.getElementById("explorer_select").focus();
+}
+function openPathExplorer(path) {
+  if(!winExplorer)winExplorer=document.createElement("div");
+  else while(winExplorer.firstChild) winExplorer.removeChild(winExplorer.firstChild);
+  winExplorer.style.display="block";
+  winExplorer.className="explorer";
+  winExplorer.style.position="absolute";
+  winExplorer.style.left="16px";
+  winExplorer.style.top="64px";
+  document.body.appendChild(winExplorer);
+  var div=document.createElement("div");
+  div.innerHTML=ajax_call("explorer.php",(path?("p="+encodeURIComponent(path)):"")+"&amp;type=p","GET",true);
+  var ns=div.firstChild;
+  while(ns) {
+    winExplorer.appendChild(ns);
+    ns=ns.nextSibling;
+  }
+}
+function loadProperties(node){
+  return Z.loadProperties(node);
+}
+function appendProperty() {
+  var propName=prompt("Property name:");
+  if(propName) {
+    currentNode.setAttribute(propName,"");
+    loadProperties(currentNode);
+  }
+}
+/**
+ * Load library definitions
+ */
+  function loadLibrary(src){
+    var p=((typeof(file)!="undefined")&amp;&amp;(file))?file:"";
+    var dom=ajax_call("fileIO.php","l="+encodeURIComponent(src)+"&amp;p="+encodeURIComponent(p)+"&amp;tsmp="+new Date().getTime(),"GET");
+    if(dom.firstChild.nodeName=="xml") _loadLibrary(dom.firstChild.nextSibling);
+    else _loadLibrary(dom.firstChild);
+  }
+  function _loadLibrary(n){
+    if((n.nodeName=="component")||(n.nodeName=="bcomponent")||(n.nodeName=="def")){
+      if(typeof(componentsIndex[n.getAttribute("name")])=="undefined"){
+        components.push({
+          "name":n.getAttribute("name"),
+          "attributes":structure_node_properties(n)
+        });
+        loadComponents();
+      } else {
+        if(n.getAttribute("name")=="layout"){
+          a=6;
+        }
+        var atts=structure_node_properties(n,[],n.getAttribute("name"));
+        if(componentsIndex[n.getAttribute("name")].attributes){
+          for(var i=0,l=atts.length;i&lt;l;i++){
+            var exi=false;
+            for(var j=0,k=componentsIndex[n.getAttribute("name")].attributes.length;j&lt;k;j++){
+              exi=exi || componentsIndex[n.getAttribute("name")].attributes[j].name==atts[i].name;
+            }
+            if(!exi)componentsIndex[n.getAttribute("name")].attributes.push(atts[i]);
+          }
+        } else {
+          componentsIndex[n.getAttribute("name")].attributes=atts;
+        }
+      }
+      if(n.hasChildNodes()) for(var i=0;i&lt;n.childNodes.length;i++) if(n.childNodes[i].nodeName=="#comment") {loadPlugin(n.childNodes[i]);}
+    } else if(n.nodeName=="include"){
+      loadLibrary(n.getAttribute("src"));
+    } else if(n.nodeName=="#comment"){
+      loadPlugin(n);
+    } else {
+      if(n.hasChildNodes()) for(var i=0;i&lt;n.childNodes.length;i++) _loadLibrary(n.childNodes[i]);
+    }
+  }
+  function structure_node_component_add(n){
+    if(typeof(componentsIndex[n.getAttribute("name")])=="undefined"){
+      components.push({
+        "name":n.getAttribute("name"),
+        "attributes":structure_node_properties(n)
+      });
+      loadComponents();
+    } else {
+      componentsIndex[n.getAttribute("name")].attributes=structure_node_properties(n,[],n.getAttribute("name"));
+    }
+  }
+  function structure_node_properties(n,res,base) {
+    var i;
+    if(!res) res=[];
+    /*if(n.nodeName=="component") res=structure_node_component_properties(n,res,base);
+    if(n.nodeName=="bcomponent") res=structure_node_component_properties(n,res,base);
+    if(n.nodeName=="def") res=structure_node_component_properties(n,res,base);*/
+    res=structure_node_component_properties(n,res,base);
+    return res;
+  }
+  function structure_node_component_properties(n,res,base) {
+    var i;
+    if(!res) res=[];
+    if(n.attributes) for(i=0;i&lt;n.attributes.length;i++) res=structure_node_component_get_properties(n.attributes[i].nodeValue,res,base);
+    if(n.hasChildNodes()) for(i=0;i&lt;n.childNodes.length;i++) res=structure_node_component_properties(n.childNodes[i],res,base);
+    if(n.nodeValue) res=structure_node_component_get_properties(n.nodeValue,res,base);
+    return res;
+  }
+  function structure_node_bcomponent_properties(n,res,base) {
+    var i;
+    if(!res) res=[];
+    if(n.attributes) for(i=0;i&lt;n.attributes.length;i++) res=structure_node_component_get_properties(n.attributes[i].nodeValue,res,base);
+    if(n.hasChildNodes()) 
+      for(i=0;i&lt;n.childNodes.length;i++) 
+        if((n.childNodes[i].nodeName=="after")||(n.childNodes[i].nodeName=="before"))
+          res=structure_node_bcomponent_properties(n.childNodes[i],res,base);
+        else
+          res=structure_node_component_properties(n.childNodes[i],res,base);
+    if(n.nodeValue) res=structure_node_component_get_properties(n.nodeValue,res,base);
+    return res;
+  }
+  function structure_node_component_get_properties(val,res,base){
+    var m=val.match(/[#@\$]\{[^\}]+\}/g);
+    if(m){
+      for(var i=0;i&lt;m.length;i++){
+        m[i]=m[i].replace(/"([^"\\]|\\"|\\)*"/g,"");
+        m[i]=m[i].replace(/'([^'\\]|\\'|\\)*'/g,'');
+        var mm=m[i].match(/\$[a-zA-Z][\w\d_]*(\/\*(.*?)\*\/)?/gm);
+        if(mm) for(var j=0;j&lt;mm.length;j++)if(mm[j]!="$this"){
+          var mmm=mm[j].match(/\$([a-zA-Z][\w\d_]*)(?:\/\*(.*?)\*\/)?/m);
+          var domain=(base?base.split(".").join("_"):"")+"_"+mmm[1];
+          var defaultValue="";
+          if(mmm[2]){
+/*            domain="window.domain_"+(base?base.split(".").join("_"):"")+"_"+mmm[1];
+            eval(""+domain+"="+JSON.stringify(mmm[2].split('|')));
+            eval("defaultValue="+domain+"[0]");*/
+            var domainName="domain_"+(base?base.split(".").join("_"):"")+"_"+mmm[1];
+            domain="window.domain_"+(base?base.split(".").join("_"):"")+"_"+mmm[1];
+            window[domainName]=mmm[2].split('|');
+            defaultValue=window[domainName][0];
+            var att=null;
+            for(var q=0,w=res.length;q&lt;w;q++) if(res[q].name==mmm[1]) {att=res[q];break;}
+            if(!att)res.push({"name":mmm[1],"value":defaultValue,"domain":domain});
+            else {att.value=defaultValue;att.domain=domain}
+          } else {
+            var att=null;
+            for(var q=0,w=res.length;q&lt;w;q++) if(res[q].name==mmm[1]) {att=res[q];break;}
+            if(!att)res.push({"name":mmm[1],"value":defaultValue,"domain":domain});
+          }
+        }
+      }
+    }
+    return res;
+  }
+  function structure_node_get_code_properties(val,res,base){
+    var m=val.match(/\$values\s*\[\s*["'][\w\d_]+["']\s*\]/g);
+    if(m){
+      for(var i=0;i&lt;m.length;i++){
+        var mm=m[i].match(/\$values\s*\[\s*["']([\w\d_]+)["']\s*\]/);
+        var domain="string";
+        res.push({"name":mmm[1],"value":"","domain":domain});
+      }
+    }
+    return res;
+  }
+  function loadPlugin(n){
+    if(n.nodeValue.substr(0,14)=="#editor.plugin") {
+     try {
+        var node=$this=n;
+        //console.log(n.nodeValue.substr(14));
+        eval(n.nodeValue.substr(14));
+      } catch(e) {
+        //alert("#editor.plugin("+n.parentNode.getAttribute("name")+"): "+e.message);
+        Z.console("=============");
+        Z.console(e.message);
+        Z.console(n.nodeValue.substr(14));
+        //if has firebug
+        if(console &amp;&amp; console.debug) console.debug(e);
+        Z.console("-------------");
+      }
+    }
+  }</file><file name="draw3.js" preprocess="">/** DRAW3 */
+/**
+ * @param o HTMLElement Target Object 
+ * @param cnt Object (Array | String) Elements to be inserted 
+ * @param beforeOf HTMLElement 
+ */
+function draw3(dest,content,beforeOf){
+  var d=draw3.create([content],dest);
+  for(var i=0,l=d.length;i&lt;l;i++){
+    if(beforeOf) dest.insertBefore(d[i],beforeOf);
+    else dest.appendChild(d[i]);
+  }
+  return d;
+}
+/**
+ * Returns an Array of DOMNodes
+ */
+draw3.create=function(arr,dest0){
+  var dest=dest0;
+  var document=dest &amp;&amp; dest.ownerDocument?dest.ownerDocument:window.document;
+  var t,d=[];
+  var modeCreate=!(arr.length==1 &amp;&amp; this.getType(arr[0])=="String");
+  for(var i=0,l=arr.length;i&lt;l;i++){
+    t=this.getType(arr[i]);
+    if(t=="String" &amp;&amp; modeCreate){
+      if(arr[i]=="#text") {
+        if(this.getType(arr[i+1])=="String") dest=document.createTextNode(arr[i=i+1]);
+        if(this.getType(arr[i+2])=="String") dest=document.createTextNode(arr[i=i+2]);
+        d.push(dest);
+      }
+      else if(arr[i]=="#comment") {
+        if(this.getType(arr[i+1])=="String") dest=document.createComment(arr[i=i+1]);
+        if(this.getType(arr[i+2])=="String") dest=document.createComment(arr[i=i+2]);
+        d.push(dest);
+      }
+      else {
+        //The next String will be a TextNode
+        modeCreate=false;
+        var dest=document.createElement(arr[i]);
+        if(arr[i]=="style") dest.setAttribute("type", "text/css");
+        d.push(dest);
+      }
+    }
+    else if(t=="String" &amp;&amp; !modeCreate) {
+      dest=dest.appendChild(document.createTextNode(arr[i]));
+      modeCreate=true;
+    }
+    else if(t=="Node") {
+      //If Node is owned by a different Document it will be imported.
+      if(document===arr[i].ownerDocument) o=arr[i]; 
+      else o=this.create(this.reverse(arr[i]),dest);
+      if(modeCreate) d.push(o); else dest.appendChild(o);
+      dest=o;
+      modeCreate=true;
+    }
+    else if(t=="NodeList") {
+      var dest1=[];
+      for(var j=0,k=arr[i].length;j&lt;k;j++) {
+        //If Node is owned by a different Document it will be imported.
+        if(document===arr[i].item(j).ownerDocument) o=arr[i].item(j); 
+        else o=this.create(this.reverse(arr[i].item(j)),dest);
+        if(modeCreate) d.push(o); else dest.appendChild(o);
+        dest1.push(o);
+      }
+      dest=dest1;
+      dest1=null;
+      modeCreate=true;
+    }
+    else if(t=="Object") {
+      this.setAttributes(dest,arr[i]);
+    }
+    else if(t=="Array") {
+      if(modeCreate) d=d.concat(dest=this.create(arr[i],dest0));
+      else dest=draw3(dest,arr[i]);
+      modeCreate=true;
+    }
+  }
+  return d;
+}
+/**
+ * Set attributes of a DOMElement(o)
+ */
+draw3.setAttributes=function(o,atts){
+  if(this.getType(o)=="Array" || this.getType(o)=="NodeList") {
+    console.debug(o);
+    for(var i=0,l=o.length;i&lt;l;i++) {
+      console.debug(o[i]);
+      this.setAttributes(o[i],atts);
+    }
+    return;
+  }
+  for(a in atts){
+    if(a=="class") o.className=atts[a];
+    else if(typeof(atts[a])=="function") o[a]=atts[a];
+    else if(a=="style") {
+      var splitted = atts[a].split(';');
+      for (var i=0, len=splitted.length; i&lt;len; i++) {
+        var s=splitted[i].split(':');
+        if(s.length&gt;0){
+          for(var exp=/-([a-z])/; exp.test(s[0]); 
+             s[0]=s[0].replace(exp,RegExp.$1.toUpperCase())){};
+          if(s[0])eval("o.style."+s[0]+"='"+s[1]+"'");
+        }
+      }
+    }
+    else {
+      if(typeof(o.setAttribute)!="undefined") o.setAttribute(a,atts[a]);
+    }
+  }
+}
+/**
+ * Return the class of an Object(o)
+ */
+draw3.getType=function(o){
+  if(typeof(o)=="string") return "String";
+  if((typeof jQuery != "undefined") &amp;&amp; (o instanceof jQuery)) return "Array";
+  if ( typeof Node === "object" ? o instanceof Node : 
+    typeof o === "object" &amp;&amp; o!==null  &amp;&amp; typeof o.nodeType === "number" &amp;&amp; typeof o.nodeName==="string"
+  ) return "Node";
+  if (typeof o === "object" &amp;&amp; o!==null 
+    &amp;&amp; typeof o.length == 'number' 
+    &amp;&amp; typeof o.item == 'function'
+    &amp;&amp; typeof o.nextNode == 'function'
+    &amp;&amp; typeof o.reset == 'function'
+  ) return "NodeList";
+  return Object.prototype.toString.call(o).split(" ")[1].split("]")[0];
+}
+/**
+ * Convert DOM Node to a draw3 Array
+ */
+draw3.reverse=function(dom){
+  var r=[];
+  if(this.getType(dom)=="Node"){
+    var atts={},chs=[];
+    if(dom.attributes){
+      for(var i=0,l=dom.attributes.length;i&lt;l;i++){
+        atts[dom.attributes[i].nodeName]=dom.attributes[i].nodeValue;
+      }
+    }
+    if(dom.childNodes){
+      chs.concat(this.reverse(dom.childNodes));
+    }
+    r.push(dom.nodeName,atts,chs);
+  } else if(this.getType(dom)=="NodeList"){
+    for(var j=0,k=dom.length;j&lt;k;j++) r.concat(this.reverse(dom.item(j)));
+  }
+  return r;
+}
+
+</file><file name="zeditor.css">body{padding:0px;margin:0px;font-family:arial,sans-serif}
+#toolbar{background-color:menu;height:100%;}
+.hSpacer{
+border:1px outset black !important;
+width:4px !important;
+background-color:menu;
+height:39px;
+}
+.imgW8{
+visibility:hidden !important;width:8px !important;height:32px;z-index:0;margin-bottom:8px;
+}
+#toolbar h {
+width:34px;overflow:hidden;border:none;display:inline;position:absolute;background-color:menu;
+z-index:2;
+}
+#toolbar img {
+visibility:hidden;width:34px;height:32px;z-index:0;margin-bottom:8px;
+}
+#toolbar h a img {
+visibility:visible;
+}
+#toolbar a img {
+visibility:visible;
+}
+#toolbar a {
+  width:32px;
+  margin:0px;
+  padding:0px;
+  border:1px solid menu;
+  display:inline-block;
+  text-align:center;
+  text-decoration:none;
+  font-family:sans-serif;
+  font-size:9px; 
+}
+#toolbar a img{
+  width:32px;
+  height:31px;
+  margin:0px;
+  padding:0px;
+  border:none;
+}
+#toolbar a:hover {
+  display:inline-block;
+  width:32px;
+  margin:0px;
+  padding:0px;
+  border:1px outset;
+}
+.toolbarDropdown{
+width:16px !important;
+}
+.toolbarDropdown img{
+width:16px !important;
+margin-bottom:7px !important;
+}
+.toolbarBlock{
+  font-size:11px;
+  font-weight:bold;
+  height:60px;
+  margin:0px;
+  text-align:center;
+  border:1px outset menu;
+  border-radius: 16px 16px 0px 0px;
+  -moz-border-radius: 16px 16px 0px 0px;
+  color:DarkBlue;
+  position:relative;
+  display:inline;
+  display:inline-block;
+}
+
+.panel{border:1px outset menu}
+.panel th{background-color:menu;color:menutext;text-align:left;border:1px outset black;}
+/*ztree*/
+.treenode{
+  padding-left:16px;
+/*  background-color:menu;
+  border-color: menu menu menu menu;
+  border-style: outset none outset outset;
+  border-width: 1px 0 1px 1px;*/
+}
+.treenodecontent{
+/*  border:1px inset menu;*/
+}
+.treenode a{
+  display:block;
+  white-space:pre;
+}
+.treenode a img{
+  border:none;
+}
+.treenodeselected span{
+  background-color:highlight;
+  color: highlighttext;
+}
+.treenodedragzone{
+  height:4px;
+}
+.dragoverTop{
+  border:1px dashed black;
+}
+.dragoverIn{
+  border:1px dashed black;
+}
+.dragoverBottom{
+  border:1px dashed black;
+}
+.ui-draggable-dragging{
+  filter:alpha(opacity=60);
+  -moz-opacity:0.6;
+  -khtml-opacity: 0.6;
+  opacity: 0.6;
+}
+/**/
+.explorer {
+  border:2px outset LightGrey;
+  width:30%;
+  padding:4px;
+  background-color: LightGrey;
+}
+button.ztab{border-bottom:none;margin:0px;}
+span.ztab{border:1px solid black;border-bottom:none;font-size:10pt;margin:2px;padding:7px 16px;vertical-align:top;background-color:white;}
+.imgbutton img{
+border:none;
+filter:alpha(opacity=60);
+-moz-opacity:0.6;
+-khtml-opacity: 0.6;
+opacity: 0.6;}
+.imgbutton:hover img{
+filter:alpha(opacity=100);
+-moz-opacity:1;
+-khtml-opacity: 1;
+opacity: 1;}
+
+.imgbutton:hover img{
+filter:alpha(opacity=100);
+-moz-opacity:1;
+-khtml-opacity: 1;
+opacity: 1;}
+
+/* ZPAD STYLES */
+.zpadTextArea{
+  position:relative;
+  border:none;
+  background-image:url(codepress/images/line-numbers.png);
+  background-color:transparent;
+  background-repeat:repeat-y;width:100%;
+  padding-left:32px;
+  height:100%;
+  line-height:16px;
+  font-size:13px;
+  padding-top:13px;
+  overflow:hidden;
+}
+.suggest{
+background-color:lightyellow;
+border:1px solid black;
+font-family:monospace;
+font-size:9pt;
+position:absolute;
+z-index:1;
+}
+
+.cdString{
+  background-color:lightyellow;/*#F1F8EB;*/
+  filter:alpha(opacity=80);
+  -moz-opacity:0.8;
+  -khtml-opacity: 0.8;
+  opacity: 0.8;
+}
+.cdComment{
+  background-color:#D1F0E1;
+}
+.cdRegExp{
+  background-color:orange;
+}
+.cdBlock{
+  background-color:lightBlue;
+  border:1px dotted black;
+  filter:alpha(opacity=20);
+  -moz-opacity:0.2;
+  -khtml-opacity: 0.2;
+  opacity: 0.2;
+}
+.cdDecoration{
+  font-family:monospace;
+  line-height:16px;
+  font-size:13px;
+}
+
+.panelButton{
+  display:inline-block;
+  float:right;
+  border:2px ridge menu;
+  cursor:pointer;
+  border-radius: 4px;
+  -moz-border-radius: 4px;
+  padding:0 2;
+  background-color:highlighttext;
+  font-size:10px;
+}
+/*Default Editor*/
+#defaultElement th {
+  background-color:ButtonFace;
+  font-size: 14px;
+  padding: 0 4px;
+  vertical-align: top;
+  white-space:pre;
+}
+#defaultElement td {
+  background-color:white;
+  font-size: 14px;
+  padding: 0 4px;
+  vertical-align: top;
+}</file><file name="zeditor.tree.js" __ideNodeOpen="true"><module name="ztree" __ideNodeOpen="true">var ztree={
+/*tags*/
+PARENT_TAG:"div",
+CHILDREN_TAG:"div",
+/*Elements*/
+cache:[],
+/*Nodes*/
+cacheIndex:[],
+/**/
+xml:null,
+/*loading resource*/
+createFromSrc:function(src){
+  var x=this.loadXml(src);
+  return this.createFromXml(x);
+},
+createFromXml:function(xml){
+  currentNode=this.xml=xml;
+  return ztree.draw(xml);
+},
+loadXml:function(src){
+  var i,root;
+  var dom=typeof(src)=="object"?src:ajax_call(src,"tsmp="+new Date().getTime());
+  if(dom.firstChild.nodeName=="xml") root=dom.firstChild.nextSibling;
+  else root=dom.firstChild;
+  /**/
+  this._joinTextNodes(root);
+  return root;
+},
+_joinTextNodes:function(n){
+  if(n.nodeType!=1) return;
+  var t=n.firstChild;
+  while(t &amp;&amp; t.nextSibling){
+    if(t.nodeName=="#text" &amp;&amp; t.nextSibling.nodeName=="#text"){
+      t.nodeValue=t.nodeValue+t.nextSibling.nodeValue;
+      n.removeChild(t.nextSibling);
+    } else {
+      t=t.nextSibling;
+    }
+  }
+  for(var i=0,l=n.childNodes.length;i&lt;l;i++){
+    ztree._joinTextNodes(n.childNodes[i]);
+  }
+},
+/** LOAD NODE**/
+loadNode:function(n){
+  /*Load editor's node properties*/
+  if((n.nodeName=="component")||(n.nodeName=="bcomponent")||(n.nodeName=="def")) {
+    /*Agregates component definition*/
+    structure_node_component_add(n);
+  }
+  if(n.nodeName=="#comment") {
+    /*Agregates component editor plugin*/
+    loadPlugin(n);
+  }
+  if(n.nodeName=="include") {
+    /*Loads a library*/
+    loadLibrary(n.getAttribute("src"));
+  }
+},
+/*ztre core*/
+  draw:function(node){
+    /*CREATE TREE*/
+    var tree=document.createElement(this.PARENT_TAG);
+    this._drawNode(node,tree);
+    /*RETURN TREE*/
+    return tree;
+  },
+  _drawNode:function(node,container,beforeOf){
+    var childContainer = this._draw(node,container,beforeOf);
+    this.loadNode(node);
+    if(node.childNodes) {
+      for(var i=0,l=node.childNodes.length;i&lt;l;i++){
+        this._drawNode(node.childNodes[i], childContainer);
+      }
+    }
+  },
+  _draw:function(node,container,beforeOf){
+    var e,i;
+    i=this.cacheIndex.indexOf(node);
+    if(i!=-1){
+      if(beforeOf) e=container.insertBefore(this.cache[i], beforeOf); else e=container.appendChild(this.cache[i]);
+      while(e.childNodes[2].firstChild) e.childNodes[2].removeChild(e.childNodes[2].firstChild);
+    } else {
+      if(beforeOf) e=container.insertBefore(this.createCache(node), beforeOf); else e=container.appendChild(this.createCache(node));
+    }
+    this.updateElement(e, node);
+    return e.childNodes[2];
+  },
+  insertAfter:function(parent,newnode,ref){
+    if(ref.nextSibling) parent.insertBefore(newnode,ref.nextSibling);
+    else parent.appendChild(newnode);
+  },
+  createCache:function(node){
+    var i=this.cacheIndex.indexOf(null);
+    if(i!=-1){
+      this.cacheIndex[i]=node;
+      return this.cache[i];
+    }
+    var c=draw3.create([
+      this.CHILDREN_TAG,{"class":"treenode"},[
+        "div",{"class":"treenodedragzone"}," ",
+        "a",{href:"#"},["img",{src:"/achachi/webeditor/images/16/library.png"},[],"span",{},node.nodeName],
+        this.PARENT_TAG,{"class":"treenodecontent"},[],
+        "div",{"class":"treenodedragzone"}," "
+      ]])[0];
+    this.cache.push(c);
+    this.cacheIndex.push(node);
+    c.childNodes[1].onclick=this.onclick;
+    c.childNodes[1].ondblclick=this.ondblclick;
+    $(c.childNodes[1]).keydown(this.onkeydown);
+    return c;
+  },
+  recicleCache:function(node){
+    var i=this.cacheIndex.indexOf(node);
+    if(i!=-1){
+      this.cacheIndex[i]=null;
+    }
+  },
+  updateElement:function(elem,node){
+    /*icon*/
+    elem.childNodes[1].childNodes[0].src=this.getNodeIcon(node);
+    /*label*/
+    elem.childNodes[1].childNodes[1].firstChild.nodeValue=this.getNodeLabel(node);
+    if(!node.attributes || (node.getAttribute("__ideNodeOpen")=="false")) elem.childNodes[2].style.display="none";
+    /*reset drag&amp;drop*/
+    elem.style.left="";
+    elem.style.top="";
+  },
+/*shared function*/
+openNode:function(n){
+  n.setAttribute("__ideNodeOpen","true");
+  $(this.findElementOf(n).childNodes[2]).show();
+},
+getNodeLabel:function(n){
+  var name="";
+  if(n.attributes) name=(n.getAttribute("name")?n.getAttribute("name"):(n.getAttribute("src")?n.getAttribute("src"):""))+(n.getAttribute("class")?"("+n.getAttribute("class")+")":"");
+  if(name=="" &amp;&amp; n.attributes) {
+    for(var i=0,l=n.attributes.length;i&lt;l;i++) if(n.attributes[0].nodeName.substr(0,2)!="__") {
+      name = "["+n.attributes[0].nodeName+"="+n.attributes[0].nodeValue+"]";
+      if(n.attributes[0].nodeValue) break;
+    }
+  }
+  return "("+n.nodeName+")"+name;
+},
+getNodeIcon:function(n){
+  return img=(componentsIndex[n.nodeName] &amp;&amp; componentsIndex[n.nodeName].image)?componentsIndex[n.nodeName].image:"images/16/default.gif";
+},
+refresh:function(){
+  Z.emptyNode(document.getElementById("structure"));
+  draw3(document.getElementById("structure"),ztree.draw(ztree.xml));
+  ztree.loadDragAnDropFunctionality();
+},
+/*private events*/
+onclick:function(){
+  /*Focus selection*/
+  $(".treenode a").removeClass("treenodeselected");
+  $(this).addClass("treenodeselected");
+  this.focus();
+  /*Update Changes*/
+  updateChanges();
+  /*Change node*/
+  currentNode=ztree.findNodeOf(this.parentNode);
+  /*Load Node Editor*/
+  loadNodeEditor();
+},
+ondblclick:function(){
+  $(this.parentNode.childNodes[2]).toggle();
+  ztree.findNodeOf(this.parentNode).setAttribute(
+    "__ideNodeOpen",
+    $(this.parentNode.childNodes[2]).is(":visible")?"true":"false"
+  );
+},
+onkeydown:function(event){
+  var nxt;
+  var k=event.which;
+  //37=LEFT
+  if(k==37) {
+    $(".treenodeselected").parent().parent().parent().find("a").first().dblclick();
+    $(".treenodeselected").parent().parent().parent().find("a").first().click();
+  }
+  //38=UP
+  if(k==38) {
+    var nodes = $(".treenode:visible");
+    var i = nodes.index($(".treenodeselected").parent());
+    if(i&gt;0) $(nodes[i-1]).find("a").first().click();
+  }
+  //39=RIGHT
+  if(k==39) {
+    if(!$(".treenodeselected").next().is(":empty") &amp;&amp; $(".treenodeselected").next().is(":visible"))k=40;
+    $(".treenodeselected").next().show();
+  }
+  //40=DOWN
+  if(k==40) {
+    var nodes = $(".treenode:visible");
+    var i = nodes.index($(".treenodeselected").parent()[0]);
+    if(i&lt;nodes.length-1) $(nodes[i+1]).find("a").first().click();
+  }
+  return k&lt;37 || k&gt;40;
+},
+/*auxiliar functions*/
+loadDragAnDropFunctionality:function(){
+    /*DRAG AND DROP ORDERING*/
+    $(".treenode").draggable({axis:'y',revert:true,drag:function(){}});
+    function ztdrop(action){
+      return function(e,u){
+        var s=ztree.cache.indexOf(u.draggable[0]);
+        var d=ztree.cache.indexOf(this.parentNode);
+        $(this).removeClass("dragoverTop");
+        $(this).removeClass("dragoverIn");
+        $(this).removeClass("dragoverBottom");
+        try{
+          action(ztree.cacheIndex[s], ztree.cacheIndex[d]);
+        } catch(e) {
+        }
+        ztree.refresh();
+      };
+    }
+    $(".treenode").each(function(){
+      var nodos=this.childNodes;
+      $(nodos[0]).droppable({tolerance:"pointer",over:function(){$(this).addClass("dragoverTop");},out:function(){$(this).removeClass("dragoverTop")},drop:ztdrop(function(s,d){d.parentNode.insertBefore(s,d)})});
+      $(nodos[1]).droppable({tolerance:"pointer",over:function(){$(this).addClass("dragoverIn");},out:function(){$(this).removeClass("dragoverIn")},drop:ztdrop(function(s,d){d.appendChild(s)})});
+      $(nodos[3]).droppable({tolerance:"pointer",over:function(){$(this).addClass("dragoverBottom")},out:function(){$(this).removeClass("dragoverBottom")},drop:ztdrop(function(s,d){ztree.insertAfter(d.parentNode,s,d)})});
+    });
+    $(".treenode").find(".ui-droppable").last().droppable("destroy");
+    $(".treenode.ui-draggable").first().draggable("destroy");
+},
+findIndex:function(n){
+  return this.cacheIndex.indexOf(n);
+},
+findElementOf:function(n){
+  var idx=this.findIndex(n);
+  if(idx&gt;=0) return this.cache[idx];
+},
+findNodeOf:function(e){
+  return ztree.cacheIndex[ztree.cache.indexOf(e)];
+},
+redrawNode:function(n){
+  var e=this.findElementOf(n);
+  var p=e.parentNode;
+  //p.removeChild(e);
+  this._drawNode(n,p,e.nextSibling);
+  e=null;
+  ztree.loadDragAnDropFunctionality();
+},
+removeNode:function(n){
+  var e=this.findElementOf(n);
+  this.recicleCache(n);
+  if(e) e.parentNode.removeChild(e);
+  //this.redrawNode(n.parentNode);
+}
+};
+</module><module name="zgridprop">var zgridprop={
+createFromNode:function(n){
+var rows=[],tdDomain;
+if(n.attributes)
+for(var i=0,l=n.attributes.length;i&lt;l;i++) if(n.attributes[i].nodeName.substr(0,2)!="__"){
+    tdDomain=["td",{"width":"1%"},""];
+    if(componentsIndex[n.nodeName] &amp;&amp; componentsIndex[n.nodeName].attributes) {
+      var i0;
+      for(i0=0;i0&lt;componentsIndex[n.nodeName].attributes.length;i0++) {
+        if(componentsIndex[n.nodeName].attributes[i0].name==n.attributes[i].nodeName) {
+          if(eval("typeof("+componentsIndex[n.nodeName].attributes[i0].domain+")")!="undefined") {
+            var domain;
+            eval("domain="+componentsIndex[n.nodeName].attributes[i0].domain+";");
+            tdDomain=["td",{width:"1%"},["select",{onchange:this.onselect(n,n.attributes[i])},function(){
+              var j,op;
+              op=["option",{value:""},""];
+              for(j=0;j&lt;domain.length;j++) {
+                op.push("option",{value:domain[j]},domain[j]);
+              }
+              return op;
+            }()]];
+            break;
+          }
+        }
+      }
+    }
+  /*Create the attribute value*/
+  rows.push("tr",{},[
+    "td",{},n.attributes[i].nodeName,
+    "td",{},["input",{value:n.attributes[i].nodeValue,style:"width:100%;",onchange:zgridprop.onchange(n,n.attributes[i]),onkeypress:zgridprop.onkey13(n,n.attributes[i])},[]],
+    tdDomain[0],tdDomain[1],tdDomain[2],
+    "td",{},["a",{"class":"imgbutton",href:"javascript:void(0)",onclick:this.deleteAttribute(n,n.attributes[i])},["img",{src:"images/16/minus.gif"},[]]]
+  ]);
+}
+return [
+ "table",{border:"1",cellspacing:"0",cellpadding:"0",width:"100%"},["tbody",{},rows]
+];
+},
+onchange:function(n,p){
+return function(event){
+ event=window.event?window.event:event;
+ var e=event.target?event.target:event.srcElement;
+ p.nodeValue=e.value;
+ ztree.redrawNode(n);
+}
+},
+onkey13:function(n,p){
+return function(event){
+ event=window.event?window.event:event;
+ var e=event.target?event.target:event.srcElement;
+ if((event.keyCode==13)||(event.which==13)){
+  p.nodeValue=e.value;
+  ztree.redrawNode(n);
+ }
+}
+},
+deleteAttribute:function(n,prop){
+  return function(){
+    n.attributes.removeNamedItem(prop.nodeName);
+    prop=null;
+    this.parentNode.parentNode.parentNode.removeChild(this.parentNode.parentNode);
+  }
+},
+onselect:function(n,prop){
+  return function(){
+    var d=this.parentNode.previousSibling.firstChild;
+    d.value=this.value;
+    prop.nodeValue=d.value;
+    ztree.redrawNode(n);
+  };
+}
+};
+
+</module><module name="zpad">var zpad={
+autoStart:0,autoEnd:0,autoComplete:"",
+autoComplete1:"",autoType:1,autoSel:{},autoIndex:0,autoWait:false,
+prevTxtA:"",
+searchReg:/\w+(?:\s*\([^()]*\))?/g,
+dic:[],
+delay:500,
+highLightBlocks:true,
+highLightString:false,
+highLightComment:true,
+create:function(){
+var div=document.createElement("div");
+div.style.position="relative";
+draw3(div,[
+  "div",{"class":"suggest",style:"display:none;"},[],
+  "textarea",{"class":"zpadTextArea",
+  onkeypress:this.resize,onkeyup:zpad.onkeyup,onclick:zpad.onkeyup,onkeydown:zpad.onkeydown,
+  oncontextmenu:this.oncontextmenu,
+  "wrap":"OFF"},""
+]);
+return div;
+},
+setCode:function(id,code){
+ var div=document.getElementById(id);
+ div.childNodes[1].value=code;
+ div.childNodes[1].onclick();
+ zpad.refreshDecoration(div.childNodes[1]);
+},
+getCode:function(id){
+ var div=document.getElementById(id);
+ return div.childNodes[1].value;
+},
+loadDictionary:function(src){
+  var ws=src.match(this.searchReg),dup;
+  for(var i=0,l=ws.length;i&lt;l;i++){
+    /*dup=false;
+    for(var j=0,k=this.dic.length-1;j&lt;k;j++){
+      if(dup=(this.dic[j]==ws[i]))break;
+    }*/
+    dup=this.dic.indexOf(ws[i])!=-1;
+    if(!dup)this.dic.push(ws[i]);
+  }
+},
+loadDictionary2:function(src){
+  eval("this.dic=this.dic.concat("+src+");");
+},
+resize:function(){
+ var ls=this.value.split("\n");
+ var h=(ls.length+4)*16;
+ if(h&lt;this.parentNode.offsetHeight-2)h=this.parentNode.offsetHeight-2;
+ this.style.height=h;
+ var w=0;
+ for(var i=0,l=ls.length;i&lt;l;i++) if(w&lt;ls[i].length) w=ls[i].length;
+ w=32+Math.ceil((w+10)*8.2);
+ if(w&lt;this.parentNode.offsetWidth-16)w=this.parentNode.offsetWidth-16;
+ this.style.width=w;
+},
+oncontextmenu:function(event){
+  //console.debug(":p");
+  //popupMenu(event,"HOLA");
+  return false;
+},
+onkeyup:function( event )
+{
+  this.onkeypress();
+  zpad.autoWait=true;
+  event=window.event?window.event:event;
+  var sel=zpad.getInputSelection(this);
+  zpad.autoSel=sel;
+  /**/
+  var lines=this.value.substr(0,sel.start).split("\n");
+  var row=lines.length;
+  var col=lines[row-1].length+1;
+  var y=(row-1)*16+14;
+  var x=(col-1)*8+32;
+  this.previousSibling.style.top=y-16;
+  this.previousSibling.style.left=x;
+  zpad.autoSel.row=row;
+  zpad.autoSel.col=col;
+  //
+  var w1=this.value.substr(0,sel.start);
+  var w2=this.value.substr(sel.start);
+  var ww1=w1.match(/\w+$/);
+  var ww2=w2.match(/^\w*(?:\s*\([^()]*\))?/);
+  zpad.autoStart=sel.start-(ww1?ww1[0].length:0);
+  zpad.autoEnd=sel.start+(ww2?ww2[0].length:0);
+  var w1=ww1?ww1[0]:"";
+  var w=ww1?((ww1?ww1[0]:"")+(ww2?ww2[0]:"")):"";
+  zpad.autoComplete="";
+  this.previousSibling.style.display="none";
+  this.previousSibling.innerHTML="";
+  if(w){
+    zpad.autoType=1;
+    var ws=(
+    "for(var i=0,l=10;i&lt;l;i++) function(a,b) function fn(a,b) return if else length width height for(a in obj) if(typeof(obj)!=\"function\") window.document.getElementById"+
+    this.value).match(zpad.searchReg);
+    var idxm=0;
+    if(ws){
+      for(var i=0,l=ws.length;i&lt;l;i++){
+        if((ws[i].substr(0,w1.length)==w1)&amp;&amp;(w!=ws[i])){
+          zpad.autoComplete=ws[i];
+          this.previousSibling.innerHTML="";
+          this.previousSibling.appendChild(document.createTextNode(zpad.autoComplete));
+          this.previousSibling.style.display="block";
+          idxm++;if(idxm&gt;=zpad.autoIndex)break;
+        }
+      }
+    }
+    if(!(idxm&gt;=zpad.autoIndex)){
+      for(var i=0,l=zpad.dic.length;i&lt;l;i++){
+        if((zpad.dic[i].substr(0,w1.length)==w1)&amp;&amp;(w!=zpad.dic[i])){
+          zpad.autoComplete=zpad.dic[i];
+          this.previousSibling.innerHTML="";
+          this.previousSibling.appendChild(document.createTextNode(zpad.autoComplete));
+          this.previousSibling.style.display="block";
+          idxm++;if(idxm&gt;=zpad.autoIndex)break;
+        }
+      }
+    }
+    if(!(idxm&gt;=zpad.autoIndex)) zpad.autoIndex=0; else zpad.autoIndex++;
+  }else{
+    if(sel.start==sel.end){ /*Just one line*/
+      zpad.autoType=2;
+      var line=w1.match(/.*$/);
+      zpad.autoEnd=zpad.autoStart;
+      zpad.autoComplete=Array( (2-(line[0].length % 2))+1 ).join(" ");
+    }else{
+      zpad.autoType=3;
+      var txt=this.value.substr(sel.start,sel.end-sel.start);
+      var lines=txt.split("\n");
+      var lines1=[];
+      for(var i=0,l=lines.length-1;i&lt;l;i++){
+        var sp0=lines[i].match(/\s*/)[0].length;sp=sp0&lt;2?0:(sp0-2);
+        lines1[i]=Array(sp+1).join(" ")+lines[i].substr(sp0);
+        lines[i]="  "+lines[i];
+      }
+      lines1[lines.length-1]=lines[lines.length-1];
+      zpad.autoStart=sel.start;
+      zpad.autoEnd=sel.end;
+      zpad.autoComplete=lines.join("\n");
+      zpad.autoComplete1=lines1.join("\n");
+    }
+  }
+  zpad.autoWait=false;
+  zpad.nextRefresh=(new Date).getTime()+zpad.delay;
+  zpad.refreshDecoration(this);
+},
+onkeydown:function( event ){
+  event=window.event?window.event:event;
+  var key=event.keyCode?event.keyCode:event.which;
+  if(key==9){
+    if(zpad.autoWait) return;
+    if(zpad.autoComplete){
+      var replace=((event.shiftKey &amp;&amp; zpad.autoType==3)?zpad.autoComplete1:zpad.autoComplete);
+      this.value=this.value.substr(0,zpad.autoStart)+replace+this.value.substr(zpad.autoEnd);
+      if(zpad.autoType==3)
+        zpad.setSelectionRange(this,zpad.autoStart,zpad.autoStart+replace.length);
+      else if(zpad.autoType==2)
+        zpad.setSelectionRange(this,zpad.autoStart+zpad.autoComplete.length,zpad.autoStart+zpad.autoComplete.length);
+      else
+        zpad.setSelectionRange(this,zpad.autoSel.start,zpad.autoStart+zpad.autoComplete.length);
+    }
+    return false;
+  }
+
+  //PgDw
+  if(key==34){
+    var row=this.value.substr(0,zpad.autoSel.end).split("\n").length;
+    var nr=row-1+(Math.round(document.getElementById("content").offsetHeight/16)-2);
+    var s=zpad.autoSel.end;
+    lines=this.value.split("\n");
+    if(nr&gt;=lines.length)nr=lines.length-1;
+    var s0=0;
+    for(var i=0,l=row-1;i&lt;l;i++)s0+=lines[i].length+1;
+    var col=s-s0;
+    for(var i=row-1,l=nr;i&lt;l;i++)s0+=lines[i].length+1;
+    s=s0+(col&lt;lines[nr].length?col:lines[nr].length);
+    zpad.setSelectionRange(this,(event.shiftKey?zpad.autoSel.start:s),s);
+    zpad.autoSel.start=(event.shiftKey?zpad.autoSel.start:s);
+    zpad.autoSel.end=s;
+    document.getElementById("content").scrollTop=nr*16;
+    return false;
+  }
+  //PgUp
+  if(key==33){
+    var row=this.value.substr(0,zpad.autoSel.end).split("\n").length;
+    var nr=row-1-(Math.round(document.getElementById("content").offsetHeight/16)-2);
+    if(nr&lt;0)nr=0;
+    var s=zpad.autoSel.end;
+    lines=this.value.split("\n");
+    var s0=0;
+    for(var i=0,l=row-1;i&lt;l;i++)s0+=lines[i].length+1;
+    var col=s-s0;
+    for(var i=row-2;i&gt;=nr;i--)s0-=lines[i].length+1;
+    s=s0+(col&lt;lines[nr].length?col:lines[nr].length);
+    zpad.setSelectionRange(this,(event.shiftKey?zpad.autoSel.start:s),s);
+    zpad.autoSel.start=(event.shiftKey?zpad.autoSel.start:s);
+    zpad.autoSel.end=s;
+    document.getElementById("content").scrollTop=nr*16;
+    return false;
+  }
+  //End
+  if(key==35 &amp;&amp; event.ctrlKey){
+    zpad.setSelectionRange(this, (event.shiftKey?zpad.autoSel.start:this.value.length), this.value.length);
+    document.getElementById("content").scrollTop=(this.value.split("\n").length*16)-document.getElementById("content").offsetHeight*0.5;
+    return false
+  }
+  //Home
+  if(key==36 &amp;&amp; event.ctrlKey){
+    zpad.setSelectionRange(this,0,(event.shiftKey?zpad.autoSel.end:0));
+    document.getElementById("content").scrollTop=0;
+    return false
+  }
+  //F2
+  if(event.shiftKey &amp;&amp; key==113) {
+    var replace=this.value.substr(zpad.autoStart,zpad.autoEnd-zpad.autoStart);
+    replace=replace.split("\n");
+    for(var i in replace) replace[i]=JSON.stringify(replace[i]+"\n");
+    replace = replace.join("+\n");
+    this.value=this.value.substr(0,zpad.autoStart)+replace+this.value.substr(zpad.autoEnd);
+    zpad.setSelectionRange(this,zpad.autoSel.start,zpad.autoSel.start+replace.length);
+    return false;
+  }
+  //Z.console(key);
+  //F1=112 ... F12=123
+},
+getInputSelection:function(el) {
+  var start = 0, end = 0, normalizedValue, range,
+  textInputRange, len, endRange;
+  if (typeof el.selectionStart == "number" &amp;&amp; typeof el.selectionEnd == "number") {
+    start = el.selectionStart;
+    end = el.selectionEnd;
+  } else {
+    range = document.selection.createRange();
+    if (range &amp;&amp; range.parentElement() == el) {
+      len = el.value.length;
+      normalizedValue = el.value.replace(/\r\n/g, "\n");
+      textInputRange = el.createTextRange();
+      textInputRange.moveToBookmark(range.getBookmark());
+      endRange = el.createTextRange();
+      endRange.collapse(false);
+      if (textInputRange.compareEndPoints("StartToEnd", endRange) &gt; -1) {
+        start = end = len;
+      } else {
+        start = -textInputRange.moveStart("character", -len);
+        start += normalizedValue.slice(0, start).split("\n").length - 1;
+        if (textInputRange.compareEndPoints("EndToEnd", endRange) &gt; -1) {
+          end = len;
+        } else {
+          end = -textInputRange.moveEnd("character", -len);
+          end += normalizedValue.slice(0, end).split("\n").length - 1;
+        }
+      }
+    }
+  }
+  return {start: start,end: end};
+},
+setSelectionRange:function(input,selectionStart, selectionEnd) {
+  if (input.createTextRange) {
+    var range = input.createTextRange();
+    range.collapse(true);
+    if(typeof(selectionEnd)!="undefined" &amp;&amp; selectionEnd!=null) range.moveEnd('character', selectionEnd);
+    if(typeof(selectionStart)!="undefined" &amp;&amp; selectionStart!=null) range.moveStart('character', selectionStart);
+    range.select();
+  }
+  else if (input.setSelectionRange) {
+    input.focus();
+    input.setSelectionRange(selectionStart, selectionEnd);
+  }
+},
+refreshDecoration:function(txtA){
+  var delay=1000;
+  var t=(new Date).getTime();
+  if(this.prevTxtA!=txtA.value){
+    if(t&lt;this.nextRefresh) {
+      //console.debug("reprog");
+      setTimeout(function(){zpad.refreshDecoration(txtA)},zpad.delay);
+      return;
+    }
+    this.nextRefresh=t+delay;
+    if(this.highlighting) return;
+    this.highlighting=true;
+    //console.debug("Refreshed",t,this.nextRefresh);
+    this.addBlocks(txtA);
+    this.prevTxtA=txtA.value;
+    this.highlighting=false;
+    var ndelay=(new Date).getTime()-t;
+    if(10*ndelay&lt;zpad.delay)zpad.delay=10*ndelay;
+    if(5*ndelay&gt;zpad.delay)zpad.delay=10*ndelay;
+  }
+},
+cleanBlocks:function(txtA){
+  var div=txtA.parentNode;
+  while(div.childNodes[2])div.removeChild(div.childNodes[2]);
+},
+addDecoration:function(txtA,style,start,length){
+  var div=txtA.parentNode;
+  var pos=this.getPosition(txtA.value,start);
+  draw3(div,["div",{"class":"cdDecoration",style:"position:absolute;z-index:-1;"+
+    "left:"+pos.x+";top:"+pos.y},txtA.value.substr(start,length)], div.childNodes.length&gt;2?div.childNodes[2]:null );
+},
+//classBlock:{"/":"cdComment",'"':"cdString","'":"cdString","{":"cdBlock"},
+addBlock:function(blocks,txt,cla,start,length,txtWidth){
+  var lines=txt.substr(0,start).split("\n");
+  var row=lines.length;
+  var y=((row-1)*16)+14;
+  
+  var lines2=txt.substr(start,length).split("\n");
+  var row2=lines2.length;
+ 
+  if(row2==1){
+    var col=lines[row-1].length+1;
+    var x=((col-1)*8)+32;
+    var x2=((col+lines2[0].length-1)*8)+32;
+    blocks.push([],{"class":cla,
+      style:["position:absolute;z-index:-1;",
+      "left:",x,";top:",y,";width:",(x2-x),";height:16"].join("")},"div");
+  } else {
+    var tab=lines[row-1].match(/^\s*/)[0].length;
+    var xtab=(tab&lt;&lt;3)+32;
+    var y2=((row2-1+row-1)&lt;&lt;4)+14;
+    blocks.push([],{"class":cla,
+      style:["position:absolute;z-index:-1;",
+      "left:",xtab,";top:",y,";width:",(txtWidth-xtab-4),";height:",(y2-y+16)].join("")},"div");
+  }
+},
+//subBlocksRX:/(?:\/\*[\w\W]*?\*\/)|(?:\/\/.*)|(?:"(?:[^"\n\\]+|\\"|\\.)*?")|(?:'(?:[^'\n\\]+|\\'|\\.)*?')/g,
+//subBlocksRX:/(?:\/\*.*\*\/)|(?:\/\/.*)|(?:"(?:[^"\n\\]+|\\"|\\.)*?")/g,
+subBlocksRX:/(?:\/\*.*\*\/)|(?:\/\/.*)/g,
+blockRX:/(?:\{[^{}]*\})/g,
+spacerRX:/./g,
+addBlocks:function(txtA){
+  var c=txtA.value,txtWidth=txtA.offsetWidth;
+  var ex=true;
+  var blocks=[];
+  var clas={"/":"cdComment",'"':"cdString","'":"cdString","{":"cdBlock"};
+  var fnblock=function(match,pos,txt){
+    ex=true;
+    if((zpad.highLightString &amp;&amp; (match[0]=="'"||match[0]=='"')) || match[0]=="{" ||(zpad.highLightComment &amp;&amp; match[0]=="/")){
+      window.zpad.addBlock(blocks,txt,clas[match[0]],pos,match.length,txtWidth);
+    }
+    return match.replace(window.zpad.spacerRX,"_");
+  }
+  zpad.cleanBlocks(txtA);
+  try{ 
+    var t=(new Date).getTime()+1000;
+    c=c.replace(window.zpad.subBlocksRX,fnblock);
+    ex=zpad.highLightBlocks;
+    while(ex){
+      ex=false;
+      c=c.replace(window.zpad.blockRX,fnblock);
+      if((new Date).getTime()&gt;t) {break;}
+    }
+  } catch(e){
+    //Limitations of the regexp engine
+    Z.console(e);
+  }
+  draw3(txtA.parentNode,blocks.reverse());
+},
+getPosition:function(txt,pos){
+  var lines=txt.substr(0,pos).split("\n");
+  var row=lines.length;
+  var col=lines[row-1].length+1;
+  var y=(row-1)*16+14;
+  var x=(col-1)*8+32;
+  var tab=lines[row-1].match(/^\s*/)[0].length;
+  var xtab=tab*8+32;
+  return {row:row,col:col,x:x,y:y,tab:tab,xtab:xtab,line:lines[row-1],lines:lines};
+}
+}
+
+</module><module name="ztab">var ztab={
+create:function(tabs,index,contentId,buttons){
+  var res=[];
+  for(var i=0,l=tabs.length;i&lt;l;i++){
+    if(i==index) res.push("span",{"class":"ztab"},tabs[i]);
+    else res.push("button",{"class":"ztab",onclick:this.onclick(i,contentId)},tabs[i]);
+  }
+  if(buttons) res=res.concat(buttons);
+  return res;
+},
+select:function(div,index,contentId){
+  for(var i=0,l=div.childNodes.length;i&lt;l;i++) if(div.childNodes[i].className!="panelButton"){
+    var t=(i==index)?"span":"button";
+    if(div.childNodes[i].nodeName!=t){
+      var s=ztab.changeTag(div.childNodes[i],t);
+      div.insertBefore(s,div.childNodes[i]);
+      if(t=="button") s.onclick=this.onclick(i,contentId);
+      div.removeChild(div.childNodes[i+1]);
+    }
+  }
+},
+changeTag_:function(div,tagName){
+  var s=document.createElement(tagName);
+  while(div.firstChild){
+    s.appendChild(div.firstChild);
+  }
+  return s;
+},
+changeTag:function(div,tagName){
+  var s=ztab.changeTag_(div,tagName);
+  s.className="ztab";
+  return s;
+},
+onclick:function(index,contentId){
+  return function(){
+    ztab.select(this.parentNode,index,contentId);
+    var div=document.getElementById(contentId);
+    for(var i=0,l=div.childNodes.length;i&lt;l;i++){
+      div.childNodes[i].style.display=(i==index)?"block":"none";
+    }
+  };
+}
+}
+
+</module><module name="minimizeButton">function minimizeTab(afterAction){
+  return [
+    "span",
+    {
+      "class":"panelButton",
+      "onclick":function(){
+        var tb=this.parentNode.parentNode.parentNode.parentNode.parentNode;
+        if(!tb.getAttribute("pheight")) tb.setAttribute("pheight", tb.style.height);
+        if(!tb.rows[1].firstChild.getAttribute("pheight")) tb.rows[1].firstChild.setAttribute("pheight", tb.rows[1].firstChild.style.height);
+        if(tb.style.height=="") {
+          tb.style.height = tb.getAttribute("pheight");
+          tb.rows[1].firstChild.style.height=tb.rows[1].firstChild.getAttribute("height");
+          tb.rows[1].firstChild.firstChild.style.display="";
+          this.innerHTML="_";
+          if(afterAction) afterAction(tb);
+        } else {
+          tb.rows[1].firstChild.firstChild.style.display="none";
+          tb.rows[1].firstChild.style.height="";
+          tb.style.height = "";
+          this.innerHTML="¬";
+          if(afterAction) afterAction(tb);
+        }
+      }
+    },
+    "_"
+  ];
+}
+
+function resizePanel(tabTable){
+  tabTable.style.height="100%";
+  tabTable.rows[1].firstChild.style.height="";
+  var d=tabTable.rows[1].firstChild.firstChild.style.display;
+  tabTable.rows[1].firstChild.firstChild.style.display="none";
+
+  Z._fixSize(tabTable);
+  Z._fixSize(tabTable.rows[1].firstChild);
+  tabTable.rows[1].firstChild.firstChild.style.display=d;
+  tabTable.rows[1].firstChild.firstChild.style.height="100%";
+  Z._fixSize(tabTable.rows[1].firstChild.firstChild);
+}
+
+</module><module name="popupDialog">
+function popup(content){
+  var r=draw3(document.body,["div",{style:"position:absolute;z-index:50"},content]);
+  $(r[0]).center(true);
+  $(".dialog_title").draggable({appendTo:"parent"});
+//  $(r[0]).dialog();
+}
+jQuery.fn.center = function (absolute) {
+  return this.each(function () {
+    var t = jQuery(this);
+
+    t.css({
+      position:    absolute ? 'absolute' : 'fixed', 
+      left:        '50%', 
+      top:        '50%', 
+      zIndex:        '99'
+    }).css({
+      marginLeft:    '-' + (t.outerWidth() / 2) + 'px', 
+      marginTop:    '-' + (t.outerHeight() / 2) + 'px'
+    });
+
+    if (absolute) {
+      t.css({
+        marginTop:    parseInt(t.css('marginTop'), 10) + jQuery(window).scrollTop(), 
+        marginLeft:    parseInt(t.css('marginLeft'), 10) + jQuery(window).scrollLeft()
+      });
+    }
+  });
+};
+function dialog(title,content){
+  return ["div",{"class":"dialog_title"},title,"div",{style:"position:relative"},content];
+}
+</module></file><file name="zutil.js">  function getXml(n) {
+    if(!n.xml) return (new XMLSerializer()).serializeToString(n);
+    else return n.xml;
+  }
+  function createDom(xmlData) {
+    var xmlDoc;
+    if (window.ActiveXObject) {
+      //for IE
+      xmlDoc=new ActiveXObject("Microsoft.XMLDOM");
+      xmlDoc.async="false";
+      xmlDoc.preserveWhiteSpace=true;
+      xmlDoc.loadXML(xmlData);
+      return xmlDoc;
+    } else if (document.implementation &amp;&amp; document.implementation.createDocument) {
+      //for Mozila
+      parser=new DOMParser();
+      xmlDoc=parser.parseFromString(xmlData,"text/xml");
+      return xmlDoc;
+    }
+  }
+  function setXml(n,code) {
+    var m;
+    if(!n.ownerDocument.importNode) m=_importNode(n.ownerDocument,createDom(code).firstChild,true);
+    else m=n.ownerDocument.importNode(createDom(code).firstChild,true);
+    if(!m || m.nodeName=="parsererror") return false;
+    else structure_replace(n,m);
+    return m;
+  }
+
+  function getAbsolutePosition( oElement )
+  {
+    var x = 0, y = 0;
+    while( oElement != null ) {
+      x += oElement.offsetLeft;
+      y += oElement.offsetTop;
+      oElement = oElement.offsetParent;
+    }
+    return { x: x, y: y };
+  }
+
+  function getRelativePosition( oElement, oParent )
+  {
+    var a=getAbsolutePosition( oElement );
+    var b=getAbsolutePosition( oParent );
+    return { x: a.x - b.x , y: a.y - b.y };
+  }
+
+  function getEventPosition(event) {
+    var x, y;
+    event = event || window.event;
+    var el = event.target || event.srcElement;
+
+    if (!window.opera &amp;&amp; typeof event.offsetX != 'undefined') {
+      // Use offset coordinates and find common offsetParent
+      var pos = getAbsolutePosition( el );
+      x = pos.x + event.offsetX;
+      y = pos.y + event.offsetY;
+    }
+    else {
+      // Use absolute coordinates
+      x = event.pageX;
+      y = event.pageY;
+    }
+    return { x: x, y: y };
+  }
+
+if(typeof JSON === 'undefined') {
+/**
+ * JSON in JavaScript
+ *  by Douglas Crockford
+ * JSON_BEGIN
+ */
+var JSON;
+if (!JSON) {
+    JSON = {};
+}
+(function () {
+    "use strict";
+
+    function f(n) {
+        // Format integers to have at least two digits.
+        return n &lt; 10 ? '0' + n : n;
+    }
+
+    if (typeof Date.prototype.toJSON !== 'function') {
+
+        Date.prototype.toJSON = function (key) {
+
+            return isFinite(this.valueOf()) ?
+                this.getUTCFullYear()     + '-' +
+                f(this.getUTCMonth() + 1) + '-' +
+                f(this.getUTCDate())      + 'T' +
+                f(this.getUTCHours())     + ':' +
+                f(this.getUTCMinutes())   + ':' +
+                f(this.getUTCSeconds())   + 'Z' : null;
+        };
+
+        String.prototype.toJSON      =
+            Number.prototype.toJSON  =
+            Boolean.prototype.toJSON = function (key) {
+                return this.valueOf();
+            };
+    }
+
+    var cx = /[\u0000\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g,
+        escapable = /[\\\"\x00-\x1f\x7f-\x9f\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g,
+        gap,
+        indent,
+        meta = {    // table of character substitutions
+            '\b': '\\b',
+            '\t': '\\t',
+            '\n': '\\n',
+            '\f': '\\f',
+            '\r': '\\r',
+            '"' : '\\"',
+            '\\': '\\\\'
+        },
+        rep;
+
+
+    function quote(string) {
+
+// If the string contains no control characters, no quote characters, and no
+// backslash characters, then we can safely slap some quotes around it.
+// Otherwise we must also replace the offending characters with safe escape
+// sequences.
+
+        escapable.lastIndex = 0;
+        return escapable.test(string) ? '"' + string.replace(escapable, function (a) {
+            var c = meta[a];
+            return typeof c === 'string' ? c :
+                '\\u' + ('0000' + a.charCodeAt(0).toString(16)).slice(-4);
+        }) + '"' : '"' + string + '"';
+    }
+
+
+    function str(key, holder) {
+
+// Produce a string from holder[key].
+
+        var i,          // The loop counter.
+            k,          // The member key.
+            v,          // The member value.
+            length,
+            mind = gap,
+            partial,
+            value = holder[key];
+
+// If the value has a toJSON method, call it to obtain a replacement value.
+
+        if (value &amp;&amp; typeof value === 'object' &amp;&amp;
+                typeof value.toJSON === 'function') {
+            value = value.toJSON(key);
+        }
+
+// If we were called with a replacer function, then call the replacer to
+// obtain a replacement value.
+
+        if (typeof rep === 'function') {
+            value = rep.call(holder, key, value);
+        }
+
+// What happens next depends on the value's type.
+
+        switch (typeof value) {
+        case 'string':
+            return quote(value);
+
+        case 'number':
+
+// JSON numbers must be finite. Encode non-finite numbers as null.
+
+            return isFinite(value) ? String(value) : 'null';
+
+        case 'boolean':
+        case 'null':
+
+// If the value is a boolean or null, convert it to a string. Note:
+// typeof null does not produce 'null'. The case is included here in
+// the remote chance that this gets fixed someday.
+
+            return String(value);
+
+// If the type is 'object', we might be dealing with an object or an array or
+// null.
+
+        case 'object':
+
+// Due to a specification blunder in ECMAScript, typeof null is 'object',
+// so watch out for that case.
+
+            if (!value) {
+                return 'null';
+            }
+
+// Make an array to hold the partial results of stringifying this object value.
+
+            gap += indent;
+            partial = [];
+
+// Is the value an array?
+
+            if (Object.prototype.toString.apply(value) === '[object Array]') {
+
+// The value is an array. Stringify every element. Use null as a placeholder
+// for non-JSON values.
+
+                length = value.length;
+                for (i = 0; i &lt; length; i += 1) {
+                    partial[i] = str(i, value) || 'null';
+                }
+
+// Join all of the elements together, separated with commas, and wrap them in
+// brackets.
+
+                v = partial.length === 0 ? '[]' : gap ?
+                    '[\n' + gap + partial.join(',\n' + gap) + '\n' + mind + ']' :
+                    '[' + partial.join(',') + ']';
+                gap = mind;
+                return v;
+            }
+
+// If the replacer is an array, use it to select the members to be stringified.
+
+            if (rep &amp;&amp; typeof rep === 'object') {
+                length = rep.length;
+                for (i = 0; i &lt; length; i += 1) {
+                    if (typeof rep[i] === 'string') {
+                        k = rep[i];
+                        v = str(k, value);
+                        if (v) {
+                            partial.push(quote(k) + (gap ? ': ' : ':') + v);
+                        }
+                    }
+                }
+            } else {
+
+// Otherwise, iterate through all of the keys in the object.
+
+                for (k in value) {
+                    if (Object.prototype.hasOwnProperty.call(value, k)) {
+                        v = str(k, value);
+                        if (v) {
+                            partial.push(quote(k) + (gap ? ': ' : ':') + v);
+                        }
+                    }
+                }
+            }
+
+// Join all of the member texts together, separated with commas,
+// and wrap them in braces.
+
+            v = partial.length === 0 ? '{}' : gap ?
+                '{\n' + gap + partial.join(',\n' + gap) + '\n' + mind + '}' :
+                '{' + partial.join(',') + '}';
+            gap = mind;
+            return v;
+        }
+    }
+
+// If the JSON object does not yet have a stringify method, give it one.
+
+    if (typeof JSON.stringify !== 'function') {
+        JSON.stringify = function (value, replacer, space) {
+
+// The stringify method takes a value and an optional replacer, and an optional
+// space parameter, and returns a JSON text. The replacer can be a function
+// that can replace values, or an array of strings that will select the keys.
+// A default replacer method can be provided. Use of the space parameter can
+// produce text that is more easily readable.
+
+            var i;
+            gap = '';
+            indent = '';
+
+// If the space parameter is a number, make an indent string containing that
+// many spaces.
+
+            if (typeof space === 'number') {
+                for (i = 0; i &lt; space; i += 1) {
+                    indent += ' ';
+                }
+
+// If the space parameter is a string, it will be used as the indent string.
+
+            } else if (typeof space === 'string') {
+                indent = space;
+            }
+
+// If there is a replacer, it must be a function or an array.
+// Otherwise, throw an error.
+
+            rep = replacer;
+            if (replacer &amp;&amp; typeof replacer !== 'function' &amp;&amp;
+                    (typeof replacer !== 'object' ||
+                    typeof replacer.length !== 'number')) {
+                throw new Error('JSON.stringify');
+            }
+
+// Make a fake root object containing our value under the key of ''.
+// Return the result of stringifying the value.
+
+            return str('', {'': value});
+        };
+    }
+
+
+// If the JSON object does not yet have a parse method, give it one.
+
+    if (typeof JSON.parse !== 'function') {
+        JSON.parse = function (text, reviver) {
+
+// The parse method takes a text and an optional reviver function, and returns
+// a JavaScript value if the text is a valid JSON text.
+
+            var j;
+
+            function walk(holder, key) {
+
+// The walk method is used to recursively walk the resulting structure so
+// that modifications can be made.
+
+                var k, v, value = holder[key];
+                if (value &amp;&amp; typeof value === 'object') {
+                    for (k in value) {
+                        if (Object.prototype.hasOwnProperty.call(value, k)) {
+                            v = walk(value, k);
+                            if (v !== undefined) {
+                                value[k] = v;
+                            } else {
+                                delete value[k];
+                            }
+                        }
+                    }
+                }
+                return reviver.call(holder, key, value);
+            }
+
+
+// Parsing happens in four stages. In the first stage, we replace certain
+// Unicode characters with escape sequences. JavaScript handles many characters
+// incorrectly, either silently deleting them, or treating them as line endings.
+
+            text = String(text);
+            cx.lastIndex = 0;
+            if (cx.test(text)) {
+                text = text.replace(cx, function (a) {
+                    return '\\u' +
+                        ('0000' + a.charCodeAt(0).toString(16)).slice(-4);
+                });
+            }
+
+// In the second stage, we run the text against regular expressions that look
+// for non-JSON patterns. We are especially concerned with '()' and 'new'
+// because they can cause invocation, and '=' because it can cause mutation.
+// But just to be safe, we want to reject all unexpected forms.
+
+// We split the second stage into 4 regexp operations in order to work around
+// crippling inefficiencies in IE's and Safari's regexp engines. First we
+// replace the JSON backslash pairs with '@' (a non-JSON character). Second, we
+// replace all simple value tokens with ']' characters. Third, we delete all
+// open brackets that follow a colon or comma or that begin the text. Finally,
+// we look to see that the remaining characters are only whitespace or ']' or
+// ',' or ':' or '{' or '}'. If that is so, then the text is safe for eval.
+
+            if (/^[\],:{}\s]*$/
+                    .test(text.replace(/\\(?:["\\\/bfnrt]|u[0-9a-fA-F]{4})/g, '@')
+                        .replace(/"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g, ']')
+                        .replace(/(?:^|:|,)(?:\s*\[)+/g, ''))) {
+
+// In the third stage we use the eval function to compile the text into a
+// JavaScript structure. The '{' operator is subject to a syntactic ambiguity
+// in JavaScript: it can begin a block or an object literal. We wrap the text
+// in parens to eliminate the ambiguity.
+
+                j = eval('(' + text + ')');
+
+// In the optional fourth stage, we recursively walk the new structure, passing
+// each name/value pair to a reviver function for possible transformation.
+
+                return typeof reviver === 'function' ?
+                    walk({'': j}, '') : j;
+            }
+
+// If the text is not JSON parseable, then a SyntaxError is thrown.
+
+            throw new SyntaxError('JSON.parse');
+        };
+    }
+}());
+
+/*JSON_END*/
+}
+
+
+/*Array IndexOf for IE6 :p*/
+if (!Array.prototype.indexOf)
+  {
+
+       Array.prototype.indexOf = function(searchElement /*, fromIndex */)
+
+    {
+
+
+    "use strict";
+
+    if (this === void 0 || this === null)
+      throw new TypeError();
+
+    var t = Object(this);
+    var len = t.length &gt;&gt;&gt; 0;
+    if (len === 0)
+      return -1;
+
+    var n = 0;
+    if (arguments.length &gt; 0)
+    {
+      n = Number(arguments[1]);
+      if (n !== n)
+        n = 0;
+      else if (n !== 0 &amp;&amp; n !== (1 / 0) &amp;&amp; n !== -(1 / 0))
+        n = (n &gt; 0 || -1) * Math.floor(Math.abs(n));
+    }
+
+    if (n &gt;= len)
+      return -1;
+
+    var k = n &gt;= 0
+          ? n
+          : Math.max(len - Math.abs(n), 0);
+
+    for (; k &lt; len; k++)
+    {
+      if (k in t &amp;&amp; t[k] === searchElement)
+        return k;
+    }
+    return -1;
+  };
+
+}
+if(!Array.indexOf){
+  Array.prototype.indexOf = function(obj){
+    for(var i=0; i&lt;this.length; i++){
+      if(this[i]==obj){
+        return i;
+      }
+    }
+    return -1;
+  }
+}
+</file><file name="zdefaultEditors.js">/* ZEditor Global Variables */
+var file,currentNode,dirBase,editorClass={};
+
+function installEditor(id,div,edClass){
+ div.id=id;
+ div.style.display="none";
+ var d;
+ while(d=document.getElementById(id)) d.parentNode.removeChild(d);
+ document.getElementById("content").appendChild(div);
+ editorClass[id]=edClass;
+}
+
+function changeEditor(id){
+ var titleBar = $("#default").parents("table:first").find("th:first div:first")[0];
+ titleBar.innerHTML='Content';
+ var td=document.getElementById("content");
+ for(var i=0,l=td.childNodes.length;i&lt;l;i++){
+  td.childNodes[i].style.display="none";
+ }
+ var editor;
+ if(typeof(id)=="number") {
+  editor=td.childNodes[id];
+  editor.style.display="block";
+ } else {
+  editor=document.getElementById(id);
+  editor.style.display="block";
+ }
+ return editor;
+}
+
+/* INSTALL PLUGIN */
+function installPlugin(def){
+  Z.loadComponents();
+  var div = def.create();
+  installEditor(def.name, div, def);
+  if(def.nodesEditor){
+    for(var i=0,l=def.nodesEditor.length;i&lt;l;i++){
+      if(typeof(componentsIndex[def.nodesEditor[i]])!="undefined"){
+        componentsIndex[def.nodesEditor[i]].editor=def.launch;
+      }
+    }
+  }
+}
+
+/* Update changes in currentNode */
+function updateChanges(){
+ if(currentNode){
+  if(componentsIndex[currentNode.nodeName] &amp;&amp; componentsIndex[currentNode.nodeName].saver) {
+    componentsIndex[currentNode.nodeName].saver(currentNode);
+  } else if(currentNode.nodeType==1) {
+  } else {
+   currentNode.nodeValue=zpad.getCode("default");
+  }
+ }
+}
+
+/* Load editor and properties of currentNode */
+function loadNodeEditor(){
+ var titleBar = $("#default").parents("table:first").find("th:first div:first")[0];
+ titleBar.innerHTML='Content';
+ if(componentsIndex[currentNode.nodeName] &amp;&amp; componentsIndex[currentNode.nodeName].editor) {
+  res=componentsIndex[currentNode.nodeName].editor(currentNode);
+ } else if(currentNode.nodeType==1) {
+  changeEditor("defaultElement");
+  editorClass["defaultElement"].setNode(currentNode);
+ } else {
+  //installEditor to reset Ctrl+Z buffer
+  installEditor("default",zpad.create(),zpad);
+  changeEditor("default");
+  zpad.setCode("default",currentNode.nodeValue);
+ }
+ Z.loadProperties(currentNode);
+}
+
+/* Load default Editors */
+function loadDefaultEditors(){
+ /* text default editor */
+    installEditor("default",zpad.create(),zpad);
+ /* element default editor */
+    installPlugin(zelem);
+ /* component default editor */
+    installPlugin(zcomponent);
+ /* jqueryui editor */
+    installPlugin(zjqueryui);
+}
+
+/************************************
+  PLUGINS: DEFAULT EDITORS 
+ ************************************/
+
+/* element default editor */
+var zelem={
+  "name": "defaultElement",
+
+  create:function(){
+    var div=document.createElement("div");
+    return div;
+  },
+  
+  setNode:function(n){
+    var div=document.getElementById("defaultElement");
+    Z.emptyNode(div);
+    var res=[];
+    var content="";
+    res.push("tr",{},["th",{},"Node","th",{},"Values","th",{},"Id"]);
+    for(var i=0,l=n.childNodes.length;i&lt;l;i++){
+      content = ztree.getNodeLabel(n.childNodes[i]);
+      if(n.childNodes[i].nodeName=="#text") content=["pre",{},n.childNodes[i].nodeValue];
+      var ideDiagramId="";
+      if(n.childNodes[i].attributes) ideDiagramId=n.childNodes[i].getAttribute("__ideDiagramId");
+      res.push("tr",{},["td",{},n.childNodes[i].nodeName,"td",{},content,"td",{},ideDiagramId]);
+    }
+    draw3(div,["table",{border:"1",cellpadding:"0",cellspacing:"0"},["tbody",{},res]]);
+  }
+}
+
+/* component default editor */
+var zcomponent = {
+  "name":"componentEditor",
+  "nodesEditor":["component","bcomponent","def"],
+  "launch":function(node)
+    {
+      changeEditor("componentEditor");
+      return currentNode;
+    },
+  "create":function()
+    {
+      var div=document.createElement("div");
+      draw3(div,[
+        "button",{onclick:function(){
+          for(var i=0,l=currentNode.childNodes.length;i&lt;l;i++)
+            if(currentNode.childNodes[i].nodeName=="#comment") loadPlugin(currentNode.childNodes[i]);
+        }},"Reload Plugin"
+      ]);
+      return div;
+    }
+};
+
+/* jquery Editor */
+var zjqueryui = {
+  "name":"jqueryuiEditor",
+  "nodesEditor":["jqueryui"],
+  "launch":function(node)
+    {
+      if(node.firstChild) { 
+        ajax_call("visual.php","html="+encodeURIComponent(node.firstChild.nodeValue),"POST");
+      } else {
+        ajax_call("visual.php","html="+encodeURIComponent(""),"POST");
+      }
+      document.getElementById("jqueryuiEditor").firstChild.src="visual.php?t="+new Date().getTime();
+      changeEditor("jqueryuiEditor");
+      return currentNode;
+    },
+  "create":function()
+    {
+      var div=document.createElement("div");
+      draw3(div,[
+        "iframe",{src:"visual.php?t="+new Date().getTime(),style:"border:none;width:100%;height:100%;"},[]
+      ]);
+      return div;
+    },
+  "save":function(html){
+      Z.emptyNode(currentNode);
+      draw3(currentNode,html);
+//      currentNode.ownerDocument.createTextNode(html);
+      ztree.redrawNode(currentNode);
+    }
+};
+
+/* PopupMenu */
+
+function popupMenu(event,content){
+  //event.preventDefault();
+  var pos = getEventPosition(event);
+  draw3(document.body,["div",{style:"z-index:1000;position:absolute;border:2px outer black;background-color:menu;left:"+pos.x+";top:"+pos.y},content]);
+  var div = document.body.lastChild;
+  draw3(div,["a",{href:"javascript:void(0)",
+    "onblur":function(div){return function(){
+      //alert("blur");
+      document.body.removeChild(div)
+    }}(div)
+  },"_"]);
+  div.lastChild.focus();
+}</file><file name="serverconsole.php">&lt;?php
+strip_mq();
+
+if(isset($_POST["c"])){
+  eval($_POST["c"].";");
+}
+
+/**
+ * Strip magic quotes from request data.
+ */
+function strip_mq(){
+  if (function_exists('get_magic_quotes_gpc') &amp;&amp; get_magic_quotes_gpc()) {
+      // Create lamba style unescaping function (for portability)
+      $quotes_sybase = strtolower(ini_get('magic_quotes_sybase'));
+      $unescape_function = (empty($quotes_sybase) || $quotes_sybase === 'off') ? 'stripslashes($value)' : 'str_replace("\'\'","\'",$value)';
+      $stripslashes_deep = create_function('&amp;$value, $fn', '
+          if (is_string($value)) {
+              $value = ' . $unescape_function . ';
+          } else if (is_array($value)) {
+              foreach ($value as &amp;$v) $fn($v, $fn);
+          }
+      ');
+     
+      // Unescape data
+      $stripslashes_deep($_POST, $stripslashes_deep);
+      $stripslashes_deep($_GET, $stripslashes_deep);
+      $stripslashes_deep($_COOKIE, $stripslashes_deep);
+      $stripslashes_deep($_REQUEST, $stripslashes_deep);
+  }
+}
+
+
+/**
+*    Check Syntax
+*    Performs a Syntax check within a php script, without killing the parser (hopefully)
+*    Do not use this with PHP 5 &lt;= PHP 5.0.4, or rename this function.
+*
+*    @params    string    PHP to be evaluated
+*    @return    array    Parse error info or true for success
+**/
+function php_check_syntax( $php, $isFile=false )
+{
+    # Get the string tokens
+    $tokens = token_get_all( '&lt;?php '.trim( $php  ));
+   
+    # Drop our manually entered opening tag
+    array_shift( $tokens );
+    token_fix( $tokens );
+
+    # Check to see how we need to proceed
+    # prepare the string for parsing
+    if( isset( $tokens[0][0] ) &amp;&amp; $tokens[0][0] === T_OPEN_TAG )
+       $evalStr = $php;
+    else
+        $evalStr = "&lt;?php\n{$php}?&gt;";
+
+    if( $isFile OR ( $tf = tempnam( NULL, 'parse-' ) AND file_put_contents( $tf, $php ) !== FALSE ) AND $tf = $php )
+    {
+        # Prevent output
+        ob_start();
+        system( 'C:\inetpub\PHP\5.2.6\php -c "'.dirname(__FILE__).'/php.ini" -l &lt; '.$php, $ret );
+        $output = ob_get_clean();
+
+        if( $ret !== 0 )
+        {
+            # Parse error to report?
+            if( (bool)preg_match( '/Parse error:\s*syntax error,(.+?)\s+in\s+.+?\s*line\s+(\d+)/', $output, $match ) )
+            {
+                return array(
+                    'line'    =&gt;    (int)$match[2],
+                    'msg'    =&gt;    $match[1]
+                );
+            }
+        }
+        return true;
+    }
+    return false;
+}
+
+function token_fix( &amp;$tokens ) {
+    if (!is_array($tokens) || (count($tokens)&lt;2)) {
+        return;
+    }
+   //return of no fixing needed
+    if (is_array($tokens[0]) &amp;&amp; (($tokens[0][0]==T_OPEN_TAG) || ($tokens[0][0]==T_OPEN_TAG_WITH_ECHO)) ) {
+        return;
+    }
+    //continue
+    $p1 = (is_array($tokens[0])?$tokens[0][1]:$tokens[0]);
+    $p2 = (is_array($tokens[1])?$tokens[1][1]:$tokens[1]);
+    $p3 = '';
+
+    if (($p1.$p2 == '&lt;?') || ($p1.$p2 == '&lt;%')) {
+        $type = ($p2=='?')?T_OPEN_TAG:T_OPEN_TAG_WITH_ECHO;
+        $del = 2;
+        //update token type for 3rd part?
+        if (count($tokens)&gt;2) {
+            $p3 = is_array($tokens[2])?$tokens[2][1]:$tokens[2];
+            $del = (($p3=='php') || ($p3=='='))?3:2;
+            $type = ($p3=='=')?T_OPEN_TAG_WITH_ECHO:$type;
+        }
+        //rebuild erroneous token
+        $temp = array($type, $p1.$p2.$p3);
+        if (version_compare(phpversion(), '5.2.2', '&lt;' )===false)
+            $temp[] = isset($tokens[0][2])?$tokens[0][2]:'unknown';
+
+        //rebuild
+        $tokens[1] = '';
+        if ($del==3) $tokens[2]='';
+        $tokens[0] = $temp;
+    }
+    return;
+}</file><file name="help.php">&lt;?php
+if(isset($_POST["n"])){
+  if($_POST["n"]=="extjs"){
+    $d=json_decode($_POST["d"]);
+    @$f=$_SERVER["DOCUMENT_ROOT"]."/ext/docs/output/".$d-&gt;class.".html";
+    @include($f);
+  }
+}</file><file name="zsession.php">&lt;?php
+session_start();
+if(isset($_GET["ft"])){
+  /*First Time*/
+  print(isset($_SESSION["started"])?"0":"1");
+  $_SESSION["started"]=true;
+}
+</file><file name="deploy.php">&lt;?php
+header("Content-type: text/plain;");
+ini_set("display_errors","off");
+@include_once("serversconfig.php");
+if(!isset($_GET["password"])) {
+  if(!isset($serversconfig[$server]) || !isset($serversconfig[$server]["password"])) {
+    die("0");
+  } else {
+    $_GET["password"] = $serversconfig[$server]["password"];
+  }
+}
+ini_set("display_errors","on");
+
+$server=isset($_GET["server"])?$_GET["server"]:"localhost";
+$source=isset($_GET["source"])?$_GET["source"]:"localhost";
+$destination=isset($_GET["destination"])?$_GET["destination"]:"localhost";
+$url="http://$server/achachi/deployer.php?destination=$destination&amp;password=".urlencode(md5($_GET["password"]));
+print("Deploying to: $url\n");
+$target = "$source";
+$version = 1;
+$file="../output/$target.tar.gz";
+
+
+$tt=microtime(true);
+require_once("../common/archive.php");
+
+
+$t0=microtime(true);
+
+// Assume the following script is executing in /var/www/htdocs/test
+// Create a new gzip file test.tgz in htdocs/test
+$test = new gzip_file("$target.tar.gz");
+
+// Set basedir to "../.."
+// Overwrite tar.gz file if it already exists
+// Set compression level to 1 (lowest)
+$test-&gt;set_options(array('basedir' =&gt; "../output", 'overwrite' =&gt; 1, 'level' =&gt; 9));
+
+// Add entire target folder directory and all subdirectories
+// Add all php files in htsdocs and its subdirectories
+$test-&gt;add_files(array($target));
+
+// Exclude all .svn directories
+$test-&gt;exclude_files(array("$target/*.svn","$target/*.svn/*"));
+
+// Create tar.gz file
+$test-&gt;create_archive();
+
+// Check for errors (you can check for errors at any point)
+if (isset($test-&gt;errors) &amp;&amp; count($test-&gt;errors) &gt; 0)
+	print ("Errors occurred."); // Process errors here
+
+print "Packing time: ".(microtime(true)-$t0)."\n";
+$t0=microtime(true);
+
+
+//Upload file to deploy server
+try {
+
+$file=realpath($file);
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_HEADER, 0);
+    curl_setopt($ch, CURLOPT_VERBOSE, 0);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_USERAGENT, "Mozilla/4.0 (compatible;)");
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_POST, true);
+    if(isset($serversconfig[$server])){
+      if(isset($serversconfig[$server]["proxy"]))
+        curl_setopt($ch, CURLOPT_PROXY, $serversconfig[$server]["proxy"]);
+      if(isset($serversconfig[$server]["proxyport"]))
+        curl_setopt($ch, CURLOPT_PROXYPORT, $serversconfig[$server]["proxyport"]);
+    }
+
+    // same as &lt;input type="file" name="file_box"&gt;
+    $post = array(
+        "uploadedfile"=&gt;"@{$file}",
+    );
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $post); 
+    $response = curl_exec($ch);
+
+print($response);
+
+print "Upload and Deployment  time: ".(microtime(true)-$t0)."\n";
+$t0=microtime(true);
+
+} catch (Exception $ex) {
+var_dump ($ex);
+}
+
+print "Deployment finished.\n";
+print "Total time: ".(microtime(true)-$tt)."\n";</file><file name="clipboard.php">&lt;?php
+ini_set("display_errors","off");
+if(isset($_POST["copy"])){
+  session_start();
+  $_SESSION["clipboard"]=$_POST["copy"];
+}
+elseif(isset($_POST["paste"]) &amp;&amp; $_POST["paste"]=="xml"){
+  header("Content-type: application/xml;");
+  session_start();
+  print $_SESSION["clipboard"];
+}</file><file name="database.php">&lt;?php
+require_once("Zend/Db.php");
+require_once("Zend/Db/Table.php");
+session_start();
+if(!isset($_SESSION["connection"])) $_SESSION["connection"] = array();
+/* Loads stored connections */
+$connections=array();
+if(file_exists("database_connections.php")) {
+  eval("?&gt;". file_get_contents("database_connections.php") );
+}
+/* Display | Select a stored connection */
+if(isset($_POST["x"])){
+  if($_POST["x"]==""){
+    print(json_encode($connections));
+    exit;
+  } else {
+    if(isset($connections[$_POST["x"]]) &amp;&amp; is_array($connections[$_POST["x"]]) ) {
+      $_SESSION["connection"] = $connections[$_POST["x"]];
+    } else {
+      print("invalid connection.\n");
+      exit;
+    }
+  }
+}
+if(isset($_POST["driver"]))$_SESSION["connection"]["driver"]=$_POST["driver"];
+if(isset($_POST["host"]))$_SESSION["connection"]["host"]=$_POST["host"];
+if(isset($_POST["username"]))$_SESSION["connection"]["username"]=$_POST["username"];
+if(isset($_POST["password"]))$_SESSION["connection"]["password"]=$_POST["password"];
+if(isset($_POST["dbname"]))$_SESSION["connection"]["dbname"]=$_POST["dbname"];
+
+if(isset($_SESSION["connection"]["host"])) {
+  $conn = $_SESSION["connection"];
+  unset($conn["driver"]);
+  if(strtoupper( $_SESSION["connection"]["driver"] ) == "PDO_SQLITE") {
+    //$conn["sqlite2"]=true;
+  }
+  $db = Zend_Db::factory($_SESSION["connection"]["driver"]/*Mysqli|Oracle|Db2|PDO_MYSQL|PDO_PGSQL|PDO_OCI|PDO_MSSQL|PDO_SQLITE|PDO_IBM*/, $conn );
+  if(array_search($_SESSION["connection"], $connections)===false){
+    $connections[]=$_SESSION["connection"];
+    file_put_contents("database_connections.php", "&lt;?php\n  \$connections=".var_export($connections,true).";");
+  }
+}
+if(isset($_SESSION["connection"]["sqlite2"])&amp;&amp;($_SESSION["connection"]["sqlite2"]!="")) $db["sqlite2"]=$_SESSION["connection"]["sqlite2"];
+
+Zend_Db_Table_Abstract::setDefaultAdapter($db);
+
+if(isset($_POST["c"])){
+  $stmt = $db-&gt;query($_POST["c"]);
+  $maxrows=15;
+  $continue=true;
+  for($i=0;$i&lt;$maxrows;$i++){
+    $row = $stmt-&gt;fetch();
+    if($row)$result[]=$row; else {$continue=false;break;}
+  }
+  printGrid($result);
+  if($continue) print("...\n");
+}
+
+/* AUXILIAR FUNCTIONS */
+function printGrid( $array )
+{
+  print( '&lt;table border="1"&gt;&lt;tbody&gt;' );
+  reset( $array );
+  print( '&lt;tr&gt;&lt;th&gt;[]&lt;/th&gt;&lt;th&gt;' );
+  print( implode( '&lt;/th&gt;&lt;th&gt;', array_keys( current( $array ) ) ) );
+  print( '&lt;/th&gt;&lt;/tr&gt;' );
+  foreach( $array as $row =&gt; $cells )
+  {
+    print( "&lt;tr&gt;&lt;th&gt;$row&lt;/th&gt;&lt;td&gt;" );
+    print( implode( '&lt;/td&gt;&lt;td&gt;', $cells ) );
+    print( '&lt;/td&gt;&lt;/tr&gt;' );
+  }
+  print( '&lt;/tbody&gt;&lt;/table&gt;' );
+}
+</file><file name="fexplorer.php">&lt;?php
+@$path=$_REQUEST["path"];
+@$pattern=$_REQUEST["pattern"];
+if(!$path) $path="";
+if(!$pattern) $pattern="*.xml";
+$path=str_replace("\\", "/", $path);
+if(substr($path,-1,1)!="/") $path.="/";
+$dirs = array();
+foreach(glob($path."*",GLOB_ONLYDIR) as $f) if(!is_dir($f))$files[]=array("path"=&gt;$f,"name"=&gt;basename($f));
+$files=array();
+foreach(glob($path.$pattern) as $f) if(!is_dir($f))$files[]=array("path"=&gt;$f,"name"=&gt;basename($f));
+
+print json_encode(array("dirs"=&gt;$dirs,"files"=&gt;$files));
+</file><file name="fexplorer.js">
+window.fexplorer={
+  
+};</file></path></root>

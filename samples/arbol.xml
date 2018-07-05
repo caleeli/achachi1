@@ -1,0 +1,85 @@
+<?xml version="1.0"?>
+<root>
+	<application name="sample">
+		<package name="view" type="">
+			<controller name="index" descripcion="">
+				<action name="nodes" noRender="true">
+					<!--          <select_table model="usuario" order="$sort $dir" limit="$limit" offset="$start" >
+            print(json_encode(
+            array(
+              "data" => $rows->toArray()
+            )
+          ));</select_table>
+-->
+        $arbol=array(
+          "root"=&gt;array(
+            "a"=&gt;array("#text"=&gt;"Hola A",
+              "c"=&gt;array("#text"=&gt;"Hola C","#leaf"=&gt;"true"),
+            ),
+            "b"=&gt;array("#text"=&gt;"Hola B",
+              "d"=&gt;array("#text"=&gt;"Hola D","#leaf"=&gt;"true"),
+            ),
+          )
+        );
+        print(json_encode($this-&gt;convertNode($this-&gt;findNode($arbol,$node),"root.")));
+        </action>
+				<method name="findNode" params="$array,$nodeId">
+          $nx=explode(".",$nodeId);
+          if(count($nx)==1) return $array[$nx[0]];
+          else { 
+            $parent=$nx[0];
+            unset($nx[0]);
+            return $this-&gt;findNode($array[$parent],implode(".",$nx));
+          }
+        </method>
+				<method name="convertNode" params="$node,$nodeId">
+          $res=array();
+          foreach($node as $k =&gt; $v) if(substr($k,0,1)!="#"){
+            $n=array("id"=&gt;"{$nodeId}{$k}");foreach($v as $k0 =&gt; $v0) if(substr($k0,0,1)=="#") $n[substr($k0,1)]=$v0;
+            @$res[]=$n;
+          }
+          return $res;
+        </method>
+				<action name="index" descripcion=""></action>
+				<view name="index" canvas="">
+					<css name="styles">
+            .book { background-image: url(group.gif) !important; }
+          </css>
+					<document name="index">
+						<layout layout="border">
+							<extjs class="Ext.tree.TreePanel" region="west" frame="true" title="Arbol" dataUrl="nodes" width="300">
+								<attribute name="root"><extjs class="Ext.tree.AsyncTreeNode" id="root" text="root"/></attribute>
+								<expression name="listeners">
+                {
+                    click: function(node, event){
+                        Ext.Ajax.request(
+                            {
+                                url:"pantallas",
+                                success:function(response, opts) {
+                                    var content = Ext.decode(response.responseText);
+                                    var nuevoPanel=new Ext.Panel({"title":node.text,closable:true,items:content});
+                                    Ext.ComponentMgr.get("panelCentral").add(nuevoPanel).show();
+                                }
+                            });
+                    }
+                }
+			</expression>
+							</extjs>
+							<extjs class="Ext.TabPanel" frame="true" region="center" id="panelCentral" activeTab="0">
+								<extjs class="Ext.Panel" title="Inicio" closable="false" frame="true">
+									<extjs class="Ext.form.TextArea" name="TextArea1" fieldLabel="TextArea 1" value="HOLA MUNDO"/>
+								</extjs>
+							</extjs>
+						</layout>
+					</document></view>
+				<action name="pantallas" noRender="true">    $contenido = array(
+        "xtype"=&gt;"textarea",
+        "value"=&gt;"Este es un valor cargado del servidor.
+        La hora del servidor es:".Date("h:i:s"),
+        "width"=&gt;300,
+        "height"=&gt;200,
+    );
+    print(json_encode($contenido));</action></controller>
+		</package>
+	</application>
+</root>

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root><include src="$library/zend.xml"/><include src="$library/extjs.xml"/><application name="project" main="index/index" __ideNodeOpen="true"><package name="components" type=""/><package name="model" type="model" __ideNodeOpen="true"><resource path="../webeditor/extjsdb/sample.sqlite" folder="db" name="project.sqlite"/><connection driver="PDO_SQLITE" host="" username="" password="" dbname="../db/project.sqlite" sqlite2="true"/><dbbuilder __ideNodeOpen="true">CREATE TABLE tarea(
+    id INTEGER NOT NULL PRIMARY KEY,
+    remitente VARCHAR(32) NOT NULL DEFAULT 'noemail@test.com',
+    descripcion TEXT NULL,
+    creacion DATETIME NOT NULL
+);
+CREATE INDEX "id" ON "tarea" ("id");
+
+-- You can begin populating the database with the following SQL statements.
+INSERT INTO tarea (remitente, descripcion, creacion) VALUES
+    ('ralph.schindler@zend.com',
+    'Hello! Hope you enjoy this sample zf application!',
+    DATETIME('NOW'));
+INSERT INTO tarea (remitente, descripcion, creacion) VALUES
+    ('foo@bar.com',
+    'Baz baz baz, baz baz Baz baz baz - baz baz baz.',
+    DATETIME('NOW'));
+</dbbuilder><table name="tarea" table="tarea" primaryKey="" dependentTables=""/></package><package name="view" type="view" __ideNodeOpen="true"><ext.page name="index"><extdocument><layout layout="border" __extid="0"><extjs class="Ext.form.FormPanel" region="center" title="Hello World" frame="true" url="action" standardSubmit="true" __extid="1"><extjs class="Ext.form.TextField" name="name" fieldLabel="New field" inputType="text" __extid="2"/><attribute name="buttons" isArray="true" isString="false"><extjs class="Ext.Button" name="name" text="Hello" type="submit" __extid="3"><event name="handler">function(a,b){Ext.Msg.alert('Hello', 'This is an Ext.msg.alert.');}</event></extjs></attribute></extjs></layout></extdocument></ext.page><controller name="service" descripcion="" author="" __ideNodeOpen="true"><action name="test" noRender="true" descripcion="Funcion de prueba" loadParams="$remitente,$body" __ideNodeOpen="true">require_once("../model/tarea.php");
+$t=new tarea();
+$cols = $t-&gt;info(Zend_Db_Table_Abstract::COLS);
+var_dump($cols);
+
+$lines = explode("\r\n",$body);
+$reglas = array(
+  array(array('/^\s*Tareas:\s*$/i'),'$encontroListaTareas=true;'),
+  array(array('$encontroListaTareas', '/^\s*(\d+)\s*\.\s*(.*)$/i'),'
+    if($tarea){
+      $this-&gt;insertaTarea($remitente, $tarea);
+    }
+    $tarea = $m[2];
+    if(!$tarea)$tarea.=" ";
+  '),
+  array(array('$encontroListaTareas', '$tarea','!/^\s*(\d+)\s*\.\s*(.*)$/i'), '$tarea.= $m[2];'),
+);
+foreach($lines as $l){
+  foreach($reglas as $_r){
+    $_c=array();
+    foreach($_r[0] as $_ci)
+      if(substr($_ci,0,1)=="/") $_c[]='preg_match('.var_export($_ci,true).',$l,$m)';
+      else if(substr($_ci,0,2)=="!/") $_c[]='!preg_match('.var_export(substr($_ci,1),true).',$l,$m)';
+      else $_c[]=$_ci;
+    $_c=implode(" &amp;&amp; ",$_c);
+    if($_c){
+      eval('$_c='.$_c.';');
+      if($_c) {  
+        eval($_r[1]);
+      }
+    }
+  }
+}
+if($tarea){
+  $this-&gt;insertaTarea($remitente, $tarea);
+}
+</action><method descripcion="" author="" name="insertaTarea" params="$remitente,$body"><insert_row model="tarea" values="remitente=$remitente;descripcion=$body;creacion=new Zend_Db_Expr(&quot;DATETIME('NOW')&quot;)"/></method></controller><ext.page name="index" __ideNodeOpen="true"><extdocument name="index" __ideNodeOpen="true"><layout __extid="0"><extjs class="Ext.form.FormPanel" __extid="1" title="Form" frame="true"><extjs class="Ext.form.TextField" fieldLabel="TextField" __extid="2"/><extjs class="Ext.form.NumberField" __extid="3"/></extjs></layout></extdocument></ext.page></package></application></root>

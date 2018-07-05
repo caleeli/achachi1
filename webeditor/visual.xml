@@ -1,0 +1,776 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root><include src="$library/googleimages.xml" __ideNodeOpen="true"/><path path="webeditor" main="webeditor/visual.php" __ideNodeOpen="true"><file name="visual.php" preprocess="">&lt;?php
+session_start();
+?&gt;
+&lt;html&gt;
+&lt;head&gt;
+  &lt;meta http-equiv="Content-Type" content="text/html; charset=utf-8" /&gt;
+  &lt;title&gt;V A&lt;/title&gt;
+  &lt;link type="text/css" href="/jquery/css/face/jquery-ui.custom.css" rel="stylesheet" /&gt;	
+  &lt;link type="text/css" href="visual.css" rel="stylesheet" /&gt;	
+  &lt;script type="text/javascript" src="/jquery/js/jquery.min.js"&gt;&lt;/script&gt;
+  &lt;script type="text/javascript" src="/jquery/js/jquery-ui.custom.min.js"&gt;&lt;/script&gt;
+  &lt;script type="text/javascript" src="visual.js"&gt;&lt;/script&gt;
+  &lt;script type="text/javascript" src="ve.js"&gt;&lt;/script&gt;
+&lt;?php
+  require_once("../library/phpQuery-onefile.php");
+  if(isset($_POST["html"])){
+    $_SESSION["jqueryui"] = $_POST["html"];
+    exit;
+  }
+  if(!isset($_SESSION["jqueryui"]) || !$_SESSION["jqueryui"]){
+    $_SESSION["jqueryui"] = file_get_contents("venew.php");
+  }
+  $dom = phpQuery::newDocumentPHP($_SESSION["jqueryui"], "application/xhtml+xml;charset=utf-8");
+  $head = $dom-&gt;find("head");
+  $body = $dom-&gt;find("body");
+  $hScripts = $head-&gt;find("script");
+  foreach($hScripts as $scr){
+    $srcPath = pq($scr)-&gt;attr("src");
+    $srcId = pq($scr)-&gt;attr("id");
+    $srcName = basename($srcPath);
+    if(preg_match('/^jquery.*\.min\.js$/', $srcName)){}
+    elseif("visual.js"==$srcName){}
+    elseif("jsloader"==$srcId){}
+    elseif($srcPath){
+      print "&lt;script type='text/javascript' src='{$srcPath}'&gt;&lt;/script&gt;\n";
+    } else {
+      print "&lt;script&gt;".pq($src)-&gt;html()."&lt;/script&gt;\n";
+    }
+  }
+  $hScripts = $head-&gt;find("link");
+  foreach($hScripts as $scr){
+    $srcPath = pq($scr)-&gt;attr("href");
+    $srcName = basename($srcPath);
+    if(preg_match('/^jquery\-ui.+\.css$/', $srcName)){}
+    elseif("visual.css"==$srcName){}
+    elseif($srcPath){
+      print "&lt;link type='text/css' href='{$srcPath}' rel='stylesheet' /&gt;\n";
+    } else {
+    }
+  }
+  $hStyle = $head-&gt;find("style");
+  foreach($hStyle as $s){
+    print "&lt;style&gt;".pq($s)-&gt;html()."&lt;/style&gt;\n";
+  }
+?&gt;
+  &lt;script&gt;
+      ve.loadJsBase=function(){
+&lt;?php
+  $js = $head-&gt;find("#jsloader");
+  $code = $js-&gt;html();//$js-&gt;elements[0]-&gt;nodeValue;
+  /*if(substr($code,0,4)=="&lt;!--") $code=substr($code,4,-3);*/
+  print "ve.fileName=".json_encode($fileName).";\n";
+  print $code;
+?&gt;
+        jsBase = &lt;?= json_encode($code) ?&gt;;
+      };
+  &lt;/script&gt;
+&lt;/head&gt;
+&lt;body&gt;&lt;div id="workspace" style="position:relative;overflow:scroll;width:100%;height:90%;"&gt;&lt;?php 
+print $body-&gt;html();
+?&gt;&lt;/div&gt;&lt;div id="toolbar"&gt;&lt;/div&gt;
+&lt;div id="codeEditor" style="display:none;padding:0px;" title="Edit"&gt;&lt;div id="codeEditorTabs"&gt;
+  &lt;ul&gt;
+  &lt;li&gt;&lt;a href="#editCode"&gt;HTML&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href="#editCodeJs"&gt;Javascript&lt;/a&gt; &lt;select class="selectJsCode" style="margin-right:4px;margin-top:4px;"&gt;&lt;option value=""&gt;&lt;/option&gt;&lt;option value="load"&gt;load...&lt;/option&gt;&lt;/select&gt;&lt;/li&gt;
+  &lt;/ul&gt;
+  &lt;div id="editCode" style="padding:0px;"&gt;&lt;textarea style="width:100%;height:80%"&gt;&lt;/textarea&gt;&lt;/div&gt;
+  &lt;div id="editCodeJs" style="padding:0px;"&gt;&lt;textarea style="width:100%;height:80%"&gt;&lt;/textarea&gt;&lt;/div&gt;
+&lt;/div&gt;&lt;/div&gt;
+&lt;div id="codeJsBaseEditor" style="display:none;padding:0px;" title="Edit JavaScript Base Code"&gt;
+  &lt;div id="editCodeJsBase" style="padding:0px;"&gt;&lt;textarea style="width:100%;height:80%"&gt;&lt;/textarea&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/body&gt;
+&lt;/html&gt;</file><file name="vecomponents.php" preprocess="">&lt;div class="components"&gt;
+&lt;span class="qE input" style="width:80px"&gt;&lt;input /&gt;&lt;/span&gt;
+&lt;div id="accordion1" class="qE accordion" style="width:240px"&gt;
+  &lt;div&gt;
+  &lt;h3&gt;&lt;a href="#"&gt;First&lt;/a&gt;&lt;/h3&gt;
+  &lt;div&gt;Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet.&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div&gt;
+  &lt;h3&gt;&lt;a href="#"&gt;Second&lt;/a&gt;&lt;/h3&gt;
+  &lt;div&gt;Phasellus mattis tincidunt nibh.&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div&gt;
+  &lt;h3&gt;&lt;a href="#"&gt;Third&lt;/a&gt;&lt;/h3&gt;
+  &lt;div&gt;Nam dui erat, auctor a, dignissim quis.&lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="qS accordion"&gt;
+//#accordion1
+$("#accordion1").accordion({ 
+  //*accordion_options
+   header: "h3"
+  ,collapsible: true
+  ,active:false
+  //*accordion_events
+  ,change:function(event, ui){
+  }
+  //*end
+});
+&lt;/div&gt;
+&lt;div id="tabs1" class="qE tabs" style="width:480px"&gt;
+  &lt;ul&gt;
+  &lt;li&gt;&lt;a href="#tabs1-1"&gt;First&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href="#tabs1-2"&gt;Second&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href="#tabs1-3"&gt;Third&lt;/a&gt;&lt;/li&gt;
+  &lt;/ul&gt;
+  &lt;div id="tabs1-1"&gt;Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.&lt;/div&gt;
+  &lt;div id="tabs1-2"&gt;Phasellus mattis tincidunt nibh. Cras orci urna, blandit id, pretium vel, aliquet ornare, felis. Maecenas scelerisque sem non nisl. Fusce sed lorem in enim dictum bibendum.&lt;/div&gt;
+  &lt;div id="tabs1-3"&gt;Nam dui erat, auctor a, dignissim quis, sollicitudin eu, felis. Pellentesque nisi urna, interdum eget, sagittis et, consequat vestibulum, lacus. Mauris porttitor ullamcorper augue.&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="qS tabs"&gt;
+//#tabs1
+$("#tabs1").tabs();
+&lt;/div&gt;
+&lt;div class="qE dialog"&gt;
+&lt;div id="dialog1" title="Dialog Title"&gt;
+&lt;p&gt;Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="qS dialog"&gt;
+//#dialog1
+$('#dialog1').dialog({
+  //*dialog_options
+  autoOpen: false,
+  width: 600,
+  buttons: {
+    "Ok": function() { 
+     $(this).dialog("close"); 
+    }, 
+    "Cancel": function() { 
+     $(this).dialog("close"); 
+    } 
+  }
+  //*dialog_events
+});
+&lt;/div&gt;
+&lt;div class="qE verticalContainer" style="width:200px;"&gt;&lt;/div&gt;
+&lt;div class="qE horizontalContainer" style="height:100px;"&gt;&lt;/div&gt;
+&lt;div class="qE div" style="width:80px;height:80px;background-color:lightgreen;"&gt;&lt;/div&gt;
+&lt;div class="qE casilla"&gt;&lt;/div&gt;
+&lt;div class="qE button"&gt;&lt;button id="button1"&gt;A button element&lt;/button&gt;&lt;/div&gt;
+&lt;div class="qS button"&gt;
+//#button1
+$("#button1").button();
+&lt;/div&gt;
+&lt;div class="qE vaEditor" id="editor1"&gt;&lt;textarea&gt;a&lt;/textarea&gt;&lt;/div&gt;
+&lt;div class="qS vaEditor"&gt;
+//#editor1
+$("#editor1").vaEditor();
+&lt;/div&gt;
+&lt;div class="qE pageflip"&gt;&lt;div id='pageflip1'&gt;
+	&lt;div&gt; Page 1 &lt;/div&gt;
+	&lt;div&gt; Page 2 &lt;/div&gt;
+	&lt;div&gt; Page 3 &lt;/div&gt;
+&lt;/div&gt;&lt;/div&gt;
+&lt;div class="qS pageflip"&gt;
+//#pageflip1
+$("#pageflip1").turn();
+&lt;/div&gt;
+&lt;/div&gt;</file><file name="visual.css" preprocess="">.qE{
+  display:inline-block;
+  position:absolute;
+}
+.qN{
+  position:absolute;
+  top:0px;
+  left:0px;
+  width:100%;
+  height:100%;
+  background-color:transparent;
+}
+.qNSelected{
+  background-color:green !important;
+  /* IE 8 */
+  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=20)";
+  /* IE 5-7 */
+  filter: alpha(opacity=20);
+  /* Netscape */
+  -moz-opacity: 0.3;
+  /* Safari 1.x */
+  -khtml-opacity: 0.3;
+  /* Good browsers */
+  opacity: 0.3;
+}
+.input input{
+  width:100%;
+}
+html{
+  height:100%;
+}
+body{
+  padding:0px;
+  margin:0px;
+  font-size:12px;
+}
+.jlinkbutton {padding: .4em 1em .4em 20px;text-decoration: none;position: relative;}
+.jlinkbutton span.ui-icon {margin: 0 5px 0 0;position: absolute;left: .2em;top: 50%;margin-top: -8px;}
+.verticalContainer{
+  height:100% !important;
+  top:0px!important;
+}
+.horizontalContainer{
+  width:100% !important;
+  left:0px!important;
+}
+
+.vaEditor{
+  overflow:auto;
+  font-size: 13px;
+  line-height: 16px;
+}
+.vaEditor textarea{
+  background-color: transparent;
+  background-image: url("line-numbers.png");
+  background-repeat: repeat-y;
+  border: medium none;
+  font-size: 13px;
+  line-height: 16px;
+  overflow: hidden;
+  padding-left: 32px;
+  padding-top: 13px;
+  position: relative;
+  margin: 0px;
+  resize: none;
+  height: 100%;
+  width: 100%;
+}
+</file><file name="vesave.php" preprocess="">&lt;?php
+ob_start();
+  require_once("../library/phpQuery-onefile.php");
+  if(isset($_POST["fileContent"]) &amp;&amp; !empty($_POST["fileContent"]) &amp;&amp; $_POST["fileContent"]!='null') $code = $_POST["fileContent"];
+  else $code = file_get_contents("venew.php");
+  $dom = phpQuery::newDocumentPHP($code, "application/xhtml+xml;charset=utf-8");
+  $head = $dom-&gt;find("head");
+  $jsloader = $head-&gt;find("#jsloader");
+  $jsloader-&gt;empty();
+  $jsloader-&gt;append($_POST["jsloader"]);
+  $body = $dom-&gt;find("body");
+  $body-&gt;empty();
+  $body-&gt;append($_POST["body"]);
+
+  $code = $dom-&gt;php();
+  $code = preg_replace('/^&lt;\?xml[^&gt;]+&gt;\s*/', '', $code);
+//  file_put_contents($_POST["fileName"], $code);
+$err=ob_get_contents();
+ob_end_clean();
+if($err) {
+  print "alert(".json_encode($err).");";
+} else {
+  print "parent.zjqueryui.save(".json_encode($code).");";
+}
+</file><file name="visual.js" preprocess="">$.fn.loadFrom=function loadHTML(options) {
+  var target=$(this);
+  options.dataType="text";
+  var __success= options.success;
+  options.success=function(data){
+    data=data.split("&lt;html").join("&lt;root");
+    data=data.split("html&gt;").join("root&gt;");
+    data=data.split("&lt;head").join("&lt;adhe");
+    data=data.split("head&gt;").join("adhe&gt;");
+    data=data.split("&lt;link").join("&lt;inkl");
+    data=data.split("link&gt;").join("inkl&gt;");
+    data=data.split("&lt;body").join("&lt;doby");
+    data=data.split("body&gt;").join("doby&gt;");
+    data=data.split("&lt;script").join("&lt;ecript");
+    data=data.split("script&gt;").join("ecript&gt;");
+    var html=$(data);
+    var script = html.find("#jsloader");
+    var body = html.find("doby");
+    target.empty();
+    body.children().each(function(){
+      target.append(this);
+    });
+    eval(script.text());
+    if(typeof(__success)=="function") __success();
+  };
+  $.ajax(options);
+}
+
+var qw = function(s){return '"' + s.replace(/"/g,'&amp;quot;') + '"'};
+$.fn.xhtml = function () {return $.xhtml(this[0])};
+$.xhtml = function(obj) { // dump the dom back to xhtml text
+  if (!obj) return "(null)";
+  var ee;
+  var res = "";
+  var tag = obj.nodeName.toLowerCase();
+  var tagShow = tag.charAt(0) != "#";
+  if (tagShow) res += '&lt;' + tag;
+  if (obj.attributes) 
+    res += $.map(obj.attributes,function(attr){
+      if (attr.specified &amp;&amp; attr.name.charAt(0) != '$') 
+        return ' '+attr.name.toLowerCase() + '=' + qw(htmlentities(attr.value)) 
+    }).join('');
+  if (tagShow &amp;&amp; obj.nodeValue == null &amp;&amp; !obj.hasChildNodes())
+    return res+" /&gt;";
+  if (tagShow)
+    res+= "&gt;";
+  if (obj.nodeType == 8)
+    res += "&lt;!--" + obj.nodeValue + "--&gt;";
+  else if (obj.nodeValue != null) {
+    if(!ee) ee = document.createElement("div");
+    ee.appendChild(obj.cloneNode(true));
+    res +=  ee.innerHTML;
+    ee.removeChild(ee.firstChild);
+  }
+  if (obj.hasChildNodes &amp;&amp; obj.hasChildNodes())
+    res += $.map(obj.childNodes,function(child){return $.xhtml(child)}).join('');
+  if (tagShow)  res += '&lt;/' + tag + '&gt;';
+  return res
+};
+var htmlentities=function(code){
+  if(!htmlentities.ee) {
+    htmlentities.ee=document.createElement("div");
+    htmlentities.ee.appendChild(document.createTextNode("code"));
+  }
+  htmlentities.ee.firstChild.nodeValue=code;
+  return htmlentities.ee.innerHTML;
+}
+var $vaEditor={
+  resize:[],
+  dic:["class","function"],
+  idx:0
+};
+setInterval(function(){
+  if($vaEditor.resize.length)$($vaEditor.resize).vaEditor("resize");
+  $vaEditor.resize.length=0;
+},200);
+$.vaEditor_keydown=function(){
+  if($vaEditor.resize.indexOf(this.parentNode)==-1) {
+    $vaEditor.resize.push(this.parentNode);
+  }
+};
+$.vaEditor_keypress=function(e){
+  var $e=$(this);
+  var sel=$e.getSelection();
+  var prev=this.value.substr(0,sel.start);
+  var post=this.value.substr(sel.start);
+  var ma0 = prev.match(/\b\w*$/);
+  var ma1 = post.match(/^\w*\b/);
+  ma0 = ma0?ma0[0]:"";
+  ma1 = ma1?ma1[0]:"";
+  var w = ma0+ma1;
+  var ops = [];
+  if(w){
+    for(var i=0,l=$vaEditor.dic.length;i&lt;l;i++){
+      if($vaEditor.dic[i].substr(0,w.length)==w) ops.push($vaEditor.dic[i]);
+    }
+  }
+  console.log("===============");
+  console.log(ops);
+  if(e.keyCode==9){
+    $vaEditor.idx++;
+  }
+  if(isNaN($vaEditor.idx)) $vaEditor.idx=0;
+  $vaEditor.idx = $vaEditor.idx % ops.length;
+  console.log("------------------");
+  if(!isNaN($vaEditor.idx))console.log(ops[$vaEditor.idx],$vaEditor.idx);
+};
+$.fn.vaEditor=function(data){
+  if(data==="resize"){
+    var pre=$('&lt;pre style="position:absolute;"&gt;&lt;/pre&gt;');
+    var txta=this.find("textarea");
+    pre.append(document.createTextNode(txta[0].value));
+    this.append(pre);
+    var w=pre.width() + 33 + 8 *3;
+    var h=pre.height() + 13 + 16*2;
+    pre.remove();
+    txta.width(w);
+    txta.height(h);
+  } else {
+    var txta=this.find("textarea")
+    txta.attr("wrap","OFF");
+    this.addClass("vaEditor");
+    this.vaEditor("resize");
+    txta.keydown($.vaEditor_keydown);
+    txta.keyup($.vaEditor_keypress);
+    this.scroll(function(){
+      var $e=$(this);
+      var left=$e.scrollLeft();
+      if(left&lt;=33) $e.scrollLeft(0); //else $e.scrollLeft(left+8);
+    });
+  }
+}
+</file><file name="venew.php" preprocess="">&lt;html xmlns="http://www.w3.org/1999/xhtml"&gt;
+&lt;head&gt;
+&lt;meta http-equiv="Content-Type" content="text/html; charset=utf-8" /&gt;
+&lt;title&gt;&lt;?php print "New Page"; ?&gt;&lt;/title&gt;
+&lt;link type="text/css" href="/jquery/css/face/jquery-ui.custom.css" rel="stylesheet" /&gt;	
+&lt;script type="text/javascript" src="/jquery/js/jquery.min.js"&gt;&lt;/script&gt;
+&lt;script type="text/javascript" src="/jquery/js/jquery-ui.custom.min.js"&gt;&lt;/script&gt;
+&lt;style&gt;.qE{
+  display:inline-block;
+  position:absolute;
+}
+html{
+  height:100%;
+}
+body{
+  padding:0px;
+  margin:0px;
+  font-size:12px;
+}&lt;/style&gt;
+&lt;script type="text/javascript" id="jsloader"&gt;
+$(function(){
+//qend//
+});
+&lt;/script&gt;
+&lt;/head&gt;
+&lt;body&gt;&lt;/body&gt;
+&lt;/html&gt;</file><file name="ve.js" preprocess="">var components;
+var htmlBase;
+var jsBase="";
+var qid=0;
+$(function(){
+  $("#codeEditorTabs").tabs({selected:0});
+  $.ajax({url:"vecomponents.php",dataType:"html",
+    success:function(res){
+      components = $(res);
+      ve.onload();
+    }
+  });
+  $("body").keyup(function(event){
+    var keyCode = window.event ? window.event.keyCode : event.which;
+    if(keyCode == 113) ve.save();
+    ve.editingCode = $("#codeJsBaseEditor").dialog("isOpen")===true || $("#codeEditor").dialog("isOpen")===true;
+    if(!ve.editingCode) if((keyCode == 46) &amp;&amp; (ve.selected)) ve.remove(ve.selected);
+  });
+  $("body").append('&lt;div id="vaFile" style="padding:0px;"/&gt;');
+  window.accordionVaFileFilter="*.xml";
+  $("#vaFile").dialog({
+    autoOpen: false
+    ,title:"Open file"
+    ,width:600
+    ,height:350
+    ,buttons: {
+      "Ok": function() { 
+       $(this).dialog("close"); 
+      }, 
+      "Cancel": function() { 
+       $(this).dialog("close"); 
+      }
+    }
+    ,open:function(event, ui){
+      $(this).loadFrom({url:"va_files.php",data:{f:window.accordionVaFileFilter}});
+    }
+  });
+});
+$.fn.visualElement=function(e){
+  this.append('&lt;div class="qN"&gt;&lt;/div&gt;');
+  this.draggable({grid:[8,8]});
+  this.dblclick(ve.editCode);
+  this.click(ve.selectElement);
+};
+$.fn.visualElementUpdate=function(){
+  this.each(function(){
+    htmlBase.find("[qid="+$(this).attr("qid")+"]").attr("style", $(this).attr("style"));
+  });
+};
+var ve = {
+  editingCode:false,
+  /**
+   * Captura de opciones y eventos de la documentacion
+   * var res=[];$(".option-name").each(function(){res.push(this.textContent+":"+$(this.parentNode).find(".option-default").text())});JSON.stringify(res);
+   * var res=[];$(".event-name").each(function(){res.push(this.textContent+":function(event, ui){}")});res
+   */
+  defComponents:{
+    "tabs_options":["disabled:false","ajaxOptions:null","cache:false","collapsible:false","cookie:null","deselectable:false","disabled:[]","event:\"click\"","fx:null","idPrefix:\"ui-tabs-\"","panelTemplate:\"&lt;div&gt;&lt;/div&gt;\"","selected:0","spinner:\"&lt;em&gt;Loading&amp;#8230;&lt;/em&gt;\"","tabTemplate:\"&lt;li&gt;&lt;a href=\"#{href}\"&gt;&lt;span&gt;#{label}&lt;/span&gt;&lt;/a&gt;&lt;/li&gt;\""],
+    "tabs_events":["create:function(event, ui){}","select:function(event, ui){}","load:function(event, ui){}","show:function(event, ui){}","add:function(event, ui){}","remove:function(event, ui){}","enable:function(event, ui){}","disable:function(event, ui){}"],
+    "accordion_options":["disabled:false","active:first child","animated:\"slide\"","autoHeight:true","clearStyle:false","collapsible:false","event:\"click\"","fillSpace:false","header:\"&gt; li &gt; :first-child,&gt; :not(li):even\"","icons:{ \"header\": \"ui-icon-triangle-1-e\", \"headerSelected\": \"ui-icon-triangle-1-s\" }","navigation:false","navigationFilter: "],
+    "accordion_events":["create:function(event, ui){}","change:function(event, ui){}","changestart:function(event, ui){}"],
+    "dialog_options":["disabled:false","autoOpen:true","buttons:{ }","buttons:[ ]","closeOnEscape:true","closeText:\"close\"","dialogClass:\"\"","draggable:true","height:\"auto\"","hide:null","hide:null","maxHeight:false","maxWidth:false","minHeight:150","minWidth:150","modal:false","position:\"center\"","resizable:true","show:null","show:null","stack:true","title:\"\"","width:300","zIndex:1000"],
+    "dialog_events":["create:function(event, ui){}", "beforeClose:function(event, ui){}", "open:function(event, ui){}", "focus:function(event, ui){}", "dragStart:function(event, ui){}", "drag:function(event, ui){}", "dragStop:function(event, ui){}", "resizeStart:function(event, ui){}", "resize:function(event, ui){}", "resizeStop:function(event, ui){}", "close:function(event, ui){}"]
+  },
+  checkId:function(html,code){
+    if(!code) return [html,code];
+    var aBase = ve.splitJsCode(jsBase);
+    var ma;
+    ma=code.match(/\/\/#(\w+)/);
+    if(ma){
+      var id0=id=ma[1],i=1;
+      while((ma=code.match(/\/\/#(\w+)/)) &amp;&amp; typeof(aBase[ma[1]])!="undefined"){
+        code = code.replace(new RegExp(ma[1],"g"),ma[1].match(/[^\d]+/)[0]+i);
+        html = html.replace(new RegExp(ma[1],"g"),ma[1].match(/[^\d]+/)[0]+i);
+        i++;
+      }
+      id=ma[1];
+      var newId;
+      if(id!=(newId=prompt("Id",ma[1]))){
+        code = code.replace(new RegExp(ma[1],"g"),newId);
+        html = html.replace(new RegExp(ma[1],"g"),newId);
+      }
+    }
+    return [html,code];
+  },
+  removeJsCode:function(jid,aBase){
+    var local = typeof(aBase)!="undefined";
+    if(!local) aBase = ve.splitJsCode(jsBase);
+    for(var i=0,l=jid.length;i&lt;l;i++){
+      delete aBase[jid[i]];
+    }
+    if(!local) jsBase = ve.joinJsCode(aBase);
+  },
+  getJsCode:function(jid,aBase){
+    if(typeof(aBase)=="undefined") aBase = ve.splitJsCode(jsBase);
+    var script = "";
+    for(var i=0,l=jid.length;i&lt;l;i++){
+      script+=aBase[jid[i]]==null?"":aBase[jid[i]];
+    }
+    return script;
+  },
+  setJsCode:function(code,aBase){
+    var local = typeof(aBase)!="undefined";
+    if(!local) aBase = ve.splitJsCode(jsBase);
+    var aCode = ve.splitJsCode(code);
+    var jid = [];
+    for(var i in aCode){
+      if(i!="0" &amp;&amp; i!="1") jid.push(i);
+      if(i!="0" &amp;&amp; i!="1"){
+        aBase[i] = aCode[i];
+      }
+    }
+    var b1 = aBase["1"];
+    delete aBase["1"];
+    aBase["1"] = b1;
+    if(!local) jsBase = ve.joinJsCode(aBase);
+    return jid;
+  },
+  setSelected:function(e){
+    ve.selected = e;
+    $(".qNSelected").removeClass("qNSelected");
+    $(e).find(".qN").addClass("qNSelected");
+  },
+  appendJsCode:function(code){
+    var aBase = ve.splitJsCode(jsBase);
+    var aCode = ve.splitJsCode(code);
+    var jid = [];
+    for(var i in aCode){
+      if(i!="0" &amp;&amp; i!="1") jid.push(i);
+      if(typeof(aBase[i])=="undefined"){
+        aBase[i] = aCode[i];
+      }
+    }
+    var b1 = aBase["1"];
+    delete aBase["1"];
+    aBase["1"] = b1;
+    jsBase = ve.joinJsCode(aBase);
+    return jid;
+  },
+  joinJsCode:function(aBase){
+    var s="";
+    for(var i in aBase){
+      s+=aBase[i]==null?"":aBase[i];
+    }
+    return s;
+  },
+  splitJsCode:function(code,tags){
+    if(!code) return [];
+    if(typeof(tags)=="undefined") tags=":|#";
+    var aBase={};
+    //  /\/\/(:|#)(\w+)|(\/\/qend\/\/)/
+    var a = code.split(new RegExp("\\/\\/("+tags+")(\\w+)|(\\/\\/qend\\/\\/)"));
+    aBase["0"] = a[0];
+    for(var i=2,l=a.length;i&lt;l;i=i+4){
+      if(a[i+1]){
+        aBase["1"] = a[i+1] + a[i+2];
+      } else if(typeof(aBase[a[i]])=="undefined"){
+        aBase[(a[i-1]==":"?":":"") + a[i]] = "//" + a[i-1] + a[i] + a[i+2];
+      }
+    }
+    return aBase;
+  },
+  editJsBase:function(){
+    //Para no borrar el elemento cuando se pulse Supr
+    //ve.setSelected(null);
+    ve.editingCode=true;
+    $("#editCodeJsBase").find("textarea")[0].value=jsBase;
+    $("#codeJsBaseEditor").dialog({width:600,height:400,buttons:[
+      { text:"ok",
+        click:function(){
+          jsBase = $("#editCodeJsBase").find("textarea")[0].value;
+          eval(jsBase);
+          $(this).dialog("close");
+        },
+        close:function(){
+          ve.editingCode=false;
+        }
+      }
+    ]});
+  },
+  appendElement:function(elementId){
+    var e = components.find(".qE."+elementId);
+    var s = components.find(".qS."+elementId);
+    var w = $("#workspace");
+    var checked = ve.checkId(ve.outterHtml(e), s.html());
+    var html=checked[0];
+    var script=checked[1];
+    var e1 = $(html);
+    e1.attr("qid",++qid);
+    w.append(e1);
+    var e2=e1.clone();
+    htmlBase.append(e2);
+    var jid = ve.appendJsCode(script);
+    e2.attr("jid", jid.join(" "));
+    $(w[0].lastChild).attr("jid", jid.join(" "));
+    $(w[0].lastChild).visualElement();
+    window.eval(script);
+    ve.refreshElementList();
+  },
+  append:function(html){
+    var w = $("#workspace");
+    w.append(html);
+    var e1=$(w[0].lastChild);
+    e1.attr("qid",++qid);
+    htmlBase.append(e1.clone());
+    e1.visualElement();
+    ve.refreshElementList();
+  },
+  remove:function(e){
+    if(e.getAttribute("jid")) ve.removeJsCode(e.getAttribute("jid").split(" "));
+    htmlBase.find("[qid="+e.getAttribute("qid")+"]").remove();
+    $(e).remove();
+    ve.refreshElementList();
+  },
+  save:function(){
+    $(".qE").draggable("destroy");
+    $(".qN").remove();
+    $(".qE").visualElementUpdate();
+    var html="";
+    htmlBase.children().each(function(){
+      var $e=$(this);
+      var qid=$e.attr("qid");
+      //var jid=$e.attr("jid");
+      $e.removeAttr("qid");
+      //$e.removeAttr("jid");
+      html+=$e.xhtml();
+      $e.attr("qid", qid);
+      //$e.attr("jid", jid);
+    });
+    $.ajax({
+      url:"vesave.php",
+      type:"POST",
+      data:{"fileName":ve.fileName,"body":html,"jsloader":jsBase,fileContent:(parent.currentNode.firstChild?parent.currentNode.firstChild.nodeValue:"")},
+      dataType:"text",
+      success:function(r){
+        eval(r);
+      }
+    });
+    $(".qE").visualElement();
+  },
+  refreshElementList:function(){
+    $("#elementList").empty();
+    $("#elementList").focus();
+  },
+  createToolbar:function(){
+    //$("#toolbar").append('&lt;button type="button" onclick="$(\'#vaFile\').dialog(\'open\');"&gt;Open file&lt;/button&gt;');
+    $("#toolbar").append('&lt;select id="elementList"&gt;&lt;/select&gt;');
+    $('#elementList').focus(function(){
+      if(this.childNodes.length&lt;=2) {
+        var sel=$(this);
+        sel.empty();
+        sel.append('&lt;option value=""&gt;&lt;/option&gt;');
+        sel.append('&lt;option value="load"&gt;load...&lt;/option&gt;');
+        htmlBase.find(".qE").each(function(){
+          var qid = $(this).attr("qid");
+          var jid = $(this).attr("jid");
+          sel.append('&lt;option value="'+qid+'"&gt;'+qid+'('+jid+')&lt;/option&gt;');
+        });
+      }
+      return true;
+    });
+    $("#elementList").change(function(){
+      if(this.value=="") return;
+      if(this.value=="load") {$(this).empty();$(this).focus();return true;}
+      var qid = this.value;
+      ve.setSelected( $("#workspace").find("[qid="+qid+"]")[0] );
+    });
+    $("#toolbar").append('&lt;button type="button" onclick="if(ve.selected) $(ve.selected).dblclick();"&gt;Edit&lt;/button&gt;');
+    components.find(".qE").each(function(){
+      var className = this.className.match(/^\w+ (\w+)/)[1];
+      $("#toolbar").append('&lt;button type="button" onclick="ve.appendElement(\''+className+'\')"&gt;'+className+'&lt;/button&gt;');
+    });
+    $("#toolbar").append('&lt;button type="button" onclick="ve.editJsBase()"&gt;Edit JavaScript&lt;/button&gt;');
+  },
+  selectElement:function(){
+    ve.setSelected( this );
+    if(this.getAttribute("qid")) $("#elementList")[0].value=this.getAttribute("qid");
+  },
+  outterHtml:function(e){
+    //return $('&lt;div /&gt;').append(e.clone()).remove().xhtml();
+    return e.xhtml();
+  },
+  editCode:function(ev){
+    //Para no borrar el elemento cuando se pulse Supr
+    //ve.setSelected(null);
+    ve.editingCode=true;
+    $(this).visualElementUpdate();
+    var html=ve.outterHtml(htmlBase.find("[qid="+this.getAttribute("qid")+"]"));
+    var elem = this;
+    var script = this.getAttribute("jid")!=null ? ve.getJsCode(this.getAttribute("jid").split(" ")):"";
+    $("#codeEditorTabs").tabs("select",0);
+    $("#editCode").find("textarea")[0].value=html;
+    $("#editCodeJs").find("textarea")[0].value=script;
+    $("#codeEditor").dialog({width:600,height:400,buttons:[
+      { text:"ok",
+        click:function(){
+          var q=elem.getAttribute("qid");
+          $(elem).replaceWith($("#editCode").find("textarea")[0].value);
+          htmlBase.find("[qid="+q+"]").replaceWith($("#editCode").find("textarea")[0].value);
+          var jid=ve.setJsCode($("#editCodeJs").find("textarea")[0].value);
+          $("#workspace").find("[qid="+q+"]").attr("jid",jid.join(" "));
+          htmlBase.find("[qid="+q+"]").attr("jid",jid.join(" "));
+          eval(jsBase);
+          $("#workspace").find("[qid="+q+"]").visualElement();
+          $("#workspace").find("[qid="+q+"]").click();
+          $(this).dialog("close");
+        },
+        close:function(){
+          ve.editingCode=false;
+        }
+      }
+    ]});
+  },
+  onload:function(){
+    $(".qE").each(function(){
+      this.setAttribute("qid",++qid);
+    });
+    htmlBase=$("#workspace").clone();
+    ve.loadJsBase();
+    $(".qE").visualElement();
+    ve.createToolbar();
+    ve.refreshElementList();
+    $(".selectJsCode").focus(function(){
+      if(this.childNodes.length&lt;=2) {
+        var sel=$(this);
+        sel.empty();
+        sel.append('&lt;option value=""&gt;&lt;/option&gt;');
+        sel.append('&lt;option value="load"&gt;load...&lt;/option&gt;');
+        var a = ve.splitJsCode($("#editCodeJs textarea")[0].value,"\\*");
+        for(var id in a)if(id!="0" &amp;&amp; id!="end" &amp;&amp; typeof(ve.defComponents[id])!="undefined"){
+          for(var i=0,l=ve.defComponents[id].length;i&lt;l;i++){
+            var ss=ve.defComponents[id][i].split(":");
+            var name=ss[0] + (ss[1].substr(0,8)=="function"?"()":"");
+            sel.append('&lt;option value="'+id+'.'+i+'"&gt;'+name+'&lt;/option&gt;');
+          }
+        }
+      }
+      return true;
+    });
+    $(".selectJsCode").change(function(){
+      if(this.value=="") return;
+      if(this.value=="load") {$(this).empty();$(this).focus();return true;}
+      var v=this.value.split(".");
+      var id=v[0];
+      var i=v[1];
+      var a = ve.splitJsCode($("#editCodeJs textarea")[0].value,"\\*");
+      var emp = a[id].match(/^\/\/\*\w+(\s*(\/\*[\w\W]*?\*\/|\/\/.*)?)*\s*$/);
+      var co = a[id].match(/,(\s*(\/\*[\w\W]*?\*\/|\/\/.*)?)*\s*$/);
+      a[id]+=""+((!co &amp;&amp; !emp)?",":"")+ve.defComponents[id][i]+(co?",":"")+"\n  ";
+      $("#editCodeJs textarea")[0].value = ve.joinJsCode(a);
+    });
+  }
+}
+</file></path></root>

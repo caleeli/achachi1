@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root><include src="$library/zend.xml"/><application name="reminder2" main="list/index" __ideNodeOpen="true"><controller name="list" descripcion="" author="" __ideNodeOpen="true"><action name="index" noRender="false" descripcion="" loadParams="" __ideNodeOpen="false"/><phtml name="index" __ideNodeOpen="true">&lt;!doctype html&gt;
+<jqueryui name="filename" __ideNodeOpen="true">&lt;html xmlns="http://www.w3.org/1999/xhtml"&gt;
+&lt;head&gt;
+&lt;meta http-equiv="Content-Type" content="text/html; charset=utf-8"/&gt;
+&lt;title&gt;&lt;?php print "New Page"; ?&gt;&lt;/title&gt;
+&lt;link type="text/css" href="/jquery/css/face/jquery-ui.custom.css" rel="stylesheet"/&gt;	
+&lt;link type="text/css" href="../../reminder.css" rel="stylesheet"/&gt;
+&lt;script src="http://code.jquery.com/jquery-1.7.1.min.js" type="text/javascript"&gt;&lt;/script&gt;
+&lt;script type="text/javascript" src="../../turn.min.js"&gt;&lt;/script&gt;
+&lt;script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jqueryui/1.8.10/jquery-ui.min.js"&gt;&lt;/script&gt;
+&lt;style&gt;.qE{
+  display:inline-block;
+  position:absolute;
+}
+html{
+  height:100%;
+}
+body{
+  padding:0px;
+  margin:0px;
+  font-size:12px;
+}
+&lt;/style&gt;
+&lt;script type="text/javascript" id="jsloader"&gt;
+&lt;!-- 
+// Adds the pages that the book will need
+function addPage(page, book) {
+  if(!login &amp;&amp; page&gt;1) return;
+  //First check if the page is already in the book
+  if (!book.turn('hasPage', page)) {
+    //Create an element for this page
+    var element = $('&lt;div&gt;&lt;/div&gt;', {'class': 'page hard '+((page%2==0) ? 'odd' : 'even'), 'id': 'page-'+page}).html('&lt;i class="loader"&gt;&lt;/i&gt;');
+    // If not then add the page
+    book.turn('addPage', element, page);
+    $.ajax({
+      url:"list",
+      dataType:"text",
+      type:"GET",
+      data:{page:page},
+      success:function(res){
+        element.html(res);
+      }
+    });
+  }
+}
+var login=&lt;?php echo json_encode(isset($_SESSION["login"])?$_SESSION["login"]:"") ?&gt;;
+$(function(){
+  $.fn.callLogin=function(){
+    $.ajax({
+      url:this.attr("action"),
+      type:this.attr("method"),
+      dataType:"text",
+      data:{
+        login:this.find("'[name=login]")[0].value,
+        password:this.find("'[name=password]")[0].value
+      },
+      success:function(res){
+        eval(res);
+      }
+    });
+  }
+//#pageflip1
+$("#pageflip1").turn({
+  pages: 1000,
+  acceleration:true,
+  page:&lt;?php echo isset($_SESSION["login"])?3:1 ?&gt;,
+  elevation: 50,
+  duration:300,
+  inclination:1,
+  gradients: false/*!$.isTouch*/,
+  when: {
+    turning: function(e, page, view) {
+     // Gets the range of pages that the book needs right now
+     var range = $(this).turn('range', page);
+     // Check if each page is within the book
+     for (page = range[0]; page&lt;=range[1]; page++) 
+       addPage(page, $(this));
+    },
+    turned: function(e, page) {
+      $('#page-number').val(page);
+    },
+    start:function(){
+      return login?true:false;
+    }
+  }
+});
+//qend//
+});
+--&gt;
+&lt;/script&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;div jid="pageflip1" class="qE pageflip" style="left: 0px; top: 0px;position:relative;"&gt;
+  &lt;div style="width: 760px; height: 360px;position:relative;" id="pageflip1"&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</jqueryui></phtml><action name="list" noRender="false" descripcion="" loadParams="$page" __ideNodeOpen="true">
+$usuario =  $_SESSION['login'];
+$first = ($page-3)*3;
+if($page==1){
+  $this-&gt;_helper-&gt;viewRenderer-&gt;setRender('login');
+}elseif($first&lt;0){
+  $rows=array();
+} else {
+<select_table model="reminder" limit="3" offset="$first" order="DATE" columns="" var="$rows" criteria="REM_FROM = $usuario;" __ideNodeOpen="true"/>}
+$this-&gt;view-&gt;rows = $rows;
+</action><phtml name="list" __ideNodeOpen="true">&lt;div class="innerPage"&gt;
+&lt;?php
+foreach($this-&gt;rows as $row){
+  print "&lt;span class='remrow'&gt;";
+  print "&lt;div&gt;&lt;span style='width:50%;'&gt;".$row-&gt;SUBJECT."&lt;/span&gt;";
+  print "&lt;span&gt;".$row-&gt;TO."&lt;/span&gt;&lt;/div&gt;";
+  print "&lt;div style='border-bottom:1px solid #3B5998;margin:0px;border:1px solid #3B5998;'&gt;&lt;/div&gt;";
+  print "&lt;div style='height:50px;overflow:hidden;'&gt;".$row-&gt;BODY."&lt;/div&gt;";
+  print "&lt;div style='border-bottom:1px solid #3B5998;margin:0px;border:1px solid #3B5998;'&gt;&lt;/div&gt;";
+  print "&lt;div&gt;&lt;span class='calendar'&gt;".$row-&gt;DATE."&lt;/span&gt;&lt;/div&gt;";
+  print "&lt;/span&gt;";
+}
+?&gt;
+&lt;/div&gt;</phtml><phtml name="login">&lt;div class="innerPage"&gt;
+&lt;form action="verify" method="post"&gt;
+&lt;span class='loginbox'&gt;
+&lt;div&gt;Usuario: &lt;input name="login" type="text" /&gt;&lt;/div&gt;
+&lt;div&gt;Contraseña: &lt;input name="password" type="password" /&gt;&lt;/div&gt;
+&lt;span id="login_msg" style="color:red;"&gt;&lt;/span&gt;&lt;button type="button" onclick="$(this.form).callLogin()"&gt;Ingresar&lt;/button&gt;
+&lt;/span&gt;
+&lt;/form&gt;
+&lt;/div&gt;</phtml><action name="verify" noRender="true" descripcion="" loadParams="$login,$password" __ideNodeOpen="true"><select_row model="usuario" var="$row" criteria="usr_email=$login OR usr_login=$login;usr_password=@md5($password)" __ideNodeOpen="true">if($row){
+  print '$("#login_msg").html("");';
+  print 'login='.json_encode($row-&gt;usr_login).';';
+  print '$("#pageflip1").turn("page",3);';
+  $_SESSION["login"] = $row-&gt;usr_login;
+} else {
+  print 'login=null;';
+  print '$("#login_msg").html("Usuario/contraseña incorrecto");';
+  unset($_SESSION["login"]);
+}
+</select_row></action></controller><file name="html/reminder.css" preprocess="" __ideNodeOpen="true">body, input{
+  font-family:arial,sans serif;
+  font-size:12px;
+}
+.pageflip{
+  background-image:url(tapa.jpg);
+  padding:4px;
+  border:2px outset #956D25;
+}
+#pageflip1{
+  background-color:#EEEEEE;
+  border:1px outset #D0D0D0;
+}
+.page{
+  background-color:#DFDFDF;
+  background-image:url(paper.jpg);
+}
+.innerPage{
+  border:1px solid #D0D0D0;
+  height: 358px;
+  text-align:center;
+}
+/* 164=2*/
+.remrow{
+  margin-top:4px;
+  margin-bottom:4px;
+  border:1px solid #3B5998;
+  border-radius:4px;
+  width:360px;
+  height: 109px;
+  display:inline-block;
+  box-shadow:3px 3px 10px #CCCCCC;
+  text-align:left;
+}
+.remrow div{
+  margin:4px 8px;
+}
+.remrow div span{
+  display:inline-block;
+}
+.loginbox{
+  border:1px solid #909090;
+  border-radius:4px;
+  width:260px;
+  height: 80px;
+  display:inline-block;
+  box-shadow:3px 3px 10px #B0B0B0;
+  position:absolute;
+  left:16px;
+  bottom:32px;
+  text-align:right;
+  padding:8px;
+}
+.loginbox div{
+  margin-bottom:4px;
+}
+.loginbox input{
+  width:160px;
+}
+.calendar{
+  background-image:url(calendar.gif);
+  background-repeat:no-repeat;
+  padding-left:20px;
+}</file><resource path="turn.min.js" folder="html"/><connection driver="Mysqli" host="127.0.0.1" password="root" dbname="reminder" __ideNodeOpen="true" username="root"><table name="reminder" table="reminder"/><table name="usuario" table="usuario"/></connection><resource path="reminder/paper.jpg" folder="html"/><resource path="reminder/tapa.jpg" folder="html"/><resource path="reminder/calendar.gif" folder="html"/></application></root>

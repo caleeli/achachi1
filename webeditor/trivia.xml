@@ -1,0 +1,1605 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root __ideNodeOpen="true"><path path="output/trivia" main="output/trivia/index.php" __ideNodeOpen="true"><package name="components" type="" __ideNodeOpen="true"><component name="panel" transparent="" precode="" __ideNodeOpen="true">&lt;div id="@{$name}" class="panel" style="@{@$style}"&gt;@{node::content($_)}&lt;/div&gt;</component><component name="page" transparent="" precode="">&lt;html&gt;
+&lt;head&gt;
+&lt;meta charset="utf-8"&gt;
+&lt;style&gt;
+
+/* Portrait */
+@media screen and (orientation:portrait) {
+  .respuestas{
+    width: 80%;
+    height: 40%;
+  }
+  .imagen{
+    width: 90%;
+    height: 40%;
+  }
+  .correcto{
+    width: 80%;
+    text-align:center;
+    bottom:10%;
+    position:absolute;
+  }
+}
+/* Landscape */
+@media screen and (orientation:landscape) {
+  .respuestas{
+    width: 45%;
+    height: 70%;
+  }
+  .imagen{
+    width: 40%;
+    height: 70%;
+  }
+  .correcto{
+    text-align:center;
+    height: 80%;
+    bottom:10%;
+    position:absolute;
+  }
+}
+@font-face {
+  font-family: 'fuente';
+/*  src: url('SabrinaAT.otf');*/
+  src: url('Playball.ttf');
+/*  src: url('orangeJuice2.0.ttf');*/
+/*  src: url('RemachineScript_Personal_Use.ttf');*/
+/*  src: url('Lighthouse_PersonalUse.ttf');*/
+}
+html,body{
+  margin:0px;
+  padding:0px;
+  overflow:hidden;
+  width:100%;
+  height:100%;
+  font-family: 'fuente';
+  font-size:28px;
+}
+body{
+  background-image:url("fondo.jpg");
+  background-position:50% 0%;
+  background-size:auto 100%;
+  text-align:center;
+/*  background-repeat:no-repeat;*/
+}
+#message{
+  position:absolute;
+  width:100%;
+  top:50%;
+  vertical-align:middle;
+  height:64px;
+  margin-top:-32px;
+}
+.panel{
+  display:none;
+  border:2px solid black;
+  border-radius:8px;
+  /*margin:2%;*/
+  padding:1%;
+/*  width:94%;*/
+  width:88%;
+  height:88%;
+  top:3%;
+  font-size:100%;
+  background-color:rgba(55,155,155,0.4);
+  position:relative;
+  overflow:hidden;
+  text-align:left;
+  vertical-align:middle;
+}
+button{
+  font:inherit;
+  border:2px solid black;
+  border-radius:8px;
+  padding:8px;
+  background-color:rgba(55,155,155,0.8);
+  cursor:pointer;
+}
+input{
+  font:inherit;
+  border:2px solid black;
+  padding:8px;
+  background-color:rgba(255,255,255,0.8);
+}
+.pregunta{}
+.respuestas{
+  display:inline-block;
+/*  white-space:pre;*/
+  /*width: 80%;
+  height: 40%;*/
+  position:absolute;
+  left:5%;
+}
+.respuesta{
+  cursor:pointer;
+  background-color:rgba(55,55,255,0.3);
+  margin:2px;
+  margin-bottom:2%;
+}
+.respuesta span{
+  background-color:rgba(255,255,255,0.8);
+  border:1px solid black;
+  width:2em;
+  text-align:center;
+  display:inline-block;
+}
+.respuesta a{
+  margin-left:1em;
+}
+.imagen{
+  display:inline-block;
+  background-position:center 0%;
+  background-size:auto 100%;
+  background-repeat:no-repeat;
+  /*width: 90%;
+  height: 40%;*/
+  position:absolute;
+  right:5%;
+  bottom:5%;
+  border-radius:4%;
+}
+.bomb{
+  background-image:url("bomb.png");
+  background-position:0% 0%;
+  background-size:auto 100%;
+  background-repeat:no-repeat;
+  width:3em;
+  text-align:right;
+  display:inline-block;
+  background-color:rgba(55,255,255,0.3);
+  border:1px solid black;
+  border-radius:4px;
+  padding:2px;
+  margin:2px;
+}
+.clock{
+  background-image:url("clock.png");
+  background-position:0% 0%;
+  background-size:auto 100%;
+  background-repeat:no-repeat;
+  width:3em;
+  text-align:right;
+  display:inline-block;
+  background-color:rgba(55,255,255,0.3);
+  border:1px solid black;
+  border-radius:4px;
+  padding:2px;
+  margin:2px;
+}
+.glove{
+  background-image:url("glove.png");
+  background-position:0% 0%;
+  background-size:auto 100%;
+  background-repeat:no-repeat;
+  width:3em;
+  text-align:right;
+  display:inline-block;
+  background-color:rgba(55,255,255,0.3);
+  border:1px solid black;
+  border-radius:4px;
+  padding:2px;
+  margin:2px;
+}
+.mainmenu{
+  background-image:url("mainmenu.png");
+  background-position:0% 0%;
+  background-size:auto 100%;
+  background-repeat:no-repeat;
+  width:4em;
+  text-align:right;
+  display:inline-block;
+  background-color:rgba(55,255,255,0.3);
+  border:1px solid black;
+  border-radius:4px;
+  padding:2px;
+  margin:2px;
+}
+.points{
+  background-image:url("points.png");
+  background-position:0% 0%;
+  background-size:auto 100%;
+  background-repeat:no-repeat;
+  width:5em;
+  text-align:right;
+  display:inline-block;
+  background-color:rgba(55,255,255,0.3);
+  border:1px solid black;
+  border-radius:4px;
+  padding:2px;
+  margin:2px;
+  position:absolute;
+  right:1em;
+}
+.score_final{
+  background-position:0% 0%;
+  background-size:auto 100%;
+  background-repeat:no-repeat;
+  text-align:right;
+  display:inline-block;
+  background-color:rgba(55,255,255,0.3);
+  border:1px solid black;
+  border-radius:4px;
+  padding:2px;
+  margin:2px;
+}
+.usado{
+  background-color:rgba(55,255,255,0.7);
+}
+&lt;/style&gt;
+&lt;script src="jquery-1.9.1.js" type="text/javascript"&gt;&lt;/script&gt;
+&lt;script src="knockout-3.3.0.js" type="text/javascript"&gt;&lt;/script&gt;
+&lt;script src="data/preguntas.js" type="text/javascript"&gt;&lt;/script&gt;
+&lt;script src="data/misiones.js" type="text/javascript"&gt;&lt;/script&gt;
+&lt;script src="data/personajes.js" type="text/javascript"&gt;&lt;/script&gt;
+&lt;script type="text/javascript"&gt;
+var tictac = new Audio('snd/tictac.mp3');
+if(typeof tictac.play=="function"){
+  var music1 = new Audio('snd/simdh85_-_Merry-go-round.mp3');
+  var bomb1 = new Audio('snd/Tanque-M60.mp3');
+  var magia = new Audio('snd/magia.mp3');
+  var correctoA = new Audio('snd/correcto.mp3');
+  var errorA = new Audio('snd/error.mp3');
+} else {
+  var tictac = {play:function(){}};
+  var music1 = {play:function(){}};
+  var bomb1 = {play:function(){}};
+  var magia = {play:function(){}};
+  var correctoA = {play:function(){}};
+  var errorA = {play:function(){}};
+}
+try{
+music1.play();music1.current
+}catch(ee){
+  alert(ee);
+}
+setInterval(function(){
+  music1.play();music1.currentTime=0;
+},(60+58)*1000);
+var REMOTE='http://localhost/achachi/output/trivia/';
+var LOCAL=true;
+REMOTE='';
+var REMOTE_PREGUNTA=REMOTE+"pregunta.php";
+
+function showPanel(selector){
+  $(".panel").fadeOut();
+  document.body.style.backgroundImage="url(fondo1.jpg)";
+  $(selector).fadeIn(400, function(){
+    $(selector).css("display", "inline-block");
+  });
+}
+function shuffle(array) {
+  var currentIndex = array.length
+    , temporaryValue
+    , randomIndex
+    ;
+
+  // While there remain elements to shuffle...
+  while (0 !== currentIndex) {
+
+    // Pick a remaining element...
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex -= 1;
+
+    // And swap it with the current element.
+    temporaryValue = array[currentIndex];
+    array[currentIndex] = array[randomIndex];
+    array[randomIndex] = temporaryValue;
+  }
+
+  return array;
+}
+var puntaje=0,clock=0;
+function PersonajeModel(){
+}
+function listModel(localArray, remoteUrl){
+  var list=ko.observableArray(localArray);
+  
+  return list;
+}
+function Jugador(){
+  this.personaje=ko.observable(0);
+}
+var model={
+  jugador:new Jugador(),
+  personajes:listModel(DATA_personajes)
+};
+$(function(){
+  if(typeof window.device=="undefined"){
+    window.device={
+      uuid:1
+    };
+  }
+  $(window).resize(function(){$("body").css("font-size",Math.min($(window).width()/40, $(window).height()/25)+'px');});
+  $("body").css("font-size",Math.min($(window).width()/40, $(window).height()/25)+'px');
+  if(typeof device!="undefined"){
+    $.ajax({
+      type:"get",
+      data:{id:device.uuid},
+      jsonp: "callback",
+      dataType: 'jsonp',
+      url:REMOTE+"setid.php",
+      success:function(res){
+        eval(res);
+        showPanel("#start");
+      }
+    });
+  }
+  ko.applyBindings(model);
+})
+&lt;/script&gt;
+&lt;/head&gt;
+&lt;body&gt;&lt;div id="message"&gt;&lt;/div&gt;@{node::content($_)}&lt;/body&gt;
+&lt;/html&gt;</component><component name="abm" transparent="" precode="" __ideNodeOpen="true"><file name="@{$name}_list.php" preprocess="" __ideNodeOpen="true">&lt;html&gt;
+&lt;head&gt;
+&lt;meta charset="utf-8"&gt;
+&lt;link rel="stylesheet" href="pure-min.css"&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;?php
+global $@{$name};
+//require_once("@{$name}.php");
+require_once("uDB.php");
+$@{$name}=new uDB('db/@{$name}');
+//set_time_limit(1);
+function printGrid( $array )
+{
+  print( '&lt;div&gt;&lt;a class="pure-button" type="button" href="@{$name}_form.php"&gt;Nuevo&lt;/a&gt;&lt;a class="pure-button" type="button" href="@{$name}_compile.php"&gt;Compile&lt;/a&gt;&lt;/div&gt;' );
+  print( '&lt;table class="pure-table" border="1"&gt;&lt;thead&gt;' );
+  //bug: 49369
+//  reset( $array );
+//  print( '&lt;tr&gt;&lt;th&gt;[]&lt;/th&gt;&lt;th&gt;' );
+//  print( implode( '&lt;/th&gt;&lt;th&gt;', array_keys( current( $array ) ) ) );
+//  print( '&lt;/th&gt;&lt;/tr&gt;' );
+//  print( '&lt;/thead&gt;&lt;tbody&gt;' );
+  $header=array();
+  foreach( $array as $row =&gt; $cells )
+  {
+    print( '&lt;tr&gt;&lt;th&gt;[]&lt;/th&gt;' );
+    foreach($cells as $k=&gt;$c){
+      print( '&lt;th&gt;'.$k.'&lt;/th&gt;' );
+      $header[]=$k;
+    }
+    print( '&lt;/th&gt;&lt;/tr&gt;' );
+    print( '&lt;/thead&gt;&lt;tbody&gt;' );
+    break;
+  }
+  foreach( $array as $row =&gt; $cells )
+  {
+    $cellsH=array();
+    foreach($cells as $ck=&gt;$c) if(is_array($c)) $cellsH[$ck]=implode('&lt;br /&gt;',$c); else $cellsH[$ck]=$c;
+    /*print( "&lt;tr&gt;&lt;th&gt;$row&lt;/th&gt;&lt;td&gt;" );
+    print( implode( '&lt;/td&gt;&lt;td&gt;', $cellsH ) );
+    print( '&lt;/td&gt;&lt;td&gt;&lt;a class="pure-button" href="@{$name}_form.php?id='.$row.'"&gt;Editar&lt;/a&gt;&lt;/td&gt;&lt;/tr&gt;' );*/
+    print( "&lt;tr&gt;&lt;th&gt;$row&lt;/th&gt;" );
+    foreach($header as $h){
+      print( '&lt;td&gt;'.@$cellsH[$h].'&lt;/td&gt;' );
+    }
+    print( '&lt;td&gt;&lt;a class="pure-button" href="@{$name}_form.php?id='.$row.'"&gt;Editar&lt;/a&gt;&lt;/td&gt;&lt;/tr&gt;' );
+  }
+  print( '&lt;/tbody&gt;&lt;/table&gt;' );
+}
+function arrayResult( &amp;$result )
+{
+  $array=array();
+  while( $row = $result-&gt;Read() )
+  {
+    $array[] = $row;
+  }
+  return $array;
+}
+
+printGrid( $@{$name} );</file><file name="@{$name}_form.php" preprocess="" __ideNodeOpen="true">&lt;html&gt;
+&lt;head&gt;
+&lt;meta charset="utf-8"&gt;
+&lt;link rel="stylesheet" href="pure-min.css"&gt;
+&lt;style&gt;
+form{
+  background-color:rgba(230,230,230,0.7);
+  font-family:sans-serif;
+}
+form div{
+  display:inline-block;
+  width:100%;
+}
+form div label{
+  display:inline-block;
+  vertical-align:middle;
+  width:30%;
+}
+form div span{
+  display:inline-block;
+  vertical-align:middle;
+  width:65%;
+}
+form input {
+  width:100%;
+  font:inherit;
+}
+form textarea {
+  width:100%;
+  font:inherit;
+}
+&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;form class="pure-form pure-form-aligned" action="?id=&lt;?php echo @$_GET['id'] ?&gt;" method="post" enctype="multipart/form-data"&gt;
+&lt;fieldset&gt;
+&lt;?php
+$struct=@{node::content($_)};
+global $@{$name};
+require_once("uDB.php");
+//require_once("@{$name}.php");
+require_once("uDB.php");
+$@{$name}=new uDB('db/@{$name}');
+
+if(isset($@{$name}[@$_GET['id']])){
+  $rec=$@{$name}[$_GET['id']];
+}
+define('UPLOAD_BASE', 'img/');
+if(count($_POST)){
+
+  /** UPLOADS **/
+  foreach($_FILES as $fieldName =&gt; $ff){
+    if ($ff["error"] &gt; 0) {
+      echo "Return Code: " . $ff["error"] . "&lt;br&gt;";
+      unset($_POST[$fieldName]);
+    } elseif(!empty($ff["name"])) {
+      $fname=$ff["name"];
+      $index=0;
+      while(file_exists(UPLOAD_BASE . $fname)) {
+        $index++;
+        $fname=$index . $ff["name"];
+      }
+      move_uploaded_file($ff["tmp_name"],
+        UPLOAD_BASE . $fname);
+      $_POST[$fieldName]=UPLOAD_BASE . $fname;
+    } else {
+      unset($_POST[$fieldName]);
+    }
+  }
+  if(!isset($rec)){
+    if(empty($_GET['id'])){
+      $_GET['id']=count($@{$name});
+    }
+    $@{$name}[$_GET['id']]=array();
+    //$rec=&amp;$@{$name}[$_GET['id']];
+  }
+var_dump($_POST,$struct);
+  foreach($_POST as $k=&gt;$v)if(!empty($v) || ($struct[$k]['type']!='file')){
+    if($struct[$k]['type']=='array'){
+      $v=str_replace("\r\n","\n",$v);
+      $v=str_replace("\r","\n",$v);
+      $v=explode("\n",$v);
+    }
+    $@{$name}[$_GET['id']][$k]=$v;
+  }
+  //uDB::save("@{$name}", $@{$name});
+  header("Location: @{$name}_list.php");
+  exit;
+}
+foreach($struct as $f=&gt;$s){
+  switch($s["type"]){
+    case "input":echo '&lt;div class="pure-control-group"&gt;&lt;label for="',$f,'"&gt;', $s['label'],':&lt;/label&gt;&lt;span&gt;&lt;input name="',$f,'" value="',@$rec[$f],'"&gt;&lt;/span&gt;&lt;/div&gt;';
+      break;
+    case "array":echo '&lt;div class="pure-control-group"&gt;&lt;label&gt;', $s['label'],':&lt;/label&gt;&lt;span&gt;&lt;textarea name="',$f,'"&gt;',@implode("\n", $rec[$f]),'&lt;/textarea&gt;&lt;/span&gt;&lt;/div&gt;';
+      break;
+    case "file":echo '&lt;div class="pure-control-group"&gt;&lt;label&gt;', $s['label'],':&lt;/label&gt;&lt;span&gt;&lt;input name="',$f,'" type="file"&gt;&lt;/span&gt;&lt;/div&gt;';
+      echo '&lt;div class="pure-control-group"&gt;&lt;label&gt;&lt;/label&gt;&lt;span&gt;&lt;iframe src="',@$rec[$f],'" style="width:100%"&gt;&lt;/iframe&gt;&lt;/span&gt;&lt;/div&gt;';
+      break;
+  }
+}
+?&gt;
+        &lt;div class="pure-controls"&gt;
+            &lt;label for="cb" class="pure-checkbox"&gt;
+            &lt;/label&gt;
+            &lt;button type="submit" class="pure-button pure-button-primary"&gt;Enviar&lt;/button&gt;
+            &lt;button type="button" class="pure-button" onclick="window.location.href='@{$name}_list.php'"&gt;Volver&lt;/button&gt;
+        &lt;/div&gt;
+&lt;/fieldset&gt;
+&lt;/form&gt;</file><file name="@{$name}_compile.php" preprocess="" __ideNodeOpen="true">&lt;html&gt;
+&lt;head&gt;
+&lt;meta charset="utf-8"&gt;
+&lt;link rel="stylesheet" href="pure-min.css"&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;?php
+require_once("uDB.php");
+$@{$name}=new uDB('db/@{$name}');
+set_time_limit(-1);
+
+$array=array();
+foreach( $@{$name} as $row =&gt;$cells){
+  $r=array();
+  foreach($cells as $k=&gt;$v){
+    $r[$k]=$v;
+  }
+  if(!empty($r["mision"])){
+    $r["mision"]=$r["mision"]=="genesis"?"genesis": "especial";
+  }
+  $array[$row]=$r;
+}
+file_put_contents('mobile/data/@{$name}.js', 'var DATA_@{$name}='.json_encode(array_values($array)) );
+foreach(glob('img/*') as $f){
+  copy($f,'mobile/'.$f);
+}
+</file></component><package name="cordoba" type="" __ideNodeOpen="false"><component name="runscript" transparent="" precode="" __ideNodeOpen="true"><php __ideNodeOpen="true">require_once(ACH_PATH.'/remotecmd.class.php');
+
+$cmd = @{var_export(node::content($_),true)};
+
+DV_RemoteCmd::call(str_replace("\n","\r\n",$cmd));
+</php></component><component name="cordova" transparent="" precode="" __ideNodeOpen="true"><runscript __ideNodeOpen="true">cd @{getcwd()}
+IF EXIST @{$path/*cordova*/} (
+  cd @{$path}
+  GOTO Construir
+)
+REM rmdir @{$path} /S /Q
+call @{$cordova_path} create @{$path} @{$domain_name/*com.example.hello*/} @{$name}
+cd @{$path}
+call @{$cordova_path} platform add android
+call @{$cordova_path} platforms ls
+:Construir
+xcopy "../@{$source/*mobile*/}" "www" /s /e
+call @{$cordova_path} build
+call @{$cordova_path} run android
+</runscript></component></package></package><package name="app" type="" __ideNodeOpen="true"><file name="mobile/index.html" preprocess="" __ideNodeOpen="true"><page __ideNodeOpen="true"><panel __ideNodeOpen="true" name="start" style="display:none">&lt;center&gt;
+&lt;h1&gt;Tu nombre:&lt;/h1&gt;&lt;br/&gt;
+&lt;input id="name" value="anónimo"&gt;&lt;br/&gt;
+&lt;script&gt;
+var PREGUNTAS=0,PENDING=0,DONE=0;
+function loadingQuestions(){
+  if(PENDING&gt;0){
+    $("#message").html((Math.floor(DONE/PENDING*100))+"%");
+    if(PENDING==DONE){
+      $("#message").html("");
+      showPanel('#start');
+    }
+  }
+}
+function loadQuestions(j){
+  for(var i=0,l=10;i&lt;l;i++){
+      PENDING++;loadingQuestions();
+      $.ajax({
+        type:"get",
+        url:"preguntas/"+(i+j)+".txt",
+        success:(function(i,conti){return function(res){
+          if(i&gt;PREGUNTAS)PREGUNTAS=i;
+          if(conti) loadQuestions(i+1);
+          DONE++;loadingQuestions();
+        }})(i+j, i==9),
+        error:(function(i){return function(res){
+          DONE++;loadingQuestions();
+        }})(i+j)
+      });
+  }
+}
+loadQuestions(0);
+function setName(){
+  localStorage.preguntas="";
+  $.ajax({
+    type:"get",
+    data:{nombre:$("#name").val(),id:device.uuid},
+    jsonp: "callback",
+    dataType: 'jsonp',
+    url:REMOTE+"setname.php",
+    success:function(res){
+      eval(res);
+    }
+  });
+}
+&lt;/script&gt;
+&lt;br /&gt;
+&lt;!--&lt;button type="button" onclick="showPanel('#pregunta');setName();cargaPregunta();"&gt;Empezar&lt;/button&gt;--&gt;
+&lt;button type="button" onclick="showPanel('#mision');setName();"&gt;Empezar&lt;/button&gt;
+&lt;/center&gt;</panel><panel name="perfil" style="display:none" __ideNodeOpen="true">&lt;center&gt;
+&lt;h1&gt;Tu nombre:&lt;/h1&gt;&lt;br/&gt;
+&lt;/center&gt;</panel><panel __ideNodeOpen="true" name="pregunta">&lt;script&gt;
+function dibujaPregunta($pregunta,$respuestas,$imagen,res0){
+  var res;
+  eval("res="+JSON.stringify(res0));
+  $pregunta.html(res.pregunta);
+  $respuestas.html("\n");
+  var ind=["A","B","C","D","E","F","G"];
+  window.correcta=res.respuestas[res.correcta];
+  window.data=res;
+  var sres=shuffle(res.respuestas);
+  NingunoAlFinal:
+  for(var r in sres){
+    switch(res.respuestas[r].toLowerCase()){
+      case "ninguna":
+      case "ninguno":
+      case "none":
+        res.respuestas.push(res.respuestas.splice(r,1)[0]);
+        break NingunoAlFinal;
+    }
+  }
+  for(var r in sres){
+    $respuestas.append("&lt;div class='respuesta' onclick='responder(this);return false;'&gt;&lt;span&gt; "+ind[r]+" &lt;/span&gt;&lt;a&gt;"+res.respuestas[r]+"&lt;/a&gt;&lt;/div&gt;");
+  }
+  $imagen.css("background-image","url("+res.imagen+")");
+}
+function randPregunta(mision){
+  var i;
+  i=Math.floor(Math.random()*(DATA_preguntas.length));
+  while(DATA_preguntas[i].mision!=mision){
+    i=Math.floor(Math.random()*(DATA_preguntas.length));
+  }
+  return i;
+}
+function cargaPregunta(puntuar){
+  if(typeof puntuar=="undefined")puntuar=0;
+  var $pregunta=$("#pregunta .pregunta");
+  var $respuestas=$("#pregunta .respuestas");
+  var $imagen=$("#pregunta .imagen");
+  if(LOCAL){
+    var i,aa=localStorage.preguntas.split(",");
+    i=randPregunta(MISION);
+    var intentos=0;
+    while(aa.indexOf(String(i))&gt;-1){
+      i=randPregunta(MISION);
+      intentos++;
+      if(intentos&gt;2*PREGUNTAS+1) {
+        termino_mision();
+        return;
+      }
+    }
+    localStorage.preguntas=localStorage.preguntas+","+i;
+    var res=DATA_preguntas[i];
+      dibujaPregunta($pregunta,$respuestas,$imagen,res);
+      clock=30;
+      $(".clock").html(clock);
+      activaBomba=false;
+      $(".bomb").removeClass('usado');
+      $(".glove").removeClass('usado');
+
+    /*$.ajax({
+      type:"get",
+      url:"preguntas/"+i+".txt",
+      success:function(res){
+        eval(res);
+        clock=30;
+        $(".clock").html(clock);
+        activaBomba=false;
+        $(".bomb").removeClass('usado');
+        $(".glove").removeClass('usado');
+      }
+    });*/
+  } else {
+    $.ajax({
+      type:"get",
+      jsonp: "callback",
+      dataType: 'jsonp',
+      data:{id:device.uuid,puntuar:puntuar},
+      url:REMOTE_PREGUNTA,
+      success:function(res){
+        eval(res);
+        clock=30;
+        $(".clock").html(clock);
+        activaBomba=false;
+        $(".bomb").removeClass('usado');
+        $(".glove").removeClass('usado');
+      }
+    });
+  }
+}
+function responder(el){
+//  tictac.currentTime=1000000;
+  clock=0;
+  if($(el).find("a").html()==correcta){
+    puntaje++;$(".points").html(puntaje);
+    showPanel('#correcto');
+    correctoA.play();correctoA.currentTime=0;
+    setTimeout(function(){
+      showPanel('#pregunta');cargaPregunta(1);
+    },2000);
+  } else if(!activaHacha) {
+    showPanel('#incorrecto');
+    errorA.play();errorA.currentTime=0;
+    setTimeout(function(){
+      showPanel('#pregunta');cargaPregunta();
+    },2000);
+  } else {
+    $(el).fadeOut(800,function(){$(el).remove();});
+  }
+  activaHacha=false;
+}
+window.CLOCKInterval=function(){
+  if(clock&gt;0){
+    clock--;
+    if(clock&lt;=8 &amp;&amp; clock&gt;=7){
+      tictac.play();
+    }
+    if(clock&lt;1){
+      showPanel("#timpofuera");
+      setTimeout(function(){
+        showPanel('#pregunta');cargaPregunta();
+      },2000);
+    }
+  } else clock=0;
+  $(".clock").html(clock);
+};
+window.CLOCK=setInterval(window.CLOCKInterval,1000);
+function bomba(){
+  if($(".bomb").hasClass('usado'))return;
+  var valor=parseInt($(".bomb").html());
+  if(valor&gt;0){
+    activaBomba=true;
+    var ok=false;
+    $(".respuestas").children("div").each(function(index){
+      if(!ok &amp;&amp; $(this).find("a").html()!=correcta){
+        $(this).fadeOut(800,function(){$(this).remove()});
+        ok=true;
+      }
+    });
+    bomb1.play();
+    valor--;
+    $(".bomb").html(valor);
+    $(".bomb").addClass('usado');
+  }
+}
+window.activaHacha=false;
+function hacha(){
+  if($(".glove").hasClass('usado'))return;
+  var valor=parseInt($(".glove").html());
+  if(valor&gt;0){
+    magia.play();
+    window.activaHacha=true;
+    valor--;
+    $(".glove").html(valor);
+    $(".glove").addClass('usado');
+  }
+}
+function volver_menu(){
+//  clearInterval(window.CLOCK);
+clock=0;
+  showPanel('#mision');
+}
+function termino_mision(){
+  clock=0;
+  var total=localStorage.preguntas.split(",").length-1;
+  var puntos=$(".points").html()*1;
+  var nivel=Math.floor(puntos/total*3);
+  if(nivel&gt;2)nivel=2;
+  if(nivel&lt;0)nivel=0;
+  $("#completado_img").attr("src","img/completado"+(nivel+1)+".jpg");
+  $("#total_mision").html("Puntaje: "+puntos+"/"+total);
+  showPanel('#completado');
+  localStorage.preguntas="";
+  $(".points").html("0");
+  puntaje=0;
+}
+&lt;/script&gt;
+&lt;div&gt;&lt;span class="clock"&gt;30&lt;/span&gt;&lt;span class="bomb" onclick="bomba()"&gt;3&lt;/span&gt;&lt;span class="glove" onclick="hacha()"&gt;2&lt;/span&gt;&lt;span class="mainmenu" onclick="volver_menu()"&gt;menu&lt;/span&gt;&lt;span class="points"&gt;0&lt;/span&gt;&lt;/div&gt;
+&lt;br /&gt;&lt;div class="pregunta"&gt;&lt;/div&gt;&lt;br /&gt;
+&lt;span class="respuestas"&gt;&lt;/span&gt;&lt;span class="imagen"&gt;&lt;/span&gt;</panel><panel __ideNodeOpen="true" name="correcto">¡CORRECTO! &lt;span class="points"&gt;0&lt;/span&gt;
+&lt;img class="correcto" src="handup.png" /&gt;</panel><panel __ideNodeOpen="true" name="incorrecto">INCORRECTO.
+&lt;img class="correcto" src="handdown.png" /&gt;</panel><panel __ideNodeOpen="true" name="timpofuera">TIEMPO FUERA
+&lt;img class="correcto" src="timeout.png" /&gt;</panel><panel __ideNodeOpen="true" name="mision">&lt;style&gt;
+  #mision{
+    white-space:pre;
+    overflow-x:auto;
+  }
+  .history-line{
+    background-image:url('historia_1.jpg');
+    background-size:auto 100%;
+    position:absolute;
+    left:0px;
+    top:0px;
+    width:200%;
+    height:100%;
+    opacity:0.3;
+  }
+  .history-line-line{
+    display:none;
+    position:absolute;
+    background-color:rgb(50, 50, 50);
+    left:0px;
+    top:50%;
+    margin-top:-10%;
+    width:200%;
+    height:50%;
+  }
+  .history-mission{
+    opacity:0.8;
+    position:relative;
+    height:100%;
+/*    background-image:url('misiones/genesis.png');*/
+    background-size:100% 100%;
+    width:15em;
+    margin-top:-20%;
+/*    top:50%;*/
+    display:inline-block;
+  }
+  .history-mission span{
+    position:absolute;
+    right:4%;
+    bottom:2%;
+    text-shadow:0px 0px 4px green;
+    color:white;
+  }
+  .history-mission:hover{
+    opacity:1;
+  }
+  .personaje {
+    white-space:normal;
+  }
+@media screen and (orientation:portrait) {
+  .personaje .imagen img {
+    height:40%;
+  }
+}
+@media screen and (orientation:landscape) {
+  .personaje .imagenp img {
+    height:70%;
+  }
+  .personaje .descripcionp {
+    width:60%;
+  }
+}
+&lt;/style&gt;
+&lt;div class="personaje"&gt;
+&lt;span class="imagenp" style="display:inline-block;text-align:center;vertical-align:top;"&gt;
+  &lt;img data-bind="attr:{src:personajes()[jugador.personaje()].imagen}" &gt;
+  &lt;div data-bind="text:personajes()[jugador.personaje()].nombre"&gt;&lt;/div&gt;
+&lt;/span&gt;
+&lt;span class="descripcionp" style="display:inline-block;text-align:center;vertical-align:top;"&gt;
+  &lt;span data-bind="text:personajes()[jugador.personaje()].descripcion"&gt;&lt;/span&gt;
+&lt;span&gt;
+&lt;/div&gt;
+&lt;span style="font-size:150%;z-index:1;position:fixed;"&gt;Elige tu misión:&lt;/span&gt;
+&lt;div class="history-line"&gt;&lt;/div&gt;
+  &lt;div class="history-line-line"&gt;&lt;/div&gt;
+&lt;table border="0" style="font:inherit;position:absolute;height:50%"&gt;&lt;tr&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;script&gt;
+$(function(){
+  var $mision=$("#mision table tr");
+  for(var i=0,l=DATA_misiones.length;i&lt;l;i++){
+    $mision.append('&lt;td&gt;&lt;span onclick="loadMision(this)" data-mision="'+DATA_misiones[i].mision+'" class="history-mission" style="background-image:url('+DATA_misiones[i].imagen+');"&gt;&lt;span&gt;'+DATA_misiones[i].titulo+'&lt;/span&gt;&lt;/span&gt;&lt;/td&gt;');
+  }
+});
+function loadMision(e){
+  if($(e).attr("data-mision")!="genesis" &amp;&amp; $(e).attr("data-mision")!="especial"){
+    return;
+  }
+  window.MISION=$(e).attr("data-mision");
+  showPanel('#pregunta');
+  /*setName();*/
+  cargaPregunta();
+}
+&lt;/script&gt;</panel><panel __ideNodeOpen="true" name="completado">&lt;span class="mainmenu" onclick="volver_menu()"&gt;menu&lt;/span&gt;&lt;span id="total_mision" class="score_final"&gt;0&lt;/span&gt;
+&lt;img id="completado_img" class="correcto" src="img/completado1.jpg" /&gt;</panel></page></file></package><file name="pregunta.php" preprocess="" __ideNodeOpen="false">&lt;?php
+global $preguntas;
+global $usuarios;
+require_once("uDB.php");
+//require_once("preguntas.php");
+//require_once("usuarios.php");
+$preguntas=new uDB('db/preguntas');
+$usuarios=new uDB('db/usuarios');
+$p=rand(0,count($preguntas)-1);
+$pregunta=$preguntas[$p]-&gt;getValue();
+$url=dirname(curPageURL());
+$pregunta['imagen'] = $url . "/" . $pregunta['imagen'];
+$id=@$_REQUEST['id'];
+if(@$_REQUEST['puntuar']=="1" &amp;&amp; isset($usuarios[$id])){
+  if(!isset($usuarios[$id]['puntaje']))$usuarios[$id]['puntaje']=0;
+//  $usuarios[$id]['puntaje']++;
+  $usuarios[$id]['puntaje']=$usuarios[$id]['puntaje']+1;
+  //uDB::save("usuarios", $usuarios);
+}
+function curPageURL() {
+ $pageURL = 'http';
+ if (@$_SERVER["HTTPS"] == "on") {$pageURL .= "s";}
+ $pageURL .= "://";
+ if ($_SERVER["SERVER_PORT"] != "80") {
+  $pageURL .= $_SERVER["SERVER_NAME"].":".$_SERVER["SERVER_PORT"].$_SERVER["REQUEST_URI"];
+ } else {
+  $pageURL .= $_SERVER["SERVER_NAME"].$_SERVER["REQUEST_URI"];
+ }
+ return $pageURL;
+}
+
+ob_start();
+?&gt;
+var res=&lt;?php echo json_encode($pregunta); ?&gt;;
+$pregunta.html(res.pregunta);
+$respuestas.html("\n");
+var ind=["A","B","C","D","E","F","G"];
+window.correcta=res.respuestas[res.correcta];
+window.data=res;
+var sres=shuffle(res.respuestas);
+for(var r in sres){
+  $respuestas.append("&lt;div class='respuesta' onclick='responder(this);return false;'&gt;&lt;span&gt; "+ind[r]+" &lt;/span&gt;&lt;a&gt;"+res.respuestas[r]+"&lt;/a&gt;&lt;/div&gt;");
+}
+$imagen.css("background-image","url("+res.imagen+")");
+&lt;?php
+if(@$_REQUEST['puntuar']=="1" &amp;&amp; isset($usuarios[$id])){
+  if(rand(0,5)==0){
+    ?&gt;
+    var valor=parseInt($(".bomb").html());
+    valor++;
+    $(".bomb").html(valor);
+    &lt;?php
+  }
+  if(rand(0,5)==0){
+    ?&gt;
+    var valor=parseInt($(".glove").html());
+    valor++;
+    $(".glove").html(valor);
+    &lt;?php
+  }
+}
+?&gt;
+
+&lt;?php
+$code=ob_get_contents();
+ob_end_clean();
+echo $_REQUEST['callback'],'(',json_encode($code),');';</file><file name="pregunta_save_all.php" preprocess="" __ideNodeOpen="true">&lt;?php
+global $preguntas;
+global $usuarios;
+require_once("uDB.php");
+$preguntas=new uDB('db/preguntas');
+$usuarios=new uDB('db/usuarios');
+$p=rand(0,count($preguntas)-1);
+for($p=0;$p&lt;count($preguntas);$p++){
+
+$pregunta=$preguntas[$p]-&gt;getValue();
+//$url=dirname(curPageURL());
+$pregunta['imagen'] = $pregunta['imagen'];
+/*$id=@$_REQUEST['id'];
+if(@$_REQUEST['puntuar']=="1" &amp;&amp; isset($usuarios[$id])){
+  if(!isset($usuarios[$id]['puntaje']))$usuarios[$id]['puntaje']=0;
+  $usuarios[$id]['puntaje']=$usuarios[$id]['puntaje']+1;
+}*/
+/*
+function curPageURL() {
+ return "images";
+ $pageURL = 'http';
+ if (@$_SERVER["HTTPS"] == "on") {$pageURL .= "s";}
+ $pageURL .= "://";
+ if ($_SERVER["SERVER_PORT"] != "80") {
+  $pageURL .= $_SERVER["SERVER_NAME"].":".$_SERVER["SERVER_PORT"].$_SERVER["REQUEST_URI"];
+ } else {
+  $pageURL .= $_SERVER["SERVER_NAME"].$_SERVER["REQUEST_URI"];
+ }
+ return $pageURL;
+}*/
+
+ob_start();
+?&gt;
+var res=&lt;?php echo json_encode($pregunta); ?&gt;;
+dibujaPregunta($pregunta,$respuestas,$imagen,res);
+&lt;?php
+if(@$_REQUEST['puntuar']=="1" &amp;&amp; isset($usuarios[$id])){
+  if(rand(0,5)==0){
+    ?&gt;
+    var valor=parseInt($(".bomb").html());
+    valor++;
+    $(".bomb").html(valor);
+    &lt;?php
+  }
+  if(rand(0,5)==0){
+    ?&gt;
+    var valor=parseInt($(".glove").html());
+    valor++;
+    $(".glove").html(valor);
+    &lt;?php
+  }
+}
+?&gt;
+
+&lt;?php
+$code=ob_get_contents();
+ob_end_clean();
+//echo json_encode($code);
+file_put_contents("mobile/preguntas/$p.txt", $code);
+copy($pregunta['imagen'],'mobile/'.$pregunta['imagen']);
+}
+</file><file name="preguntas.php" preprocess="" __ideNodeOpen="true">&lt;?php
+$preguntas=array(
+  array(
+    "pregunta"=&gt;"¿Qué personajes representa Rubens en este cuadro?",
+    "respuestas"=&gt;array("Betsabé y David","Sansón y Dalila","Raquel y Jacob","Abrahám y Sara"),
+    "correcta"=&gt;1,
+    "imagen"=&gt;"img/rubens.jpg",
+  )
+);</file><file name="setid.php" preprocess="" __ideNodeOpen="false">&lt;?php
+global $usuarios;
+require_once("uDB.php");
+//require_once("usuarios.php");
+$usuarios=new uDB('db/usuarios');
+$id=$_REQUEST['id'];
+if(isset($usuarios[$id])){
+  ob_start();
+  ?&gt;
+    $("#name").val(&lt;?php echo json_encode($usuarios[$id]["nombre"]) ?&gt;);
+    puntaje=&lt;?php echo json_encode(@$usuarios[$id]["puntaje"]*1) ?&gt;;
+    $(".points").html(puntaje);
+  &lt;?php
+  $code=ob_get_contents();
+  ob_end_clean();
+  echo $_REQUEST['callback'],'(',json_encode($code),');';
+} else {
+  ob_start();
+  ?&gt;
+  &lt;?php
+  $code=ob_get_contents();
+  ob_end_clean();
+  echo $_REQUEST['callback'],'(',json_encode($code),');';
+}</file><file name="uDB.php" preprocess="" __ideNodeOpen="true">&lt;?php
+//class UDB implements ArrayAccess, Iterator {
+class UDB implements ArrayAccess, Iterator, Countable {
+  private $pointer = 0;
+  public $path='';
+  public $isFile=false;
+
+  public function __construct($path){
+    $this-&gt;path = $path;
+    $this-&gt;isFile = is_file($path);
+  }
+  public function offsetExists ( $offset ){
+    $value = @$this-&gt;offsetGet ( $offset );
+    return isset($value);
+  }
+  public function count(){
+    if($this-&gt;isFile){
+      $valueS = file_get_contents($this-&gt;path);
+      $value = @unserialize($valueS);
+      if($value===false &amp;&amp; $valueS!="b:0;"){
+        //error
+        return 0;
+      }
+      return count($value);
+    } else {
+      return count(glob($this-&gt;path.'/*'));
+    }
+  }
+  public function getValue(){
+    if($this-&gt;isFile){
+      $valueS = file_get_contents($this-&gt;path);
+      $value = @unserialize($valueS);
+      if($value===false &amp;&amp; $valueS!="b:0;"){
+        //error
+        return null;
+      }
+      return $value;
+    } else {
+      die('TODO getValue of directory');
+    }
+  }
+  public function offsetGet ( $offset ){
+    if($this-&gt;isFile){
+      $valueS = file_get_contents($this-&gt;path);
+      $value = @unserialize($valueS);
+      if($value===false &amp;&amp; $valueS!="b:0;"){
+        //error
+        return null;
+      }
+      if(is_object($value)){
+        return @$value-&gt;$offset;
+      } elseif(is_array($value)){
+        return @$value[$offset];
+      } else {
+        return @$value[$offset];
+      }
+    } else {
+      if(!isset($offset) || $offset===''){
+        return null;
+      } elseif(file_exists($this-&gt;path . '/' . $offset)){
+        return new uDB($this-&gt;path . '/' . $offset);
+      } else {
+        return null;
+      }
+    }
+  }
+  public function offsetSet ( $offset , $newValue ){
+    if($this-&gt;isFile){
+      $valueS = file_get_contents($this-&gt;path);
+      $value = @unserialize($valueS);
+      if($value===false &amp;&amp; $valueS!="b:0;"){
+        //error
+        return;
+      }
+      if(is_object($value)){
+        $value-&gt;$offset=$newValue;
+      } elseif(is_array($value)){
+        $value[$offset]=$newValue;
+      } else {
+        $value[$offset]=$newValue;
+      }
+      file_put_contents($this-&gt;path , serialize($value));
+    } else {
+      if(isset($offset)){
+        file_put_contents($this-&gt;path . '/' . $offset , serialize($newValue));
+      }
+    }
+  }
+  public function offsetUnset ( $offset ){
+    if($this-&gt;isFile){
+      $valueS = file_get_contents($this-&gt;path);
+      $value = @unserialize($valueS);
+      if($value===false &amp;&amp; $valueS!="b:0;"){
+        //error
+        return;
+      }
+      if(is_object($value)){
+        unsset($value-&gt;$offset);
+      } elseif(is_array($value)){
+        unset($value[$offset]);
+      } else {
+        unset($value[$offset]);
+      }
+      file_put_contents($this-&gt;path , serialize($value));
+    } else {
+      if(file_exists($this-&gt;path . '/' . $offset)){
+        if(is_file($this-&gt;path . '/' . $offset)){
+          unlink($this-&gt;path . '/' . $offset);
+        } else {
+          uDB::rrmdir($this-&gt;path . '/' . $offset);
+        }
+      }
+    }
+  }
+
+  static function rrmdir($dir) {
+    if (is_dir($dir)) {
+      $objects = scandir($dir);
+      foreach ($objects as $object) {
+        if ($object != "." &amp;&amp; $object != "..") {
+          if (filetype($dir."/".$object) == "dir") rrmdir($dir."/".$object); else unlink($dir."/".$object);
+        }
+      }
+      reset($objects);
+      rmdir($dir);
+    }
+  }
+
+  public function loadKeys(){
+    if($this-&gt;isFile){
+      $valueS = file_get_contents($this-&gt;path);
+      $value = @unserialize($valueS);
+      if($value===false &amp;&amp; $valueS!="b:0;"){
+        //error
+        return;
+      }
+      if(is_object($value)){
+        $this-&gt;keys = get_object_vars($value);
+      } elseif(is_array($value)){
+        $this-&gt;keys = array_keys($value);
+      } else {
+        $this-&gt;keys = array();
+      }
+    } else {
+      $keys=array();
+      foreach(glob($this-&gt;path.'/*') as $f) $keys[]=basename($f);
+      $this-&gt;keys=$keys;
+    }
+//    echo __LINE__;var_dump($this-&gt;keys);die;
+  }
+
+  public function key() {
+    $this-&gt;loadKeys();
+    return @$this-&gt;keys[$this-&gt;pointer];
+  }
+
+  public function current() {
+    $key = $this-&gt;key();
+    $value=$this-&gt;offsetGet($key);
+    return $value;
+  }
+
+  public function next() {
+    $this-&gt;pointer++;
+  }
+
+  public function rewind() {
+    $this-&gt;pointer = 0;
+  }
+
+  public function seek($position) {
+    $this-&gt;pointer = $position;
+  }
+
+  public function valid() {
+    $current=$this-&gt;current();
+    return isset($current);
+  }
+
+  /*static function save($name, $data){
+    file_put_contents($name.'.php', '&lt;?php'."\n\$$name=".var_export($data,true).';');
+  }*/
+}</file><file name="setname.php" preprocess="" __ideNodeOpen="false">&lt;?php
+global $usuarios;
+require_once("uDB.php");
+//require_once("usuarios.php");
+$usuarios=new uDB('db/usuarios');
+$id=$_REQUEST['id'];
+if(isset($usuarios[$id])){
+  $usuarios[$id]["nombre"]=$_REQUEST['nombre'];
+  //uDB::save("usuarios", $usuarios);
+} else {
+  $usuarios[$id]=array("nombre"=&gt;$_REQUEST['nombre']);
+  //uDB::save("usuarios", $usuarios);
+}</file><abm name="preguntas" __ideNodeOpen="true">array(
+  "pregunta"=&gt;array("label"=&gt;"Pregunta","type"=&gt;"input"),
+  "respuestas"=&gt;array("label"=&gt;"Respuestas","type"=&gt;"array"),
+  "correcta"=&gt;array("label"=&gt;"Es correcta (0=primero, 1=segundo, ...)","type"=&gt;"input"),
+  "nivel"=&gt;array("label"=&gt;"Nivel (1,2,3)","type"=&gt;"input"),
+  "mision"=&gt;array("label"=&gt;"Mision","type"=&gt;"input"),
+  "imagen"=&gt;array("label"=&gt;"Imagen","type"=&gt;"file")
+)</abm><cordova domain_name="com.caleeli.triviacristiana" name="TriviaCristiana" cordova_path="C:\Users\david\AppData\Roaming\npm\cordova.cmd" node_path="C:\Program Files\nodejs\node.exe" path="cordova" source="mobile" __ideNodeOpen="true"/><file name="index1.php" preprocess="" __ideNodeOpen="true">&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+  &lt;title&gt;Website Template&lt;/title&gt;
+  &lt;meta charset="utf-8"&gt;
+  &lt;link href="css/style.css" rel="stylesheet" type="text/css"&gt;
+  &lt;!--[if IE 6]&gt;
+    &lt;link href="css/ie6.css" rel="stylesheet" type="text/css"&gt;
+  &lt;![endif]--&gt;
+  &lt;!--[if IE 7]&gt;
+    &lt;link href="css/ie7.css" rel="stylesheet" type="text/css"&gt;
+  &lt;![endif]--&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;div id="background"&gt;
+    &lt;div id="page"&gt;
+      &lt;div id="body"&gt;
+        &lt;div id="sidebar"&gt; &lt;a id="logo" href="index.php"&gt;&amp;nbsp;&lt;/a&gt;
+          &lt;ul&gt;
+            &lt;li&gt;
+              &lt;a href="mobile/index.html"&gt;Juega Ya!&lt;/a&gt;
+            &lt;/li&gt;
+            &lt;li&gt;
+              &lt;a href="preguntas_list.php"&gt;Agrega nuevas preguntas&lt;/a&gt;
+            &lt;/li&gt;
+            &lt;li&gt;
+              &lt;a href="index.php"&gt;Descarga la aplicacion movil&lt;/a&gt;
+            &lt;/li&gt;
+          &lt;/ul&gt;
+        &lt;/div&gt;
+        &lt;div id="content"&gt;
+          &lt;div id="header"&gt;
+            &lt;ul class="navigation"&gt;
+              &lt;li class="first"&gt;
+                &lt;a class="active" href="index.php"&gt;Inicio&lt;/a&gt;
+              &lt;/li&gt;
+              &lt;li&gt;
+                &lt;a href="about.html"&gt;Acerca de&lt;/a&gt;
+              &lt;/li&gt;
+              &lt;li&gt;
+                &lt;a href="preguntas_list.php"&gt;Preguntas&lt;/a&gt;
+              &lt;/li&gt;
+              &lt;li&gt;
+                &lt;a href="news.html"&gt;Novedades&lt;/a&gt;
+              &lt;/li&gt;
+              &lt;!--&lt;li&gt;
+                &lt;a href="blog.html"&gt;Blog&lt;/a&gt;
+              &lt;/li&gt;--&gt;
+              &lt;li&gt;
+                &lt;a href="contact.html"&gt;Contactanos&lt;/a&gt;
+              &lt;/li&gt;
+            &lt;/ul&gt;
+          &lt;/div&gt;
+          &lt;div class="body"&gt; &lt;img src="images/seedling.jpg" width="631" height="307" alt=""&gt;
+            &lt;div class="content"&gt;
+              &lt;h2&gt;Cultura Cristiana&lt;/h2&gt;
+              &lt;ul&gt;
+                &lt;li&gt;
+                  &lt;p&gt;
+                    Pon a prueba tus conocimientos cristianos, refuerza los que ya conoces y tambien aprende mas. 
+                  &lt;/p&gt;
+                &lt;/li&gt;
+                &lt;li&gt;
+                  &lt;p&gt;
+                    ABC
+                  &lt;/p&gt;
+                &lt;/li&gt;
+                &lt;li&gt;
+                  &lt;p&gt;
+                    ...
+                  &lt;/p&gt;
+                &lt;/li&gt;
+              &lt;/ul&gt;
+            &lt;/div&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+        &lt;div class="featured"&gt;
+          &lt;ul&gt;
+            &lt;li&gt;
+              &lt;h2&gt; &lt;a href="index.php"&gt;Colaboranos&lt;/a&gt; &lt;/h2&gt;
+              &lt;img src="images/developers.jpg" width="280" height="140" alt=""&gt;
+              &lt;p&gt;
+                Si quieres formar parte de nosotros.
+              &lt;/p&gt;
+            &lt;/li&gt;
+            &lt;li&gt;
+              &lt;h2&gt; &lt;a href="index.php"&gt;Lo que nos gusta hacer&lt;/a&gt; &lt;/h2&gt;
+              &lt;img src="images/golf-court.jpg" width="280" height="140" alt=""&gt;
+              &lt;p&gt;
+                ...
+              &lt;/p&gt;
+            &lt;/li&gt;
+            &lt;li&gt;
+              &lt;h2&gt; &lt;a href="index.php"&gt;Donde encontrarnos&lt;/a&gt; &lt;/h2&gt;
+              &lt;img src="images/trees.jpg" width="280" height="140" alt=""&gt;
+              &lt;p&gt;
+                ...
+              &lt;/p&gt;
+            &lt;/li&gt;
+          &lt;/ul&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+      &lt;div id="footer"&gt;
+        &lt;div class="section"&gt;
+          &lt;h2&gt;Galeria de imagenes&lt;/h2&gt;
+          &lt;ul&gt;
+            &lt;li class="first"&gt;
+              &lt;a href="index.php"&gt;&lt;img src="images/tree1.jpg" width="90" height="90" alt=""&gt;&lt;/a&gt; &lt;a href="index.php"&gt;&lt;img src="images/tree2.jpg" width="90" height="90" alt=""&gt;&lt;/a&gt; &lt;a href="index.php"&gt;&lt;img src="images/tree3.jpg" width="90" height="90" alt=""&gt;&lt;/a&gt; &lt;a href="index.php"&gt;&lt;img src="images/tree4.jpg" width="90" height="90" alt=""&gt;&lt;/a&gt; &lt;a href="index.php"&gt;&lt;img src="images/tree5.jpg" width="90" height="90" alt=""&gt;&lt;/a&gt; &lt;a href="index.php"&gt;&lt;img src="images/tree6.jpg" width="90" height="90" alt=""&gt;&lt;/a&gt;
+            &lt;/li&gt;
+            &lt;li&gt;
+              &lt;h1&gt;La frase de hoy&lt;/h1&gt;
+              &lt;p&gt;
+                El Señor es mi pastor, nada me falta.
+              &lt;/p&gt;
+            &lt;/li&gt;
+            &lt;li&gt;
+              &lt;h1&gt;Pensemos en&lt;/h1&gt;
+              &lt;p&gt;
+                ...
+              &lt;/p&gt;
+            &lt;/li&gt;
+          &lt;/ul&gt;
+        &lt;/div&gt;
+        &lt;div class="footnote"&gt; &lt;span&gt;&amp;copy; 2011 &lt;a href="index.php"&gt;Hola somos cristianos&lt;/a&gt; . :).&lt;/span&gt; &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/body&gt;
+&lt;/html&gt;</file><file name="css/my.css" preprocess="" __ideNodeOpen="true">html, body{
+  width:100%;
+  height:100%;
+  padding:0px;
+  margin:0px;
+  overflow:hidden;
+}
+.page {
+  background: url("../images/clouds.jpg") center top;
+  background-repeat:repeat-x;
+  background-attachment:scroll;
+  background-color: #E7F1F2;
+}
+#footer {
+  width: 100%;
+  background: url("../images/loma_pasto.png") no-repeat scroll center top transparent;
+  height: 10%;
+  position:absolute;
+  bottom:0px;
+}
+#content{
+  width:100%;
+  height:100%;
+  overflow:auto;
+}
+#plant {
+  background: url("../images/plant.png") no-repeat;
+  width:121px;
+  height:447px;
+  margin-left:50px;
+  position:absolute;
+  left:15%;
+  bottom:0px;
+}
+.state_0 #plant {
+  background-position: 0px center;
+  width:121px;
+}
+.state_1 #plant {
+  background-position: -121px center;
+  width:121px;
+}
+.state_2 #plant {
+  background-position: -242px center;
+  width:121px;
+}
+.state_3 #plant {
+  background-position: -363px center;
+  width:122px;
+}
+.state_4 #plant {
+  background-position: -485px center;
+  width:122px;
+}
+.state_5 #plant {
+  background-position: -606px center;
+  width:197px;
+  margin-left:0px;
+}
+.state_6 #plant {
+  background-position: -803px center;
+  width:197px;
+  margin-left:0px;
+}
+
+.leaf_0 {
+  display: none;
+}
+.state_0 .leaf_0 {
+  display:inline-block;
+}
+.leaf_1 {
+  display: none;
+}
+.state_1 .leaf_1 {
+  display:inline-block;
+}
+.leaf_2 {
+  display: none;
+}
+.state_2 .leaf_2 {
+  display:inline-block;
+}
+.leaf_3 {
+  display: none;
+}
+.state_3 .leaf_3 {
+  display:inline-block;
+}
+.leaf_4 {
+  display: none;
+}
+.state_4 .leaf_4 {
+  display:inline-block;
+}
+.leaf_5 {
+  display: none;
+}
+.state_5 .leaf_5 {
+  display:inline-block;
+}
+.leaf_6 {
+  display: none;
+}
+.state_6 .leaf_6 {
+  display:inline-block;
+}
+
+.row{
+  display: block;
+}
+
+.block{
+  display: inline-block;
+}
+
+.block-left{
+  margin-left: 30%;
+  margin-right: 30%;
+}
+
+.block-right{
+  margin-left: 60%;
+}
+
+.box{
+  border-radius: 16px 0px 16px 0px;
+  border: 2px solid lightgray;
+  padding: 8px;
+  display: inline-block;
+}
+/*box backgrounds*/
+.bg13 {
+  background-image: url("../images/13.jpg");
+  background-position: center bottom;
+  background-size: 100% auto;
+  min-height: 96px;
+  color:white;
+}
+
+.bg14 {
+  background-image: url("../images/14.jpg");
+  background-position: center bottom;
+  background-size: 100% auto;
+  min-height: 96px;
+  color:yellow;
+}
+
+.bg15 {
+  background-image: url("../images/15.jpg");
+  background-position: center bottom;
+  background-size: 100% auto;
+  min-height: 96px;
+  color:black;
+}
+
+.bgcloud {
+  background-image: url("../images/cloud.png");
+  background-position: center bottom;
+  min-height: 96px;
+  color:black;
+}
+
+h2{
+  margin:0px;
+}</file><file name="index.php" preprocess="" __ideNodeOpen="true">&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+  &lt;title&gt;Website Template&lt;/title&gt;
+  &lt;meta charset="utf-8"&gt;
+  &lt;script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"&gt;&lt;/script&gt;
+  &lt;script&gt;if(typeof $=="undefined") document.writeln("&lt;"+"script src='jquery-1.9.1.js'"+"&gt;"+"&lt;"+"/script&gt;");&lt;/script&gt;
+  &lt;link href="css/my.css" rel="stylesheet" type="text/css"&gt;
+  &lt;script&gt;
+  $(function(){
+    $("#content").on("scroll", function(){
+      var maxS=this.scrollHeight - $(this).innerHeight();
+      var s=Math.floor(this.scrollTop/(maxS+1)*7);
+      if(s&gt;6)s=6;
+      $("body").attr("class", "page state_"+s);
+    });
+  });
+  &lt;/script&gt;
+&lt;/head&gt;
+&lt;body class="page"&gt;
+&lt;div id="content" style="text-align:center"&gt;
+  &lt;img src="images/seedling.png"&gt;
+  &lt;div class="row"&gt;&lt;div class="block"&gt;&lt;h1&gt;Soy Cristiano&lt;div class="box"&gt;&lt;/div&gt;&lt;/h1&gt;&lt;/div&gt;&lt;/div&gt;
+
+  &lt;div class="row"&gt;&lt;div class="block-left"&gt;&lt;h2&gt;Lo que nos gusta hacer&lt;/h2&gt;&lt;pre class="box bgcloud"&gt;Estudiar, compartir y vivir la 
+palabra del Señor&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+  &lt;div class="row"&gt;&lt;div class="block-right"&gt;&lt;h2&gt;Contactanos&lt;/h2&gt;&lt;pre class="box bgcloud"&gt;Somos la célula 1.5.3.
+Escribenos a soycristiano@gmail.com
+Nuestro &lt;a href="https://www.facebook.com/groups/348273825237921/?fref=ts"&gt;Facebook&lt;/a&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+  &lt;div class="row"&gt;&lt;div class="block-left"&gt;&lt;h2&gt;La palabra de la semana&lt;/h2&gt;&lt;pre class="box bgcloud"&gt;El Señor es mi pastor nada me faltará.
+Nuestro &lt;a href="#"&gt;Twitter&lt;/a&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+  &lt;div class="row"&gt;&lt;div class="block-right"&gt;&lt;h2&gt;Soy Cristiano el Juego&lt;/h2&gt;&lt;pre class="box bgcloud"&gt;Pon a prueba tu conocimiento,
+responde a preguntas de la Biblia,
+hechos historicos, personajes biblicos,
+por niveles y temáticas variadas.&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+  &lt;div class="row"&gt;&lt;div class="block-left"&gt;&lt;h2&gt;Descargala&lt;/h2&gt;&lt;pre class="box bgcloud"&gt;Para dispositivos móviles.&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+  &lt;div class="row"&gt;&lt;div class="block-right"&gt;&lt;h2&gt;Colaboranos&lt;/h2&gt;&lt;pre class="box bgcloud"&gt;Compartenos tus preguntas para el juego.
+Compartenos tus ideas
+Comparte tus experiencias de
+  vida cristiana.&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id="plant" class="state_0" state="0"&gt;&lt;/div&gt;
+&lt;style&gt;
+.green-link {
+    background-color: rgba(0, 200, 0, 0.4);
+    border-radius: 8px;
+    padding: 2px 4px;
+}
+.state_3 .about{
+  position:absolute;
+  bottom:106px;
+  left:15%;
+}
+.state_4 .about{
+  position:absolute;
+  bottom:144px;
+  left:15%;
+}
+.state_5 .about{
+  position:absolute;
+  bottom:138px;
+  left:15%;
+}
+.state_6 .about{
+  position:absolute;
+  bottom:155px;
+  left:15%;
+  margin-left:-40px;
+}
+&lt;/style&gt;
+&lt;div class="about green-link leaf_3 leaf_4 leaf_5 leaf_6"&gt;&lt;a href="about.php"&gt;Acerca de&lt;/a&gt;&lt;/div&gt;
+&lt;div id="footer"&gt;&lt;/div&gt;
+&lt;/body&gt;
+&lt;/html&gt;</file><abm name="personajes" __ideNodeOpen="true">array(
+  "nombre"=&gt;array("label"=&gt;"Nombre","type"=&gt;"input"),
+  "descripcion"=&gt;array("label"=&gt;"Descripcion","type"=&gt;"input"),
+  "imagen"=&gt;array("label"=&gt;"Imagen","type"=&gt;"input")
+)</abm></path></root>

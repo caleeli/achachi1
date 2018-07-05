@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root><path path="output/temple" main="output/temple/index.html"><file name="index.html" preprocess="">&lt;html&gt;
+&lt;head&gt;
+  &lt;link rel="stylesheet" href="css/bootstrap.min.css"&gt;
+  &lt;link rel="stylesheet" href="css/bootstrap-theme.min.css"&gt;
+  &lt;script src="js/bootstrap.min.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+var L=200;
+var L1=2*L;
+/*BG width*/
+var Wbg=1372;
+var bg_scroll_x=0;
+function fn1(xy,z){
+	return xy/z*L;
+}
+function fnz(z){
+	return L/z;
+}
+function setPos(div,x,y,z,animate){
+  z=L+Math.round(Math.pow(x/3000,2)*400);
+  var zoom=fnz(z);
+  var x0=700,y0=100*3;
+  x-=450;y-=y0;
+  var xp=fn1(x,z)+x0;
+  var yp=fn1(y,z)+y0;
+  var h=div.clientHeight,w=div.clientWidth;
+  var xp0=xp,yp0=yp;
+  xp=xp-w/2*(1-zoom);
+  yp=yp-h/2*(1-zoom);
+//animate=false;
+  if(animate){
+    animateElement(div, "-webkit-transform:translate("+xp+"px,"+yp+"px) scale("+zoom+","+zoom+");"+
+      "transform:translate("+xp+"px,"+yp+"px) scale("+zoom+","+zoom+");"+
+      "-ms-transform:translate("+xp+"px,"+yp+"px) scale("+zoom+","+zoom+");"+
+      "background-position:"+(-x-x0/zoom+bg_scroll_x/zoom)+"px "+(-y-y0/zoom)+"px;"+
+      "background-size:"+(Wbg/zoom)+"px;"+
+      "z-index:"+(-z)+";"
+    );
+  } else {
+    div.style.WebkitTransform="translate("+xp+"px,"+yp+"px) scale("+zoom+","+zoom+")";
+    div.style.transform="translate("+xp+"px,"+yp+"px) scale("+zoom+","+zoom+")";
+    div.style.MsTransform="translate("+xp+"px,"+yp+"px) scale("+zoom+","+zoom+")";
+  
+    div.style.backgroundPosition=""+(-x-x0/zoom+bg_scroll_x/zoom)+"px "+(-y-y0/zoom)+"px";
+    div.style.backgroundSize=""+(Wbg/zoom)+"px";
+    div.style.zIndex=-z;
+  }
+}
+function animateElement(element, css){
+//console.log(element, css);
+  var style=document.createElement("style");
+  var id=element.id;
+  var animId="anim"+id;
+
+  style.innerHTML="#"+id+" {"+
+    "    -webkit-animation: "+animId+" 1s;"+
+    "    animation: "+animId+" 1s;}"+
+    "@-webkit-keyframes "+animId+" {"+
+    "    to {"+css+"}"+
+    "}"+
+    "@keyframes "+animId+" {"+
+    "    to {"+css+"}"+
+    "}";
+  document.body.appendChild(style);
+
+  PrefixedEvent(element, "animationend", (function(css,style){ return function(){
+   // console.log( "entro", this );
+    var cssItem=css.split(";");
+    for(var i=0,l=cssItem.length;i&lt;l;i++)if(cssItem[i]){
+      var name=cssItem[i].split(":")[0];
+      var value=cssItem[i].split(":")[1];
+      name=name.split("-");
+      for(var j=1,k=name.length;j&lt;k;j++){
+        name[j]=name[j].substr(0,1).toUpperCase()+name[j].substr(1,name[j].length);
+      }
+      name=name.join("");
+      eval("this.style."+name+"=value;");
+      //console.log("this.style."+name+"=value;",value);
+    }
+    style.remove();
+  };})(css,style));
+}
+var pfx = ["webkit", "moz", "MS", "o", ""];
+function PrefixedEvent(element, type, callback) {
+	for (var p = 0; p &lt; pfx.length; p++) {
+		if (!pfx[p]) type = type.toLowerCase();
+		element.addEventListener(pfx[p]+type, callback, false);
+	}
+}
+&lt;/script&gt;
+&lt;style&gt;
+body, html{
+  /*background-image: url(bg.jpg);  */
+  margin:0px;
+  padding:0px;
+}
+.win{
+	position:absolute;
+	width:800;
+	height:600;
+	opacity:0.9;
+}
+/**/
+.panel{
+	background-image: url(bg.jpg);
+  background-color: rgba(255,255,255,0);
+}
+.panel-heading {
+    opacity: 0.8;
+}
+&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;div id="win1" class="win panel panel-default"&gt;
+  &lt;div class="panel-heading"&gt;Panel heading without title&lt;/div&gt;
+  &lt;div class="panel-body"&gt;
+    Panel content
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;div id="win2" class="win panel panel-default"&gt;
+  &lt;div class="panel-heading"&gt;Panel heading without title&lt;/div&gt;
+  &lt;div class="panel-body"&gt;
+    Panel content
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;div id="win3" class="win panel panel-default"&gt;
+  &lt;div class="panel-heading"&gt;Panel heading without title&lt;/div&gt;
+  &lt;div class="panel-body"&gt;
+    Panel content
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;script&gt;
+bg_scroll_x=0;
+setPos(document.getElementById("win1"), 800, 10, L1);
+setPos(document.getElementById("win2"), -800, 10, L1);
+setPos(document.getElementById("win3"), 0, 10, L);
+
+document.getElementById("win1").onclick=function(){
+  bg_scroll_x=-800;
+  setPos(document.getElementById("win1"), 0, 10, L, true);
+  setPos(document.getElementById("win2"), -1600, 10, L1, true);
+  setPos(document.getElementById("win3"), -800, 10, L1, true);
+}
+document.getElementById("win2").onclick=function(){
+  bg_scroll_x=800;
+  setPos(document.getElementById("win1"), 1600, 10, L1, true);
+  setPos(document.getElementById("win2"), 0, 10, L, true);
+  setPos(document.getElementById("win3"), 800, 10, L1, true);
+}
+document.getElementById("win3").onclick=function(){
+  bg_scroll_x=0;
+  setPos(document.getElementById("win1"), 800, 10, L1, true);
+  setPos(document.getElementById("win2"), -800, 10, L1, true);
+  setPos(document.getElementById("win3"), 0, 10, L, true);
+}
+&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;</file></path></root>

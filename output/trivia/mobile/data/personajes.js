@@ -1,0 +1,1 @@
+var DATA_personajes=[{"nombre":"Sara","descripcion":"Sara (\u05e9\u05b8\u05c2\u05e8\u05b8\u05d4) fue la esposa de Abraham y madre de Isaac mencionada en la Biblia. Seg\u00fan el libro de G\u00e9nesis su nombre original era Sarai pero Dios lo cambi\u00f3 a \"Sara\" antes de concederle el milagro de tener un hijo a la edad de 90 a\u00f1os.","imagen":"personajes\/sara.png"}]

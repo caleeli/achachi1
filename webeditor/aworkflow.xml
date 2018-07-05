@@ -1,0 +1,703 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root __ideNodeOpen="true"><path path="output/aworkflow" main="output/aworkflow/index.php" __ideNodeOpen="true"><include src="$library/zplugin.xml"/><component name="aworkflow" transparent="" __ideNodeOpen="true">
+class @{$name} extends Workflow {
+
+  function getInstance($name,$from=null){
+    return parent::getInstance(__CLASS__, $name, $from);
+  }
+
+  function @{$name}(){
+@{node::content($_)}
+  }
+
+}
+</component><component name="task" transparent="" __ideNodeOpen="true">    $@{$name} = $this-&gt;createTask(
+      "@{$name}",
+      array(#{
+foreach($_e-&gt;parentNode-&gt;childNodes as $_c):
+  if($_c-&gt;nodeName=="lane")
+    if(($_c-&gt;getAttribute("x")&lt;=$x) &amp;&amp; 
+       (($_c-&gt;getAttribute("x")+$_c-&gt;getAttribute("width"))&gt;=$x)
+      ) return var_export($_c-&gt;getAttribute("name"), true);
+endforeach;
+return '""';
+}),
+      array(@{@$inputs})
+    @{isset($callback)?"  ,$callback\n    ":""});
+</component><component name="event" transparent="" __ideNodeOpen="true">    $@{$name} = $this-&gt;createEvent(
+      "@{$name}",
+      array(#{
+foreach($_e-&gt;parentNode-&gt;childNodes as $_c):
+  if($_c-&gt;nodeName=="lane")
+    if(($_c-&gt;getAttribute("x")&lt;=$x) &amp;&amp; 
+       (($_c-&gt;getAttribute("x")+$_c-&gt;getAttribute("width"))&gt;=$x)
+      ) return var_export($_c-&gt;getAttribute("name"), true);
+endforeach;
+return '""';
+}),
+      array(@{@$inputs})
+    @{isset($callback)?"  ,$callback\n    ":""});
+    $this-&gt;addEvent($@{$name});
+</component><component name="flow" transparent="" __ideNodeOpen="true">    $@{$from}-&gt;addFlow($@{$to});
+</component><component name="gateway" transparent="" __ideNodeOpen="true">    $@{$from}-&gt;addGateway(${$condition}, $@{$to});
+</component><zplugin name="aworkflow" nodesEditor="aworkflow" __ideNodeOpen="true"><!--#editor.plugin
+
+zplugin.create($this.parentNode);
+componentsIndex[$this.parentNode.nodeName].editor=zcomponent.launch;--><zplugin.components __ideNodeOpen="true"/><zplugin.base __ideNodeOpen="true">"div",{style:"border:none;width:100%;height:100%;position:relative;font-size:16px;border-bottom:1px dotted gray;border-right:1px dotted gray;"},[],
+"style",{},".task{position:absolute;border:1px solid black;padding:4px;background-color:white;}\n"+
+".event{position:absolute;border:1px solid black;padding:4px;border-radius:16px;width:20px;height:20px;background-color:white;line-height:68px;}\n"+
+".lane{position:absolute;border:1px solid gray;width:120px;height:100%;top:0px;text-align:center;}\n"+
+".lane div{border-bottom:1px solid gray;padding:4px;text-align:center;}\n"+
+".gateway{position:absolute;width:42px;height:42px;background-image:url(BPMN-Gateway.png);font-size:10px;line-height:41px;}\n"+
+".flow{position:absolute;}\n"
+</zplugin.base><zplugin.launch>
+Z.emptyNode(canvas.firstChild);
+if(currentNode.getAttribute("width")) $(canvas.firstChild).css("width",currentNode.getAttribute("width"));
+if(currentNode.getAttribute("height")) $(canvas.firstChild).css("height",currentNode.getAttribute("height"));
+$(canvas.firstChild).resizable({
+  stop:function(ev,ui){
+    var $e=$(currentNode);
+    $e.attr("width",$(this).width());
+    $e.attr("height",$(this).height());
+    ztree.redrawNode(currentNode);
+  }
+});
+function joinNodes(from, to){
+  var id = new Date().getTime();
+  var $from=$(currentNode).find("[name="+from+"]");
+  var $to=$(currentNode).find("[name="+to+"]");
+  var $fromE=$(canvas).find("[name="+from+"]");
+  var $toE=$(canvas).find("[name="+to+"]");
+  if(!$from.length) return;
+  if(!$to.length) return;
+  var L=($from.attr("x")-0)&lt;($to.attr("x")-0);
+  var B=($from.attr("y")-0)&lt;($to.attr("y")-0);
+  var afterlastLane = $(canvas).find(".lane:last")[0];
+  if(afterlastLane) afterlastLane = afterlastLane.nextSibling;
+  else afterlastLane = canvas.firstChild.firstChild;
+  var x1=$from.attr("x")-0, x2=$to.attr("x")-0, w1=$fromE.width(), w2=$toE.width();
+  var y1=$from.attr("y")-0, y2=$to.attr("y")-0, h1=$fromE.height(), h2=$toE.height();
+  var w = Math.abs(x1+w1*0.5-x2-w2*0.5);
+  var h = Math.abs(y1+h1*0.5-y2-h2*0.5);
+console.log($fromE,$toE);
+  draw3(canvas.firstChild,[
+    "div",{
+      "class":"flow",
+      "name":id,
+      "style":"left:"+(Math.min(x1,x2)+(x1&lt;x2?w1:w2)*0.5)+"px;"+
+              "top:"+(Math.min(y1,y2)+(y1&lt;y2?h1:h2)*0.5)+"px;"+
+              "width:"+w+"px;"+
+              "height:"+h+"px;"+
+              "border-"+(L?"left":"right")+":1px solid black;"+
+              "border-"+(B?"bottom":"top")+":1px solid black;",
+      "from":from,
+      "to":to
+    },
+    ((L &amp;&amp; (w&gt;21))? ["span",{style:"position: absolute; right: 14px; "+(B?"bottom":"top")+": 0px; line-height: 0px;"},"&gt;"]:
+        [])
+  ],afterlastLane);
+  return id;
+}
+/* NODES RENDER */
+$(currentNode).find("lane").each(function(){
+  draw3(canvas.firstChild,[
+    "div",{
+      "class":this.nodeName,
+      "name":this.getAttribute("name"),
+      "style":"left:"+this.getAttribute("x")+"px;"+"width:"+this.getAttribute("width")+"px;"
+    },
+    ["div",{},""+this.getAttribute("name")]
+  ]);
+});
+$(currentNode).find("task,event,gateway").each(function(){
+  draw3(canvas.firstChild,[
+    "div",{
+      "class":this.nodeName,
+      "name":this.getAttribute("name"),
+      "style":"left:"+this.getAttribute("x")+"px;"+"top:"+this.getAttribute("y")+"px;"
+    },
+    ""+(this.getAttribute("condition")?this.getAttribute("condition"):this.getAttribute("name"))
+  ]);
+});
+$(currentNode).find("flow").each(function(){
+  joinNodes(this.getAttribute("from"), this.getAttribute("to"));
+});
+$(currentNode).find("gateway").each(function(){
+  joinNodes(this.getAttribute("from"), this.getAttribute("name"));
+  joinNodes(this.getAttribute("name"), this.getAttribute("to"));
+});
+$(".task,.event,.gateway").draggable({
+  stop:function(ev,ui){
+    var $e=$(currentNode).find("[name="+this.getAttribute("name")+"]");
+    var pos=$(this).position();
+    $e.attr("x",pos.left);
+    $e.attr("y",pos.top);
+    ztree.redrawNode(currentNode);
+    var flows=[];
+    $(canvas).find(".flow[from="+this.getAttribute("name")+"],.flow[to="+this.getAttribute("name")+"]").each(function(){
+      flows.push({from:this.getAttribute("from"),to:this.getAttribute("to")});
+    }).remove();
+    for(var i=0,l=flows.length;i&lt;l;i++){
+      joinNodes(flows[i].from, flows[i].to);
+    }
+  }
+});
+$(".lane").draggable({
+  axis:"x",
+  stop:function(ev,ui){
+    var $e=$(currentNode).find("[name="+this.getAttribute("name")+"]");
+    var pos=$(this).position();
+    $e.attr("x",pos.left);
+    ztree.redrawNode(currentNode);
+  }
+}).resizable({
+  handles:"e, w",
+  stop:function(ev,ui){
+    var $e=$(currentNode).find("[name="+this.getAttribute("name")+"]");
+    var pos=$(this).position();
+    $e.attr("x",pos.left);
+    $e.attr("width",$(this).width());
+    ztree.redrawNode(currentNode);
+  }
+});</zplugin.launch></zplugin><file name="consulta.class.php" preprocess="">&lt;?php
+//require_once("../lib/conexion4.php");
+//require_once("config.php");
+
+class Consulta{
+  function regConsulta($entradas, $work, $taskI){
+    return;
+    echo "CLASS CONSULTA\n";
+    var_dump($entradas);
+/**
+ * Validación de session
+ */
+if(isset($_SESSION["codigoproveedor"])) {
+  $codigoproveedor = $_SESSION['codigoproveedor'];  
+} elseif(isset($_SESSION["nuevoproveedor"])){
+  $codigoproveedor = "0";  
+} else {
+  exit;
+}
+/**
+ * Required libraries
+ */
+function escapa($s){
+  return str_replace("'", "''", $s);
+}
+
+$consulta = escapa(utf8_decode($_GET["c"]));
+if($codigoproveedor) { $id = $codigoproveedor; $tipoId = "CODIGOPROVEEDOR"; }
+else { $id = escapa($_GET["d"]); $tipoId = "EMAIL"; }
+if(!$id) {
+  print 'target.find("textarea")[0].value=consulta;alert("Para realizar consultas debe registrar su correo electronico.");$("#correo").focus();';
+  print '$("#hbubble").hide();$("#fhbubble").hide();';
+  exit;
+}
+$fechaHora = Date("Y-m-d H:i:s");
+$clasificacion = "BC";
+
+if($consulta) {
+  /**
+   * Recupera listado de personal que atiende las consultas ($personal)
+   */
+  $sql = "select login 
+          from saconsultaspersonal
+          where rol like '%ENCARGADO_ATENCION%'
+          order by login";
+  $ressql = ejecutaquery ($conexion1, $sql);
+  $nrows = OCIFetchStatement($ressql, $resultados);
+  $personal = $resultados["LOGIN"];
+  /**
+   * Recupera los datos de asignacion ($aConsultas)
+   * CONSULTA_PROVEEDOR_ENTRE_VARIOS: Las consultas de un proveedor pueden ser atendidas por diferentes usuarios del personal de soporte
+   */
+  $sql = "select 
+            asignadoa, 
+            tipoidentificador, 
+            identificador, 
+            count(*) consultas, 
+            sum(decode(ENVIADO,'S',1,0)) atendidos 
+          from 
+            saconsultas 
+          where
+            tipoidentificador = '$tipoId' and
+            identificador = '$id' and 
+            asignadoa is not null
+          group by 
+            asignadoa, tipoidentificador, identificador";
+  $ressql = ejecutaquery ($conexion1, $sql);
+  $nrows = OCIFetchStatement($ressql, $aConsultas, 0, -1, OCI_FETCHSTATEMENT_BY_ROW);
+  if($nrows&gt;0 &amp;&amp; !@CONSULTA_PROVEEDOR_ENTRE_VARIOS) {
+    $personalv = array();
+    foreach($aConsultas as $con){
+      if(array_search($con["ASIGNADOA"], $personal)!==false) {
+        $personalv[] = $con["ASIGNADOA"];
+      }
+    }
+    if(count($personalv)&gt;0) $personal = $personalv;
+  }
+  /**
+   * Determina ultimo asignado valido ($index, $ultimo)
+   */
+  $sql = "select asignadoa 
+          from saconsultas 
+          where asignadoa is not null 
+          order by fecha desc";
+  $ressql = ejecutaquery ($conexion1, $sql);
+  $nrows = OCIFetchStatement($ressql, $resultados);
+  if($nrows) {
+    foreach($resultados["ASIGNADOA"] as $ultimo){
+      $index = array_search( $ultimo, $personal );
+      if($index!==false) break;
+    }
+    if($index===false) $ultimo="";
+  } else {
+    $ultimo="";
+    $index=false;
+  }
+  /**
+   * Determina siguiente a ser asignado
+   */
+  if($index===false) $next = 0;
+  else $next = ($index + 1) % count($personal);
+  $asignadoA = $personal[$next];
+  /**
+   * Inserta la consulta
+   */
+  $sql = "INSERT INTO SACONSULTAS(ID, FECHA, CLASIFICACION, IDENTIFICADOR, TIPOIDENTIFICADOR, CONSULTA, ASIGNADOA)
+          VALUES(
+            (SELECT NVL(MAX(ID),0)+1 FROM SACONSULTAS), 
+            to_date('$fechaHora', 'yyyy-mm-dd hh24:mi:ss'),
+            '$clasificacion',
+            '$id',
+            '$tipoId',
+            '$consulta',
+            '$asignadoA'
+          )";
+  ejecutaquery($conexion1, $sql);
+}
+/**
+ * Imprime el contenido de las consultas
+ */
+
+$sql = "SELECT TO_CHAR(FECHA,'DD-MM-YYYY HH24:MI:SS') FECHAHORA, SACONSULTAS.*  FROM SACONSULTAS 
+        WHERE
+          CLASIFICACION = '$clasificacion' AND 
+          IDENTIFICADOR = '$id' AND 
+          TIPOIDENTIFICADOR = '$tipoId'
+        ORDER BY FECHA
+        ";
+$ressql = ejecutaquery ($conexion1, $sql);
+$nrows = OCIFetchStatement($ressql, $resultado, 0, -1, OCI_FETCHSTATEMENT_BY_ROW);
+if($nrows) {
+  $consultas = "&lt;div&gt;";
+  foreach($resultado as $r) {
+    $consultas.= "&lt;p&gt;&lt;b&gt;" . $r["FECHAHORA"] . "&gt; " . /*$r["IDENTIFICADOR"] .*/ ":&lt;/b&gt;";
+    $consultas.= "" . htmlentities($r["CONSULTA"],ENT_NOQUOTES,'iso-8859-1') . "&lt;/p&gt;";
+    if($r["RESPUESTA"]) $consultas.= "&lt;p style='border-bottom:1px dashed black'&gt;&lt;b&gt;R. &lt;/b&gt;" . $r["RESPUESTA"] . "&lt;/p&gt;";
+  }
+  $consultas.= "&lt;/div&gt;";
+  $consultas = addcslashes($consultas, "\n\"\r");
+  print 'target.find(".chatResponse").html("'.$consultas.'");$(".chatResponse").scrollTop($(".chatResponse div:first-child").height())';
+}
+
+  }
+
+  function regConsultaDesa($entradas, $work, $taskI){
+  }
+}
+</file><file name="workflow.class.php" preprocess="">&lt;?php
+
+class Workflow {
+
+  var $start;
+  var $currentState=array();
+  var $events=array();
+
+  function getInstance($className, $name, $from=null) {
+    //$className=__CLASS__;
+    if(isset($from)) return $from[$name] = (isset($from[$name])?$from[$name]:(new $className()));
+    return $_SESSION[$name] = (isset($_SESSION[$name])?$_SESSION[$name]:(new $className()));
+  }
+
+  function createTask($name, $responsables, $entradas=array(), $callback=null){
+    $task = new Task($name, $responsables, $entradas, $callback);
+    $task-&gt;workflow = $this;
+    return $task;
+  }
+
+  function createEvent($name, $responsables, $entradas=array(), $callback=null){
+    $event = new Event($name, $responsables, $entradas, $callback);
+    $event-&gt;workflow = $this;
+    return $event;
+  }
+
+  function addEvent($event){
+    $this-&gt;events[$event-&gt;name] = $event;
+    return $event;
+  }
+
+  function find($taskName, $callback=null) {
+    //echo "\nBuscando $taskName:\n";
+    $taskInstances = array();
+    $tokens = token_get_all("&lt;?php ".$taskName);
+    if($this-&gt;currentState)
+    foreach($this-&gt;currentState as $tI){
+      $users=array();
+      $code = "";
+      foreach($tokens as $tk) {
+        if(is_array($tk) &amp;&amp; $tk[0]==T_VARIABLE) {
+          $value = array_search(substr($tk[1],1), $users)!==false ? "1" : "0";
+        } elseif(is_array($tk) &amp;&amp; $tk[0]==T_STRING) {
+          if($tI-&gt;task-&gt;name==$tk[1]){$value="1";$users=$tI-&gt;responsables;}
+          else {$value="0";$users=array();}
+        } elseif($tk==="/") {
+          $value = '&amp;';
+        } elseif($tk==="*") {
+          $value = '1';
+          $users=$tI-&gt;responsables;
+        } elseif($tk==="&amp;") {
+          $value = '&amp;&amp;';
+        } elseif($tk==="|") {
+          $value = '||';
+        } elseif($tk==="!") {
+          $value = '1^';
+        } elseif(is_array($tk) &amp;&amp; $tk[0]==T_OPEN_TAG) {
+          $value = "";
+        } else {
+          $value = is_array($tk) ? $tk[1] : $tk;
+        }
+        $code = $code . $value;
+      }
+      $ok = false;
+      //echo($tI-&gt;task-&gt;name.' = '.$code.';');
+      eval('$ok = '.$code.';');
+      if($ok) {
+        $taskInstances[] = $tI;
+      }
+    }
+    if($callback) {
+      foreach($taskInstances as $tI) {
+        call_user_func($callback, $tI-&gt;entradas, $this, $tI);
+      }
+    }
+    return $taskInstances;
+  }
+
+  function notFind($taskName, $callback=null){
+    if(!$this-&gt;find($taskName)) {
+      call_user_func($callback, array(), $this, null);
+      return true;
+    }
+    return false;
+  }
+
+  function trigger($name, $inputs) {
+    $this-&gt;currentState = $this-&gt;events[$name]-&gt;trigger($inputs);
+    return $this-&gt;currentState;
+  }
+
+  function getCurrentState() {
+    return $this-&gt;currentState;
+  }
+
+  function info() {
+    foreach($this-&gt;currentState as $t) {
+      $t-&gt;info();
+    }
+  }
+
+  function stepTask($i, $inputs) {
+    if(!is_numeric($i)) {$i = array_search($i, $this-&gt;currentState, true);}
+    $e = $this-&gt;currentState[$i]-&gt;step($inputs, $work);
+    array_splice($this-&gt;currentState, $i, 1, $e);
+    return $this-&gt;currentState;
+  }
+}
+
+class Error {
+  var $errors=array();
+  function add($error) {
+    $this-&gt;errors[]=$error;
+  }
+  function hasErrors() {
+    return count($this-&gt;errors);
+  }
+  function info() {
+    print "ERROR\n";
+    print_r($this-&gt;errors);
+  }
+}
+
+class Task {
+  var $responsables=array();
+  var $entradas=array();
+  var $salidas=array();
+  var $callback=null;
+  var $workflow=null;
+  function Task($name, $responsables, $entradas=array(), $callback=null) {
+    $this-&gt;name=$name;
+    $this-&gt;responsables=$responsables;
+    $this-&gt;entradas=$entradas;
+    $this-&gt;callback=$callback;
+  }
+  function run($inputs) {
+    $error = new Error();
+    foreach($this-&gt;entradas as $_) if(!isset($inputs[$_])) $error-&gt;add($_);
+    if($error-&gt;hasErrors()) return $error;
+    return new TaskInstance($this, $inputs);
+  }
+  function addGateway($condition, $task, $name=null) {
+    if(isset($name)) $this-&gt;salidas[$name]=array($condition, $task);
+    else $this-&gt;salidas[]=array($condition, $task);
+    return $task;
+  }
+  function addFlow($task, $name=null) {
+    return $this-&gt;addGateway('', $task, $name=null);
+  }
+}
+
+class Event extends Task{
+  function trigger($entradas) {
+    $t = $this-&gt;run($entradas);
+    return $t-&gt;step($entradas);
+  }
+}
+
+class TaskInstance {
+  var $task;
+  var $responsables=array();
+  var $entradas=array();
+  var $salidas=array();
+  function TaskInstance($task, $inputs) {
+    $this-&gt;task = $task;
+    $this-&gt;entradas = $inputs;
+    if(isset($this-&gt;task-&gt;callback)) {
+      call_user_func($this-&gt;task-&gt;callback, $inputs, $task-&gt;workflow, $this);
+    }
+  }
+  function step($__inputs) {
+    foreach($__inputs as $_ =&gt; $__) $$_ = $__;
+    $__output = array();
+    foreach($this-&gt;task-&gt;salidas as $__task){
+      $__result = true;
+      if($__task[0]) eval('$__result=' . $__task[0] . ';');
+      if($__result) {
+        $__t = $__task[1]-&gt;run($__inputs);
+        if($__t instanceof TaskInstance) $__output[] = $__t;
+      }
+    }
+    return $__output;
+  }
+  function info() {
+    print "TASK: ".$this-&gt;task-&gt;name."\n";
+    print "Responsables: ".implode(", ",$this-&gt;responsables)."\n";
+    print "Entradas: \n";
+    print_r($this-&gt;entradas);
+  }
+}
+</file><file name="index.php" preprocess="">&lt;?php
+require_once("AtencionCliente.workflow.class.php");
+session_start();
+//unset($_SESSION["work"]);
+
+$work = workflow::getInstance("AtencionCliente", "work");
+//SI: Proceso sin tareas activas  THEN: formConsulta
+if($work-&gt;notFind("*", "formConsulta"));
+//SI: Proceso en RecibeRespuesta  THEN: formConsulta
+elseif($work-&gt;find('RecibeRespuesta', "formConsulta"));
+//ELSE: Esperando dentro del proceso
+else formEspera($work);
+
+function formConsulta($entradas){
+?&gt;
+  &lt;form action="enviar.php" method="post"&gt;
+  &lt;pre&gt;&lt;?=htmlentities(@$entradas["respuesta"])?&gt;&lt;/pre&gt;
+  &lt;textarea name="consulta"&gt;&lt;/textarea&gt;
+  &lt;button type="submit"&gt;Enviar&lt;/button&gt;
+  &lt;/form&gt;
+&lt;?php
+}
+
+function formEspera($work){
+  print "&lt;pre&gt;";
+  print "ESPERANDO\n";
+  $work-&gt;info();
+  print "&lt;/pre&gt;";
+}
+
+</file><file name="enviar.php" preprocess="">&lt;?php
+require_once("AtencionCliente.workflow.class.php");
+session_start();
+
+$work = workflow::getInstance("AtencionCliente", "work");
+if($work-&gt;notFind('*', 'IniciarProceso'));
+elseif($work-&gt;find('RecibeRespuesta', 'EnviarConsulta'));
+
+function IniciarProceso($entradas, $work, $task){
+  $work-&gt;trigger("inicio", array("consulta"=&gt;$_POST["consulta"]));
+}
+
+function EnviarConsulta($entradas, $work, $task){
+  $work-&gt;stepTask($task, array("consulta"=&gt;$_POST["consulta"]));
+}
+
+echo "&lt;pre&gt;";
+$_SESSION["work"]-&gt;info();
+$work-&gt;info();
+
+header("Location: index.php");
+</file><file name="atiende.php" preprocess="">&lt;?php
+require_once("AtencionCliente.workflow.class.php");
+session_start();
+
+$work = AtencionCliente::getInstance("work");
+
+if($work-&gt;find('AtiendeConsultaDesarrollo', "esperaRespuestaDesarrollo"));
+elseif($work-&gt;find('AtiendeConsulta', "atiendeConsulta"));
+else esperandoConsulta($work);
+
+function atiendeConsulta($entradas){
+var_dump($entradas);
+?&gt;
+  &lt;form action="atiende_enviar.php" method="post"&gt;
+  CONSULTA:
+  &lt;pre&gt;&lt;?=htmlentities($entradas["consulta"])?&gt;&lt;/pre&gt;
+  &lt;pre&gt;&lt;?=htmlentities($entradas["consultaDesarrollo"])?&gt;&lt;/pre&gt;
+  &lt;pre&gt;&lt;?=htmlentities($entradas["respuestaDesarrollo"])?&gt;&lt;/pre&gt;
+  &lt;p&gt;RESPUESTA:&lt;/p&gt;
+  &lt;textarea name="respuesta"&gt;&lt;/textarea&gt;
+  &lt;button type="submit"&gt;Enviar&lt;/button&gt;
+  &lt;/form&gt;
+  &lt;form action="atiende_consultaDesarrollo.php" method="post"&gt;
+  CONSULTA A DESARROLLO:
+  &lt;textarea name="consultaDesarrollo"&gt;&lt;/textarea&gt;
+  &lt;button type="submit"&gt;Enviar&lt;/button&gt;
+  &lt;/form&gt;
+&lt;?php
+}
+function esperaRespuestaDesarrollo($entradas){
+  print "&lt;pre&gt;";var_dump($entradas);
+  print "ESPERANDO RESPUESTA DE DESARROLLO";
+}
+function esperandoConsulta($work){
+  print "&lt;pre&gt;";
+  print "ESPERANDO CONSULTA";
+  $work-&gt;info();
+  print "&lt;/pre&gt;";
+}
+</file><file name="atiende_enviar.php" preprocess="">&lt;?php
+require_once("AtencionCliente.workflow.class.php");
+session_start();
+
+$work = AtencionCliente::getInstance("work");
+
+$work-&gt;find("AtiendeConsulta", "AtiendeConsulta");
+
+function AtiendeConsulta($entradas, $work, $taskI){
+  $ee = $work-&gt;stepTask($taskI, array("respuesta"=&gt;$_POST["respuesta"]));
+}
+
+header("Location: atiende.php");
+</file><file name="atiende_consultaDesarrollo.php" preprocess="">&lt;?php
+require_once("AtencionCliente.workflow.class.php");
+session_start();
+
+$work = AtencionCliente::getInstance("work");
+
+$work-&gt;find('AtiendeConsulta',"enviarADesarrollo");
+
+function enviarADesarrollo($entradas, $work, $taskI){
+  $work-&gt;stepTask($taskI, array("consulta"=&gt;$entradas["consulta"],"consultaDesarrollo" =&gt; $_POST["consultaDesarrollo"]));
+}
+
+header("Location: atiende.php");
+</file><file name="desarrollo_atiende.php" preprocess="">&lt;?php
+require_once("AtencionCliente.workflow.class.php");
+session_start();
+
+$work = AtencionCliente::getInstance("work");
+
+if($work-&gt;find('AtiendeConsultaDesarrollo', "AtiendeConsultaDesarrollo"));
+else esperandoConsulta($work);
+
+function AtiendeConsultaDesarrollo($entradas){
+?&gt;
+  &lt;form action="desarrollo_enviar.php" method="post"&gt;
+  CONSULTA USUARIO:
+  &lt;pre&gt;&lt;?=htmlentities($entradas["consulta"])?&gt;&lt;/pre&gt;
+  CONSULTA PRODUCCION:
+  &lt;pre&gt;&lt;?=htmlentities($entradas["consultaDesarrollo"])?&gt;&lt;/pre&gt;
+  &lt;p&gt;RESPUESTA:&lt;/p&gt;
+  &lt;textarea name="respuestaDesarrollo"&gt;&lt;/textarea&gt;
+  &lt;button type="submit"&gt;Enviar&lt;/button&gt;
+  &lt;/form&gt;
+&lt;?php
+}
+function esperandoConsulta($work){
+  print "&lt;pre&gt;";
+  print "ESPERANDO CONSULTA";
+  $work-&gt;info();
+  print "&lt;/pre&gt;";
+}
+</file><file name="desarrollo_enviar.php" preprocess="">&lt;?php
+require_once("AtencionCliente.workflow.class.php");
+session_start();
+
+$work = AtencionCliente::getInstance("work");
+
+$work-&gt;find('AtiendeConsultaDesarrollo',"responderAProduccion");
+
+function responderAProduccion($entradas, $work, $taskI){
+  $work-&gt;stepTask($taskI, array(
+    "consulta" =&gt; $entradas["consulta"],
+    "consultaDesarrollo" =&gt; $entradas["consultaDesarrollo"],
+    "respuestaDesarrollo" =&gt; $_POST["respuestaDesarrollo"],
+  ));
+}
+
+header("Location: desarrollo_atiende.php");
+</file><file name="AtencionCliente.workflow.class.php" preprocess="" __ideNodeOpen="true">&lt;?php
+require_once("consulta.class.php");
+require_once("workflow.class.php");
+
+/*class AtencionCliente extends Workflow {
+
+  function getInstance($name,$from=null){
+    return parent::getInstance(__CLASS__, $name,$from);
+  }
+
+  function AtencionCliente(){
+    $start = $this-&gt;addEvent($this-&gt;createEvent(
+      "inicio",
+      array("proveedor")
+    ));
+    $task1 = $start-&gt;addFlow($this-&gt;createTask(
+      "AtiendeConsulta",
+      array("ResponsableAtencion"),
+      array("consulta")
+      ,array("Consulta","registraConsulta")
+    ));
+    $taskDesa = $task1-&gt;addFlow($this-&gt;createTask(
+      "AtiendeConsultaDesarrollo",
+      array("drojas", "bcoca"),
+      array("consultaDesarrollo")
+      ,array("Consulta","registraConsultaDesarrollo")
+    ));
+    $taskDesa-&gt;addFlow($task1);
+    $task2 = $task1-&gt;addFlow($this-&gt;createTask(
+      "RecibeRespuesta",
+      array("*"),
+      array("respuesta")
+      ,array("Consulta","registraRespuesta")
+    ));
+    $task2-&gt;addFlow($task1);
+    $fin = $task2-&gt;addGateway('@$conforme=="S"', $this-&gt;createEvent(
+      "Fin",
+      array("*"),
+      array("conforme")
+      ,array("Consulta","registraConforme")
+    ));
+  }
+}
+*/<aworkflow __ideNodeOpen="true" x="1057" y="429" width="852" height="438" name="AtencionCliente"><event name="inicio" x="84" y="99"/><task name="AtiendeConsulta" x="236" y="96" inputs="&quot;consulta&quot;"/><task name="AtiendeConsultaDesarrollo" x="424" y="167" inputs="&quot;consultaDesarrollo&quot;"/><task name="RecibeRespuesta" x="25" y="221" inputs="&quot;respuesta&quot;"/><event name="fin" x="86" y="380" inputs="&quot;conforme&quot;"/><lane name="Proveedor" x="0" width="167"/><lane name="ResponsableAtencion" x="170" width="226"/><lane name="ResponsableDesarrollo" x="399" width="238"/><flow from="inicio" to="AtiendeConsulta" id="1339022103096"/><flow from="AtiendeConsulta" to="AtiendeConsultaDesarrollo" id="1339022103102"/><flow from="AtiendeConsultaDesarrollo" to="AtiendeConsulta" id="1339022103111"/><flow from="AtiendeConsulta" to="RecibeRespuesta" id="1339022103116"/><flow from="RecibeRespuesta" to="AtiendeConsulta"/><gateway name="conforme" x="26" y="295" condition="@$conforme==&quot;S&quot;" from="RecibeRespuesta" to="fin"/></aworkflow></file></path></root>

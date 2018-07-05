@@ -1,0 +1,2600 @@
+<?xml version="1.0" encoding="UTF-8"?><root __ideNodeOpen="true"><path path="/home/david/php" main="" __ideNodeOpen="true"><include src="diagramPlugin.xml"/><package name="components" type="" __ideNodeOpen="false"><php __ideNodeOpen="true">function dd(){
+  call_user_func_array('var_dump', func_get_args());
+  die;
+}
+class DVF {
+  static function getNamespace($e){
+    if(!$e) return '';
+    if($e-&gt;nodeName=='module') {
+      return '';
+    }
+    if($e-&gt;nodeName=='package') {
+      return DVF::getNamespace($e-&gt;parentNode).'\\'.$e-&gt;getAttribute('name');
+    }
+    return DVF::getNamespace($e-&gt;parentNode);
+  }
+  static function getPath($e){
+    if(!$e) return '';
+    if($e-&gt;nodeName=='path') {
+      return $e-&gt;getAttribute('path');
+    }
+    if($e-&gt;nodeName=='module') {
+      return $e-&gt;getAttribute('name');
+    }
+    if($e-&gt;nodeName=='package') {
+      return DVF::getPath($e-&gt;parentNode).'/'.$e-&gt;getAttribute('name');
+    }
+    return DVF::getPath($e-&gt;parentNode);
+ }
+}
+</php><component name="class" transparent="" precode="" __ideNodeOpen="true"><file name="@{DVF::getPath($_e)}/@{$name}.php" preprocess="" __ideNodeOpen="true">&lt;?php
+#{
+/*  $_name=str_replace('/','\\',dirname($name));
+  if($_name=='.'):
+    return '';
+  endif;
+  return 'namespace '.$_name.';';*/
+$_name=substr(DVF::getNamespace($_e),1);
+return $_name ? "namespace $_name;":'';
+}
+@{node::content($_)}</file></component><component name="page" transparent="" precode="" __ideNodeOpen="true"><file name="@{DVF::getPath($_e)}/@{$name}" preprocess="" __ideNodeOpen="true">@{node::content($_)}</file></component><component name="module" transparent="" precode="" __ideNodeOpen="true"><file name="@{$name}/index.php" preprocess="" __ideNodeOpen="true">&lt;?php
+//Using Naming conventions for code released by PHP-FIG [https://github.com/php-fig/fig-standards/blob/master/bylaws/002-psr-naming-conventions.md]
+//LOAD AUTOLOADER
+require_once('@{$vendor}/dvf/ClassPaths.php');
+ClassPaths::add('@{$vendor}/dvf');
+ClassPaths::add('@{$vendor}/DvModel');
+ClassPaths::add('@{$vendor}/super_closure-master');
+ClassPaths::add('@{$vendor}/php-parser');
+function __autoload($nombre_clase) {
+  $path=ClassPaths::resolve($nombre_clase, '.php');
+  if($path){
+    //[http://www.php-fig.org/psr/psr-4/]
+    include_once($path);
+  }
+}
+
+//ClassPaths::add('./classes');
+//todo relative class path
+ClassPaths::add('./');
+//PagePaths::add('./pages');
+
+if(file_exists('config.php')){
+  include('config.php');
+}
+
+Router::resolveRequest();
+</file></component><component name="newComponent" transparent="" precode="" __ideNodeOpen="false"><package name="interfaces" type="" __ideNodeOpen="false"><class name="dvf/ISingleton" __ideNodeOpen="false">
+interface ISingleton {
+  public static function getInstance();
+}
+</class><class name="dvf/IAgregate" __ideNodeOpen="false">
+interface IAgregate {
+  function _get($name);
+  function _set($name, $value);
+}
+</class><class name="dvf/IGlobal" __ideNodeOpen="false">
+interface IGlobal {
+  public static function __callStatic($name, $arguments);
+  public function __call($name, $arguments);
+}
+</class><class name="dvf/IElement" __ideNodeOpen="false">
+interface IElement {
+  public function getOwner();
+}
+</class><class name="dvf/model/IView" __ideNodeOpen="false">
+interface IView {
+  public function execute($params);
+  public function fetch();
+  public function fetchAll();
+}
+</class><class name="dvf/model/IRow" __ideNodeOpen="false">
+interface IRow {
+  public function onfetch();
+}
+</class><class name="dvf/IRouter" __ideNodeOpen="false">
+interface IRouter {
+  public static function run();
+  public static function url($relativeUrl);
+}
+</class><class name="dvf/RequestInterface" __ideNodeOpen="true" owner="lib/vendor/dvf">
+interface RequestInterface {
+  public function request($REQUEST, $DIR='');
+}
+</class></package><package name="traits" type="" __ideNodeOpen="true"><class name="dvf/Singleton" __ideNodeOpen="true">
+trait Singleton {
+  public static function getInstance() {
+    static $aoInstance = array();
+    $calledClassName = get_called_class();
+    if (! isset ($aoInstance[$calledClassName])) {
+        $aoInstance[$calledClassName] = new $calledClassName();
+    }
+    return $aoInstance[$calledClassName];
+  }
+}
+</class><class name="dvf/Agregate" __ideNodeOpen="true">
+trait Agregate {
+  function _get($name){
+    return $this-&gt;$name;
+  }
+  function _set($name, $value){
+    $this-&gt;$name = $value;
+  }
+}
+</class><class name="dvf/GlobalScope" __ideNodeOpen="true">
+trait GlobalScope {
+  public static function __callStatic($name, $arguments){
+    return call_user_func_array(array(static::getInstance(), '_'.$name), $arguments);
+  }
+  public function __call($name, $arguments){
+    return call_user_func_array(array($this, '_'.$name), $arguments);
+  }
+}
+</class><class name="dvf/Element" __ideNodeOpen="true">
+trait Element {
+  public function getOwner(){
+    return $this-&gt;owner;
+  }
+}
+</class><class name="dvf/model/PDOConnector" __ideNodeOpen="true">
+trait PDOConnector {
+  function prepareView($class){
+    $this-&gt;setAttribute(\PDO::ATTR_STATEMENT_CLASS, array($class, array($this)));
+    return $this-&gt;prepare($class::$query);
+  }
+}
+</class><class name="dvf/model/QueryView" __ideNodeOpen="true">
+trait QueryView {
+  public $dbh;
+  protected function __construct($dbh) {
+    $this-&gt;dbh = $dbh;
+  }
+  public function fetch($fetch_style = \PDO::FETCH_CLASS, $cursor_orientation = \PDO::FETCH_ORI_NEXT, $cursor_offset = 0 ){
+    $this-&gt;setFetchMode( \PDO::FETCH_CLASS, static::$rowClass);
+    $row = \PDOStatement::fetch($fetch_style, $cursor_orientation, $cursor_offset);
+    if(is_object($row)) {
+      $row-&gt;onfetch();
+    }
+    return $row;
+  }
+}
+</class><class name="dvf/model/RowImpl" __ideNodeOpen="true">
+trait RowImpl {
+  public function onfetch(){
+    $methods=get_class_methods($this);
+    foreach($methods as $m){
+      if(substr($m,0,3)=="get"){
+        $name=strtolower(substr($m,3,1)).substr($m,4);
+        $this-&gt;$name=$this-&gt;$m();
+      }
+    }
+  }
+}
+</class><class name="dvf/RequestTrait" __ideNodeOpen="true" owner="lib/vendor/dvf">
+trait RequestTrait {
+  public function request($ROUTE, $DIR='') {
+    if($ROUTE=='') $ROUTE='index.php';
+    $aREQUEST=explode("/", $ROUTE);
+    $NAME=array_shift($aREQUEST);
+    @list($METHOD)=explode('.',empty($aREQUEST[0])?'index':$aREQUEST[0]);
+    $FILE=$DIR.$NAME;
+    $CLASS='\\'.str_replace('/', '\\', $DIR).ucfirst($NAME);
+    $PAGE = \PagePaths::resolve($DIR, $NAME);
+    if(class_exists($CLASS)){
+      $INSTANCE=new $CLASS();
+      $PATH=implode("/", $aREQUEST);
+      if(method_exists($INSTANCE, $METHOD)) {
+        $INSTANCE-&gt;$METHOD($PATH);
+      }
+      $INSTANCE-&gt;request($PATH, $FILE.'/');
+    } elseif(is_dir($PAGE)) {
+      static::request(implode("/", $aREQUEST), $FILE.'/');
+    } elseif(file_exists($PAGE)) {
+      require($PAGE);
+    } else {
+    }
+  }
+}
+</class></package><package name="classes" type="" __ideNodeOpen="true"><class name="Context" __ideNodeOpen="true">
+class Context implements \dvf\ISingleton, \dvf\IGlobal, \dvf\IAgregate {
+  use \dvf\Singleton, \dvf\GlobalScope, \dvf\Agregate;
+}
+</class><class name="Application" __ideNodeOpen="true">
+abstract class Application implements \dvf\ISingleton, \dvf\IGlobal, \dvf\IAgregate {
+  use \dvf\GlobalScope, \dvf\Agregate;
+  public static function getInstance(){
+    return Context::get("Application");
+  }
+  abstract public function loadComponents();
+}
+</class><class name="dvf/model/Connection" __ideNodeOpen="true">
+class Connection extends \PDO {
+  use PDOConnector;
+}
+</class><class name="dvf/model/View" __ideNodeOpen="true">
+abstract class View extends \PDOStatement {
+  use QueryView;
+}
+</class><class name="dvf/model/Row" __ideNodeOpen="true">
+abstract class Row {
+  use RowImpl;
+  
+}
+</class><class name="dvf/Module" __ideNodeOpen="true">
+abstract class Module implements \dvf\ISingleton, \dvf\IGlobal, \dvf\IAgregate {
+  use \dvf\GlobalScope, \dvf\Agregate;
+  public static function getInstance(){
+    return Application::get("Module");
+  }
+}
+</class><class name="dvf/Component" __ideNodeOpen="true">
+abstract class Component implements \dvf\ISingleton, \dvf\IGlobal, \dvf\IAgregate {
+  use \dvf\GlobalScope, \dvf\Agregate;
+  public static function getInstance(){
+    return Context::get("Component");
+  }
+  function request($path){
+    return require($path);
+  }
+}
+</class><class name="Router" __ideNodeOpen="true">
+class Router implements \dvf\IRouter {
+
+  static $routes=array(
+    array(
+      'regexp'=&gt;'/^\/(\w+)\/(.+)$/',
+      'callback'=&gt;array('Router', 'ComponentRoute'),
+    ),
+  );
+
+  public static function run(){
+    $parse = parse_url($_SERVER['REQUEST_URI']);
+    $route = substr($parse['path'], STRLEN($_SERVER['SCRIPT_NAME']));
+    foreach(static::$routes as $r){
+      if(preg_match($r['regexp'], $route, $match)) {
+        call_user_func_array($r['callback'], $match);
+      }
+    }
+  }
+
+  public static function url($relativeUrl){
+    return $_SERVER['SCRIPT_NAME'].'/'.$relativeUrl;
+  }
+
+  public static function ComponentRoute($url, $component, $rest){
+    $oComponent = Application::get($component);
+    $path = PagePaths::resolve(get_class($oComponent), '/'.$rest);
+    if($path){
+      return $oComponent-&gt;request($path);
+    }
+/*
+    if(file_exists('./'.$component.'/public/'.$rest)) {
+      return $context-&gt;Component-&gt;request('./'.$component.'/public/'.$rest);
+    }*/
+    echo 'Route not found: ',$url;
+  }
+}
+</class><class name="Paths" __ideNodeOpen="true" owner="lib/vendor/dvf">class Paths {
+  public static $paths=array();
+
+  public static function add($path){
+    static::$paths[]=$path;
+  }
+
+  public static function resolve($nombre_clase, $complemento){
+    $nombre_clase = str_replace('\\','/',$nombre_clase);
+    if(substr($nombre_clase,0,1)!='/')$nombre_clase='/'.$nombre_clase;
+    $path=false;
+    foreach(static::$paths as $p){
+      $P=$p.$nombre_clase . $complemento;
+      if(file_exists($P)){
+        $path=$P;
+      }
+    }
+    return $path;
+  }
+}
+</class><class name="ClassPaths" __ideNodeOpen="true" owner="lib/vendor/dvf">require_once('Paths.php');
+
+class ClassPaths extends Paths {
+
+}
+</class><class name="PagePaths" __ideNodeOpen="true" owner="lib/vendor/dvf">require_once('Paths.php');
+
+class PagePaths extends Paths {
+
+}
+</class><class name="dvf/Controller" __ideNodeOpen="true" owner="lib/vendor/dvf">
+class Controller implements \dvf\RequestInterface {
+  use \dvf\RequestTrait;
+}
+</class></package></component><component name="dvComp" transparent="" precode="" __ideNodeOpen="false"><class owner="@{$application}" name="@{$name}" __ideNodeOpen="true">
+class @{basename($name)} extends \dvf\Component {
+
+    public function userView(){
+    $userView = \Application::get("db")-&gt;prepareView('\test\model\UserView');
+    $userView-&gt;execute();
+    return $userView;
+  }
+
+}
+</class></component><component name="diagram" transparent="" precode="" __ideNodeOpen="true">@{node::content($_)}</component><component name="package" transparent="" precode=""/></package><module name="lib/dvf" __ideNodeOpen="true" vendor="../../lib"><diagram __ideNodeOpen="false"><!--{"diagram":{"zoom":1,"scrollTop":6,"scrollLeft":9},"dgc08f2979c4a041d38064360f5693f17d":"position: absolute; height: 80.1418px; left: 249.22px; top: 69.0189px; width: 175.887px;","dgfafd63dd7024480d84f31e53bbf6d6c1":"position: absolute; height: 80.1418px; left: 50.5792px; top: 70px; width: 185.816px;","dgd4b43c0bedd14d4ea4e90832136c402b":"position: absolute; height: 20px; left: 18.0023px; top: 15.9811px; width: 443px;","dga5cb5850ac9e41e1836c42f79ff1b516":"position: absolute; height: 74px; left: 489.017px; top: 50px; width: 162px;","dg50adfe6b39714b0b93febc5fc6f61947":"position: absolute; height: 67px; left: 669.9px; top: 53.0167px; width: 149px;","dg7a9c81806f444263ad0940b780a87e69":"position: absolute; height: 7px; left: 480px; top: 15.9811px; width: 365px;","dg37009b634a914a7ea580300ef0043fcd":"position: absolute; height: 176px; left: 864.021px; top: 15.9811px; width: 559px;","dgdd0ae323eec841b7979b6a8a3db4fd57":"position: absolute; height: 80px; left: 1174.83px; top: 232.767px; width: 104.965px;","dg11483d8d20034d8ab1752d0b01038e41":"position: absolute; height: 79px; left: 1294.62px; top: 232.933px; width: 126px;","dgc728667300ea442a9b2392241f00dd5a":"position: absolute; height: 80.1418px; left: 1010.67px; top: 71.2177px; width: 143.262px;","dgdfd88f37f9994eca8169297d5d4b921f":"position: absolute; height: 80.1418px; left: 883.936px; top: 232.896px; width: 114.184px;","dgd65761e7810c4676a727dd903b912135":"position: absolute; height: 80.1418px; left: 1020.43px; top: 231.796px; width: 134.043px;","dgb042503174b54bdfa38d3335fc0390c7":"position: absolute; height: 69px; left: 53.1167px; top: 183.7px; width: 179px;","dg14b2839df6a5467699343c8ced07a046":"position: absolute; height: 80px; left: 1172.98px; top: 71px; width: 180.142px;","dg7c82fe3f0d7b458b98963316757849a2":"position: absolute; height: 156.738px; left: 877.106px; top: 42.0213px; width: 519.858px;","dg86890450cded4fee87d2aba138bf2c0d":"position: absolute; height: 73px; left: 488px; top: 160px; width: 164px;","dgdff93f722fc04cedac86f141fba05be9":"position: absolute; height: 76px; left: 677px; top: 165px; width: 165px;","dgdce3ac2fb0584f5789ebdc6e53a11537":"position: absolute; height: 81px; left: 251px; top: 183px; width: 173px;"}--><package name="interfaces" type="" __ideNodeOpen="false" __ideDiagramId="dgd4b43c0bedd14d4ea4e90832136c402b"/><package name="traits" type="" __ideNodeOpen="false" __ideDiagramId="dg7a9c81806f444263ad0940b780a87e69"/><package name="classes" type="" __ideNodeOpen="false" __ideDiagramId="dg37009b634a914a7ea580300ef0043fcd"><package name="paths" type="" __ideDiagramId="dg7c82fe3f0d7b458b98963316757849a2"><class name="PagePaths" __ideNodeOpen="true" __ideDiagramId="dgc728667300ea442a9b2392241f00dd5a">require_once('Paths.php');
+
+class PagePaths extends Paths {
+
+}
+</class><class name="templates/DvTpl" __ideNodeOpen="true" __ideDiagramId="dg14b2839df6a5467699343c8ced07a046">
+class DvTpl {
+  public static function __callStatic($tpl, $arguments){
+    $path=basename(get_called_class());
+    $path=strtolower(substr($path,0,1)).substr($path,1);
+    $path=str_replace('\\', '/', dirname(get_called_class())) .'/' . $path;
+    $view=$arguments[0];
+    $PAGE = \PagePaths::resolve($path, '/'.$tpl.'.php');
+    if(is_array($view)){
+      foreach($view as $__=&gt;$_){
+        $$__=$_;
+      }
+    }
+    require($PAGE);
+  }
+}</class></package></package><class name="Paths" __ideNodeOpen="true" __ideDiagramId="dgdd0ae323eec841b7979b6a8a3db4fd57">class Paths {
+  public static $paths=array();
+
+  public static function add($path){
+    static::$paths[]=$path;
+  }
+
+  public static function resolve($nombre_clase, $complemento){
+    $nombre_clase = str_replace('\\','/',$nombre_clase);
+    if(substr($nombre_clase,0,1)!='/')$nombre_clase='/'.$nombre_clase;
+    $path=false;
+    foreach(static::$paths as $p){
+      $P=$p.$nombre_clase . $complemento;
+      if(file_exists($P)){
+        $path=$P;
+      }
+    }
+    return $path;
+  }
+}
+</class><class name="ClassPaths" __ideNodeOpen="true" __ideDiagramId="dg11483d8d20034d8ab1752d0b01038e41">require_once('Paths.php');
+
+class ClassPaths extends Paths {
+
+}
+</class><class name="Router" __ideNodeOpen="true" __ideDiagramId="dgdfd88f37f9994eca8169297d5d4b921f">
+class Router implements ResolveRouteInterface, ResolveRequestInterface {
+  use ResolveRouteTrait, ResolveRequestTrait;
+
+}
+</class><class name="Controller" __ideNodeOpen="true" __ideDiagramId="dgd65761e7810c4676a727dd903b912135">
+class Controller implements IncludeScriptInterface, LoadContextInterface {
+  use IncludeScriptTrait, LoadContextTrait;
+}
+</class><class __ideNodeOpen="true" __ideDiagramId="dgc08f2979c4a041d38064360f5693f17d" name="ResolveRouteInterface">
+interface ResolveRouteInterface {
+  public static function resolveRoute($ROUTE, $DATA, $BASE='');
+}
+</class><class __ideNodeOpen="true" __ideDiagramId="dgfafd63dd7024480d84f31e53bbf6d6c1" name="IncludeScriptInterface">
+interface IncludeScriptInterface {
+  public function includeScript($PATH, $DATA, $CONTENT);
+}
+</class><class __ideNodeOpen="true" __ideDiagramId="dgb042503174b54bdfa38d3335fc0390c7" name="LoadContextInterface">
+interface LoadContextInterface {
+  public function loadContext();
+}
+</class><class __ideDiagramId="dgdce3ac2fb0584f5789ebdc6e53a11537" name="ResolveRequestInterface">
+interface ResolveRequestInterface {
+  static public function resolveRequest();
+  static public function url($route);
+}</class><class __ideNodeOpen="true" __ideDiagramId="dga5cb5850ac9e41e1836c42f79ff1b516" name="IncludeScriptTrait">
+trait IncludeScriptTrait {
+  public function includeScript($PATH, $DATA, $CONTENT) {
+    return include($PATH);
+  }
+}
+</class><class __ideNodeOpen="true" __ideDiagramId="dg50adfe6b39714b0b93febc5fc6f61947" name="ResolveRouteTrait">
+trait ResolveRouteTrait {
+  static protected $controllerClass='\\Controller';
+
+  /*  |----route1----||------route2------|
+   *  /route1a/route1b/route2a/route2b.php
+   *  route1:
+   *    class=\route1a\Route1b
+   *    method=indexAction   (route2aAction no existe)
+   *    script=\route1a\route1b\index.php (\route1a\route1b\route2a no existe)
+   *  route2:
+   *    class=\Route2a
+   *    method=route2bAction
+   *    script=\route2a\route2b.php
+   *  @param $ROUTE = abc/def/... (No empieza con /)
+   *  @param $DIR = abc/def/ (Termina con / o es vacio, no puede ser ./)
+   */
+  public static function resolveRoute($ROUTE, $DATA, $CONTENT=null, $DIR='') {
+    if($ROUTE=='') $ROUTE='index.php';
+    $aROUTE=explode("/", $ROUTE);
+    $NAME=array_shift($aROUTE);
+    $FILE=$DIR.$NAME;
+    $CLASS='\\'.str_replace('/', '\\', $DIR).ucfirst($NAME);
+    //var_dump([$CLASS =&gt; class_exists($CLASS), "$FILE/"=&gt; IS_DIR($FILE), REALPATH(".").":$FILE"=&gt; FILE_EXISTS($FILE) ]);
+    if(class_exists($CLASS)){
+      return static::loadClass($CLASS, $FILE, $aROUTE, $DATA, $CONTENT, false);
+    } elseif(is_dir($FILE)) {
+      return static::resolveRoute(implode("/", $aROUTE), $DATA, $CONTENT, $FILE.'/');
+    } elseif(file_exists($FILE)) {
+      return static::loadClass(static::$controllerClass, $FILE, $aROUTE, $DATA, $CONTENT, true);
+    } else {
+    }
+  }
+  protected static function loadClass($CLASS, $FILE, &amp;$aROUTE, $DATA, $CONTENT=null, $isScript=false){
+    $INSTANCE=new $CLASS();
+    if(method_exists($INSTANCE, 'loadContext')) {
+      $INSTANCE-&gt;loadContext();
+    }
+    if(count($aROUTE)&gt;0) {
+      $METHOD = explode('.',$aROUTE[0])[0].'Action';
+      $SCRIPT = $FILE.'/'.$aROUTE[0];//\PagePaths::resolve($DIR, $NAME);
+      if(method_exists($INSTANCE, $METHOD) || (file_exists($SCRIPT) &amp;&amp; is_file($SCRIPT))) {
+        array_shift($aROUTE);
+      }elseif(file_exists($SCRIPT) &amp;&amp; is_dir($SCRIPT)){
+        array_shift($aROUTE);
+        return static::resolveRoute(implode("/", $aROUTE), $DATA, $CONTENT, $SCRIPT.'/');
+      } else { //if(!method_exists($INSTANCE, $METHOD) &amp;&amp; !(file_exists($SCRIPT) &amp;&amp; is_file($SCRIPT))) {
+        $METHOD = 'indexAction';
+        $SCRIPT = $FILE.'/index.php';//\PagePaths::resolve($DIR, $NAME);
+      }
+    } else {
+      $METHOD='indexAction';
+      $SCRIPT = $FILE.'/'.'index.php';//\PagePaths::resolve($DIR, $NAME);
+    }
+    if(count($aROUTE)&gt;0) {
+      //Start from base='' a new absolute route.
+      $res0=static::resolveRoute(implode("/", $aROUTE), $DATA, $CONTENT, '');
+      if(isset($res0)) $CONTENT=$res0;
+    } else {
+      //$CONTENT=null;
+    }
+    if(method_exists($INSTANCE, $METHOD)) {
+      $res0 = $INSTANCE-&gt;$METHOD($DATA, $CONTENT);
+      if(isset($res0)) $CONTENT=$res0;
+      //$INSTANCE-&gt;$METHOD($CONTENT);
+    }
+    if(file_exists($SCRIPT)) {
+      $res0 = $INSTANCE-&gt;includeScript($SCRIPT, $DATA, $CONTENT);
+      if(isset($res0)) $CONTENT=$res0;
+    }
+    if($isScript) {
+      $res0 = $INSTANCE-&gt;includeScript($FILE, $DATA, $CONTENT);
+      if(isset($res0)) $CONTENT=$res0;
+    }
+    return $CONTENT;
+  }
+}
+</class><class __ideDiagramId="dg86890450cded4fee87d2aba138bf2c0d" __ideNodeOpen="true" name="LoadContextTrait">
+trait LoadContextTrait {
+
+  public function loadContext(){
+    
+  }
+}
+</class><class __ideDiagramId="dgdff93f722fc04cedac86f141fba05be9" name="ResolveRequestTrait">/*
+ * requires ResolveRouteInterface;
+ */
+trait ResolveRequestTrait{
+  static public function resolveRequest(){
+    $parse = parse_url($_SERVER['REQUEST_URI']);
+    $route = substr($parse['path'], STRLEN($_SERVER['SCRIPT_NAME'])+1);
+    static::resolveRoute($route, $_REQUEST);
+  }
+  static public function url($route){
+    return $_SERVER['SCRIPT_NAME'].'/'.$route;
+  }
+}</class></diagram></module><module name="www/manager" type="" __ideNodeOpen="true" vendor="../../lib"><diagram __ideNodeOpen="true"><!--{"diagram":{"zoom":1,"scrollTop":0,"scrollLeft":0},"dg5180e81f2b044fd59544fbfd9331bc40":"position: absolute; height: 26px; left: 42px; top: 377px; width: 153px;","dgedadc7e3772c4a9fbbfbaf9b8dcc4b15":"position: absolute; height: 28px; left: 230px; top: 502px; width: 163px;","dg807d4af29adb464b8147ede7b3251105":"position: absolute; height: 342px; left: 43.9985px; top: 0px; width: 356px;","dgf38d3a9178a24171bacf75c547a2e6ef":"position: absolute; height: 42px; left: 62.0031px; top: 32.997px; width: 152px;","dgdc9a7d759a1a4dd1b1bb656985c8e763":"position: absolute; height: 35px; left: 228.578px; top: 35.1875px; width: 133px;","dg440fe6feb2b74052ad1688669a8eb407":"position: absolute; height: 27px; left: 39px; top: 502px; width: 153px;","dg508ccf453f68407c911f4fb0e54da987":"position: absolute; height: 24px; left: 37px; top: 442px; width: 346px;","dg5c342b418a35409c833a3be49e417d6e":"position: absolute; height: 37px; left: 63px; top: 109px; width: 148px;","dg724ab2ceed4a46bca2b887b90ed72a79":"position: absolute; height: 19px; left: 44px; top: 569px; width: 152px;","dg2e03ef0bb8854a63a5f540ad7f4b0c5e":"position: absolute; height: 40px; left: 233px; top: 104px; width: 125px;","dgb969d1b89234465d87104f58db7e3207":"position: absolute; height: 30px; left: 63px; top: 179px; width: 149px;","dg8609100108e64e03a9035977a31adfee":"position: absolute; height: 8px; left: 64px; top: 295px; width: 155px;","dg745e3bce27cf413895a0af07ce501019":"position: absolute; height: 31px; left: 235px; top: 566px; width: 158px;","dg5ee23de8234f4cd39d172c5c99876e95":"position: absolute; height: 29px; left: 63px; top: 238px; width: 152px;","dg4f1a57f248e84ef6a392fcaca7955336":"position: absolute; height: 25px; left: 240px; top: 185px; width: 136px;","dgffa9aaf907b341cfbea3210a0a8f9893":"position: absolute; height: 22px; left: 237px; top: 250px; width: 141px;","dg9c5838d32db6474a90e8821ce4214098":"position: absolute; height: 89px; left: 49px; top: 632px; width: 350px;","dgd84cf743f0544a69842015ad36cbaa8c":"position: absolute; height: 34px; left: 48px; top: 658px; width: 145px;"}--><class name="Main" __ideNodeOpen="false" __ideDiagramId="dg5180e81f2b044fd59544fbfd9331bc40">class Main extends \Controller {
+  public $title="MANAGER";
+  function loadContext(){
+    try{$this-&gt;db=new Mydb();}catch(Exception $e){}
+  }
+  function indexAction($data, $content){
+
+  }
+  function authAction($data, $content){
+    $userModel = $this-&gt;db-&gt;instanceModel('\User', $data);
+    $user = $userModel-&gt;fetch();
+    if($user){
+      @session_start();
+      $_SESSION['user']=$user;
+      echo 'window.location.href="index.php"';
+    } else {
+      echo 'APP.error("Usuario o contraseña incorrectos.")';
+    }
+  }
+  function openFileAction($data){
+    header("Content-Type: application/xml; charset=utf-8");
+    readfile($data["r"]);
+    exit;
+  }
+  function saveFileAction($data){
+    file_put_contents($data["f"], $data["c"]);
+    exit;
+  }
+}</class><class __ideDiagramId="dgedadc7e3772c4a9fbbfbaf9b8dcc4b15" name="Rol">
+class Rol extends \model\Model {
+  public static function getQuery(){
+    return 'select * from adrol';
+  }
+}</class><package name="main" __ideDiagramId="dg807d4af29adb464b8147ede7b3251105" __ideNodeOpen="false"><page __ideNodeOpen="true" __ideDiagramId="dgf38d3a9178a24171bacf75c547a2e6ef" name="login.php">&lt;?php
+return array(
+  'stylesheets'=&gt;[
+    \Router::url('html/stylesheet/main/login.css'),
+/*    Router::url('../bootstrap/bootstrap-notify-master/css/bootstrap-notify.css'),*/
+  ],
+  'scripts'=&gt;[
+/*    Router::url('../bootstrap/bootstrap-notify-master/js/bootstrap-notify.js'),*/
+  ],
+  [
+    'class'=&gt;'panel',
+    'cssClass'=&gt;'login-panel',
+    'title'=&gt;'Ingresar',
+    'items'=&gt;array(
+      ['class'=&gt;'form',
+        'action'=&gt;Router::url('main/auth.php'),
+        'items'=&gt;array(
+          ['class'=&gt;'textfield',    'name'=&gt;'user', 'label'=&gt;'Usuario'],
+          ['class'=&gt;'passwordfield','name'=&gt;'pass', 'label'=&gt;'Contraseña'],
+          ['class'=&gt;'checkbox','boxLabel'=&gt;'Recuerdame'],
+          ['class'=&gt;'button','text'=&gt;'Ingresar',
+            'handler'=&gt;'$(this.form).ajaxSubmit(function(res){eval(res)})',
+          ],
+        )
+      ]
+    )
+  ]
+);</page><page __ideDiagramId="dgdc9a7d759a1a4dd1b1bb656985c8e763" name="login.css">&lt;?php
+return "
+body {
+  padding-top:40px;
+  background-color:#eee;
+}
+.login-panel {
+  max-width:330px;
+}
+";
+</page><page __ideNodeOpen="true" __ideDiagramId="dg5c342b418a35409c833a3be49e417d6e" name="index.php">&lt;?php
+@session_start();
+return array(
+  'stylesheets'=&gt;[
+    \Router::url('html/stylesheet/main/index.css'),
+  ],
+  'scripts'=&gt;[
+  ],
+  [
+    'class'=&gt;'panel',
+    'layout'=&gt;'border',
+    'items'=&gt;array(
+      [
+        'class'=&gt;'navbar',
+        'region'=&gt;'north',
+        'cssClass'=&gt;'mainnavbar',
+        'items'=&gt;['class'=&gt;'html','html'=&gt;'&lt;a class="navbar-brand" href="#"&gt;OpenBank 2&lt;/a&gt;'],
+        'menu'=&gt;[
+          ['id'=&gt;'123','label'=&gt;'Dashboard'],
+          ['id'=&gt;'345','label'=&gt;'Configuración'],
+          ['id'=&gt;'567','label'=&gt;'Perfil'],
+        ],
+      ],
+      [
+        'class'=&gt;'panel',
+        'region'=&gt;'west',
+        'width'=&gt;'3',
+        'collapsible'=&gt;true,
+        'cssClass'=&gt;'menutree hidden-xs',
+        'items'=&gt;[
+          ['class'=&gt;'tree','model'=&gt;$this-&gt;db-&gt;instanceModel('\Menu',['rol'=&gt;$_SESSION['user']-&gt;adrolcodi,'parent'=&gt;'root'])]
+        ]
+      ],
+      [
+        'class'=&gt;'ajax',
+        'region'=&gt;'center',
+        'width'=&gt;'9',
+        'cssClass'=&gt;'workspace',
+        'url'=&gt;'../content/main/admin.php',
+      ],
+    ),
+  ]
+);</page><page __ideDiagramId="dg2e03ef0bb8854a63a5f540ad7f4b0c5e" name="index.css">&lt;?php
+$fondo="#fbfbfb";//"rgb(64,8,7)";
+$color1="rgb(255,255,255)";
+$color2="black";"rgb(197,185,41)";
+$color3f="rgb(255,255,255)";
+$color3b="rgb(0,0,0)";
+return "
+.mainnavbar{
+  margin-bottom: 0px!important;
+  border-radius:0px!important;
+} 
+.menutree{
+  margin-left: -15px;
+  background-color: $fondo;
+  /*position: fixed;
+  bottom: 0px;
+  top: 52px;
+  overflow-y: auto;*/
+  padding-left: 5px;
+  padding-right: 5px;
+}
+.menutree a{
+  color: $color2!important;
+}
+.menutree a:hover{
+  color: $color3b!important;
+  background-color: $color3f!important;
+}
+.workspace{
+  /*position: fixed;
+  top: 52px;
+  bottom: 0px;
+  width: inherit;
+  margin-left: -15px;*/
+}
+";</page><page __ideDiagramId="dgb969d1b89234465d87104f58db7e3207" name="dashboard.php">&lt;?php
+@session_start();
+$_SESSION['padre']='root';
+return array(
+  [
+    'class'=&gt;'panel',
+    'title'=&gt;'Dashboard',
+    'layout'=&gt;'column',
+    'items'=&gt;array(
+      ['class'=&gt;'panel','html'=&gt;'panel'],
+      ['class'=&gt;'panel','html'=&gt;'panel'],
+      ['class'=&gt;'panel','html'=&gt;'panel'],
+    ),
+  ],
+  [
+    'class'=&gt;'table',
+    'title'=&gt;'Table',
+    'name'=&gt;'menus',
+    'model'=&gt;$this-&gt;db-&gt;instanceModel('\Menu',['rol'=&gt;$_SESSION['user']-&gt;adrolcodi,'parent'=&gt;'root']),
+    'columns'=&gt;array(
+      ['name'=&gt;'id','text'=&gt;'Id'],
+      ['name'=&gt;'text','text'=&gt;'Text'],
+    ),
+  ]
+);</page><page __ideDiagramId="dg8609100108e64e03a9035977a31adfee" name="designer.php">&lt;?php
+return array(
+  'stylesheets'=&gt;[
+    ('/lib/dvEditor.css'),
+    ('/lib/codemirror/lib/codemirror.css'),
+  ],
+  'scripts'=&gt;[
+    ('/lib/codemirror/lib/codemirror.js'),
+    ('/lib/codemirror/addon/edit/matchbrackets.js'),
+    ('/lib/codemirror/mode/htmlmixed/htmlmixed.js'),
+    ('/lib/codemirror/mode/xml/xml.js'),
+    ('/lib/codemirror/mode/javascript/javascript.js'),
+    ('/lib/codemirror/mode/css/css.js'),
+    ('/lib/codemirror/mode/clike/clike.js'),
+    ('/lib/codemirror/mode/php/php.js'),
+    ('/lib/LoadNode.js'),
+    ('/lib/DvDiagram.js'),
+    ('/lib/dvEditor.js'),
+    ('/lib/draw3components.js'),
+  ],
+  [
+    'class'=&gt;'panel',
+    'title'=&gt;'Designer',
+    'cssClass'=&gt;'dg-designer',
+    'tbar'=&gt;[
+      ['class'=&gt;'button','text'=&gt;'Load','handler'=&gt;"Designer.load('source/test.xml')"],
+      ['class'=&gt;'button','text'=&gt;'Save','handler'=&gt;'Designer.save()'],
+      ['class'=&gt;'button','text'=&gt;'Add','handler'=&gt;"Designer.addNode()"],
+    ],
+    'items'=&gt;array(
+      [
+        'class'=&gt;'panel',
+        'cssClass'=&gt;'dg-sheet',
+      ],
+      [
+        'class'=&gt;'panel',
+        'cssClass'=&gt;'dg-console',
+        'html'=&gt;'&lt;div id="log_output"&gt;&lt;/div&gt;&lt;textarea&gt;&lt;/textarea&gt;',
+      ]
+    )
+  ],
+  [
+    'class'=&gt;'window',
+    'id'=&gt;'codewindow',
+    'title'=&gt;'Code',
+    'html'=&gt;'&lt;div id="codediv"&gt;&lt;/div&gt;
+      &lt;script&gt;(function(){
+        window.myCodeMirror = CodeMirror(document.getElementById("codediv"),{
+          lineNumbers: true,
+          matchBrackets: true,
+          mode: "application/x-httpd-php",
+          indentUnit: 2,
+          indentWithTabs: false
+        });
+      })()&lt;/script&gt;'
+  ]
+);</page><page __ideDiagramId="dg5ee23de8234f4cd39d172c5c99876e95" name="admin.php">&lt;?php
+@session_start();
+$_SESSION['rol']='';
+$_SESSION['permiso']='';
+return array(
+  [
+    'class'=&gt;'panel',
+    'title'=&gt;'Administracion de roles',
+    'layout'=&gt;'column',
+    'items'=&gt;array(
+      [
+        'class'=&gt;'table',
+        'name'=&gt;'menus',
+        'model'=&gt;$this-&gt;db-&gt;instanceModel('\Rol',[]),
+        'columns'=&gt;array(
+          ['name'=&gt;'adrolcodi','text'=&gt;'Código'],
+          ['name'=&gt;'adrolnomb','text'=&gt;'Nombre'],
+        ),
+        'listeners'=&gt;[
+          'onselectrow'=&gt;['row',function($row){
+            @session_start();
+            $_SESSION['menus']=$row;
+            $_SESSION['rol']=$row-&gt;adrolcodi;
+          }]
+        ]
+      ]
+    ),
+  ],
+);</page><page __ideDiagramId="dgffa9aaf907b341cfbea3210a0a8f9893" name="install.css">&lt;?php
+    header('Content-type:text/css');
+
+?&gt;
+/* -------------------------------------------------- */
+/*	Styles
+/* -------------------------------------------------- */
+	/* ---------------------------------------------------------------------- */
+	/*	Reset
+	/* ---------------------------------------------------------------------- */
+
+	html, body, div, span, object, iframe,
+	h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+	abbr, address, cite, code,
+	del, dfn, em, img, ins, kbd, q, samp,
+	small, strong, sub, sup, var,
+	b, i,
+	dl, dt, dd, ol, ul, li,
+	fieldset, form, label, legend,
+	table, caption, tbody, tfoot, thead, tr, th, td,
+	article, aside, canvas, details, figcaption, figure, 
+	footer, header, hgroup, menu, nav, section, summary,
+	time, mark, audio, video {
+		margin: 0;
+		padding: 0;
+		border: 0;
+		outline: 0;
+		font-size: 100%;
+		vertical-align: baseline;
+		background: transparent;
+
+		/*  fix for mac os  */
+		-webkit-font-smoothing: antialiased;
+		-moz-osx-font-smoothing: grayscale;
+	}
+
+	article,aside,details,figcaption,figure,
+	footer,header,hgroup,menu,nav,section { display: block; }
+
+	*,
+	 #tmm-form-wizard *:after,
+	 #tmm-form-wizard *:before {
+		margin: 0;
+		padding: 0;
+
+		-webkit-box-sizing: border-box;
+		   -moz-box-sizing: border-box;
+			box-sizing: border-box;
+	}
+
+	#tmm-form-wizard a {
+		margin: 0;
+		padding: 0;
+		font-size: 100%;
+		outline: none;
+		text-decoration: none;
+		background: transparent;
+		vertical-align: baseline;
+	}
+
+	#tmm-form-wizard a, #tmm-form-wizard a &gt; * {
+		text-decoration: none;
+		color: #5a5a5a;
+	}
+
+	#tmm-form-wizard a:hover {
+		color: #fff;
+	}
+
+	.not-ie #tmm-form-wizard a {
+		-webkit-transition: color .35s ease-out;
+				transition: color .35s ease-out;
+	}
+
+	/* ---------------------------------------------------------------------- */
+	/*	Basic Elements
+	/* ---------------------------------------------------------------------- */
+	/*#tmm-form-wizard * { line-height: 1.65em; }*/
+
+	body {
+		background-color:  #00BDFD; 
+		background-image: -ms-radial-gradient(center, circle farthest-corner, #FFFFFF 0%, #6BCDF1 100%);
+		background-image: -moz-radial-gradient(center, circle farthest-corner, #FFFFFF 0%, #6BCDF1 100%);
+		background-image: -webkit-gradient(radial, center center, 0, center center, 500, color-stop(0, #FFFFFF), color-stop(1, #6BCDF1));
+		background-image: -webkit-radial-gradient(center, circle farthest-corner, #FFFFFF 0%, #6BCDF1 100%);
+		background-image: radial-gradient(circle farthest-corner at center, #FFFFFF 0%, #6BCDF1 100%);
+		background-position: center center;
+		background-size: cover;
+		background-repeat: no-repeat;
+		color: #969696;
+		font-weight: 300;
+		font-size: 16px;
+		font-family: 'Roboto', sans-serif;
+		line-height: 1.65em;
+		height: 100%;
+
+		-webkit-font-smoothing: antialiased; /* Fix for webkit rendering */
+		-webkit-text-size-adjust: 100%;
+
+		/*  fix for mac os  */
+		-webkit-font-smoothing: antialiased;
+		-moz-osx-font-smoothing: grayscale;
+	}
+
+	html {
+		height: 100%;
+	}
+
+		/* -------------------------------------------------- */
+		/*	Typography
+		/* -------------------------------------------------- */
+
+		#tmm-form-wizard p {
+			margin: 0;
+			padding: 0;
+			line-height: 1.65em;
+			font-weight: 400;
+		}
+
+		#tmm-form-wizard h1 { font-size: 36px; }
+		#tmm-form-wizard h2 { font-size: 24px; }
+
+		::-moz-selection {
+			background-color: rgba(130, 210, 239, 0.99);
+			color: #000;
+			text-shadow: none;
+		}
+
+		::-webkit-selection {
+			background-color: rgba(130, 210, 239, 0.99);
+			color: #000;
+			text-shadow: none;
+		}
+
+		::selection {
+			background-color: rgba(130, 210, 239, 0.99);
+			color: #000;
+			text-shadow: none;
+		}
+
+		/* -------------------------------------------------- */
+		/*	Forms
+		/* -------------------------------------------------- */
+
+		#tmm-form-wizard button,
+		#tmm-form-wizard input[type="button"],
+		#tmm-form-wizard input[type="reset"],
+		#tmm-form-wizard input[type="submit"] {
+			cursor: pointer;
+			-webkit-appearance: button;
+		}
+
+		#tmm-form-wizard button::-moz-focus-inner,
+		#tmm-form-wizard input::-moz-focus-inner {
+			padding: 0;
+			border: 0;
+		}
+
+		#tmm-form-wizard button,
+		#tmm-form-wizard input,
+		#tmm-form-wizard select,
+		#tmm-form-wizard textarea {
+			margin: 0;
+			border: none;
+			vertical-align: baseline;
+			font-size: 100%;
+		}
+
+		#tmm-form-wizard button {
+			display: inline-block;
+			margin-bottom: 0;
+			outline: none;
+			background-color: transparent;
+			color: #fff;
+			vertical-align: baseline;
+			text-align: center;
+			text-decoration: none;
+			font: 11px/1.5 Arial;
+			cursor: pointer;
+		}
+
+		#tmm-form-wizard label { 
+			display: inline-block; 
+			cursor: pointer;
+		}
+
+		#tmm-form-wizard input,
+		#tmm-form-wizard textarea,
+		#tmm-form-wizard select,
+		#tmm-form-wizard button {
+		-webkit-transition: all .35s ease-out;
+				transition: all .35s ease-out;
+		}
+
+		#tmm-form-wizard input[type="text"],
+		#tmm-form-wizard input[type="password"] {
+			display: inline-block;
+			padding: 9px 32px 8px 10px;
+			width: 100%;
+			border: 1px solid #7baab6;
+			background-color: #fff;
+			color: #999;
+			font-size: 14px;
+			font-family: 'calibriregular', sans-serif;
+			outline: 0 none;
+			font-style: normal;
+
+			-webkit-border-radius: 3px;
+					border-radius: 3px;
+
+			-webkit-box-shadow: inset 0px -3px 0px 0px rgba(219, 219, 219, 0.75);
+					box-shadow: inset 0px -3px 0px 0px rgba(219, 219, 219, 0.75);
+			-webkit-appearance: none;	
+					appearance: none;
+
+			-webkit-transition: border 0.2s linear, box-shadow 0.2s linear, background-color .35s ease;
+					transition: border 0.2s linear, box-shadow 0.2s linear, background-color .35 ease;
+		}
+
+		#tmm-form-wizard input[type="text"]:focus,
+		#tmm-form-wizard input[type="password"]:focus{ 
+			outline: 0 none;
+
+			-webkit-box-shadow: 0 2px 2px rgba(0, 0, 0, 0.075) inset, 0 0 8px rgba(3, 127, 215, 0.9);
+					box-shadow: 0 2px 2px rgba(0, 0, 0, 0.075) inset, 0 0 8px rgba(3, 127, 215, 0.9);
+		}
+
+		#tmm-form-wizard input[type="text"]:hover,
+		#tmm-form-wizard input[type="password"]:hover{ 
+			background-color: #f2f7f9;
+		}
+
+		#tmm-form-wizard input[type="submit"],
+		#tmm-form-wizard input[type="button"] { width: auto; }
+
+		#tmm-form-wizard .wrong-data { border-color: #fe5214; }
+
+		/* Fix for Mobile Safari */
+		#tmm-form-wizard input[type="checkbox"]	{ -webkit-appearance: checkbox; }
+		#tmm-form-wizard input[type="radio"]		{ -webkit-appearance: radio; }
+
+		 Chrome, Safari 
+		#tmm-form-wizard input::-webkit-input-placeholder,
+		#tmm-form-wizard textarea::-webkit-input-placeholder { color: #999; }
+
+		 Firefox 
+		#tmm-form-wizard input:-moz-placeholder,
+		#tmm-form-wizard textarea:-moz-placeholder { color: #999; }
+
+		/* -------------------------------------------------- */
+		/*	Buttons
+		/* -------------------------------------------------- */	
+
+		#tmm-form-wizard .button {
+			display: inline-block;
+			margin-bottom: 15px;
+			padding: 0;
+			outline: none;
+			color: #fff;
+			vertical-align: baseline;
+			text-decoration: none;
+			text-align: center;
+			text-shadow: 1px 1px 0px rgba(0, 0, 0, .4);
+			text-transform: uppercase;
+			font-weight: 700;
+			font-size: 16px;
+			cursor: pointer;
+			font-family: 'calibriregular', sans-serif;
+			padding: 1px;
+			background-image: -ms-linear-gradient(top, #00BDFD 0%, #047BD4 100%);
+			background-image: -moz-linear-gradient(top, #00BDFD 0%, #047BD4 100%);
+			background-image: -o-linear-gradient(top, #00BDFD 0%, #047BD4 100%);
+			background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0, #00BDFD), color-stop(1, #047BD4));
+			background-image: -webkit-linear-gradient(top, #00BDFD 0%, #047BD4 100%);
+			background-image: linear-gradient(to bottom, #00BDFD 25%, #047BD4 100%);
+			background-size: auto 100%;
+			background-position: 0 100%;
+
+			-webkit-transition: background-position .5s ease, background-size .5s ease;
+					transition: background-position .5s ease, background-size .5s ease;
+		}
+
+			#tmm-form-wizard .button a { color: #fff;}
+
+		.ie8 #tmm-form-wizard .button { background-color: #00BDFD; }
+		.ie9 #tmm-form-wizard .button { background-color: #00BDFD; }
+
+		#tmm-form-wizard .button:hover {
+			background-size: auto 200%;
+			background-position: 0 0;
+
+			-webkit-transition: background-position .5s ease, background-size .5s ease;
+					transition: background-position .5s ease, background-size .5s ease;
+		}
+
+		#tmm-form-wizard .button:active {
+			background: -moz-linear-gradient(top, #0381d8 0%, #00bdfd 0%, #00bdfd 85%, #0381d8 100%); /* FF3.6+ */
+			background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#0381d8), color-stop(0%,#00bdfd), color-stop(85%,#00bdfd), color-stop(100%,#0381d8)); /* Chrome,Safari4+ */
+			background: -webkit-linear-gradient(top, #0381d8 0%,#00bdfd 0%,#00bdfd 85%,#0381d8 100%); /* Chrome10+,Safari5.1+ */
+			background: linear-gradient(to bottom, #0381d8 0%,#00bdfd 0%,#00bdfd 85%,#0381d8 100%); /* W3C */
+		}
+
+			#tmm-form-wizard .button, 
+			#tmm-form-wizard .button span {
+			-webkit-border-radius: 4px;
+					border-radius: 4px;
+			}
+
+				#tmm-form-wizard .button span {
+					border-top: 1px solid #6cdafe; 
+					border-bottom: 1px solid #298eda;
+					border-left: 1px solid #28b0ef;
+					border-right: 1px solid #28b0ef;
+					display: inline-block;
+					padding: 2px 14px;
+				}
+
+	/*------------------------------------------------------*/
+	/*	Form
+	/*------------------------------------------------------*/
+
+		#tmm-form-wizard.substrate-transparent {
+			padding: 0px 14px;
+			background-color: transparent;
+		}
+
+		#tmm-form-wizard.form-login {
+			top: 50%; 
+			left: 50%; 
+			width: 390px;
+			height: 290px; 
+			position: absolute; 
+			margin-top: -145px; 
+			margin-left: -195px; 
+		}
+
+		#tmm-form-wizard .form-login-heading {
+			font: 20px 'Myriad Pro',sans-serif;
+			color: #000;
+			margin: 0;
+		}
+
+		#tmm-form-wizard .input-block {
+			padding-bottom: 5px;
+			position: relative;
+		}
+
+			#tmm-form-wizard .input-block label {
+				font-size: 14px;
+				font-family: 'calibriregular', sans-serif;
+				color: #4f4f4f;
+			}
+
+		#tmm-form-wizard .tip {
+			padding-top: 2px;
+			padding-bottom: 26px;
+			margin: 0px -14px;
+		}
+
+			#tmm-form-wizard .tip a {
+				color: #fb6b5b;
+				font: 12px  'calibriregular', sans-serif;
+				padding: 0px 14px;
+				float: right;
+			}
+
+			#tmm-form-wizard .tip a:hover { color: #000; }
+
+		#tmm-form-wizard .button-group {
+			position: relative;
+			padding-top: 10px;
+		}
+
+			#tmm-form-wizard .button-group a { color: #fff;}
+
+		/*	Tooltip  */
+		#tmm-form-wizard .input-block .tooltip {
+			position: absolute;
+			width: 253px;
+			line-height: 20px;
+			padding: 14px 14px 6px;
+			font-size: 11px;
+			text-align: center;
+			color: #fff;
+			text-align: left;
+			font-family: 'calibriregular', sans-serif;
+			background: rgb(251, 107, 91);
+			top: 28px;
+			right: -272px;
+			z-index: 1;
+			display: none;
+			
+
+			-webkit-border-radius: 5px;
+					border-radius: 5px;
+
+			-webkit-text-shadow: rgba(0, 0, 0, 0.0980392) 1px 1px 1px;
+					text-shadow: rgba(0, 0, 0, 0.0980392) 1px 1px 1px;
+
+			-webkit-box-shadow: rgba(0, 0, 0, 0.0980392) 1px 1px 2px 0px;
+					box-shadow: rgba(0, 0, 0, 0.0980392) 1px 1px 2px 0px;
+		}
+		
+			#tmm-form-wizard .tooltip p {
+				line-height: 1.3;
+				padding-bottom: 33px;
+			}
+
+			#tmm-form-wizard .tooltip b {
+				font-size: 14px;
+				display: block;
+				font-weight: 700;
+			}
+
+			#tmm-form-wizard .tooltip span {
+				display: block;
+				font-size: 11px;
+				padding: 0 0 0 15px;
+			}
+
+				#tmm-form-wizard .tooltip span:before {
+					display: block;
+					position: absolute;
+					left: 14px;
+					font: 14px 'fontello';
+					color: #fff;
+					content: '\e9af';
+				}
+
+			  #tmm-form-wizard .tooltip:after {
+					content: "";
+					position: absolute;
+					width: 0;
+					height: 0;
+					border-width: 10px;
+					border-style: solid;
+					border-color: transparent #fb6b5b transparent transparent;
+					top: 12px;
+					left: -20px;
+				}
+				.ie8 #tmm-form-wizard .tooltip:after { left: -17px; }
+				/*	end Tooltip  */
+
+		/*------------------------------------------------------*/
+		/*	Form with substrate
+		/*------------------------------------------------------*/
+
+		#tmm-form-wizard.substrate {
+			padding: 0px 14px;
+			background-color: #fff;
+			overflow: hidden;
+
+			-webkit-border-top-right-radius: 5px;
+					border-top-right-radius: 5px;
+			-webkit-border-top-left-radius: 5px;
+					border-top-left-radius: 5px;
+
+			-webkit-border-bottom-right-radius: 3px;
+					border-bottom-right-radius: 3px;
+			-webkit-border-bottom-left-radius: 3px;
+					border-bottom-left-radius: 3px;
+			-webkit-box-shadow: 7px 7px 0px 0px rgba(50, 50, 50, 0.3);
+					box-shadow: 7px 7px 0px 0px rgba(50, 50, 50, 0.3);
+		}
+
+		#tmm-form-wizard.substrate .form-login-heading {
+			margin: 0 -14px;
+			border-bottom: 1px solid #dadada;
+			color: #757575;
+			padding: 14px;
+			background-color: #F0F0F0;
+			background-image: -moz-linear-gradient(top, #FFFFFF 0%, #F0F0F0 100%);
+			background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0, #FFFFFF), color-stop(1, #F0F0F0));
+			background-image: -webkit-linear-gradient(top, #FFFFFF 0%, #F0F0F0 100%);
+
+			-webkit-border-top-right-radius: 5px;
+					border-top-right-radius: 5px;
+			-webkit-border-top-left-radius: 5px;
+					border-top-left-radius: 5px;
+		}
+
+			#tmm-form-wizard.form-login.substrate .form-login-heading { margin: 0 -14px; }
+
+			#tmm-form-wizard.substrate .form-login-heading span {
+				color: #59bbdf;
+				padding: 0 5px;
+			}
+
+		#tmm-form-wizard.substrate input[type="text"],
+		#tmm-form-wizard.substrate input[type="password"] {
+			border: 1px solid #c4cdcf;
+			outline: 0 none;
+		}
+
+			#tmm-form-wizard.substrate .input-block label {
+				color: #748286;
+				font-size: 14px;
+			}
+
+			#tmm-form-wizard.substrate .tip {
+				padding-top: 2px;
+				padding-bottom: 43px;
+				border-bottom: 1px solid #dadada; 
+			}
+
+			#tmm-form-wizard.substrate .button-group { text-align: right; }
+
+	/*------------------------------------------------------*/
+	/*	Form wizard
+	/*------------------------------------------------------*/
+
+	.form-container {
+		width: 820px;
+		margin: 0 auto;
+	}
+
+	#tmm-form-wizard { padding: 0 14px; }
+
+	#tmm-form-wizard .form-login-heading {
+		font: 24px 'Myriad Pro', sans-serif;
+		color: #757575;
+	}
+
+		#tmm-form-wizard .form-login-heading span {
+			font-family: "calibriregular", sans-serif;
+			color: #59bbdf;
+			padding: 0 5px;
+		}
+
+		#tmm-form-wizard .stage-container {
+			border-bottom: 1px solid #dadada;
+			padding: 15px 0px 4px;
+		}
+
+			#tmm-form-wizard .stage {
+				display: inline-block;
+				position: relative;
+				text-align: center;
+				min-height: 112px;
+			}
+
+				#tmm-form-wizard .stage:before,
+				#tmm-form-wizard .stage:after {
+					position: absolute;
+					background-color: #eaeaea;
+					top: 50%;
+					margin-top: -33px;
+					width: 50%;
+					height: 5px;
+					border-top: 1px solid #d9d9d9;
+					border-bottom: 1px solid #d9d9d9;
+					content: '';
+				}
+
+				#tmm-form-wizard .stage:before { left: 0; }
+				#tmm-form-wizard .stage:after  { right: 0; }
+
+				#tmm-form-wizard .stage:first-child:before { display: none; }
+				#tmm-form-wizard .stage:first-child + .stage + .stage + .stage:after { display: none; }
+
+		/*	Current stage  */
+		#tmm-form-wizard .stage.tmm-current .stage-header {
+			background-color: #fb6b5b; 
+			border: none; 
+		}
+
+			#tmm-form-wizard .stage.tmm-current .stage-header.head-number { 
+				color: #fff; 
+				text-shadow: 1px 1px 0px rgba(0, 0, 0, .9);
+			}
+
+			#tmm-form-wizard .stage.tmm-current:after,
+			#tmm-form-wizard .stage.tmm-current:before { 
+				background-color: #fb6b5b; 
+				border: none; 
+			}
+		/*	end Current stage  */
+
+		/*	Success stage  */
+		#tmm-form-wizard .stage.tmm-success .stage-header { 
+			background-color: #92cf5c; 
+			border: none; 
+		}
+
+			#tmm-form-wizard .stage.tmm-success .stage-header.head-number { 
+				color: #3c611b; 
+				text-shadow: 1px 1px 0px rgba(173, 219, 114, 1); 
+			}
+
+			#tmm-form-wizard .stage.tmm-success:after,
+			#tmm-form-wizard .stage.tmm-success:before { 
+				background-color: #92cf5c; 
+				border: none;
+			}
+
+			#tmm-form-wizard .stage.tmm-success .stage-header:after {
+				position: absolute;
+				top: 51px;
+				left: -51px;
+				color: #696969;
+				font-family: 'fontello';
+				font-size: 16px;
+				color: #92cf5c;
+				content: '\e83b';
+                                text-shadow: none;
+                                font-weight: 100;
+			}
+                        
+                        #tmm-form-wizard .stage.tmm-success .stage-header.head-number:after { top: 42px; }
+        /*	end Succes stage  */
+
+				#tmm-form-wizard .stage-header {
+					display: inline-block;
+					width: 50px;
+					height: 50px;
+					background-color: #eaeaea;
+					text-align: center;
+					font-size: 20px;
+					color: #a9a9a9;
+					border: 1px solid #d9d9d9;
+					position: relative;
+					z-index: 1;
+                                        
+					-webkit-border-radius: 50%;
+							border-radius: 50%;
+				}
+                                
+                                #tmm-form-wizard .stage-header.head-number {
+                                    color: #a9a9a9;
+                                    font-family: 'Arial', sans-serif;
+                                    font-weight: bold;
+                                    color: #a9a9a9;
+                                    font-family: 'Arial', sans-serif;
+                                    font-weight: bold;
+                                    line-height: 2.2em;
+                                    margin-bottom: 7px;
+                                }
+
+				#tmm-form-wizard .stage-content {
+					width: 153px;
+					padding-left: 17px;
+					max-height: 52px;
+					margin: 0 auto;
+				}
+
+					#tmm-form-wizard .stage-title {
+						font: 400 15px 'calibriregular', sans-serif;
+						color: #464646;
+						padding-left: 0px;
+						text-align: left;
+					}
+
+					#tmm-form-wizard .stage-info {
+						text-align: left;
+						color: #a8a8a8;
+						font-family: 'calibriregular', sans-serif;
+						font-size: 11px;
+						line-height: 1.4;
+					}
+
+		/* -------------------------------------------------- */
+		/*	Portable Form
+		/* -------------------------------------------------- */
+
+		#tmm-form-wizard .form-header {
+			font: 20px 'calibriregular';
+			padding-top: 15px;
+			padding-bottom: 36px;
+		}
+
+			#tmm-form-wizard .form-title {
+				float: left;
+				padding-left: 22px;
+				color: #7e8b8f;
+			}
+
+			#tmm-form-wizard .form-title-2 {
+				float: left;
+				padding-left: 32px;
+			}
+
+				#tmm-form-wizard .form-title b {
+					font-weight: 200;
+					color: #5cb0cf;
+				}
+
+				#tmm-form-wizard .form-title-2 b {
+					font-weight: 200;
+					color: #5cb0cf;
+				}
+
+			#tmm-form-wizard .steps {
+				color: #636363;
+				float: right;
+			}
+
+		#tmm-form-wizard .form-wizard { 
+			padding: 5px 12px 23px;
+			border: 1px solid #d0dde1;
+			background-color: #f2f7f9;
+			min-height: 505px;
+
+			-webkit-border-radius: 4px;
+					border-radius: 4px;
+		}
+
+			#tmm-form-wizard .next,
+			#tmm-form-wizard .prev {
+				position: relative;
+				padding-top: 12px;
+			}
+
+				#tmm-form-wizard .prev {	float: left; }
+				#tmm-form-wizard .next {	float: right; }
+
+			#tmm-form-wizard .next .button.button-control span,
+			#tmm-form-wizard .prev .button.button-control span {
+				text-align: left;
+				text-transform: none;
+				line-height: 1;
+			}
+
+				#tmm-form-wizard .prev .button.button-control span {  padding: 6px 9px 9px 43px; }
+				#tmm-form-wizard .next .button.button-control span { padding: 6px 45px 9px 6px; }
+
+				#tmm-form-wizard .prev .button.button-control span:after,
+				#tmm-form-wizard .next .button.button-control span:after {
+					position: absolute;
+					font-size: 20px;
+					font-family: 'fontello';
+					color: #fff;
+					top: 25px;
+				}
+
+				#tmm-form-wizard .next .button.button-control span:after { right: 9px; content: '\e8bc';}
+				#tmm-form-wizard .prev .button.button-control span:after { left: 9px; content: '\e8bb';}
+
+				#tmm-form-wizard .button.button-control span b {
+					text-transform: none;
+					display: block;
+					font-weight: 200;
+					line-height: 1;
+					font-size: 12px;
+					font-family: 'calibriregular', sans-serif;
+				}
+
+				/*	button divider  */
+				#tmm-form-wizard .next .button-divider,
+				#tmm-form-wizard .prev .button-divider {
+					position: absolute;
+					height: 57%;
+					width: 2px;
+					border-right: 1px solid #0077c5;
+					border-left: 1px solid #49c7f6;
+					top: 14px;
+				}
+
+				#tmm-form-wizard .prev .button-divider {	left: 34px; }
+				#tmm-form-wizard .next .button-divider { right: 34px; }
+				/*	end button divider  */
+
+
+		#tmm-form-wizard .dropdown {
+			display: block;
+			position: relative;
+			overflow: hidden;
+			border: 1px solid;
+			border-color: white #f7f7f7 whitesmoke;
+			border: 1px solid #c4cdcf;
+
+			-webkit-border-radius: 3px;
+					border-radius: 3px;
+		}
+
+			#tmm-form-wizard .dropdown:before, 
+			#tmm-form-wizard .dropdown:after {
+				position: absolute;
+				top: 9px;
+				right: 6px;
+				width: 0;
+				height: 0;
+				border: 4px dashed;
+				border-color: #97adb5 transparent;
+				pointer-events: none;
+				content: '';
+				z-index: 4;
+			}
+
+				#tmm-form-wizard .dropdown:before {
+					border-bottom-style: solid;
+					border-top: none;
+				}
+
+				#tmm-form-wizard .dropdown:after {
+					margin-top: 7px;
+					border-top-style: solid;
+					border-bottom: none;
+				}
+
+		#tmm-form-wizard .dropdown-select {
+			position: relative;
+			width: 100%;
+			margin: 0;
+			padding-left: 6px;
+			font-size: 14px;
+			font-family: 'calibriregular', sans-serif;
+			color: #b5b5b5;
+			background: #fff;
+			text-indent: 0.01px;
+			text-overflow: "";
+			outline: none;
+			height: 34px;
+			font-style: normal;
+                        -webkit-appearance: none !important;
+                        
+			-webkit-border-radius: 2px;
+					border-radius: 2px;
+
+			-webkit-box-shadow: inset 0px -3px 0px 0px rgba(219, 219, 219, 0.75);
+					box-shadow: inset 0px -3px 0px 0px rgba(219, 219, 219, 0.75);
+		}
+                
+		#tmm-form-wizard .dropdown-select:hover { background-color: #F2F7F9; }
+
+		#tmm-form-wizard .dropdown-select:focus {
+			width: 100%;
+			color: #394349;
+			z-index: 2;
+		}
+                
+		/*	IE10 */
+		#tmm-form-wizard select::-ms-expand {
+			display: none;
+		}
+			#tmm-form-wizard .dropdown-select &gt; option {
+				margin: 3px;
+				text-shadow: none;
+				background: #f2f2f2;
+				cursor: pointer;
+				hite-space: nowrap;
+				text-overflow: ellipsis; 
+				-webkit-appearance:button;
+
+				-webkit-border-radius: 3px;
+						border-radius: 3px;
+			}
+                        
+                        @-moz-document url-prefix() {
+                            #tmm-form-wizard .dropdown:before,
+                            #tmm-form-wizard .dropdown:after {
+                                content: none;
+                            }
+
+                            #tmm-form-wizard .dropdown-select {
+                                width: 119%;
+                                background-color: #fff;
+                                background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAIAAADZF8uwAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAGxJREFUeNpi+I8Krt9/tPf0BTRBFgYkcOPB4wPnLkPYTib6cHEmrCpuPXq678xFdEXIKjDVMQKtZCAEmBiIAEQpYsHlJiBQlZVyNjVAmKShIOtgpItVBYp1yOqQVYAAZojvOXUeTZCoIAAIMACwaW9Tv3i0rgAAAABJRU5ErkJggg==);
+                                background-position: 82% center;
+                                background-repeat: no-repeat;
+                            }
+                            
+                            #tmm-form-wizard .dropdown-select:hover { 
+                                background-color: #fff;
+                                width: 119%; 
+                            }
+                            
+                             #tmm-form-wizard .dropdown-select:focus { 
+                                width: 119%; 
+                            }
+                    
+                            #tmm-form-wizard .dropdown-select &gt; option:focus { width: 119%; }
+                        }
+
+			/* Fix for IE 8 putting the arrows behind the select element. */
+			.lt-ie9 #tmm-form-wizard .dropdown { z-index: 1; }
+
+			.lt-ie9 #tmm-form-wizard .dropdown-select { z-index: -1; }
+
+			.lt-ie9 #tmm-form-wizard .dropdown-select:focus { z-index: 3; }
+
+			@-moz-document url-prefix() { .dropdown-select { padding: 8px 6px; } }
+			/* end Fix for IE 8 putting the arrows behind the select element. */		
+
+			#tmm-form-wizard dl { line-height: 1.8;}
+
+			#tmm-form-wizard dt, 
+			#tmm-form-wizard dd {
+				display: inline-block;
+				font: 14px 'calibriregular', sans-serif;
+			}
+
+			#tmm-form-wizard dt {
+				width: 21%;
+				color: #a0aeb2;
+			}
+
+			#tmm-form-wizard dd { color: #6b7a7e; }
+
+			#tmm-form-wizard .data-container {
+				background-color: #fff;
+				border: 1px solid #c4cdcf;
+				padding: 12px 18px 50px 18px;
+				margin-top: 28px;
+				margin-bottom: 20%;
+
+				-webkit-border-radius: 3px;
+						border-radius: 3px;
+
+				-webkit-box-shadow: inset 0px -3px 0px 0px rgba(219, 219, 219, 1);
+						box-shadow: inset 0px -3px 0px 0px rgba(219, 219, 219, 1);
+			}
+
+			/* -------------------------------------------------- */
+			/*	Sprite Icons
+			/* -------------------------------------------------- */	
+
+			/*	Stage Icons	 */
+			.head-icon {
+				display: block;
+				background: url(../images/header-sprite.png) no-repeat 0 0;
+			}
+
+				.head-icon.head-icon-lock { background-position: 10px -22px; }
+
+				.tmm-success &gt; .head-icon.head-icon-lock,
+				.tmm-current &gt; .head-icon.head-icon-lock { background-position: 10px -423px; }
+
+				.head-icon.head-icon-user { background-position: 8px -107px; }
+
+				.tmm-success &gt; .head-icon.head-icon-user,
+				.tmm-current &gt; .head-icon.head-icon-user { background-position: 9px -506px; }
+
+				.head-icon.head-icon-payment { background-position: 9px -206px; }
+
+				.tmm-success &gt; .head-icon.head-icon-payment,
+				.tmm-current &gt; .head-icon.head-icon-payment { background-position: 9px -606px; }
+
+				.head-icon.head-icon-details { background-position: 8px -312px; }
+
+				.tmm-success &gt; .head-icon.head-icon-details,
+				.tmm-current &gt; .head-icon.head-icon-details { background-position: 8px -713px; }
+				/*	end Stage Icons	 */
+
+
+			/*	Form Icons  */	
+			.form-icon {
+				display: block;
+				background: url(../images/sprite.png) no-repeat 0 0;
+			}
+
+				.form-icon.form-icon-user  { background-position: right -19px; }
+
+				.form-icon.form-icon-lock  { background-position: right -63px; }
+
+				.form-icon.form-icon-mail  { background-position: right -114px; }
+
+				.form-icon.form-icon-phone { background-position: right -158px; }
+
+			/*	Form title Icons  */	
+			.form-icon.title-icon-user	   { background-position: -10px -25px; }
+
+			.form-icon.title-icon-lock	   { background-position: -10px -70px; }
+
+			.form-icon.title-icon-payment  { background-position: -10px -211px; }
+
+			.form-icon.title-icon-card     { background-position: 0px -260px; }
+
+		/* ---------------------------------------------------------------------- */
+		/*	FORM COLOR CONFIGURATIONS
+		/* ---------------------------------------------------------------------- */
+
+		/*	Input filds  */
+		#tmm-form-wizard input[type="text"],
+		#tmm-form-wizard input[type="password"]								{ background-color: #fff; }		/*	Set background color for INPUT FILDS  */
+		#tmm-form-wizard input[type="text"]:hover,
+		#tmm-form-wizard input[type="password"]:hover						{ background-color: #f2f7f9; }	/*  Set background color for INPUT FILDS on hover  */
+		/*	end Input filds  */
+
+		/*	Stage  */
+		#tmm-form-wizard .stage:before,
+		#tmm-form-wizard .stage:after						{ background-color: #eaeaea; }  /*  Set color for STAGE LINE  */
+		#tmm-form-wizard .stage-header						{ background-color: #eaeaea; }  /*	Set background color for STAGE HEADER  */
+		#tmm-form-wizard .stage-title						{ color: #464646; }				/*	Set color for STAGE TITLE  */
+		#tmm-form-wizard .stage-info						{ color: #a8a8a8;}				/*	Set color for STAGE INFO  */
+		/*	end Stage  */
+
+		/*	Current stage  */
+		#tmm-form-wizard .stage.tmm-current .stage-header		{ background-color: #fb6b5b; }	/*	Set background color for CURRENT STAGE  */	
+		#tmm-form-wizard .stage.tmm-current .stage-header.head-number   { color: #fff; }				/*	Set color for CURRENT STAGE TEXT  */
+		#tmm-form-wizard .stage.tmm-current:after,
+		#tmm-form-wizard .stage.tmm-current:before				{ background-color: #fb6b5b; }	/*	Set background color for CURRENT STAGE LINE  */
+		/*	end Current stage  */
+
+		/*	Success stage  */
+		#tmm-form-wizard .stage.tmm-success .stage-header		{ background-color: #92cf5c; }	/*	Set background color for SUCCESS STAGE  */	
+		#tmm-form-wizard .stage.tmm-success .stage-header.head-number { color: #3c611b; }				/*	Set color for SUCCESS STAGE TEXT  */
+		#tmm-form-wizard .stage.tmm-success:after,
+		#tmm-form-wizard .stage.tmm-success:before				{ background-color: #92cf5c; }	/*	Set background color for SUCCESS STAGE LINE  */
+		#tmm-form-wizard .stage.tmm-success .stage-header:after { color: #92cf5c; }				/*  Set color for SUCCESS STAGE ICON  */
+		/*	end Success stage  */
+
+		/*	Form elements  */
+		#tmm-form-wizard .form-title						{ color: #7e8b8f; }				/*	Set color for FORM TITLE  */
+		#tmm-form-wizard .steps								{ color: #636363; }				/*	Set color for FORM STEPS  */
+		#tmm-form-wizard .form-wizard						{ background-color: #f2f7f9; }  /*	Set background color for FORM  */
+		#tmm-form-wizard .dropdown-select					{ color: #b5b5b5; }				/*	Set color for SELECT TEXT  */
+		#tmm-form-wizard .data-container					{ background-color: #fff; }		/*	Set background color for DATA CONTAINER(last stage)  */
+		#tmm-form-wizard.substrate							{ background-color: #fff; }	    /*  Set background color for FORM SUBSTRATE  */
+		#tmm-form-wizard .tip a								{ color: #fb6b5b; }		   	    /*  Set color for TIP  */
+		/*	end Form elements  */
+
+		/*	Tooltip  */
+		#tmm-form-wizard .tooltip							{ background: rgb(251, 107, 91); }								 /*	 Set background color for TOOLTIP   */
+		#tmm-form-wizard .tooltip:after						{ border-color: transparent #fb6b5b transparent transparent; }   /*	 Set color for TOOLTIP TRIANGLE  */
+		#tmm-form-wizard .tooltip							{ color: #fff; }													 /*	 Set color for TOOLTIP TEXT  */
+		/*	end Tooltip  */</page><page __ideDiagramId="dg4f1a57f248e84ef6a392fcaca7955336" name="install.php">&lt;?php
+ob_start();
+?&gt;
+&lt;div id="tmm-form-wizard" class="container substrate"&gt;
+
+					&lt;div class="row"&gt;
+						&lt;div class="col-xs-12"&gt;
+							&lt;h2 class="form-login-heading"&gt;Install SotaCloud&lt;/h2&gt;
+						&lt;/div&gt;
+
+					&lt;/div&gt;&lt;!--/ .row--&gt;
+
+					&lt;div class="row stage-container"&gt;
+
+						&lt;div class="stage tmm-current col-md-3 col-sm-3"&gt;
+							&lt;div class="stage-header head-icon head-icon-lock"&gt;&lt;/div&gt;
+							&lt;div class="stage-content"&gt;
+								&lt;h3 class="stage-title"&gt;Account Information&lt;/h3&gt;
+								&lt;div class="stage-info"&gt;
+									Enter your first time username
+									passworddetails
+								&lt;/div&gt; 
+							&lt;/div&gt;
+						&lt;/div&gt;&lt;!--/ .stage--&gt;
+
+						&lt;div class="stage col-md-3 col-sm-3"&gt;
+							&lt;div class="stage-header head-icon head-icon-user"&gt;&lt;/div&gt;
+
+							&lt;div class="stage-content"&gt;
+								&lt;h3 class="stage-title"&gt;Personal Information&lt;/h3&gt;
+								&lt;div class="stage-info"&gt;
+									Enter your first time username
+									passworddetails
+								&lt;/div&gt;
+							&lt;/div&gt;
+						&lt;/div&gt;&lt;!--/ .stage--&gt;
+
+						&lt;div class="stage col-md-3 col-sm-3"&gt;
+							&lt;div class="stage-header head-icon head-icon-payment"&gt;&lt;/div&gt;
+							&lt;div class="stage-content"&gt;
+								&lt;h3 class="stage-title"&gt;Payment Information&lt;/h3&gt;
+								&lt;div class="stage-info"&gt;
+									Enter your first time username
+									passworddetails
+								&lt;/div&gt;
+							&lt;/div&gt;
+						&lt;/div&gt;&lt;!--/ .stage--&gt;
+
+						&lt;div class="stage col-md-3 col-sm-3"&gt;
+							&lt;div class="stage-header head-icon head-icon-details"&gt;&lt;/div&gt;
+							&lt;div class="stage-content"&gt;
+								&lt;h3 class="stage-title"&gt;Confirm Your Details&lt;/h3&gt;
+								&lt;div class="stage-info"&gt;
+									Enter your first time username
+									passworddetails
+								&lt;/div&gt; 
+							&lt;/div&gt;
+						&lt;/div&gt;&lt;!--/ .stage--&gt;
+
+					&lt;/div&gt;&lt;!--/ .row--&gt;
+
+					&lt;div class="row"&gt;
+
+						&lt;div class="col-xs-12"&gt;
+
+							&lt;div class="form-header"&gt;
+								&lt;div class="form-title form-icon title-icon-lock"&gt;
+									&lt;b&gt;Account&lt;/b&gt; Information
+								&lt;/div&gt;
+								&lt;div class="steps"&gt;
+									Steps 1 - 5
+								&lt;/div&gt;
+							&lt;/div&gt;&lt;!--/ .form-header--&gt;
+
+						&lt;/div&gt;
+
+					&lt;/div&gt;&lt;!--/ .row--&gt;
+
+					&lt;form action="/" role="form"&gt;
+
+						&lt;div class="form-wizard"&gt;
+
+							&lt;div class="row"&gt;
+								
+								&lt;div class="col-md-8 col-sm-7"&gt;
+
+									&lt;fieldset class="input-block"&gt;
+										&lt;label for="username"&gt;Username&lt;/label&gt;
+										&lt;input type="text" id="username" class="form-icon form-icon-user" placeholder="Login" required="" style="cursor: auto;"&gt;
+										&lt;div class="tooltip"&gt;
+											&lt;p&gt;
+												&lt;b&gt;Why do we need this info?&lt;/b&gt;
+												Lorem Ipsum is simply dummy text of the printing and
+												typesetting industry. Lorem Ipsum has been the industry's
+												standard dummy text ever since the 1500s
+											&lt;/p&gt;
+											&lt;span&gt;Your information is Safe here &amp;amp; never shared.&lt;/span&gt; 
+										&lt;/div&gt;&lt;!--/ .tooltip--&gt;	
+									&lt;/fieldset&gt;&lt;!--/ .input-login--&gt;
+									
+									&lt;fieldset class="input-block"&gt;
+										&lt;label for="password"&gt;Password&lt;/label&gt;
+										&lt;input type="password" id="password" placeholder="Password" required="" style="cursor: auto; background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAACIUlEQVQ4EX2TOYhTURSG87IMihDsjGghBhFBmHFDHLWwSqcikk4RRKJgk0KL7C8bMpWpZtIqNkEUl1ZCgs0wOo0SxiLMDApWlgOPrH7/5b2QkYwX7jvn/uc//zl3edZ4PPbNGvF4fC4ajR5VrNvt/mo0Gr1ZPOtfgWw2e9Lv9+chX7cs64CS4Oxg3o9GI7tUKv0Q5o1dAiTfCgQCLwnOkfQOu+oSLyJ2A783HA7vIPLGxX0TgVwud4HKn0nc7Pf7N6vV6oZHkkX8FPG3uMfgXC0Wi2vCg/poUKGGcagQI3k7k8mcp5slcGswGDwpl8tfwGJg3xB6Dvey8vz6oH4C3iXcFYjbwiDeo1KafafkC3NjK7iL5ESFGQEUF7Sg+ifZdDp9GnMF/KGmfBdT2HCwZ7TwtrBPC7rQaav6Iv48rqZwg+F+p8hOMBj0IbxfMdMBrW5pAVGV/ztINByENkU0t5BIJEKRSOQ3Aj+Z57iFs1R5NK3EQS6HQqF1zmQdzpFWq3W42WwOTAf1er1PF2USFlC+qxMvFAr3HcexWX+QX6lUvsKpkTyPSEXJkw6MQ4S38Ljdbi8rmM/nY+CvgNcQqdH6U/xrYK9t244jZv6ByUOSiDdIfgBZ12U6dHEHu9TpdIr8F0OP692CtzaW/a6y3y0Wx5kbFHvGuXzkgf0xhKnPzA4UTyaTB8Ph8AvcHi3fnsrZ7Wore02YViqVOrRXXPhfqP8j6MYlawoAAAAASUVORK5CYII=); background-attachment: scroll; background-position: 100% 50%; background-repeat: no-repeat;"&gt;
+										&lt;div class="tooltip"&gt;
+											&lt;p&gt;
+												&lt;b&gt;Why do we need this info?&lt;/b&gt;
+												Lorem Ipsum is simply dummy text of the printing and
+												typesetting industry. Lorem Ipsum has been the industry's
+												standard dummy text ever since the 1500s
+											&lt;/p&gt;
+											&lt;span&gt;Your information is Safe here &amp;amp; never shared.&lt;/span&gt; 
+										&lt;/div&gt;&lt;!--/ .tooltip--&gt;	
+									&lt;/fieldset&gt;&lt;!--/ .input-password--&gt;
+									
+									&lt;fieldset class="input-block"&gt;
+										&lt;label for="pass-confirm"&gt;Confirm password&lt;/label&gt;
+										&lt;input type="password" id="pass-confirm" placeholder="Password" required="" style="cursor: auto; background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAACIUlEQVQ4EX2TOYhTURSG87IMihDsjGghBhFBmHFDHLWwSqcikk4RRKJgk0KL7C8bMpWpZtIqNkEUl1ZCgs0wOo0SxiLMDApWlgOPrH7/5b2QkYwX7jvn/uc//zl3edZ4PPbNGvF4fC4ajR5VrNvt/mo0Gr1ZPOtfgWw2e9Lv9+chX7cs64CS4Oxg3o9GI7tUKv0Q5o1dAiTfCgQCLwnOkfQOu+oSLyJ2A783HA7vIPLGxX0TgVwud4HKn0nc7Pf7N6vV6oZHkkX8FPG3uMfgXC0Wi2vCg/poUKGGcagQI3k7k8mcp5slcGswGDwpl8tfwGJg3xB6Dvey8vz6oH4C3iXcFYjbwiDeo1KafafkC3NjK7iL5ESFGQEUF7Sg+ifZdDp9GnMF/KGmfBdT2HCwZ7TwtrBPC7rQaav6Iv48rqZwg+F+p8hOMBj0IbxfMdMBrW5pAVGV/ztINByENkU0t5BIJEKRSOQ3Aj+Z57iFs1R5NK3EQS6HQqF1zmQdzpFWq3W42WwOTAf1er1PF2USFlC+qxMvFAr3HcexWX+QX6lUvsKpkTyPSEXJkw6MQ4S38Ljdbi8rmM/nY+CvgNcQqdH6U/xrYK9t244jZv6ByUOSiDdIfgBZ12U6dHEHu9TpdIr8F0OP692CtzaW/a6y3y0Wx5kbFHvGuXzkgf0xhKnPzA4UTyaTB8Ph8AvcHi3fnsrZ7Wore02YViqVOrRXXPhfqP8j6MYlawoAAAAASUVORK5CYII=); background-attachment: scroll; background-position: 100% 50%; background-repeat: no-repeat;"&gt;
+										&lt;div class="tooltip"&gt;
+											&lt;p&gt;
+												&lt;b&gt;Why do we need this info?&lt;/b&gt;
+												Lorem Ipsum is simply dummy text of the printing and
+												typesetting industry. Lorem Ipsum has been the industry's
+												standard dummy text ever since the 1500s
+											&lt;/p&gt;
+											&lt;span&gt;Your information is Safe here &amp;amp; never shared.&lt;/span&gt; 
+										&lt;/div&gt;&lt;!--/ .tooltip--&gt;	
+									&lt;/fieldset&gt;&lt;!--/ .input-conf-password--&gt;
+									
+									&lt;fieldset class="input-block"&gt;
+										&lt;label for="email"&gt;Email&lt;/label&gt;
+										&lt;input type="text" id="email" class="form-icon form-icon-mail" placeholder="Please enter your email ID" required=""&gt;
+										&lt;div class="tooltip"&gt;
+											&lt;p&gt;
+												&lt;b&gt;Why do we need this info?&lt;/b&gt;
+												Lorem Ipsum is simply dummy text of the printing and
+												typesetting industry. Lorem Ipsum has been the industry's
+												standard dummy text ever since the 1500s
+											&lt;/p&gt;
+											&lt;span&gt;Your information is Safe here &amp;amp; never shared.&lt;/span&gt; 
+										&lt;/div&gt;&lt;!--/ .tooltip--&gt;	
+									&lt;/fieldset&gt;&lt;!--/ .input-email--&gt;
+
+								&lt;/div&gt;
+
+							&lt;/div&gt;&lt;!--/ .row--&gt;
+							
+						&lt;/div&gt;&lt;!--/ .form-wizard--&gt;
+						
+							&lt;div class="prev" style="display: none;"&gt;
+								&lt;button class="button button-control" type="button"&gt;&lt;span&gt;Prev Step &lt;b&gt;Account Information&lt;/b&gt;&lt;/span&gt;&lt;/button&gt;
+								&lt;div class="button-divider"&gt;&lt;/div&gt;
+							&lt;/div&gt;
+						
+							&lt;div class="next"&gt;
+								&lt;button class="button button-control" type="button" onclick="window.location.href='form-wizard-with-icon1.html'"&gt;&lt;span&gt;Next Step &lt;b&gt;Personal Information&lt;/b&gt;&lt;/span&gt;&lt;/button&gt;
+								&lt;div class="button-divider"&gt;&lt;/div&gt;
+							&lt;/div&gt;
+						
+					&lt;/form&gt;&lt;!--/ .form-wizard--&gt;
+
+				&lt;/div&gt;
+&lt;?php
+$c=ob_get_contents();
+ob_end_clean();
+
+@session_start();
+return array(
+  'stylesheets'=&gt;[
+    \Router::url('html/stylesheet/main/install.css'),
+  ],
+  'scripts'=&gt;[
+  ],
+  [
+    'class'=&gt;'panel',
+    'layout'=&gt;'border',
+    'items'=&gt;array(
+      [
+        'class'=&gt;'navbar',
+        'region'=&gt;'north',
+        'cssClass'=&gt;'mainnavbar',
+        'items'=&gt;[['class'=&gt;'html','html'=&gt;'Sotacloud'],],
+        'menu'=&gt;[
+        ],
+      ],
+      [
+        'class'=&gt;'panel',
+        'region'=&gt;'center',
+        'width'=&gt;'9',
+        'html'=&gt;  $c
+      ],
+    ),
+  ]
+);</page></package><class __ideDiagramId="dg440fe6feb2b74052ad1688669a8eb407" name="User" __ideNodeOpen="false">
+class User extends \model\Model {
+  public static function getQuery(){
+    return 'select * from adusr where adusrlogi=:user and adusrpass=md5(:pass)';
+  }
+}</class><class __ideDiagramId="dg508ccf453f68407c911f4fb0e54da987" name="Mydb">class Mydb extends \model\Connection {
+  public function __construct(){
+    $this-&gt;engine = 'mysql';
+    $this-&gt;host = 'localhost';
+    $this-&gt;database = 'openbank';
+    $this-&gt;user = 'root';
+    $this-&gt;pass = 'root';
+    $dns = $this-&gt;engine.':dbname='.$this-&gt;database.";host=".$this-&gt;host;
+    parent::__construct( $dns, $this-&gt;user, $this-&gt;pass, array(PDO::MYSQL_ATTR_INIT_COMMAND =&gt; 'SET NAMES UTF8;') );
+  }
+}
+</class><class __ideDiagramId="dg724ab2ceed4a46bca2b887b90ed72a79" name="Menu">class Menu extends \model\Model {
+  public static function getQuery(){
+    return 'select id, text, leaf from 
+              admop left join adrolperm on (admop.acl_id=adrolperm.adpermcodi) 
+            where adrolperm.adrolcodi=:rol and admop.parent=:parent';
+  }
+}</class><class __ideDiagramId="dg745e3bce27cf413895a0af07ce501019" name="Rol_Permisos">
+class Rol_Permisos extends \model\Model {
+  public static function getQuery(){
+    return 'select * from adrolperm left join adrol on(adrolperm.adrolcodi=adrol.adrolcodi) where adrolperm.adrolcodi=:rol';
+  }
+}</class><package __ideDiagramId="dg9c5838d32db6474a90e8821ce4214098" name="source" __ideNodeOpen="false">&lt;root&gt;
+&lt;/root&gt;<page __ideDiagramId="dgd84cf743f0544a69842015ad36cbaa8c" name="test.xml">&lt;root&gt;
+  &lt;package name="root"&gt;&lt;/package&gt;
+&lt;/root&gt;</page></package></diagram><diagram __ideNodeOpen="true"><!--{"diagram":{"zoom":1,"scrollTop":0,"scrollLeft":0},"dg5180e81f2b044fd59544fbfd9331bc40":"position: absolute; height: 26px; left: 42px; top: 377px; width: 153px;","dgf759cde5cc31416f9c893a84ab999c2d":"position: absolute; height: 511px; left: 427px; top: 130px; width: 499px;","dg3b593689d73c4dc483ec9bfef3b5ef96":"position: absolute; height: 73px; left: 429px; top: 4px; width: 191.031px;","dgedadc7e3772c4a9fbbfbaf9b8dcc4b15":"position: absolute; height: 28px; left: 208px; top: 501px; width: 163px;","dg8e5ea6bf59b04b37bb9a5baa469d4981":"position: absolute; height: 51.1211px; left: 445px; top: 162.003px; width: 124.215px;","dgd83ac1175f3f415f9f80f659e20ae10e":"position: absolute; height: 37px; left: 444px; top: 311px; width: 130px;","dg644ab89f7259438cb8fad26bffa5a07a":"position: absolute; height: 42.1525px; left: 587.004px; top: 161.001px; width: 170.852px;","dg44a975ef192c430d9b3ac48cc89852ee":"position: absolute; height: 47.0852px; left: 592.996px; top: 235px; width: 147.085px;","dg8fc7407bcd394c15a26286e60f8aa7cd":"position: absolute; height: 42.1525px; left: 443.999px; top: 241.001px; width: 127.803px;","dgfda11c89ef9f4d1781387e4919d2bcd8":"position: absolute; height: 42px; left: 595px; top: 311.001px; width: 148px;","dg807d4af29adb464b8147ede7b3251105":"position: absolute; height: 342px; left: 43.9985px; top: 0px; width: 356px;","dgf38d3a9178a24171bacf75c547a2e6ef":"position: absolute; height: 42px; left: 62.0031px; top: 32.997px; width: 152px;","dgf5f23569fb0f4c26946494a78efbc19d":"position: absolute; height: 41px; left: 771.749px; top: 160.12px; width: 125px;","dgdc9a7d759a1a4dd1b1bb656985c8e763":"position: absolute; height: 35px; left: 228.578px; top: 35.1875px; width: 133px;","dgac935d9fea0749d580635a5034bbbd12":"position: absolute; height: 51px; left: 759px; top: 236px; width: 134px;","dgf7b4519e6c024fb583e9095d7523ff07":"position: absolute; height: 34px; left: 763px; top: 319px; width: 128px;","dg440fe6feb2b74052ad1688669a8eb407":"position: absolute; height: 27px; left: 39px; top: 502px; width: 153px;","dg508ccf453f68407c911f4fb0e54da987":"position: absolute; height: 24px; left: 37px; top: 442px; width: 346px;","dg3b8d27aa6fde4dd281cac01635b2ab22":"position: absolute; height: 44px; left: 448px; top: 386px; width: 130px;","dg5c342b418a35409c833a3be49e417d6e":"position: absolute; height: 37px; left: 63px; top: 109px; width: 148px;","dg724ab2ceed4a46bca2b887b90ed72a79":"position: absolute; height: 19px; left: 44px; top: 569px; width: 152px;","dg7c9dd530014b4b26822c73b530320d3f":"position: absolute; height: 20px; left: 449px; top: 490px; width: 126px;","dga4cfa4fc69054b029ecf991a857eac1b":"position: absolute; height: 122px; left: 447px; top: 462px; width: 290px;","dge0d6a8ceb879410ab118c8ade1a1c2a7":"position: absolute; height: 48px; left: 599px; top: 383px; width: 153px;","dg72b9f41986d14be8b54679dc17f32ed2":"position: absolute; height: 43px; left: 768px; top: 383px; width: 127px;","dg375b57b0cc204fffbf937085f85b02d3":"position: absolute; height: 45px; left: 771px; top: 462px; width: 122px;","dg2e03ef0bb8854a63a5f540ad7f4b0c5e":"position: absolute; height: 40px; left: 233px; top: 104px; width: 125px;","dgb969d1b89234465d87104f58db7e3207":"position: absolute; height: 30px; left: 63px; top: 179px; width: 149px;","dg0b5dcb26b90c48b7be4a80f81cb15bbd":"position: absolute; height: 17px; left: 599px; top: 491px; width: 134px;","dgae1d820a04ba4fb5bc0601008070f51d":"position: absolute; height: 31px; left: 763px; top: 539px; width: 126px;","dg8609100108e64e03a9035977a31adfee":"position: absolute; height: 8px; left: 64px; top: 295px; width: 155px;","dg8ec6d8931ff84853b36c762eaceb9ed1":"position: absolute; height: 28px; left: 762px; top: 598px; width: 127px;","dg745e3bce27cf413895a0af07ce501019":"position: absolute; height: 31px; left: 208px; top: 562px; width: 158px;","dg5ee23de8234f4cd39d172c5c99876e95":"position: absolute; height: 29px; left: 63px; top: 238px; width: 152px;","dg4f1a57f248e84ef6a392fcaca7955336":"position: absolute; height: 25px; left: 240px; top: 185px; width: 136px;","dgffa9aaf907b341cfbea3210a0a8f9893":"position: absolute; height: 22px; left: 237px; top: 250px; width: 141px;","dg9c5838d32db6474a90e8821ce4214098":"position: absolute; height: 89px; left: 35px; top: 620px; width: 350px;","dgd84cf743f0544a69842015ad36cbaa8c":"position: absolute; height: 34px; left: 48px; top: 658px; width: 145px;"}--><package __ideDiagramId="dgf759cde5cc31416f9c893a84ab999c2d" name="html" __ideNodeOpen="false"><page __ideDiagramId="dg8e5ea6bf59b04b37bb9a5baa469d4981" name="panel.php" __ideNodeOpen="true">&lt;div class="panel &lt;?=@$DATA['cssClass']?&gt;"&gt;
+&lt;div class="panel-heading"&gt;
+&lt;?php if(!empty($DATA['title'])) { ?&gt;&lt;h2 class="form-signin-heading"&gt;&lt;?=$DATA['title'] ?&gt;&lt;/h2&gt;&lt;?php } ?&gt;
+&lt;?php if(!empty($DATA['tbar'])) { ?&gt;
+&lt;div class="btn-group pull-right"&gt;
+&lt;?php Router::resolveRoute('html/content.php', $DATA, $DATA['tbar']); ?&gt;
+&lt;/div&gt;
+&lt;?php } ?&gt;
+&lt;/div&gt;
+&lt;?php 
+if(!empty($DATA['html'])){
+  echo $DATA['html'];
+}
+if(!empty($DATA['layout'])){
+  Router::resolveRoute('html/layout/'.$DATA['layout'].'.php', $DATA, $CONTENT);
+} else {
+  Router::resolveRoute('html/content.php', $DATA, $CONTENT);
+}
+?&gt;
+
+&lt;/div&gt;</page><page __ideDiagramId="dgd83ac1175f3f415f9f80f659e20ae10e" name="input.php">&lt;label for="&lt;?=@$DATA['name']?&gt;" class="sr-only"&gt;&lt;?=@$DATA['label']?&gt;&lt;/label&gt;&lt;input name="&lt;?=@$DATA['name']?&gt;" type="&lt;?=@$DATA['type']?&gt;" class="form-control" placeholder="&lt;?=@$DATA['label']?&gt;"/&gt;</page><page __ideDiagramId="dg644ab89f7259438cb8fad26bffa5a07a" name="passwordfield.php">&lt;?php $DATA['type']='password';Router::resolveRoute('html/input.php', $DATA, $CONTENT ); ?&gt;</page><page __ideDiagramId="dg44a975ef192c430d9b3ac48cc89852ee" name="index.php">&lt;!DOCTYPE HTML&gt;
+&lt;html&gt;
+&lt;head&gt;
+&lt;meta http-equiv="content-type" content="text/html; charset=UTF-8"&gt;
+&lt;meta charset="UTF-8"&gt;
+&lt;link rel="stylesheet" href="/lib/bootstrap/css/bootstrap.min.css"&gt;
+&lt;link rel="stylesheet" href="/lib/bootstrap/css/bootstrap-theme.min.css"&gt;
+&lt;!-- link rel="stylesheet" href="&lt;?=\Router::url('../bootstrap/bootstrap-notify-master/css/bootstrap-notify.css')?&gt;" --&gt;
+&lt;link rel="stylesheet" href="/lib/bootstrap-notify-master/css/bootstrap-notify.css"&gt;
+&lt;link rel="stylesheet" href="/lib/datatables/media/css/jquery.dataTables.min.css" /&gt;
+&lt;?php 
+if(!empty($CONTENT['stylesheets'])) {
+  $styles = is_array($CONTENT['stylesheets']) ? $CONTENT['stylesheets'] : [$CONTENT['stylesheets']];
+  foreach($styles as $style){
+    ?&gt;&lt;link href="&lt;?=htmlentities($style, ENT_QUOTES, 'utf-8')?&gt;" rel="stylesheet"&gt;&lt;?php 
+  }
+}
+?&gt;
+&lt;script src="/lib/jquery.min.js"&gt;&lt;/script&gt;
+&lt;script src="/lib/bootstrap/js/bootstrap.min.js"&gt;&lt;/script&gt;
+&lt;script src="&lt;?='/lib/draw3.js'?&gt;"&gt;&lt;/script&gt;
+&lt;script src="&lt;?=\Router::url('html/driver.js')?&gt;"&gt;&lt;/script&gt;
+&lt;!-- script src="&lt;?=\Router::url('../bootstrap/bootstrap-notify-master/js/bootstrap-notify.js')?&gt;"&gt;&lt;/script --&gt;
+&lt;script src="/lib/bootstrap-notify-master/js/bootstrap-notify.js"&gt;&lt;/script&gt;
+&lt;script src="/lib/datatables/media/js/jquery.dataTables.min.js" type="text/javascript"&gt;&lt;/script&gt;
+&lt;script&gt;
+var APP={
+  alert:function(msg){
+    $('.top-left').notify({
+        type: 'info',
+        message: {
+          text: msg
+        }
+      }).show();
+  },
+  message:function(msg){
+    $('.bottom-right').notify({
+        type: 'info',
+        message: {
+          text: msg
+        }
+      }).show();
+  },
+  success:function(msg){
+    $('.top-right').notify({
+        type: 'success',
+        message: {
+          text: msg
+        }
+      }).show();
+  },
+  warning:function(msg){
+    $('.top-right').notify({
+        type: 'warning',
+        message: {
+          text: msg
+        }
+      }).show();
+  },
+  error:function(msg){
+    $('.top-right').notify({
+        type: 'danger',
+        message: {
+          text: msg 
+        }
+      }).show();
+  },
+  ajaxLoad:function(selector, url){
+    $div=$(selector);
+    $div.addClass('ajax-loading');
+    $div.html('&lt;div class="ajax-loader"&gt;&lt;/div&gt;');
+    $.ajax({
+      url:url,
+      success:function(res){
+        $div.html(res);
+        $div.removeClass('ajax-loading');
+      }
+    });
+  }
+}
+&lt;/script&gt;
+&lt;?php 
+if(!empty($CONTENT['scripts'])) {
+  $scripts = is_array($CONTENT['scripts']) ? $CONTENT['scripts'] : [$CONTENT['scripts']];
+  foreach($scripts as $script){
+    ?&gt;&lt;script src="&lt;?=htmlentities($script, ENT_QUOTES, 'utf-8')?&gt;"&gt;&lt;/script&gt;&lt;?php 
+  }
+}
+?&gt;
+&lt;style&gt;
+.tree {
+    min-height:20px;
+    /*padding:19px;*/
+    margin-bottom:20px;
+    /*background-color:#fbfbfb;*/
+    /*border:1px solid #999;*/
+    -webkit-border-radius:4px;
+    -moz-border-radius:4px;
+    /*border-radius:4px;*/
+    -webkit-box-shadow:inset 0 1px 1px rgba(0, 0, 0, 0.05);
+    -moz-box-shadow:inset 0 1px 1px rgba(0, 0, 0, 0.05);
+    box-shadow:inset 0 1px 1px rgba(0, 0, 0, 0.05)
+}
+.tree li {
+    list-style-type:none;
+    margin:0;
+    padding:10px 5px 0 5px;
+    position:relative
+}
+.tree li::before, .tree li::after {
+    content:'';
+    left:-20px;
+    position:absolute;
+    right:auto
+}
+.tree li::before {
+    border-left:1px solid #999;
+    bottom:50px;
+    height:100%;
+    top:0;
+    width:1px
+}
+.tree li::after {
+    border-top:1px solid #999;
+    height:20px;
+    top:25px;
+    width:25px
+}
+.tree li span {
+    -moz-border-radius:5px;
+    -webkit-border-radius:5px;
+    border:1px solid #999;
+    border-radius:5px;
+    display:inline-block;
+    padding:3px 8px;
+    text-decoration:none
+}
+.tree li.parent_li&gt;span {
+    cursor:pointer
+}
+.tree&gt;ul&gt;li::before, .tree&gt;ul&gt;li::after {
+    border:0
+}
+.tree li:last-child::before {
+    height:30px
+}
+.tree li.parent_li&gt;span:hover, .tree li.parent_li&gt;span:hover+ul li span {
+    background:#eee;
+    border:1px solid #94a0b4;
+    color:#000
+}
+.ajax-loading{
+  position:relative;
+  overflow:hidden;
+  width:100%;
+  height:100%;
+}
+.ajax-loading .ajax-loader{
+  box-shadow:0 0 1000px 500px rgba(0, 0, 0, 0.1);
+  left: 50%;
+  position: absolute;
+  top: 50%;
+  animation: spin 1s linear infinite alternate;
+  -webkit-animation: spin 1s linear infinite alternate;
+}
+@keyframes spin
+{
+  from { box-shadow:0 0 1000px 700px rgba(0, 0, 0, 0.1); }
+  50%  { box-shadow:0 0 1000px 650px rgba(0, 0, 0, 0.1); }
+  to   { box-shadow:0 0 1000px 600px rgba(0, 0, 0, 0.1); }
+}
+@-webkit-keyframes spin
+{
+  from { box-shadow:0 0 1000px 700px rgba(0, 0, 0, 0.1); }
+  50%  { box-shadow:0 0 1000px 650px rgba(0, 0, 0, 0.1); }
+  to   { box-shadow:0 0 1000px 600px rgba(0, 0, 0, 0.1); }
+}
+&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;div class='notifications top-left'&gt;&lt;/div&gt;
+&lt;div class='notifications top-right'&gt;&lt;/div&gt;
+&lt;div class='notifications bottom-right'&gt;&lt;/div&gt;
+&lt;?php \Router::resolveRoute('html/content.php', $DATA, $CONTENT) ?&gt;
+
+&lt;/body&gt;
+&lt;/html&gt;</page><page name="textfield.php" __ideDiagramId="dg8fc7407bcd394c15a26286e60f8aa7cd">&lt;?php $DATA['type']='text';Router::resolveRoute('html/input.php', $DATA, $CONTENT ); ?&gt;</page><page __ideDiagramId="dgfda11c89ef9f4d1781387e4919d2bcd8" name="button.php">&lt;button class="btn &lt;?=$DATA['cssClass']/*btn-lg btn-block*/ ?&gt;" type="button" onclick="&lt;?=htmlentities(@$DATA['handler'], ENT_QUOTES, 'utf-8')?&gt;"&gt;&lt;?=$DATA['text']?&gt;&lt;/button&gt;</page><page __ideDiagramId="dgf5f23569fb0f4c26946494a78efbc19d" name="checkbox.php">&lt;div class="checkbox"&gt;&lt;label&gt;&lt;input type="checkbox" value="&lt;?=empty($DATA['inputValue'])?'on':$DATA['inputValue']?&gt;"&gt;&lt;?=$DATA['boxLabel']?&gt;&lt;/label&gt;&lt;/div&gt;</page><page __ideDiagramId="dgac935d9fea0749d580635a5034bbbd12" name="form.php">&lt;form class="" action="&lt;?=@$DATA['action']?&gt;"&gt;&lt;?php Router::resolveRoute('html/content.php', $DATA, $CONTENT)?&gt;&lt;/form&gt;</page><page __ideDiagramId="dgf7b4519e6c024fb583e9095d7523ff07" name="driver.js">&lt;?php header('Content-type: text/javascript'); ?&gt;
+$.fn.ajaxSubmit=function(callback){
+    this.each(function(index){
+      var multipart=this.enctype=="multipart/form-data";
+      var formData=new FormData(this);
+      if(!multipart){
+        formData=$(this).serialize();
+      }
+      $.ajax({
+          url:this.action ,
+          method:this.method?this.method:'get',
+          contentType:multipart?false:'application/x-www-form-urlencoded; charset=UTF-8',
+          processData: false,
+          data:formData,
+          success:function(res){
+              if(typeof callback=="function") callback(res);
+          }
+      });
+    });
+}
+</page><page __ideDiagramId="dg3b8d27aa6fde4dd281cac01635b2ab22" name="tree.php">&lt;?php
+$openIcon='glyphicon-folder-open';
+$closeIcon='glyphicon-folder-close';
+$leafIcon='glyphicon-circle-arrow-right';
+$draw=function($model,$class='',$id='') use(&amp;$draw, $openIcon, $closeIcon, $leafIcon) {
+?&gt;
+&lt;ul &lt;?=$id?"id='$id' ":""?&gt;class="&lt;?=$class?&gt;"&gt;
+&lt;?php
+if($model instanceof \model\ModelInterface) {
+  $rows=$model-&gt;fetchAll();
+  foreach($rows as $row){
+    $model-&gt;bindParam('parent',$row-&gt;id);
+    $model-&gt;execute();
+    ?&gt;&lt;li&gt;&lt;span&gt;&lt;i class="glyphicon &lt;?=$row-&gt;leaf=='1'?$leafIcon:$openIcon?&gt;"&gt;&lt;/i&gt; &lt;/span&gt; &lt;a href="#&lt;?=$row-&gt;id ?&gt;"&gt;&lt;?=$row-&gt;text ?&gt;&lt;/a&gt;&lt;?php $draw($model, '');?&gt;&lt;/li&gt;&lt;?php
+  }
+}
+?&gt;
+&lt;/ul&gt;
+&lt;?php
+};
+$id=uniqid('tree');
+$draw($DATA['model'], "tree ".@$DATA['cssClass'], $id);
+?&gt;
+&lt;script&gt;
+(function () {
+    $('#&lt;?=$id?&gt; li:has(ul)').addClass('parent_li').find(' &gt; span').attr('title', 'Collapse this branch');
+    $('#&lt;?=$id?&gt; li.parent_li &gt; span').on('click', function (e) {
+        var children = $(this).parent('li.parent_li').find(' &gt; ul &gt; li');
+        if (children.is(":visible")) {
+            children.hide('fast');
+            $(this).attr('title', 'Expand this branch').find(' &gt; i').addClass('&lt;?=$closeIcon?&gt;').removeClass('&lt;?=$openIcon?&gt;');
+        } else {
+            children.show('fast');
+            $(this).attr('title', 'Collapse this branch').find(' &gt; i').addClass('&lt;?=$openIcon?&gt;').removeClass('&lt;?=$closeIcon?&gt;');
+        }
+        e.stopPropagation();
+    });
+})();
+&lt;/script&gt;</page><package __ideDiagramId="dga4cfa4fc69054b029ecf991a857eac1b" name="layout"><page __ideDiagramId="dg7c9dd530014b4b26822c73b530320d3f" name="border.php">&lt;?php
+  foreach($CONTENT as $k=&gt;$node) if(is_array($node) &amp;&amp; is_numeric($k)) {
+    if($node['region']=='north') {
+      ?&gt;&lt;div class="row"&gt;&lt;?php
+      Router::resolveRoute('html/'.strtolower($node['class']).'.php', $node, @$node['items']);
+      ?&gt;&lt;/div&gt;&lt;?php
+    }
+  }
+?&gt;
+&lt;div class="row"&gt;
+&lt;?php
+  foreach($CONTENT as $k=&gt;$node) if(is_array($node) &amp;&amp; is_numeric($k)) {
+    if($node['region']=='west') {
+      ?&gt;&lt;div class="col-md-&lt;?=@$node['width']?$node['width']:'3'?&gt;"&gt;&lt;?php
+      Router::resolveRoute('html/'.strtolower($node['class']).'.php', $node, @$node['items']);
+      ?&gt;&lt;/div&gt;&lt;?php
+    }
+  }
+?&gt;
+&lt;?php
+  foreach($CONTENT as $k=&gt;$node) if(is_array($node) &amp;&amp; is_numeric($k)) {
+    if($node['region']=='center') {
+      ?&gt;&lt;div class="col-md-&lt;?=@$node['width']?$node['width']:'6'?&gt;"&gt;&lt;?php
+      Router::resolveRoute('html/'.strtolower($node['class']).'.php', $node, @$node['items']);
+      ?&gt;&lt;/div&gt;&lt;?php
+    }
+  }
+?&gt;
+&lt;?php
+  foreach($CONTENT as $k=&gt;$node) if(is_array($node) &amp;&amp; is_numeric($k)) {
+    if($node['region']=='east') {
+      ?&gt;&lt;div class="col-md-&lt;?=@$node['width']?$node['width']:'3'?&gt;"&gt;&lt;?php
+      Router::resolveRoute('html/'.strtolower($node['class']).'.php', $node, @$node['items']);
+      ?&gt;&lt;/div&gt;&lt;?php
+    }
+  }
+?&gt;
+&lt;/div&gt;
+&lt;?php
+  foreach($CONTENT as $k=&gt;$node) if(is_array($node) &amp;&amp; is_numeric($k)) {
+    if($node['region']=='south') {
+      ?&gt;&lt;div class="container-fluid"&gt;&lt;?php
+      Router::resolveRoute('html/'.strtolower($node['class']).'.php', $node, @$node['items']);
+      ?&gt;&lt;/div&gt;&lt;?php
+    }
+  }
+?&gt;</page><page __ideDiagramId="dg0b5dcb26b90c48b7be4a80f81cb15bbd" name="column.php">&lt;div class="row &lt;?=@$DATA['cssClass']?&gt;"&gt;&lt;?php
+  $c=0;
+  foreach($CONTENT as $k=&gt;$node) if(is_array($node) &amp;&amp; is_numeric($k)) {
+    $c++;
+  }
+  foreach($CONTENT as $k=&gt;$node) if(is_array($node) &amp;&amp; is_numeric($k)) {
+    ?&gt;&lt;div class="col-md-&lt;?=floor(12/$c)?&gt;"&gt;&lt;?php
+    Router::resolveRoute('html/'.strtolower($node['class']).'.php', $node, @$node['items']);
+    ?&gt;&lt;/div&gt;&lt;?php
+  }
+?&gt;
+&lt;/div&gt;</page></package><page __ideDiagramId="dge0d6a8ceb879410ab118c8ade1a1c2a7" name="navbar.php">&lt;?php
+$id=uniqid('navbar');
+?&gt;
+&lt;nav class="navbar navbar-inverse &lt;?=@$DATA['cssClass']?&gt;"&gt;
+  &lt;div class="container-fluid"&gt;
+    &lt;div class="navbar-header"&gt;
+      &lt;button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#&lt;?=$id?&gt;" aria-expanded="false" aria-controls="navbar"&gt;
+        &lt;span class="sr-only"&gt;Toggle navigation&lt;/span&gt;
+        &lt;span class="icon-bar"&gt;&lt;/span&gt;
+        &lt;span class="icon-bar"&gt;&lt;/span&gt;
+        &lt;span class="icon-bar"&gt;&lt;/span&gt;
+      &lt;/button&gt;
+    &lt;/div&gt;
+    &lt;div id="&lt;?=$id?&gt;" class="navbar-collapse collapse"&gt;
+      &lt;?php 
+        if(!empty($DATA['html'])){
+          echo $DATA['html'];
+        }
+        Router::resolveRoute('html/content.php', $DATA, $CONTENT); ?&gt;
+      &lt;ul class="nav navbar-nav navbar-right"&gt;&lt;?php 
+        foreach($DATA['menu'] as $m){
+          ?&gt;&lt;li&gt;&lt;a href="#&lt;?=$m['id']?&gt;"&gt;&lt;?=$m['label']?&gt;&lt;/a&gt;&lt;/li&gt;&lt;?php
+        }
+        ?&gt;
+      &lt;/ul&gt;
+      &lt;form class="navbar-form navbar-right"&gt;
+        &lt;input type="text" class="form-control" placeholder="Search..."&gt;
+      &lt;/form&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/nav&gt;</page><page __ideDiagramId="dg72b9f41986d14be8b54679dc17f32ed2" name="html.php">&lt;?=$DATA['html']?&gt;</page><page __ideDiagramId="dg375b57b0cc204fffbf937085f85b02d3" name="ajax.php">&lt;div id="&lt;?=$id=uniqid('af')?&gt;" class="&lt;?=@$DATA['cssClass']?&gt;"&gt;&lt;/div&gt;&lt;script&gt;
+(function(){
+  APP.ajaxLoad("#&lt;?=$id?&gt;", &lt;?=json_encode($DATA['url'])?&gt;);
+})();
+&lt;/script&gt;</page><page __ideDiagramId="dgae1d820a04ba4fb5bc0601008070f51d" name="table.php">&lt;table id="&lt;?=$id=uniqid('table')?&gt;" class="display table table-bordered &lt;?=$DATA['cssClass']?&gt;" cellspacing="0"&gt;
+&lt;thead&gt;
+&lt;tr&gt;&lt;?php
+foreach($DATA['columns'] as $c){
+  ?&gt;&lt;th&gt;&lt;?=$c['text']?&gt;&lt;/th&gt;&lt;?php
+}
+?&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tfoot&gt;
+&lt;tr&gt;&lt;?php
+foreach($DATA['columns'] as $c){
+  ?&gt;&lt;th&gt;&lt;?=$c['text']?&gt;&lt;/th&gt;&lt;?php
+}
+?&gt;
+&lt;/tr&gt;
+&lt;/tfoot&gt;
+&lt;/table&gt;
+&lt;script&gt;
+(function(){
+$('#&lt;?=$id?&gt;').dataTable( {
+  "ajax": {
+            "url": &lt;?=json_encode(Html::url("html/datatable", $DATA['model'], $DATA['name']))?&gt;,
+            "dataSrc":""
+        },
+  "columns": [
+    &lt;?php
+foreach($DATA['columns'] as $c){
+  ?&gt;{"data":&lt;?=json_encode($c['name'])?&gt;},&lt;?php
+}
+?&gt;
+
+  ]
+} );
+var table=$('#&lt;?=$id?&gt;').DataTable();
+$('#&lt;?=$id?&gt; tbody').on( 'click', 'tr', function () {
+    if ( $(this).hasClass('selected') ) {
+        $(this).removeClass('selected');
+    }
+    else {
+        table.$('tr.selected').removeClass('selected');
+        $(this).addClass('selected');
+        $.ajax({
+          method:'get',
+          url:&lt;?=json_encode(Html::listener("html/listener", $DATA['listeners']['onselectrow'], $DATA['name'].'onselectrow'))?&gt;,
+          data:{row:table.row( this ).data()},
+        });
+    }
+} );
+})();
+&lt;/script&gt;</page><page __ideDiagramId="dg8ec6d8931ff84853b36c762eaceb9ed1" name="window.php">&lt;div class="modal fade" id="&lt;?=$DATA['id']?&gt;" tabindex="-1" role="dialog" aria-hidden="true"&gt;
+  &lt;div class="modal-dialog"&gt;
+    &lt;div class="modal-content"&gt;
+      &lt;div class="modal-header"&gt;
+        &lt;button type="button" class="close" data-dismiss="modal" aria-label="Close"&gt;&lt;span aria-hidden="true"&gt;&amp;times;&lt;/span&gt;&lt;/button&gt;
+        &lt;h4 class="modal-title"&gt;&lt;?=$DATA['title']?&gt;&lt;/h4&gt;
+      &lt;/div&gt;
+      &lt;div class="modal-body"&gt;
+&lt;?php 
+if(!empty($DATA['html'])){
+  echo $DATA['html'];
+}
+if(!empty($DATA['layout'])){
+  Router::resolveRoute('html/layout/'.$DATA['layout'].'.php', $DATA, $CONTENT);
+} else {
+  Router::resolveRoute('html/content.php', $DATA, $CONTENT);
+}
+?&gt;
+      &lt;/div&gt;
+      &lt;div class="modal-footer"&gt;
+&lt;?php
+if(!empty($DATA['buttons'])){
+  Router::resolveRoute('html/content.php', $DATA, $DATA['buttons']);
+}
+?&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;</page></package><class __ideDiagramId="dg3b593689d73c4dc483ec9bfef3b5ef96" name="Html" __ideNodeOpen="false">
+class Html extends \Controller {
+  function indexAction($data, $content){
+  }
+  function stylesheetAction($data, $content){
+    header('Content-type:text/css');
+    echo $content;
+  }
+  function contentAction($data, $content){
+    if(!empty($content) &amp;&amp; is_array($content)){
+      foreach($content as $k=&gt;$node) if(is_array($node) &amp;&amp; is_numeric($k)){
+        Router::resolveRoute('html/'.strtolower($node['class']).'.php', $node, @$node['items']);
+      }
+    }
+  }
+  public static function url($base, $model, $id){
+    @session_start();
+    if(empty($id)) $id=uniqid('d');
+    $_SESSION[$id]=$model-&gt;serializeMe();
+    return Router::url($base . '?d=' . $id);
+  }
+  function datatableAction($data, $content){
+    @session_start();
+    $id=$data['d'];
+    //var_dump($id,$_SESSION[$id]);
+    $conn=$_SESSION[$id]['connection'];
+    //TODO: $db must not be private variable (Singleton)
+    $db=new $conn();
+    echo json_encode($db-&gt;deserializeModel($_SESSION[$id])-&gt;fetchAll());
+  }
+  public static function listener($base, $callbackDI, $id){
+    @session_start();
+    if(empty($id)) $id=uniqid('c');
+    $callback=array_pop($callbackDI);
+    if($callback instanceof \Closure){
+      $serializer = new \SuperClosure\Serializer();
+      $serialized = $serializer-&gt;serialize($callback);
+      $callbackDI[]=$serialized;
+      $_SESSION[$id]=$callbackDI;
+    } else {
+      $callbackDI[]=$callback;
+      $_SESSION[$id]=$callbackDI;
+    }
+    return Router::url($base . '?c=' . $id);
+  }
+  function listenerAction($data, $content){
+    @session_start();
+    $callback_id=$data['c'];
+    $callbackDI=$_SESSION[$callback_id];
+    $callback=array_pop($callbackDI);
+    $params=[];
+    foreach($callbackDI as $p){
+      $params[]=@$data[$p];
+    }
+var_dump($callback,$params);
+    if(is_string($callback) &amp;&amp; substr($callback,0,2)=="C:"){
+      $serializer = new \SuperClosure\Serializer();
+      $callback = $serializer-&gt;unserialize($callback);
+      call_user_func_array($callback, $params);
+    } else {
+      call_user_func_array($callback, $params);
+//      call_user_func($callback, $data);
+    }
+  }
+}</class></diagram></module><module name="lib/DvGui1" vendor="../../lib" __ideNodeOpen="false"><class name="gui/Viewport" __ideNodeOpen="true">
+class Viewport extends \templates\DvTpl {
+
+}</class><page name="gui/viewport/make.php" __ideNodeOpen="true">&lt;html&gt;
+&lt;head&gt;
+  &lt;title&gt;&lt;?=@$view-&gt;parent-&gt;title?&gt;&lt;/title&gt;
+  &lt;style&gt;
+  html{
+    margin:0px;padding:0px;
+    width:100%;
+    height:100%;
+  }
+  body{
+    border:4px solid green;
+  }
+  &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;?php call_user_func($view-&gt;content); ?&gt;
+&lt;/body&gt;
+&lt;/html&gt;</page><class name="gui/Table" __ideNodeOpen="true">
+class Table extends \templates\DvTpl {
+
+}</class><page name="gui/table/make.php" __ideNodeOpen="true">&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;&lt;td&gt;Item&lt;/td&gt;&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;?php foreach(call_user_func(array(new $data[0](), $data[1].'Action')) as $row) { ?&gt;
+&lt;tr&gt;&lt;td&gt;&lt;?=$row?&gt;&lt;/td&gt;&lt;/tr&gt;
+&lt;?php } ?&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;</page></module><module name="lib/DvModel" vendor="../../lib" __ideNodeOpen="true"><diagram __ideNodeOpen="false"><!--{"diagram":{"zoom":1,"scrollTop":0,"scrollLeft":0},"dge5acf61f5a1b4749a192bfbd32ba4684":"position: absolute; height: 76.8519px; left: 622.655px; top: 52.0062px; width: 210.185px;","dgf4a453bff9d74e3b8b4bc248bf77d608":"position: absolute; height: 32px; left: 356px; top: 47px; width: 200px;","dg7e3ca83d18bf4266870735a3deae0782":"position: absolute; height: 446px; left: 41.0031px; top: 13.9969px; width: 831px;","dgab9264c1212348f2a7584528d6726469":"position: absolute; height: 66.6667px; left: 68.9969px; top: 57.0062px; width: 233.333px;","dg521fce25e83f4eaeaf5685a3f252b648":"position: absolute; height: 17px; left: 358px; top: 168px; width: 194px;","dg849c2ec82427472282b7c9a4b990c056":"position: absolute; height: 17px; left: 358px; top: 210px; width: 193px;","dg3e7ae0d989244873b14039064ddf3464":"position: absolute; height: 59px; left: 622px; top: 200px; width: 207.407px;","dgaf4ee1b10a624a2ca84afbb08bfb6295":"position: absolute; height: 60px; left: 80px; top: 364px; width: 210px;","dg052de4dd840f465bb7f8e5ef95935258":"position: absolute; height: 45px; left: 78px; top: 211px; width: 216px;","dga131d8ee9b0e4381b03d946d9b9f328a":"position: absolute; height: 69px; left: 625px; top: 360px; width: 204px;","dg7712d590f09642fba9e9a38f5544ffb6":"position: absolute; height: 27px; left: 360px; top: 253px; width: 190px;","dgaa500b1ab8714cd58bc6732cc317aa70":"position: absolute; height: 20px; left: 360px; top: 304px; width: 188px;"}--><package __ideDiagramId="dg7e3ca83d18bf4266870735a3deae0782" name="model"><class __ideNodeOpen="true" __ideDiagramId="dge5acf61f5a1b4749a192bfbd32ba4684" name="Connection">
+class Connection extends \PDO implements InstanceModelInterface {
+  use PDOInstanceModelTrait;
+}
+</class><class __ideNodeOpen="true" __ideDiagramId="dgf4a453bff9d74e3b8b4bc248bf77d608" name="PDOInstanceModelTrait">
+trait PDOInstanceModelTrait{
+  public function instanceModel($class, $params=array()){
+    $this-&gt;setAttribute(\PDO::ATTR_STATEMENT_CLASS, array($class, array($this)));
+    $stmt=$this-&gt;prepare($class::getQuery());
+    $stmt-&gt;setParams($params);
+    $stmt-&gt;execute();
+    return $stmt;
+  }
+  public function deserializeModel($serializedModel){
+    $class=$serializedModel['class'];
+    $this-&gt;setAttribute(\PDO::ATTR_STATEMENT_CLASS, array($class, array($this)));
+    $stmt=$this-&gt;prepare($class::getQuery());
+    $stmt-&gt;setParams($serializedModel['params']);
+    $stmt-&gt;execute();
+    return $stmt;
+  }
+}
+</class><class __ideDiagramId="dgab9264c1212348f2a7584528d6726469" name="InstanceModelInterface" __ideNodeOpen="false">
+interface InstanceModelInterface {
+  public function instanceModel($class, $params=array());
+}</class><class __ideNodeOpen="true" __ideDiagramId="dg521fce25e83f4eaeaf5685a3f252b648" name="FetchModelTrait">
+trait FetchModelTrait {
+  public function fetch($fetch_style = \PDO::FETCH_CLASS, $cursor_orientation = \PDO::FETCH_ORI_NEXT, $cursor_offset = 0 ){
+    $this-&gt;setFetchMode( \PDO::FETCH_CLASS, static::getRowClass());
+    $row = \PDOStatement::fetch($fetch_style, $cursor_orientation, $cursor_offset);
+    if(is_object($row) &amp;&amp; $row instanceof RowInterface) {
+      $row-&gt;onfetch();
+    }
+    return $row;
+  }
+  public function fetchAll($fetch_style = \PDO::FETCH_CLASS, $fetch_argument='', $ctor_args=array()) {
+    $class=static::getRowClass();
+    $this-&gt;setFetchMode( \PDO::FETCH_CLASS, $class);
+    $rows = \PDOStatement::fetchAll($fetch_style, $class, $ctor_args);
+    if(is_array($rows)) {
+      foreach($rows as &amp;$row){
+        if($row instanceof RowInterface){
+          $row-&gt;onfetch();
+        }
+      }
+    }
+    return $rows;
+  }
+}
+</class><class __ideDiagramId="dg849c2ec82427472282b7c9a4b990c056" name="ConnectionReferenceTrait">trait ConnectionReferenceTrait{
+  public $dbh;
+  protected function __construct($dbh) {
+    $this-&gt;dbh = $dbh;
+  }
+  public function getConnection(){
+    return $this-&gt;dbh;
+  }
+}</class><class __ideNodeOpen="true" __ideDiagramId="dg3e7ae0d989244873b14039064ddf3464" name="Model">
+abstract class Model extends \PDOStatement implements ModelInterface {
+  use ConnectionReferenceTrait, FetchModelTrait, DefaultModelsRowTrait, SerializeModelTrait;
+}
+</class><class __ideNodeOpen="true" __ideDiagramId="dgaf4ee1b10a624a2ca84afbb08bfb6295" name="RowInterface">
+interface RowInterface {
+  public function onfetch();
+}
+</class><class __ideDiagramId="dg052de4dd840f465bb7f8e5ef95935258" name="ModelInterface">interface ModelInterface {
+  public static function getRowClass();
+  public static function getQuery();
+  public function getConnection();
+}</class><class __ideDiagramId="dga131d8ee9b0e4381b03d946d9b9f328a" name="Row">class Row implements RowInterface{
+  public function onfetch(){
+  }
+}
+</class><class __ideDiagramId="dg7712d590f09642fba9e9a38f5544ffb6" name="DefaultModelsRowTrait">trait DefaultModelsRowTrait {
+  public static function getRowClass(){
+    return '\model\Row';
+  }
+}</class><class __ideDiagramId="dgaa500b1ab8714cd58bc6732cc317aa70" name="SerializeModelTrait">trait SerializeModelTrait {
+  public function setParams($params){
+    $this-&gt;params=$params;
+    foreach($params as $a=&gt;&amp;$b){
+      $this-&gt;bindParam($a,$b);
+    }
+  }
+  public function serializeMe(){
+    return ['connection'=&gt;get_class($this-&gt;getConnection()),'class'=&gt;get_class($this), 'params'=&gt;$this-&gt;params];
+  }
+}</class></package></diagram></module></path></root>

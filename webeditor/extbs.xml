@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root><application name="extbs"><component transparent="" name="bs.form"><controller descripcion="" author="" name="@{$name}"><action descripcion="" name="index" loadParams="" this="" noRender=""/><phtml name="index">&lt;html&gt;
+&lt;head&gt;
+  &lt;title&gt;@{$title}&lt;/title&gt;
+  &lt;link rel="stylesheet" type="text/css" href="/ext/resources/css/ext-all.css"&gt;
+  &lt;script type="text/javascript" src="/ext/adapter/ext/ext-base.js"&gt;&lt;/script&gt;
+  &lt;script type="text/javascript" src="/ext/ext-all.js"&gt;&lt;/script&gt;
+  &lt;script&gt;
+    Ext.QuickTips.init();
+    function extLoad(sClass,base,_construct)
+    {
+      var obj;
+      eval("obj=new "+sClass+"(base);");
+      if(_construct)eval(_construct);
+      return obj;
+    }
+    function main()
+    {
+      @{@node::join("\n",$_nodes['extdocument'])}
+    }
+    Ext.onReady(function(){ main(); });
+  &lt;/script&gt;
+&lt;/head&gt;
+&lt;body&gt;&lt;/body&gt;
+&lt;html&gt;
+</phtml></controller></component><bs.form name="login" title="Ingreso al sistema"><extdocument>
+   <window title="Ingreso al sistema" width="300"/>
+</extdocument></bs.form></application></root>

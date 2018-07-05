@@ -1,0 +1,10 @@
+{
+    "require": {
+        "hoathis/symfony-console-bridge": "^1.15"
+    },
+    "autoload": {
+        "psr-4": {
+            "presentacion\\": "src/presentacion/"
+        }
+    }
+}

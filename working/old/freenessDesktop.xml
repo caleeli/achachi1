@@ -1,0 +1,499 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root __ideNodeOpen="true"><include src="$library/draw3.xml"/><include src="$library/jquery.xml"/><include src="$library/zplugin.xml"/><path path="output/freenessDesktop" main="output/freenessDesktop/index.html" __ideNodeOpen="true"><package name="components" type="" __ideNodeOpen="true"><file name="googleimage.php" preprocess="" __ideNodeOpen="true">&lt;html&gt;
+&lt;head&gt;
+&lt;script src="jquery/js/jquery-1.5.1.min.js"&gt;&lt;/script&gt;
+&lt;style&gt;
+img{
+  border:3px double black;
+  margin:1;
+}
+img:hover{
+  border:3px solid black;
+  margin:1;
+}
+tr:hover{
+  background-color:lightyellow;
+}
+td:{
+  background-color:transparent;
+}
+.selected{
+  background-color:lightblue;
+}
+&lt;/style&gt;
+&lt;script&gt;
+var name;
+function selectImg(img){
+/*  name=window.parent.currentNode.getAttribute("name");
+  $.ajax({
+    url:"selectImg.php",
+    type:"GET",
+    dataType:'text',
+    data:{url:img.src,name:name,imageSearch:$("#q")[0].value,t:(new Date().getTime())},
+    success:function(e){
+      eval(e);
+    }
+  });*/
+}
+&lt;/script&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;?php
+function req($url) {
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_HEADER, 0);
+    curl_setopt($ch, CURLOPT_VERBOSE, 0);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_USERAGENT, "Mozilla/4.0 (compatible;)");
+    curl_setopt($ch, CURLOPT_URL, $url);
+//    curl_setopt($ch, CURLOPT_PROXY, "http://192.168.72.36");
+//    curl_setopt($ch, CURLOPT_PROXYPORT, 8080);
+    $response = curl_exec($ch);
+    return $response;
+}
+
+function domreq($url){
+    $response = req($url);
+    $dom = new DomDocument();
+    $dom-&gt;loadHTML($response);
+    return $dom;
+}
+
+function searchImage($q,$w,$h,$start=0){
+  
+  $q=urlencode("imagesize:{$w}x{$h} $q");
+  
+  $url="http://www.google.com/search?q=".$q."&amp;tbm=isch&amp;start=$start";  //&amp;hl=es&amp;cr=&amp;safe=images&amp;tbs=isz:ex,iszw:32,iszh:32
+  $doc = domreq($url);
+  $imgs = $doc-&gt;getElementsByTagName("img");
+  foreach($imgs as $img) if(substr($img-&gt;getAttribute("src"),0,5)=="http:"){
+    print("&lt;span style='display:inline-block'&gt;");
+    print '&lt;img title="'.$img-&gt;getAttribute("src").'" src="'.$img-&gt;getAttribute("src").'" width="'.$w.'" height="'.$h.'" onclick="selectImg(this)"/&gt;&lt;br /&gt;';
+    $u = $img-&gt;parentNode-&gt;getAttribute("href");
+    parse_str($u,$p);
+    print '&lt;img title="'.htmlentities($p["/imgres?imgurl"]).'" src="'.htmlentities($p["/imgres?imgurl"]).'" width="'.$w.'" height="'.$h.'" onclick="selectImg(this)"/&gt;';
+    print("&lt;/span&gt;");
+  }
+}
+
+$name = isset($_GET["name"])?$_GET["name"]:"";
+$img = isset($_GET["img"])?$_GET["img"]:"";
+$size = isset($_GET["size"])?$_GET["size"]:"16x16";
+?&gt;
+&lt;img id="currentImg" src="&lt;?=$img?&gt;?&lt;?=microtime()?&gt;" /&gt;&lt;br/&gt;
+&lt;form method="GET" onsubmit="this.name.value=window.parent.currentNode.getAttribute('name');this.name.value=window.parent.currentNode.getAttribute('img');"&gt;
+  Search: &lt;input id="q" name="q" value="&lt;?=@htmlentities($_GET["q"]) ?&gt;"/&gt;Size:&lt;input name="size" value="16x16" /&gt;&lt;br /&gt;
+  &lt;input id="name" name="name" type="hidden"/&gt;
+  &lt;input id="img" name="img" type="hidden"/&gt;
+  &lt;button type="submit"&gt;Buscar&lt;/button&gt;
+&lt;/form&gt;
+&lt;?php
+if(isset($_GET["q"])){
+  if($name){
+    ?&gt;
+    &lt;script&gt;var value=$("#q")[0].value;$("#&lt;?=str_replace(".",'\\\\.',$name)?&gt;")[0].onclick();$("#q")[0].value=value;&lt;/script&gt;
+    &lt;?php
+  }
+  $size=explode("x",$size);
+  searchImage( $_GET["q"], $size[0], $size[1] ,0);
+  searchImage( $_GET["q"], $size[0], $size[1] ,20);
+}
+?&gt;
+&lt;/body&gt;
+&lt;/html&gt;</file><component name="googleimage" transparent="" __ideNodeOpen="false"/><zplugin name="googleimage" nodesEditor="googleimage" __ideNodeOpen="false"><!--#editor.plugin
+
+zplugin.create($this.parentNode);
+componentsIndex[$this.parentNode.nodeName].editor=zcomponent.launch;--><zplugin.components __ideNodeOpen="true"/><zplugin.base __ideNodeOpen="true">"iframe",{src:"/achachi/output/freenessDesktop/googleimage.php",style:"border:none;width:100%;height:100%"},[]</zplugin.base><zplugin.launch>
+</zplugin.launch></zplugin></package><draw3 target="./"/><jquery target="./"/><file name="googleimages.php" preprocess="" __ideNodeOpen="true">&lt;?php 
+  if(isset($_GET["url"])){
+    $url = $_GET["url"];
+    $name=explode("?",basename($url));
+    $name=$name[0];
+    file_put_contents($name, req($url));
+    print('window.opener.insertElement(["img",{"src":'.json_encode($name).'},[]]);');
+    die;
+  }
+?&gt;&lt;html&gt;
+&lt;head&gt;
+&lt;script src="jquery/js/jquery-1.5.1.min.js"&gt;&lt;/script&gt;
+&lt;style&gt;
+img{
+  border:3px double black;
+  margin:1;
+}
+img:hover{
+  border:3px solid black;
+  margin:1;
+}
+tr:hover{
+  background-color:lightyellow;
+}
+td:{
+  background-color:transparent;
+}
+.selected{
+  background-color:lightblue;
+}
+&lt;/style&gt;
+&lt;script&gt;
+var name;
+function selectImg(img){
+  //name=window.parent.currentNode.getAttribute("name");
+  $.ajax({
+    url:"googleimages.php",
+    type:"GET",
+    dataType:'text',
+    data:{url:img.src,t:(new Date().getTime())},
+    success:function(e){
+      eval(e);
+    }
+  });
+}
+&lt;/script&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;?php
+function req($url) {
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_HEADER, 0);
+    curl_setopt($ch, CURLOPT_VERBOSE, 0);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_USERAGENT, "Mozilla/4.0 (compatible;)");
+    curl_setopt($ch, CURLOPT_URL, $url);
+    $response = curl_exec($ch);
+    return $response;
+}
+
+function domreq($url){
+    $response = req($url);
+    $dom = new DomDocument();
+    $dom-&gt;loadHTML($response);
+    return $dom;
+}
+
+function searchImage($q,$w,$h,$start=0){
+  
+  $q=urlencode("imagesize:{$w}x{$h} $q");
+  
+  $url="http://www.google.com/search?q=".$q."&amp;tbm=isch&amp;start=$start";  //&amp;hl=es&amp;cr=&amp;safe=images&amp;tbs=isz:ex,iszw:32,iszh:32
+  $doc = domreq($url);
+  $imgs = $doc-&gt;getElementsByTagName("img");
+  foreach($imgs as $img) if(substr($img-&gt;getAttribute("src"),0,5)=="http:"){
+    print("&lt;span style='display:inline-block'&gt;");
+    print '&lt;img title="'.$img-&gt;getAttribute("src").'" src="'.$img-&gt;getAttribute("src").'" width="'.$w.'" height="'.$h.'" onclick="selectImg(this)"/&gt;&lt;br /&gt;';
+    $u = $img-&gt;parentNode-&gt;getAttribute("href");
+    parse_str($u,$p);
+    print '&lt;img title="'.htmlentities($p["/imgres?imgurl"]).'" src="'.htmlentities($p["/imgres?imgurl"]).'" width="'.$w.'" height="'.$h.'" onclick="selectImg(this)"/&gt;';
+    print("&lt;/span&gt;");
+  }
+}
+$name = isset($_GET["name"])?$_GET["name"]:"";
+$img = isset($_GET["img"])?$_GET["img"]:"";
+$size = isset($_GET["size"])?$_GET["size"]:"16x16";
+?&gt;
+&lt;img id="currentImg" src="&lt;?=$img?&gt;?&lt;?=microtime()?&gt;" /&gt;&lt;br/&gt;
+&lt;form method="GET" onsubmit="this.name.value=window.parent.currentNode.getAttribute('name');this.name.value=window.parent.currentNode.getAttribute('img');"&gt;
+  Search: &lt;input id="q" name="q" value="&lt;?=@htmlentities($_GET["q"]) ?&gt;"/&gt;Size:&lt;input name="size" value="&lt;?=@htmlentities($size) ?&gt;" /&gt;&lt;br /&gt;
+  &lt;input id="name" name="name" type="hidden"/&gt;
+  &lt;input id="img" name="img" type="hidden"/&gt;
+  &lt;button type="submit"&gt;Buscar&lt;/button&gt;
+&lt;/form&gt;
+&lt;?php
+if(isset($_GET["q"])){
+  if($name){
+    ?&gt;
+    &lt;script&gt;var value=$("#q")[0].value;$("#&lt;?=str_replace(".",'\\\\.',$name)?&gt;")[0].onclick();$("#q")[0].value=value;&lt;/script&gt;
+    &lt;?php
+  }
+  $size=explode("x",$size);
+  searchImage( $_GET["q"], $size[0], $size[1] ,0);
+  searchImage( $_GET["q"], $size[0], $size[1] ,20);
+}
+?&gt;
+&lt;/body&gt;
+&lt;/html&gt;</file><file name="index.html" preprocess="">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"&gt;
+&lt;html xmlns="http://www.w3.org/1999/xhtml" xml:lang="es"&gt;
+&lt;head&gt;
+&lt;meta http-equiv="content-type" content="application/xhtml+xml; charset=ISO-8859-1" /&gt;
+&lt;link href="jquery/css/ui-lightness/jquery-ui-1.8.13.custom.css" type="text/css" rel="stylesheet" /&gt;
+&lt;script src="draw3.js"&gt;&lt;/script&gt;
+&lt;script src="jquery/js/jquery-1.5.1.min.js"&gt;&lt;/script&gt;
+&lt;script src="jquery/js/jquery-ui-1.8.13.custom.min.js"&gt;&lt;/script&gt;
+&lt;script src="jquery.contextMenu.js" type="text/javascript"&gt;&lt;/script&gt;
+&lt;link href="jquery.contextMenu.css" rel="stylesheet" type="text/css" /&gt;
+&lt;link href="freeness.css" rel="stylesheet" type="text/css" /&gt;
+&lt;style&gt;
+.ui-draggable{
+  border:1px dotted black;
+  min-width:16px;
+  min-height:16px;
+}
+html{
+  margin:0px;
+  padding:0px;
+  font-family:sans-serif;
+  height:100%;
+  width:100%;
+}
+body{
+  margin:0px;
+  padding:0px;
+  font-family:sans-serif;
+  height:100%;
+  width:100%;
+}
+#toolbar{
+  background-color:#F5F5F5;
+  border:1px solid #E5E5E5;
+  padding:2px 16px;
+}
+#toolbar_result{
+  width:60%;
+}
+.toolbar_item{
+  height:54px;
+  display:inline-block;
+  text-align:right;
+  overflow:hidden;
+  padding:0px;
+  margin:0px;
+  vertical-align:middle;
+}
+button{
+  padding:0px 16px;
+}
+#content{
+  width:100%;
+  height:100%;
+  margin:0px;
+  padding:0px;
+  border:none;
+  position:relative;
+}
+&lt;/style&gt;
+&lt;script&gt;
+//a = application
+var applications=[
+  {"name":"ProcessMaker","img":"images/processmaker.gif"}
+];
+var result={
+  add:function(a){
+    draw3(this.toolbar_result,["span",{style:"display:inline-block;text-align:center"},["img",{src:a.img},[],"br",{},[],"span",{},a.name]]);
+  },
+  clear:function(){
+    $("#toolbar_result").children().remove();
+  }
+};
+$(
+  function(){
+    result.toolbar_result=$("#toolbar_result")[0];
+  }
+);
+function search(txt){
+  result.clear();
+  $.each(applications,function(){
+    var exp;
+    try{
+      eval("exp=/"+txt+"/i");
+      if(this.name.match(exp)){
+        result.add(this);
+      }
+    }catch(e){}
+  });
+}
+var currentElement;
+function insertElement(cnt){
+  if(currentElement){
+    draw3(currentElement[0],cnt);
+    currentElement.setEditable();
+  }
+}
+$.fn.removeEditable=function(){
+  this.resizable("destroy");
+  this.draggable("destroy");
+  this.removeClass("compoX");
+  this.removeClass("compoY");
+  this.removeClass("compoXY");
+  this.find("*").resizable("destroy");
+  this.find("*").draggable("destroy");
+  this.find("*").removeClass("compoX");
+  this.find("*").removeClass("compoY");
+  this.find("*").removeClass("compoXY");
+}
+$.fn.setEditable=function(){
+  var a=this.find("span.editable"), b=this.find("div.editable");
+  this.each(function(){
+    if(this.nodeName.toLowerCase()=="div")$(this).compoY();
+    if(this.nodeName.toLowerCase()=="span")$(this).compoXY();
+  });
+  a.compoXY();
+  b.compoY();
+}
+$.fn.myContextMenu=function(){
+  this.contextMenu({
+    menu: 'myMenu'
+  },
+  function(action, el, pos) {
+    var c={}
+    if(action=="save"){
+      el.removeEditable();
+      alert(JSON.stringify(draw3.reverse(el[0])));
+      el.setEditable();
+      return;
+    }
+    if(action=="text"){
+      el.text(prompt("Texto",el.text()));
+      return;
+    }
+    if(action=="delete"){
+      el.remove();
+      return;
+    }
+    if(action=="image"){
+      currentElement = el;
+      window.open("googleimages.php","googleimages","width=400; height=300;");
+      return;
+    }
+    if(action=="stencil"){
+      currentElement = el;
+      window.open("stencil.php","stencil","width=400, height=300");
+      return;
+    }
+    if(action=="edit"){
+      var a= el[0].cloneNode(false);
+      var b=document.createElement("div");
+      b.appendChild(a);
+      alert($(b).html());
+      b.removeChild(a);
+    }
+    if(action!="input") {
+      c["class"]="editable";
+      c["style"]="width:8px;height:8px;position:absolute";
+    }
+    draw3(el[0],[action,c]);
+    el.setEditable();
+//    el.find(".compoX").compoX();
+//    el.find(".compoY").compoY();
+//    el.find(".compoXY").compoXY();
+  });
+}
+$.fn.compoY=function(){
+  this.myContextMenu();
+//  this.css("width",$("#toolbar").width());
+  this.draggable({axis:'y',stop:function(e,u){u.helper.css("width","100%")}});
+  this.resizable({handles:'s,n'});
+}
+$.fn.compoX=function(){
+  this.myContextMenu();
+  this.draggable({axis:'x',stop:function(e,u){}});
+  this.resizable({handles:'e,w'});
+  this.css("width",$("#toolbar").width());
+}
+$.fn.compoXY=function(){
+  this.myContextMenu();
+  this.draggable({stop:function(e,u){}});
+  this.resizable({handles:'n,s,e,w'});
+  //this.css("width",$("#toolbar").width());
+}
+$(function(){
+//  draw3(document.body, ["div",{id:"toolbar","class":"compoY"},["span",{"class":"compoXY"},["input",{},[],"img",{src:"images/search.gif"}]],"div",{"class":"compoXY"}]);
+//  draw3($("#content")[0], ["DIV",{"id":"toolbar","class":"compoY","style":"position: absolute; width: 100%; top: 0px; left: 0px; height: 58px;"},["SPAN",{"class":"","style":"position: absolute; left: 861px; top: 15px; width: 158px; height: 25px;"},["INPUT",{},[],"IMG",{"src":"images/search.gif"},[]],"DIV",{"class":"","style":"width: 458px; height: 48px; position: absolute; left: 394px; top: 5px;"},[]]]);
+  draw3($("#content")[0], ["DIV",{"id":"toolbar","class":"editable","style":"position: absolute; width: 100%; top: 0px; left: 0px; height: 58px;"},["SPAN",{"class":"editable","style":"position: absolute; left: 861px; top: 15px; width: 158px; height: 25px;"},["INPUT",{},[],"IMG",{"src":"images/search.gif"},[]],"SPAN",{"class":"editable","style":"width: 838px; height: 45px; position: absolute; left: 5px; top: 4px;"},[]],"SPAN",{"class":"editable","style":"width: 272px; height: 320px; position: absolute; left: 0px; top: 63px;"},[]]);
+  $("#content").setEditable();
+});
+&lt;/script&gt;
+&lt;/head&gt;
+&lt;body&gt;&lt;ul id="myMenu" class="contextMenu"&gt;
+  &lt;li class="save"&gt;
+    &lt;a href="#save"&gt;save&lt;/a&gt;
+  &lt;/li&gt;
+  &lt;li class="edit"&gt;
+    &lt;a href="#edit"&gt;edit&lt;/a&gt;
+  &lt;/li&gt;
+  &lt;li class="edit"&gt;
+    &lt;a href="#span"&gt;span&lt;/a&gt;
+  &lt;/li&gt;
+  &lt;li class="edit"&gt;
+    &lt;a href="#div"&gt;div&lt;/a&gt;
+  &lt;/li&gt;
+  &lt;li class="edit"&gt;
+    &lt;a href="#input"&gt;input&lt;/a&gt;
+  &lt;/li&gt;
+  &lt;li class="delete"&gt;
+    &lt;a href="#delete"&gt;delete&lt;/a&gt;
+  &lt;/li&gt;
+  &lt;li class="text"&gt;
+    &lt;a href="#text"&gt;#text&lt;/a&gt;
+  &lt;/li&gt;
+  &lt;li class="image"&gt;
+    &lt;a href="#image"&gt;image&lt;/a&gt;
+  &lt;/li&gt;
+  &lt;li class="stencil"&gt;
+    &lt;a href="#stencil"&gt;stencil&lt;/a&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;&lt;div id="content"&gt;&lt;/div&gt;&lt;/body&gt;
+&lt;/html&gt;</file><file name="freeness.css" preprocess="">.rounded-corners {
+  border-radius: 8px;
+  -ms-border-radius: 8px;
+  -moz-border-radius: 8px;
+  -webkit-border-radius: 8px;
+  -khtml-border-radius: 8px;
+  border:1px solid black;
+}
+.free-input{
+  background-color:white;
+  overflow:hidden;
+  padding:0px 4px;
+}
+.free-input input{
+  background-color:transparent;
+  width:100%;
+  height:100%;
+  border:none;
+}
+.editable{}
+span{
+  display:inline-block;
+}</file><file name="stencil.php" preprocess="">&lt;!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"&gt;
+&lt;html xmlns="http://www.w3.org/1999/xhtml" xml:lang="es"&gt;
+&lt;head&gt;
+&lt;link href="freeness.css" rel="stylesheet" type="text/css" /&gt;
+&lt;script src="draw3.js"&gt;&lt;/script&gt;
+&lt;script src="jquery/js/jquery-1.5.1.min.js"&gt;&lt;/script&gt;
+&lt;style&gt;
+html{
+  margin:0px;
+  padding:0px;
+  font-family:sans-serif;
+  height:100%;
+  width:100%;
+}
+body{
+  margin:0px;
+  padding:0px;
+  font-family:sans-serif;
+  height:100%;
+  width:100%;
+}
+.stencil{
+  position:relative;
+}
+.editable{
+  position:relative!important;
+}
+&lt;/style&gt;
+&lt;script&gt;
+$(function(){
+  $(".stencil").click(function(){
+    window.opener.insertElement(draw3.reverse(this.firstChild));
+  })
+});
+&lt;/script&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;div class="stencil"&gt;&lt;span class="editable rounded-corners" style="position:absolute;width:128px;height:32px;"&gt;&lt;/span&gt;&lt;/div&gt;
+&lt;div class="stencil"&gt;&lt;span class="editable rounded-corners free-input" style="position:absolute;width:128px;height:16px;"&gt;&lt;input /&gt;&lt;/span&gt;&lt;/div&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</file><googleimage/><resource path="search.gif" folder="images"/><resource path="processmaker.gif" folder="images"/></path></root>

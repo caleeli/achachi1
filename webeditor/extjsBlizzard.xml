@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root><include src="$library/googleimages.xml"/><include src="$library/zend.xml" __ideNodeOpen="true"/><include src="$library/extjslib2.xml"/><application name="newApplication" main="index/index" __ideNodeOpen="true"><controller name="index" descripcion="" author="" __ideNodeOpen="true"><action name="index" noRender="false" descripcion="" loadParams=""/><phtml name="index" __ideNodeOpen="true"><ext.document style="../../css/extra.css" script="/ext/bootstrap.js;../../script/extra.js" __ideNodeOpen="true"><ext class="Ext.Viewport" layout="border" __ideNodeOpen="true"><ext class="Ext.Panel" region="center" frame="false" __ideNodeOpen="true" layout="anchor" id="images-view"><ext.attribute name="items" __ideNodeOpen="true">/*    Ext.create('Ext.Panel', {
+        id: 'images-view',
+        frame: true,
+        collapsible: true,
+        width: 535,
+//        renderTo: 'dataview-example',
+        title: 'Simple DataView (0 items selected)',
+        items: */
+Ext.create('Ext.view.View', {
+            store: Ext.create('Ext.data.Store', {
+        autoLoad:true,
+        model: Ext.define('ImageModel', {
+        extend: 'Ext.data.Model',
+        fields: [
+           {name: 'name'},
+           {name: 'url'},
+           {name: 'size', type: 'float'},
+           {name:'lastmod', type:'date', dateFormat:'timestamp'}
+        ]
+    }),
+        proxy: {
+            type: 'ajax',
+            url: 'images',
+            reader: {
+                type: 'json',
+                root: 'images'
+            }
+        }
+    }),
+            tpl: [
+                '&lt;tpl for="."&gt;',
+                    '&lt;div class="thumb-wrap" id="{name}"&gt;',
+                    '&lt;div class="thumb"&gt;&lt;img src="{url}" title="{name}"&gt;&lt;/div&gt;',
+                    '&lt;span class="x-editable"&gt;{shortName}&lt;/span&gt;&lt;/div&gt;',
+                '&lt;/tpl&gt;',
+                '&lt;div class="x-clear"&gt;&lt;/div&gt;'
+            ],
+            multiSelect: true,
+            height: 310,
+            trackOver: true,
+            overItemCls: 'x-item-over',
+            itemSelector: 'div.thumb-wrap',
+            emptyText: 'No images to display',
+            plugins: [
+                Ext.create('Ext.ux.DataView.DragSelector', {}),
+                Ext.create('Ext.ux.DataView.LabelEditor', {dataIndex: 'name'})
+            ],
+            prepareData: function(data) {
+                Ext.apply(data, {
+                    shortName: Ext.util.Format.ellipsis(data.name, 15),
+                    sizeString: Ext.util.Format.fileSize(data.size),
+                    dateString: Ext.util.Format.date(data.lastmod, "m/d/Y g:i a")
+                });
+                return data;
+            },
+            listeners: {
+                selectionchange: function(dv, nodes ){
+                    if(nodes.length) {
+                      Ext.getCmp("portrain").setTitle(nodes[0].data.name);
+                      document.getElementById('portrain_img').src=nodes[0].data.url;
+                      document.getElementById('portrain_img').style.display="inline";
+                    } else {
+                      Ext.getCmp("portrain").setTitle("");
+                      document.getElementById('portrain_img').style.display="none";
+                    }
+                }
+            }
+        })
+/*})*/</ext.attribute></ext><ext class="Ext.Panel" region="south" frame="false" layout="border" __ideNodeOpen="true" height="40%"><ext class="Ext.Panel" region="west" title="TODOs" frame="true" width="25%" __ideNodeOpen="true" bodyPadding="10" layout="anchor"><ext class="Ext.form.CheckboxGroup" __ideNodeOpen="true" vertical="true" columns="1"><ext.attribute name="items" __ideNodeOpen="true">[
+                {boxLabel: 'Item 1', name: 'cb-auto-1'},
+                {boxLabel: 'Item 2', name: 'cb-auto-2', checked: true},
+                {boxLabel: 'Item 3', name: 'cb-auto-3'},
+                {boxLabel: 'Item 4', name: 'cb-auto-4'},
+                {boxLabel: 'Item 5', name: 'cb-auto-5'}
+            ]</ext.attribute></ext></ext><ext class="Ext.Panel" region="center" title="INFORMATION" frame="true" __ideNodeOpen="true" width="40%" layout="border"><ext class="Ext.Panel" scale="large" region="east" iconAlign="top" width="128" __ideNodeOpen="true" title="" id="portrain"><ext.attribute name="html" __ideNodeOpen="true" type="string">&lt;center&gt;&lt;img id="portrain_img" src="../../images/Client_Male_Large.png" style="display:none;"/&gt;&lt;/center&gt;</ext.attribute></ext><ext class="Ext.Panel" region="center" frame="true"/></ext><ext class="Ext.Panel" title="ACTIONS" frame="true" columnWidth="0.25" region="east" width="35%" __ideNodeOpen="true"><ext.attribute name="layout" __ideNodeOpen="true">{
+  type:"table",
+  columns:5
+}</ext.attribute><ext class="Ext.Button" text="call" type="submit" icon="../../images/call.png" scale="large" iconAlign="top" width="64"/><ext class="Ext.Button" text="sms" type="submit" icon="../../images/sms.png" scale="large" iconAlign="top" width="64"/><ext class="Ext.Button" text="drop" type="submit" icon="../../images/delete.png" scale="large" iconAlign="top" width="64"/></ext></ext></ext></ext.document></phtml><action name="images" noRender="true" descripcion="" loadParams="" __ideNodeOpen="true">//echo '{"images":[{"name":"dance_fever.jpg","size":2067,"lastmod":1319149444000,"url":"images\/dance_fever.jpg"},{"name":"gangster_zack.jpg","size":2115,"lastmod":1319149444000,"url":"images\/gangster_zack.jpg"},{"name":"kids_hug.jpg","size":2477,"lastmod":1319149444000,"url":"images\/kids_hug.jpg"},{"name":"kids_hug2.jpg","size":2476,"lastmod":1319149444000,"url":"images\/kids_hug2.jpg"},{"name":"sara_pink.jpg","size":2154,"lastmod":1319149444000,"url":"images\/sara_pink.jpg"},{"name":"sara_pumpkin.jpg","size":2588,"lastmod":1319149444000,"url":"images\/sara_pumpkin.jpg"},{"name":"sara_smile.jpg","size":2410,"lastmod":1319149444000,"url":"images\/sara_smile.jpg"},{"name":"up_to_something.jpg","size":2120,"lastmod":1319149444000,"url":"images\/up_to_something.jpg"},{"name":"zack.jpg","size":2901,"lastmod":1319149444000,"url":"images\/zack.jpg"},{"name":"zacks_grill.jpg","size":2825,"lastmod":1319149444000,"url":"images\/zacks_grill.jpg"},{"name":"zack_dress.jpg","size":2645,"lastmod":1319149444000,"url":"images\/zack_dress.jpg"},{"name":"zack_hat.jpg","size":2323,"lastmod":1319149444000,"url":"images\/zack_hat.jpg"},{"name":"zack_sink.jpg","size":2303,"lastmod":1319149444000,"url":"images\/zack_sink.jpg"}]}';
+
+$res = array();
+foreach(glob("images/*.png") as $f){
+  $res[]=array(
+    "name"=&gt;basename($f),
+    "size"=&gt;1,
+    "lastmod"=&gt;1319149444000,
+    "url"=&gt;"../../images/".basename($f),
+  );
+}
+echo json_encode(array("images"=&gt;$res));</action></controller><images path="blizzard" folder="html/images"/><file name="html/script/extra.js" preprocess="" __ideNodeOpen="true">Ext.Loader.setConfig({enabled:true});
+Ext.Loader.setPath('Ext.ux.DataView', '../../script/ux/DataView/');
+Ext.require([
+    'Ext.data.*',
+    'Ext.util.*',
+    'Ext.view.View',
+    'Ext.ux.DataView.DragSelector',
+    'Ext.ux.DataView.LabelEditor'
+]);
+</file><file name="html/css/extra.css" preprocess="" __ideNodeOpen="true">#images-view .x-panel-body {
+    background: none repeat scroll 0 0 white;
+    font: 11px Arial,Helvetica,sans-serif;
+}
+#images-view .thumb {
+    background: none repeat scroll 0 0 #DDDDDD;
+    padding: 3px 3px 0;
+}
+.x-quirks #images-view .thumb {
+    padding-bottom: 3px;
+}
+#images-view .thumb img {
+    height: 60px;
+    width: 80px;
+}
+#images-view .thumb-wrap {
+    float: left;
+    margin: 4px 0 4px 4px;
+    padding: 5px;
+}
+#images-view .thumb-wrap span {
+    display: block;
+    overflow: hidden;
+    text-align: center;
+    width: 86px;
+}
+#images-view .x-item-over {
+    background: url("over.gif") repeat-x scroll left top #EFEFEF;
+    border: 1px solid #DDDDDD;
+    padding: 4px;
+}
+#images-view .x-item-selected {
+    background: url("selected.gif") no-repeat scroll right bottom #EFF5FB;
+    border: 1px solid #99BBE8;
+    padding: 4px;
+}
+#images-view .x-item-selected .thumb {
+    background: none repeat scroll 0 0 transparent;
+}
+#images-view .loading-indicator {
+    background-image: url("../../resources/themes/images/default/grid/loading.gif");
+    background-position: left center;
+    background-repeat: no-repeat;
+    font-size: 11px;
+    margin: 10px;
+    padding-left: 20px;
+}
+.x-view-selector {
+    background-color: #C3DAF9;
+    border: 1px dotted #3399BB;
+    left: 0;
+    opacity: 0.5;
+    position: absolute;
+    top: 0;
+    width: 0;
+}
+.ext-strict .ext-ie .x-tree .x-panel-bwrap {
+    overflow: hidden;
+    position: relative;
+}</file></application></root>

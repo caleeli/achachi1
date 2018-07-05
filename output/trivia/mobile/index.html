@@ -1,0 +1,656 @@
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+
+/* Portrait */
+@media screen and (orientation:portrait) {
+  .respuestas{
+    width: 80%;
+    height: 40%;
+  }
+  .imagen{
+    width: 90%;
+    height: 40%;
+  }
+  .correcto{
+    width: 80%;
+    text-align:center;
+    bottom:10%;
+    position:absolute;
+  }
+}
+/* Landscape */
+@media screen and (orientation:landscape) {
+  .respuestas{
+    width: 45%;
+    height: 70%;
+  }
+  .imagen{
+    width: 40%;
+    height: 70%;
+  }
+  .correcto{
+    text-align:center;
+    height: 80%;
+    bottom:10%;
+    position:absolute;
+  }
+}
+@font-face {
+  font-family: 'fuente';
+/*  src: url('SabrinaAT.otf');*/
+  src: url('Playball.ttf');
+/*  src: url('orangeJuice2.0.ttf');*/
+/*  src: url('RemachineScript_Personal_Use.ttf');*/
+/*  src: url('Lighthouse_PersonalUse.ttf');*/
+}
+html,body{
+  margin:0px;
+  padding:0px;
+  overflow:hidden;
+  width:100%;
+  height:100%;
+  font-family: 'fuente';
+  font-size:28px;
+}
+body{
+  background-image:url("fondo.jpg");
+  background-position:50% 0%;
+  background-size:auto 100%;
+  text-align:center;
+/*  background-repeat:no-repeat;*/
+}
+#message{
+  position:absolute;
+  width:100%;
+  top:50%;
+  vertical-align:middle;
+  height:64px;
+  margin-top:-32px;
+}
+.panel{
+  display:none;
+  border:2px solid black;
+  border-radius:8px;
+  /*margin:2%;*/
+  padding:1%;
+/*  width:94%;*/
+  width:88%;
+  height:88%;
+  top:3%;
+  font-size:100%;
+  background-color:rgba(55,155,155,0.4);
+  position:relative;
+  overflow:hidden;
+  text-align:left;
+  vertical-align:middle;
+}
+button{
+  font:inherit;
+  border:2px solid black;
+  border-radius:8px;
+  padding:8px;
+  background-color:rgba(55,155,155,0.8);
+  cursor:pointer;
+}
+input{
+  font:inherit;
+  border:2px solid black;
+  padding:8px;
+  background-color:rgba(255,255,255,0.8);
+}
+.pregunta{}
+.respuestas{
+  display:inline-block;
+/*  white-space:pre;*/
+  /*width: 80%;
+  height: 40%;*/
+  position:absolute;
+  left:5%;
+}
+.respuesta{
+  cursor:pointer;
+  background-color:rgba(55,55,255,0.3);
+  margin:2px;
+  margin-bottom:2%;
+}
+.respuesta span{
+  background-color:rgba(255,255,255,0.8);
+  border:1px solid black;
+  width:2em;
+  text-align:center;
+  display:inline-block;
+}
+.respuesta a{
+  margin-left:1em;
+}
+.imagen{
+  display:inline-block;
+  background-position:center 0%;
+  background-size:auto 100%;
+  background-repeat:no-repeat;
+  /*width: 90%;
+  height: 40%;*/
+  position:absolute;
+  right:5%;
+  bottom:5%;
+  border-radius:4%;
+}
+.bomb{
+  background-image:url("bomb.png");
+  background-position:0% 0%;
+  background-size:auto 100%;
+  background-repeat:no-repeat;
+  width:3em;
+  text-align:right;
+  display:inline-block;
+  background-color:rgba(55,255,255,0.3);
+  border:1px solid black;
+  border-radius:4px;
+  padding:2px;
+  margin:2px;
+}
+.clock{
+  background-image:url("clock.png");
+  background-position:0% 0%;
+  background-size:auto 100%;
+  background-repeat:no-repeat;
+  width:3em;
+  text-align:right;
+  display:inline-block;
+  background-color:rgba(55,255,255,0.3);
+  border:1px solid black;
+  border-radius:4px;
+  padding:2px;
+  margin:2px;
+}
+.glove{
+  background-image:url("glove.png");
+  background-position:0% 0%;
+  background-size:auto 100%;
+  background-repeat:no-repeat;
+  width:3em;
+  text-align:right;
+  display:inline-block;
+  background-color:rgba(55,255,255,0.3);
+  border:1px solid black;
+  border-radius:4px;
+  padding:2px;
+  margin:2px;
+}
+.mainmenu{
+  background-image:url("mainmenu.png");
+  background-position:0% 0%;
+  background-size:auto 100%;
+  background-repeat:no-repeat;
+  width:4em;
+  text-align:right;
+  display:inline-block;
+  background-color:rgba(55,255,255,0.3);
+  border:1px solid black;
+  border-radius:4px;
+  padding:2px;
+  margin:2px;
+}
+.points{
+  background-image:url("points.png");
+  background-position:0% 0%;
+  background-size:auto 100%;
+  background-repeat:no-repeat;
+  width:5em;
+  text-align:right;
+  display:inline-block;
+  background-color:rgba(55,255,255,0.3);
+  border:1px solid black;
+  border-radius:4px;
+  padding:2px;
+  margin:2px;
+  position:absolute;
+  right:1em;
+}
+.score_final{
+  background-position:0% 0%;
+  background-size:auto 100%;
+  background-repeat:no-repeat;
+  text-align:right;
+  display:inline-block;
+  background-color:rgba(55,255,255,0.3);
+  border:1px solid black;
+  border-radius:4px;
+  padding:2px;
+  margin:2px;
+}
+.usado{
+  background-color:rgba(55,255,255,0.7);
+}
+</style>
+<script src="jquery-1.9.1.js" type="text/javascript"></script>
+<script src="knockout-3.3.0.js" type="text/javascript"></script>
+<script src="data/preguntas.js" type="text/javascript"></script>
+<script src="data/misiones.js" type="text/javascript"></script>
+<script src="data/personajes.js" type="text/javascript"></script>
+<script type="text/javascript">
+var tictac = new Audio('snd/tictac.mp3');
+if(typeof tictac.play=="function"){
+  var music1 = new Audio('snd/simdh85_-_Merry-go-round.mp3');
+  var bomb1 = new Audio('snd/Tanque-M60.mp3');
+  var magia = new Audio('snd/magia.mp3');
+  var correctoA = new Audio('snd/correcto.mp3');
+  var errorA = new Audio('snd/error.mp3');
+} else {
+  var tictac = {play:function(){}};
+  var music1 = {play:function(){}};
+  var bomb1 = {play:function(){}};
+  var magia = {play:function(){}};
+  var correctoA = {play:function(){}};
+  var errorA = {play:function(){}};
+}
+try{
+music1.play();music1.current
+}catch(ee){
+  alert(ee);
+}
+setInterval(function(){
+  music1.play();music1.currentTime=0;
+},(60+58)*1000);
+var REMOTE='http://localhost/achachi/output/trivia/';
+var LOCAL=true;
+REMOTE='';
+var REMOTE_PREGUNTA=REMOTE+"pregunta.php";
+
+function showPanel(selector){
+  $(".panel").fadeOut();
+  document.body.style.backgroundImage="url(fondo1.jpg)";
+  $(selector).fadeIn(400, function(){
+    $(selector).css("display", "inline-block");
+  });
+}
+function shuffle(array) {
+  var currentIndex = array.length
+    , temporaryValue
+    , randomIndex
+    ;
+
+  // While there remain elements to shuffle...
+  while (0 !== currentIndex) {
+
+    // Pick a remaining element...
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex -= 1;
+
+    // And swap it with the current element.
+    temporaryValue = array[currentIndex];
+    array[currentIndex] = array[randomIndex];
+    array[randomIndex] = temporaryValue;
+  }
+
+  return array;
+}
+var puntaje=0,clock=0;
+function PersonajeModel(){
+}
+function listModel(localArray, remoteUrl){
+  var list=ko.observableArray(localArray);
+  
+  return list;
+}
+function Jugador(){
+  this.personaje=ko.observable(0);
+}
+var model={
+  jugador:new Jugador(),
+  personajes:listModel(DATA_personajes)
+};
+$(function(){
+  if(typeof window.device=="undefined"){
+    window.device={
+      uuid:1
+    };
+  }
+  $(window).resize(function(){$("body").css("font-size",Math.min($(window).width()/40, $(window).height()/25)+'px');});
+  $("body").css("font-size",Math.min($(window).width()/40, $(window).height()/25)+'px');
+  if(typeof device!="undefined"){
+    $.ajax({
+      type:"get",
+      data:{id:device.uuid},
+      jsonp: "callback",
+      dataType: 'jsonp',
+      url:REMOTE+"setid.php",
+      success:function(res){
+        eval(res);
+        showPanel("#start");
+      }
+    });
+  }
+  ko.applyBindings(model);
+})
+</script>
+</head>
+<body><div id="message"></div><div id="start" class="panel" style="display:none"><center>
+<h1>Tu nombre:</h1><br/>
+<input id="name" value="anónimo"><br/>
+<script>
+var PREGUNTAS=0,PENDING=0,DONE=0;
+function loadingQuestions(){
+  if(PENDING>0){
+    $("#message").html((Math.floor(DONE/PENDING*100))+"%");
+    if(PENDING==DONE){
+      $("#message").html("");
+      showPanel('#start');
+    }
+  }
+}
+function loadQuestions(j){
+  for(var i=0,l=10;i<l;i++){
+      PENDING++;loadingQuestions();
+      $.ajax({
+        type:"get",
+        url:"preguntas/"+(i+j)+".txt",
+        success:(function(i,conti){return function(res){
+          if(i>PREGUNTAS)PREGUNTAS=i;
+          if(conti) loadQuestions(i+1);
+          DONE++;loadingQuestions();
+        }})(i+j, i==9),
+        error:(function(i){return function(res){
+          DONE++;loadingQuestions();
+        }})(i+j)
+      });
+  }
+}
+loadQuestions(0);
+function setName(){
+  localStorage.preguntas="";
+  $.ajax({
+    type:"get",
+    data:{nombre:$("#name").val(),id:device.uuid},
+    jsonp: "callback",
+    dataType: 'jsonp',
+    url:REMOTE+"setname.php",
+    success:function(res){
+      eval(res);
+    }
+  });
+}
+</script>
+<br />
+<!--<button type="button" onclick="showPanel('#pregunta');setName();cargaPregunta();">Empezar</button>-->
+<button type="button" onclick="showPanel('#mision');setName();">Empezar</button>
+</center></div><div id="perfil" class="panel" style="display:none"><center>
+<h1>Tu nombre:</h1><br/>
+</center></div><div id="pregunta" class="panel" style=""><script>
+function dibujaPregunta($pregunta,$respuestas,$imagen,res0){
+  var res;
+  eval("res="+JSON.stringify(res0));
+  $pregunta.html(res.pregunta);
+  $respuestas.html("\n");
+  var ind=["A","B","C","D","E","F","G"];
+  window.correcta=res.respuestas[res.correcta];
+  window.data=res;
+  var sres=shuffle(res.respuestas);
+  NingunoAlFinal:
+  for(var r in sres){
+    switch(res.respuestas[r].toLowerCase()){
+      case "ninguna":
+      case "ninguno":
+      case "none":
+        res.respuestas.push(res.respuestas.splice(r,1)[0]);
+        break NingunoAlFinal;
+    }
+  }
+  for(var r in sres){
+    $respuestas.append("<div class='respuesta' onclick='responder(this);return false;'><span> "+ind[r]+" </span><a>"+res.respuestas[r]+"</a></div>");
+  }
+  $imagen.css("background-image","url("+res.imagen+")");
+}
+function randPregunta(mision){
+  var i;
+  i=Math.floor(Math.random()*(DATA_preguntas.length));
+  while(DATA_preguntas[i].mision!=mision){
+    i=Math.floor(Math.random()*(DATA_preguntas.length));
+  }
+  return i;
+}
+function cargaPregunta(puntuar){
+  if(typeof puntuar=="undefined")puntuar=0;
+  var $pregunta=$("#pregunta .pregunta");
+  var $respuestas=$("#pregunta .respuestas");
+  var $imagen=$("#pregunta .imagen");
+  if(LOCAL){
+    var i,aa=localStorage.preguntas.split(",");
+    i=randPregunta(MISION);
+    var intentos=0;
+    while(aa.indexOf(String(i))>-1){
+      i=randPregunta(MISION);
+      intentos++;
+      if(intentos>2*PREGUNTAS+1) {
+        termino_mision();
+        return;
+      }
+    }
+    localStorage.preguntas=localStorage.preguntas+","+i;
+    var res=DATA_preguntas[i];
+      dibujaPregunta($pregunta,$respuestas,$imagen,res);
+      clock=30;
+      $(".clock").html(clock);
+      activaBomba=false;
+      $(".bomb").removeClass('usado');
+      $(".glove").removeClass('usado');
+
+    /*$.ajax({
+      type:"get",
+      url:"preguntas/"+i+".txt",
+      success:function(res){
+        eval(res);
+        clock=30;
+        $(".clock").html(clock);
+        activaBomba=false;
+        $(".bomb").removeClass('usado');
+        $(".glove").removeClass('usado');
+      }
+    });*/
+  } else {
+    $.ajax({
+      type:"get",
+      jsonp: "callback",
+      dataType: 'jsonp',
+      data:{id:device.uuid,puntuar:puntuar},
+      url:REMOTE_PREGUNTA,
+      success:function(res){
+        eval(res);
+        clock=30;
+        $(".clock").html(clock);
+        activaBomba=false;
+        $(".bomb").removeClass('usado');
+        $(".glove").removeClass('usado');
+      }
+    });
+  }
+}
+function responder(el){
+//  tictac.currentTime=1000000;
+  clock=0;
+  if($(el).find("a").html()==correcta){
+    puntaje++;$(".points").html(puntaje);
+    showPanel('#correcto');
+    correctoA.play();correctoA.currentTime=0;
+    setTimeout(function(){
+      showPanel('#pregunta');cargaPregunta(1);
+    },2000);
+  } else if(!activaHacha) {
+    showPanel('#incorrecto');
+    errorA.play();errorA.currentTime=0;
+    setTimeout(function(){
+      showPanel('#pregunta');cargaPregunta();
+    },2000);
+  } else {
+    $(el).fadeOut(800,function(){$(el).remove();});
+  }
+  activaHacha=false;
+}
+window.CLOCKInterval=function(){
+  if(clock>0){
+    clock--;
+    if(clock<=8 && clock>=7){
+      tictac.play();
+    }
+    if(clock<1){
+      showPanel("#timpofuera");
+      setTimeout(function(){
+        showPanel('#pregunta');cargaPregunta();
+      },2000);
+    }
+  } else clock=0;
+  $(".clock").html(clock);
+};
+window.CLOCK=setInterval(window.CLOCKInterval,1000);
+function bomba(){
+  if($(".bomb").hasClass('usado'))return;
+  var valor=parseInt($(".bomb").html());
+  if(valor>0){
+    activaBomba=true;
+    var ok=false;
+    $(".respuestas").children("div").each(function(index){
+      if(!ok && $(this).find("a").html()!=correcta){
+        $(this).fadeOut(800,function(){$(this).remove()});
+        ok=true;
+      }
+    });
+    bomb1.play();
+    valor--;
+    $(".bomb").html(valor);
+    $(".bomb").addClass('usado');
+  }
+}
+window.activaHacha=false;
+function hacha(){
+  if($(".glove").hasClass('usado'))return;
+  var valor=parseInt($(".glove").html());
+  if(valor>0){
+    magia.play();
+    window.activaHacha=true;
+    valor--;
+    $(".glove").html(valor);
+    $(".glove").addClass('usado');
+  }
+}
+function volver_menu(){
+//  clearInterval(window.CLOCK);
+clock=0;
+  showPanel('#mision');
+}
+function termino_mision(){
+  clock=0;
+  var total=localStorage.preguntas.split(",").length-1;
+  var puntos=$(".points").html()*1;
+  var nivel=Math.floor(puntos/total*3);
+  if(nivel>2)nivel=2;
+  if(nivel<0)nivel=0;
+  $("#completado_img").attr("src","img/completado"+(nivel+1)+".jpg");
+  $("#total_mision").html("Puntaje: "+puntos+"/"+total);
+  showPanel('#completado');
+  localStorage.preguntas="";
+  $(".points").html("0");
+  puntaje=0;
+}
+</script>
+<div><span class="clock">30</span><span class="bomb" onclick="bomba()">3</span><span class="glove" onclick="hacha()">2</span><span class="mainmenu" onclick="volver_menu()">menu</span><span class="points">0</span></div>
+<br /><div class="pregunta"></div><br />
+<span class="respuestas"></span><span class="imagen"></span></div><div id="correcto" class="panel" style="">¡CORRECTO! <span class="points">0</span>
+<img class="correcto" src="handup.png" /></div><div id="incorrecto" class="panel" style="">INCORRECTO.
+<img class="correcto" src="handdown.png" /></div><div id="timpofuera" class="panel" style="">TIEMPO FUERA
+<img class="correcto" src="timeout.png" /></div><div id="mision" class="panel" style=""><style>
+  #mision{
+    white-space:pre;
+    overflow-x:auto;
+  }
+  .history-line{
+    background-image:url('historia_1.jpg');
+    background-size:auto 100%;
+    position:absolute;
+    left:0px;
+    top:0px;
+    width:200%;
+    height:100%;
+    opacity:0.3;
+  }
+  .history-line-line{
+    display:none;
+    position:absolute;
+    background-color:rgb(50, 50, 50);
+    left:0px;
+    top:50%;
+    margin-top:-10%;
+    width:200%;
+    height:50%;
+  }
+  .history-mission{
+    opacity:0.8;
+    position:relative;
+    height:100%;
+/*    background-image:url('misiones/genesis.png');*/
+    background-size:100% 100%;
+    width:15em;
+    margin-top:-20%;
+/*    top:50%;*/
+    display:inline-block;
+  }
+  .history-mission span{
+    position:absolute;
+    right:4%;
+    bottom:2%;
+    text-shadow:0px 0px 4px green;
+    color:white;
+  }
+  .history-mission:hover{
+    opacity:1;
+  }
+  .personaje {
+    white-space:normal;
+  }
+@media screen and (orientation:portrait) {
+  .personaje .imagen img {
+    height:40%;
+  }
+}
+@media screen and (orientation:landscape) {
+  .personaje .imagenp img {
+    height:70%;
+  }
+  .personaje .descripcionp {
+    width:60%;
+  }
+}
+</style>
+<div class="personaje">
+<span class="imagenp" style="display:inline-block;text-align:center;vertical-align:top;">
+  <img data-bind="attr:{src:personajes()[jugador.personaje()].imagen}" >
+  <div data-bind="text:personajes()[jugador.personaje()].nombre"></div>
+</span>
+<span class="descripcionp" style="display:inline-block;text-align:center;vertical-align:top;">
+  <span data-bind="text:personajes()[jugador.personaje()].descripcion"></span>
+<span>
+</div>
+<span style="font-size:150%;z-index:1;position:fixed;">Elige tu misión:</span>
+<div class="history-line"></div>
+  <div class="history-line-line"></div>
+<table border="0" style="font:inherit;position:absolute;height:50%"><tr></tr></table>
+<script>
+$(function(){
+  var $mision=$("#mision table tr");
+  for(var i=0,l=DATA_misiones.length;i<l;i++){
+    $mision.append('<td><span onclick="loadMision(this)" data-mision="'+DATA_misiones[i].mision+'" class="history-mission" style="background-image:url('+DATA_misiones[i].imagen+');"><span>'+DATA_misiones[i].titulo+'</span></span></td>');
+  }
+});
+function loadMision(e){
+  if($(e).attr("data-mision")!="genesis" && $(e).attr("data-mision")!="especial"){
+    return;
+  }
+  window.MISION=$(e).attr("data-mision");
+  showPanel('#pregunta');
+  /*setName();*/
+  cargaPregunta();
+}
+</script></div><div id="completado" class="panel" style=""><span class="mainmenu" onclick="volver_menu()">menu</span><span id="total_mision" class="score_final">0</span>
+<img id="completado_img" class="correcto" src="img/completado1.jpg" /></div></body>
+</html>

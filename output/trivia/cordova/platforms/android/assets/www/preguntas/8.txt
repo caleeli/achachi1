@@ -1,0 +1,3 @@
+var res={"pregunta":"\u00bfA que edad murio Adan?","respuestas":["930","800","400","560","Ninguno"],"correcta":"0","imagen":"img\/adan.jpg"};
+dibujaPregunta($pregunta,$respuestas,$imagen,res);
+

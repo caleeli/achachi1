@@ -1,0 +1,3 @@
+var res={"pregunta":"\u00bfCu\u00e1ntos libros tiene la Biblia?","respuestas":["44","55","66","77"],"correcta":"2","imagen":"img\/14276056581_146be20e25_z.jpg"};
+dibujaPregunta($pregunta,$respuestas,$imagen,res);
+

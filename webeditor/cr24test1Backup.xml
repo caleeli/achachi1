@@ -1,0 +1,1660 @@
+<?xml version="1.0" encoding="UTF-8"?><root><path path="/home/david/php/www/cr24" main="/cr24/test1.php" __ideNodeOpen="true"><package name="" type="" __ideNodeOpen="true"><component name="navbar" transparent="" precode="" __ideNodeOpen="true">    &lt;div class="navbar navbar-default navbar-fixed-top"&gt;
+      &lt;div class="container"&gt;
+@{node::content($_)}
+      &lt;/div&gt;
+    &lt;/div&gt;
+&lt;br /&gt;&lt;br /&gt;&lt;br /&gt;</component><component name="navNavbar" transparent="" precode="" __ideNodeOpen="true">          &lt;ul class="nav navbar-nav @{$class}"&gt;
+@{node::content($_)}
+          &lt;/ul&gt;
+</component><component name="navMain" transparent="" precode="" __ideNodeOpen="true">        &lt;div class="navbar-collapse collapse" id="navbar-main"&gt;
+@{node::content($_)}
+        &lt;/div&gt;
+</component><component name="navHeader" transparent="" precode="" __ideNodeOpen="true">        &lt;div class="navbar-header"&gt;
+          &lt;a href="@{$url}" class="navbar-brand"&gt;@{$name}&lt;/a&gt;
+          &lt;button class="navbar-toggle" type="button" data-toggle="collapse" data-target="#navbar-main"&gt;
+            &lt;span class="icon-bar"&gt;&lt;/span&gt;
+            &lt;span class="icon-bar"&gt;&lt;/span&gt;
+            &lt;span class="icon-bar"&gt;&lt;/span&gt;
+          &lt;/button&gt;
+        &lt;/div&gt;
+</component><component name="navItem" transparent="" precode="" __ideNodeOpen="true">            &lt;li&gt;
+              &lt;a href="@{$url}"&gt;@{$name}&lt;/a&gt;
+            &lt;/li&gt;
+</component><component name="navList" transparent="" precode="" __ideNodeOpen="true">            &lt;li class="dropdown"&gt;
+              &lt;a class="dropdown-toggle" data-toggle="dropdown" href="#" id="download"&gt;Download &lt;span class="caret"&gt;&lt;/span&gt;&lt;/a&gt;
+              &lt;ul class="dropdown-menu" aria-labelledby="download"&gt;
+                &lt;li&gt;&lt;a href="./bootstrap.min.css"&gt;bootstrap.min.css&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href="./bootstrap.css"&gt;bootstrap.css&lt;/a&gt;&lt;/li&gt;
+                &lt;li class="divider"&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href="./variables.less"&gt;variables.less&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href="./bootswatch.less"&gt;bootswatch.less&lt;/a&gt;&lt;/li&gt;
+                &lt;li class="divider"&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href="./_variables.scss"&gt;_variables.scss&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href="./_bootswatch.scss"&gt;_bootswatch.scss&lt;/a&gt;&lt;/li&gt;
+              &lt;/ul&gt;
+            &lt;/li&gt;
+</component><component name="mainPage" transparent="" precode=""><file name="aegis.html" preprocess="">&lt;html&gt;
+&lt;head&gt;
+    &lt;link rel="stylesheet" href="bootstrap/theme/bootstrap.min.css"&gt;
+    &lt;link rel="stylesheet" href="bootstrap/css/simple-sidebar.css"&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;script src="jquery-1.10.2.min.js"&gt;&lt;/script&gt;
+&lt;script src="bootstrap/js/bootstrap.min.js"&gt;&lt;/script&gt;
+&lt;script src="knockout-3.3.0.js"&gt;&lt;/script&gt;
+&lt;style&gt;
+@-webkit-keyframes redBright {
+  0%   { text-shadow:none; }
+  100% {
+      text-shadow: 0 0 10px #fff,
+                   0 0 20px #fff,
+                   0 0 30px #fff,
+                   0 0 40px #ff00de,
+                   0 0 70px #ff00de,
+                   0 0 80px #ff00de,
+                   0 0 100px #ff00de,
+                   0 0 150px #ff00de;
+  }
+}
+@-moz-keyframes redBright {
+  0%   { text-shadow:none; }
+  100% {
+      text-shadow: 0 0 10px #fff,
+                   0 0 20px #fff,
+                   0 0 30px #fff,
+                   0 0 40px #ff00de,
+                   0 0 70px #ff00de,
+                   0 0 80px #ff00de,
+                   0 0 100px #ff00de,
+                   0 0 150px #ff00de;
+  }
+}
+@-o-keyframes redBright {
+  0%   { text-shadow:none; }
+  100% {
+      text-shadow: 0 0 10px #fff,
+                   0 0 20px #fff,
+                   0 0 30px #fff,
+                   0 0 40px #ff00de,
+                   0 0 70px #ff00de,
+                   0 0 80px #ff00de,
+                   0 0 100px #ff00de,
+                   0 0 150px #ff00de;
+  }
+}
+@keyframes redBright {
+  0%   { text-shadow:none; }
+  100% {
+      text-shadow: 0 0 10px #fff,
+                   0 0 20px #fff,
+                   0 0 30px #fff,
+                   0 0 40px #ff00de,
+                   0 0 70px #ff00de,
+                   0 0 80px #ff00de,
+                   0 0 100px #ff00de,
+                   0 0 150px #ff00de;
+  }
+}
+
+.red-bright {
+  box-shadow: 0px 0px 16px rgb(255, 120, 120) !important;
+  -webkit-animation: 0.5s ease 0s alternate infinite running redBright; /* Safari 4+ */
+  -moz-animation:    0.5s ease 0s alternate infinite running redBright; /* Fx 5+ */
+  -o-animation:      0.5s ease 0s alternate infinite running redBright; /* Opera 12+ */
+  animation:         0.5s ease 0s alternate infinite running redBright; /* IE 10+, Fx 29+ */
+}
+
+@-webkit-keyframes yellowBright {
+  0%   { text-shadow:none; }
+  100% {
+      text-shadow: 0 0 10px #fff,
+                   0 0 20px #fff,
+                   0 0 30px #fff,
+                   0 0 40px #ff00de,
+                   0 0 70px #ff00de,
+                   0 0 80px #ff00de,
+                   0 0 100px #ff00de,
+                   0 0 150px #ff00de;
+  }
+}
+@-moz-keyframes yellowBright {
+  0%   { text-shadow:none; }
+  100% {
+      text-shadow: 0 0 10px #fff,
+                   0 0 20px #fff,
+                   0 0 30px #fff,
+                   0 0 40px #ff00de,
+                   0 0 70px #ff00de,
+                   0 0 80px #ff00de,
+                   0 0 100px #ff00de,
+                   0 0 150px #ff00de;
+  }
+}
+@-o-keyframes yellowBright {
+  0%   { text-shadow:none; }
+  100% {
+      text-shadow: 0 0 10px #fff,
+                   0 0 20px #fff,
+                   0 0 30px #fff,
+                   0 0 40px #ff00de,
+                   0 0 70px #ff00de,
+                   0 0 80px #ff00de,
+                   0 0 100px #ff00de,
+                   0 0 150px #ff00de;
+  }
+}
+@keyframes yellowBright {
+  0%   { text-shadow:none; }
+  100% {
+      text-shadow: 0 0 10px #fff,
+                   0 0 20px #fff,
+                   0 0 30px #fff,
+                   0 0 40px #ff00de,
+                   0 0 70px #ff00de,
+                   0 0 80px #ff00de,
+                   0 0 100px #ff00de,
+                   0 0 150px #ff00de;
+  }
+}
+
+.yellow-bright {
+  box-shadow: 0px 0px 16px #F39C12 !important;
+  -webkit-animation: 0.5s ease 0s alternate infinite running yellowBright; /* Safari 4+ */
+  -moz-animation:    0.5s ease 0s alternate infinite running yellowBright; /* Fx 5+ */
+  -o-animation:      0.5s ease 0s alternate infinite running yellowBright; /* Opera 12+ */
+  animation:         0.5s ease 0s alternate infinite running yellowBright; /* IE 10+, Fx 29+ */
+}
+
+.disabledButton{
+  opacity:0.7;
+}
+
+
+&lt;/style&gt;
+@{node::content($_)}
+
+&lt;script type="text/javascript"&gt;
+/** navbar control **/
+var vm = {
+  isRecording:ko.observable(true),
+  isEditing:ko.observable(false)
+};
+ko.applyBindings(vm, document.getElementById("navbar-main"));
+&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;</file></component><component name="button" transparent="" precode="" __ideNodeOpen="true">&lt;button type="button" class="btn @{$class}" @{$extra}&gt;@{$name}&lt;/button&gt;
+</component><component name="navButton" transparent="" precode="" __ideNodeOpen="true">            &lt;li&gt;
+&lt;button type="button" class="btn @{$class}"&gt;@{$name}&lt;/button&gt;
+            &lt;/li&gt;
+</component><component name="navForm" transparent="" precode="" __ideNodeOpen="true">&lt;form class="navbar-form @{$class}"&gt;
+@{node::content($_)}
+&lt;/form&gt;
+</component><component name="table" transparent="" precode="" __ideNodeOpen="true">&lt;table id="@{$name}Element" class="table table-striped table-hover "&gt;
+  &lt;thead&gt;
+    &lt;tr data-bind="foreach: options.columns"&gt;
+        &lt;th data-bind="text: header"&gt;&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody data-bind="foreach: data"&gt;
+      &lt;tr data-bind="foreach: $parent.options.columns"&gt;
+          &lt;td data-bind="text: $parent[dataMember]"&gt;&lt;/td&gt;
+      &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;script type="text/javascript"&gt;
+$(function(){
+  var vm = @{node::content($_)};
+  ko.applyBindings(vm, document.getElementById("@{$name}Element"));
+  window.@{$name}KO=vm;
+});
+&lt;/script&gt;</component><component name="tabs" transparent="" precode="" __ideNodeOpen="true">&lt;div id="@{$id}" class="bs-component"&gt;
+&lt;ul class="nav nav-tabs"&gt;
+#{
+$_res="";
+foreach($_e-&gt;childNodes as $_ch):
+  $_active="";
+  $_href="";
+  $_name="";
+  $_extra="";
+  if($_ch-&gt;getAttribute("active")) $_active="active";
+  if($_ch-&gt;getAttribute("id")) $_href=$_ch-&gt;getAttribute("id");
+  if($_ch-&gt;getAttribute("name")) $_name=$_ch-&gt;getAttribute("name");
+  if($_ch-&gt;getAttribute("extra")) $_extra=$_ch-&gt;getAttribute("extra");
+  $_res.='  &lt;li class="'.$_active.'" '.$_extra.'&gt;&lt;a href="#'.$_href.'" data-toggle="tab"&gt;'.$_name.'&lt;/a&gt;&lt;/li&gt;'."\n";
+endforeach;
+  return $_res;
+}
+&lt;/ul&gt;
+&lt;div class="tab-content"&gt;
+@{node::content($_)}
+&lt;/div&gt;
+&lt;/div&gt;</component><component name="tab" transparent="" precode="" __ideNodeOpen="true">&lt;!-- @{$name} --&gt;
+  &lt;div class="tab-pane fade @{$active} in" id="@{$id}"&gt;
+@{node::content($_)}
+  &lt;/div&gt;
+</component><component name="groupbutton" transparent="" precode="" __ideNodeOpen="true">&lt;div class="btn-group"&gt;@{node::content($_)}&lt;/div&gt;</component><component name="grouptable" transparent="" precode="" __ideNodeOpen="true">&lt;table id="@{$name}Element" class="table table-striped table-hover "&gt;
+  &lt;thead&gt;
+    &lt;tr data-bind="foreach: options.columns"&gt;
+        &lt;th data-bind="text: header"&gt;&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody data-bind="foreach: data"&gt;
+&lt;!-- ko if: first --&gt;
+      &lt;tr class="info"&gt;
+          &lt;td data-bind="text: @{$group}, attr:{colspan:$parent.options.columns.length}"&gt;&lt;/td&gt;
+      &lt;/tr&gt;
+&lt;!-- /ko --&gt;
+      &lt;tr data-bind="click: $root.selectRow, css: { 'active': $root.currentSelectedRow() === $data }, foreach: $parent.options.columns"&gt;
+          &lt;td data-bind="text: $parent[dataMember]"&gt;&lt;/td&gt;
+      &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;script type="text/javascript"&gt;
+$(function(){
+  var vm = @{node::content($_)};
+  ko.applyBindings(vm, document.getElementById("@{$name}Element"));
+  window.@{$name}KO=vm;
+});
+&lt;/script&gt;</component><component name="previewPage" transparent="" precode="" __ideNodeOpen="true"><file name="preview/index.html" preprocess="" __ideNodeOpen="true">&lt;html&gt;
+&lt;head&gt;
+&lt;style&gt;
+html,body, iframe {
+  margin:0px;
+  padding:0px;
+  width:100%;
+  height:100%;
+  border:0px;
+}
+&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;iframe src="index.php"&gt;&lt;/iframe&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</file><file name="preview/index.php" preprocess="" __ideNodeOpen="true">&lt;?php
+session_start();
+?&gt;
+&lt;html&gt;
+&lt;head&gt;
+    &lt;link rel="stylesheet" href="../bootstrap/theme/bootstrap.min.css"&gt;
+    &lt;title&gt;AEGIS Job Preview&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;script src="https://code.jquery.com/jquery-1.10.2.min.js"&gt;&lt;/script&gt;
+&lt;script src="../bootstrap/js/bootstrap.min.js"&gt;&lt;/script&gt;
+&lt;script src="../knockout-3.3.0.js"&gt;&lt;/script&gt;
+
+&lt;style type="text/css"&gt;
+body {margin:50px 0px; padding:0px; background-color: #000000;color: #ffffff;}
+#content {width:620px; margin:0px auto;}
+#desc {margin:10px; float:left; font-family: Arial, sans-serif; font-size: 12px;}
+&lt;/style&gt;
+
+&lt;!-- include CSS always before including js --&gt;
+&lt;link type="text/css" rel="stylesheet" href="skins/tn3/tn3.css"&gt;&lt;/link&gt;
+&lt;!-- include tn3 plugin --&gt;
+&lt;script type="text/javascript" src="js/jquery.tn3lite.min.js"&gt;&lt;/script&gt;
+
+
+@{node::content($_)}
+
+
+&lt;/body&gt;
+&lt;/html&gt;
+</file><file name="preview/setimages.php" preprocess="" __ideNodeOpen="true">&lt;?php
+
+session_start();
+$_SESSION['cr24_images']=$_REQUEST['data'];
+var_dump($_SESSION['cr24_images'], $_REQUEST);
+
+//window.open("http://10.100.0.207:8081/cr24/preview/index.html", "_blank");
+?&gt;
+
+</file></component><component name="wrapper" transparent="" precode="" __ideNodeOpen="true">    &lt;div id="wrapper"&gt;
+
+@{node::content($_)}
+
+    &lt;/div&gt;
+</component><component name="wrapperContent" transparent="" precode="" __ideNodeOpen="true">        &lt;!-- Page Content --&gt;
+        &lt;div id="page-content-wrapper"&gt;
+@{node::content($_)}
+        &lt;/div&gt;
+        &lt;!-- /#page-content-wrapper --&gt;
+</component><component name="wrapperSidebar" transparent="" precode="" __ideNodeOpen="true">        &lt;!-- Sidebar --&gt;
+        &lt;div id="sidebar-wrapper"&gt;
+@{node::content($_)}
+        &lt;/div&gt;
+        &lt;!-- /#sidebar-wrapper --&gt;
+</component><component name="panel" transparent="" precode="" __ideNodeOpen="true">&lt;div class="panel panel-default" @{$extra}&gt;
+@{empty($title)?'':'  &lt;div class="panel-heading"&gt;'}@{$title}@{empty($title)?'':'&lt;/div&gt;'}
+  &lt;div class="panel-body"&gt;
+@{node::content($_)}
+  &lt;/div&gt;
+&lt;/div&gt;
+</component><component name="frontPage" transparent="" precode="" __ideNodeOpen="true"><file name="front/index.html" preprocess="" __ideNodeOpen="true">&lt;html&gt;
+&lt;head&gt;
+    &lt;link rel="stylesheet" href="../bootstrap/theme/bootstrap.min.css"&gt;
+    &lt;link rel="stylesheet" href="../bootstrap/css/simple-sidebar.css"&gt;
+    &lt;link rel="stylesheet" href="../bootstrap/css/font-awesome.min.css"&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;script src="https://code.jquery.com/jquery-1.10.2.min.js"&gt;&lt;/script&gt;
+&lt;script src="../bootstrap/js/bootstrap.min.js"&gt;&lt;/script&gt;
+&lt;script src="../knockout-3.3.0.js"&gt;&lt;/script&gt;
+
+@{node::content($_)}
+
+&lt;script type="text/javascript"&gt;
+/** navbar control **/
+var vm = {
+
+};
+ko.applyBindings(vm, document.getElementById("navbar-main"));
+&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;</file></component><component name="aButton" transparent="" precode="" __ideNodeOpen="true">&lt;a href="@{$url}" type="button" class="btn @{$class}" @{$extra}&gt;@{$name}&lt;/a&gt;
+</component></package><mainPage __ideNodeOpen="true"><wrapper __ideNodeOpen="true"><wrapperSidebar __ideNodeOpen="true"><panel title="" extra="style=&quot;bottom: 0px; position: absolute; margin-bottom: 0px; width: 100%; top: 61px;&quot;" __ideNodeOpen="true">&lt;form id="actionSettings"&gt;
+&lt;div class="row"&gt;
+  &lt;div class=".col-xs-12 .col-md-12"&gt;
+    &lt;input name="title" type="text" class="form-control" placeholder="Enter title"data-bind="value: title"&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="row"&gt;
+  &lt;div class="col-xs-12 col-sm-6 col-md-6"&gt;
+    &lt;div class="form-group"&gt;
+      &lt;label class="control-label"&gt;Notifications:&lt;/label&gt;
+      &lt;div class="col-lg-10"&gt;
+        &lt;div class="radio"&gt;
+          &lt;label&gt;
+            &lt;input type="radio" name="optionsRadios" value="none" data-bind="checked: notification"&gt;
+            None
+          &lt;/label&gt;
+        &lt;/div&gt;
+        &lt;div class="radio"&gt;
+          &lt;label&gt;
+            &lt;input type="radio" name="optionsRadios" value="daily" data-bind="checked: notification"&gt;
+            Daily
+          &lt;/label&gt;
+        &lt;/div&gt;
+        &lt;div class="radio"&gt;
+          &lt;label&gt;
+            &lt;input type="radio" name="optionsRadios" value="weekly" data-bind="checked: notification"&gt;
+            Weekly
+          &lt;/label&gt;
+        &lt;/div&gt;
+        &lt;div class="radio"&gt;
+          &lt;label&gt;
+            &lt;input type="radio" name="optionsRadios" value="instant" data-bind="checked: notification"&gt;
+            Instant
+          &lt;/label&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class="col-xs-12 col-sm-6 col-md-6"&gt;
+    &lt;div class="form-group"&gt;
+      &lt;label class="control-label"&gt;Action:&lt;/label&gt;
+      &lt;ul class="nav nav-pills nav-stacked"&gt;
+        &lt;li data-bind="css:{active: action()==='watch'}"&gt;&lt;a href="#" onclick="actionSettings.action('watch')"&gt;&amp;lt;o&amp;gt; Watch&lt;/a&gt;&lt;/li&gt;
+        &lt;li data-bind="css:{active: action()==='ignore'}"&gt;&lt;a href="#" onclick="actionSettings.action('ignore')"&gt;&amp;lt;/&amp;gt; Ignore&lt;/a&gt;&lt;/li&gt;
+      &lt;/ul&gt;
+      &lt;select id="userOrGroup" class="form-control" placeholder="User -or- Group" data-bind="value: userOrGroup"&gt;
+        &lt;option value=""&gt;User -or- Group&lt;/option&gt;
+        &lt;option value="1"&gt;Hugo&lt;/option&gt;
+        &lt;option value="2"&gt;Iggy&lt;/option&gt;
+        &lt;option value="3"&gt;Luis&lt;/option&gt;
+      &lt;/select&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="form-group"&gt;
+  &lt;div class="col-lg-10 col-lg-offset-2"&gt;
+    &lt;button id="confirmAction" type="button" class="btn btn-primary"&gt;Save&lt;/button&gt;
+    &lt;button id="cancelAction" type="button" class="btn btn-default"&gt;Cancel&lt;/button&gt;
+    &lt;button id="removeAction" type="button" class="btn btn-warning"&gt;Remove&lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;/form&gt;
+&lt;script type="text/javascript"&gt;
+$(function(){
+  var vm = {
+    title: ko.observable(""),
+    notification: ko.observable("none"),
+    action: ko.observable("watch"),
+    userOrGroup: ko.observable("")
+  };
+  ko.applyBindings(vm, document.getElementById("actionSettings"));
+  window.actionSettings=vm;
+});
+&lt;/script&gt;</panel></wrapperSidebar><wrapperContent><navbar __ideNodeOpen="true"><navHeader url="javascript:void(0)" name="AEGIS"/><navMain __ideNodeOpen="true"><navNavbar class="" __ideNodeOpen="false"/><navForm class="navbar-right" __ideNodeOpen="true"><groupbutton><button url="javascript:void(0)" name="Load Job" class="btn-warning" extra="data-bind=&quot;visible: false&quot; onclick=&quot;justDoIt()&quot;"/><button url="javascript:void(0)" name="Publish" class="btn-primary" extra="data-bind=&quot;visible: !isEditing()&quot; onclick=&quot;aegis.runJob()&quot;"/></groupbutton><groupbutton><button url="javascript:void(0)" name="Select All" class="btn-primary" extra="data-bind=&quot;css:{disabled:isRecording()}, visible: !isEditing()&quot; onclick=&quot;aegis.selectAll()&quot;"/><button url="javascript:void(0)" name="Recording Active" class="btn-danger" extra="data-bind=&quot;css:{'red-bright': isRecording(), disabledButton:!isRecording()}, visible: !isEditing()&quot; onclick=&quot;aegis.toggle()&quot;" __ideNodeOpen="false"/><button url="javascript:void(0)" name="Inspecting Active" class="btn-warning" extra="data-bind=&quot;css: {'yellow-bright': !isRecording(), disabledButton:isRecording()}, visible: !isEditing()&quot; onclick=&quot;aegis.toggle()&quot;"/><button url="javascript:void(0)" name="Next Inspection" class="btn-warning" extra="data-bind=&quot;visible: isEditing()&quot; onclick=&quot;aegis.nextCase()&quot;"/></groupbutton></navForm></navMain></navbar><tabs __ideNodeOpen="true" id="mainTabs"><tab active="active" name="Recording Log" __ideNodeOpen="true" id="records"><grouptable __ideNodeOpen="true" name="records" group="baseUrl">{
+      currentSelectedRow:ko.observable(),
+      options: {
+          columns: [/*{
+              header: 'Base Url',
+              dataMember: 'baseUrl'
+          }, */{
+              header: 'Command',
+              dataMember: 'command'
+          }, {
+              header: 'Target',
+              dataMember: 'target'
+          }, {
+              header: 'User',
+              dataMember: 'userName'
+          }, {
+              header: 'Timestamp',
+              dataMember: 'timestamp'
+          }]
+      },
+  
+      data: ko.observableArray([])
+  }
+</grouptable></tab><tab active="" name="Inspection Log" __ideNodeOpen="true" id="actionlog"><grouptable __ideNodeOpen="true" name="actionlog" group="baseUrl">{
+      currentSelectedRow:ko.observable(),
+
+      options: {
+          columns: [/*{
+              header: 'Base Url',
+              dataMember: 'baseUrl'
+          }, */{
+              header: 'Action Type',
+              dataMember: 'type'
+          }, {
+              header: 'Action Title',
+              dataMember: 'title'
+          }, {
+              header: 'Notifications',
+              dataMember: 'notification'
+          }, {
+              header: 'User',
+              dataMember: 'userOrGroupTitle'
+          }]
+      },
+  
+      data: ko.observableArray([]),
+
+      selectRow:function(){
+        vm.currentSelectedRow(this);
+        aegis.onselectInspectionRow(this);
+      }
+  }</grouptable></tab><tab active="" name="Debug" __ideNodeOpen="true" id="debug" extra=" style=&quot;display:none;&quot;">&lt;textarea id="log"&gt;&lt;/textarea&gt;
+&lt;button type="button" onclick="listCommands()"&gt;list&lt;/button&gt;
+&lt;button type="button" onclick="AEGIS.IRecorder.toggleRecord()"&gt;Toggle Recorder&lt;/button&gt;
+&lt;button type="button" onclick="AEGIS.IInspector.toggleInspect()"&gt;Toggle Inspector&lt;/button&gt;
+&lt;script src="aegis.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+/*var log0=document.getElementById("log");
+function log(msg){
+  log0.value+=msg+"\n";
+}
+log("Hola Mundo");
+IRecorder.init(function(){
+  log("se cargo");
+});
+function listCommands(){
+  log(JSON.stringify( IRecorder.bridge.link("recorder","listCommands")() ));
+}*/
+
+&lt;/script&gt;</tab></tabs></wrapperContent></wrapper></mainPage><file name="test1.php" preprocess="">&lt;html&gt;
+&lt;body&gt;
+&lt;input name="abc" id="abc"&gt;
+&lt;script src="aegis.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+IRecorder.init(function(){
+  console.log("se cargo");
+  IRecorder.bridge.link("recorder", "start")(window);
+  console.log( IRecorder.bridge.link("recorder", "getWindowId")(window) );
+});
+&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;</file><file name="aegis.js" preprocess="">var aegis={
+//  previewServer:"localhost:8081",
+  cases:[
+  ],
+  newCase:false,
+  lastUrl:"",
+  config:{},
+  init:function(config){
+    if(typeof config==="object"){
+      aegis.config=config;
+    }
+  },
+  runJob:function(){
+    var baseUrl = typeof aegis.cases[0]==="undefined"?"":(typeof aegis.cases[0].recorder[0]==="undefined"?"":(typeof aegis.cases[0].recorder[0].baseUrl==="undefined"?"":aegis.cases[0].recorder[0].baseUrl));
+    if(!baseUrl) {
+      baseUrl = typeof aegis.cases[0]==="undefined"?"":(typeof aegis.cases[0].inspector[0]==="undefined"?"":(typeof aegis.cases[0].inspector[0].baseUrl==="undefined"?"":aegis.cases[0].inspector[0].baseUrl));
+    }
+    if(!baseUrl) {
+      return;
+    }
+    var job={
+      "jobId":"ppGr1ll0",
+      "baseUrl":baseUrl,
+      "screen":{width:1800,height:760},
+      "window":{width:1800,height:760},
+      cases:aegis.cases
+    };
+    document.getElementById("log").value=JSON.stringify(job);
+    aegis.apikey=AEGIS.IController.getApikey();
+    $.ajax({
+      type: "POST",
+      url: "http://"+aegis.seleniumServer+"/aegis24-1.0-POC/api/aegis/services",
+      cache:false,
+      /*beforeSend: function (request)
+      {
+          request.setRequestHeader("apikey", aegis.apikey);
+      },*/
+      data: JSON.stringify(job),
+      contentType: "text/plain",
+      crossDomain: true,
+      dataType: "json",
+      success: function (data, status, jqXHR) {
+        $.ajax({
+          type: "post",
+          url: "http://"+aegis.previewServer+"/cr24/preview/setimages.php",
+          //cache:false,
+          data: {"data":JSON.stringify(data)},
+          success: function (data) {
+            window.open("http://"+aegis.previewServer+"/cr24/preview/index.html", "_blank");
+          }
+        });
+      },
+      error: function (jqXHR, status) {
+        console.log(jqXHR);
+        alert('Fail. ' + status);
+      }
+    });
+  },
+  startCase:function(){
+    if(typeof aegis.currentCase!=="undefined" &amp;&amp; 
+        aegis.currentCase.recorder.length===0 &amp;&amp;
+        aegis.currentCase.inspector.length===0 ){
+      return;
+    }
+    aegis.currentCase={
+      recorder:[],
+      inspector:[]
+    };
+    aegis.cases.push(aegis.currentCase);
+  },
+  array2object: function(array){
+    var object={};
+    for(var i=0,l=array.length;i&lt;l;i++){
+      object[array[i][1]]=array[i][0];
+    }
+    return object;
+  },
+  toggle:function(){
+    aegis.newCase=true;
+    vm.isRecording(!vm.isRecording());
+    if( vm.isRecording() ) {
+      AEGIS.IController.setMode("recording");
+      AEGIS.IRecorder.activateRecord();
+      AEGIS.IInspector.inactivateInspect();
+      $('#mainTabs a[href="#records"]').tab('show'); 
+    } else {
+      AEGIS.IController.setMode("inspecting");
+      AEGIS.IRecorder.inactivateRecord();
+      AEGIS.IInspector.activateInspect();
+      AEGIS.IInspector.loadSelection( aegis.currentCase.inspector );
+      $('#mainTabs a[href="#actionlog"]').tab('show'); 
+    }
+  },
+  openEditAction:function(fromSelectAll, callback, cancelCallback){
+    /*autoSetInspectionValues*/
+    if(fromSelectAll){
+      try{
+        aegis.autoSetInspectionValues.doit();
+        var userOrGroupTitle="";//$("#userOrGroup option:selected").text();
+        callback({
+          title:actionSettings.title(),
+          notification:actionSettings.notification(),
+          action:actionSettings.action(),
+          userOrGroup:parseInt(actionSettings.userOrGroup()),
+          userOrGroupTitle:userOrGroupTitle
+        });
+      } catch(ee){
+      }
+    } else {
+      actionSettings.title("");
+      actionSettings.notification("none");
+      actionSettings.action("watch");
+      actionSettings.userOrGroup("");
+      $('#wrapper').addClass("toggled");
+      $('#confirmAction').unbind("click").click(function(){
+        var userOrGroupTitle=$("#userOrGroup option:selected").text();
+        callback({
+          title:actionSettings.title(),
+          notification:actionSettings.notification(),
+          action:actionSettings.action(),
+          userOrGroup:parseInt(actionSettings.userOrGroup()),
+          userOrGroupTitle:userOrGroupTitle
+        });
+      });
+      $('#cancelAction').unbind("click").click(cancelCallback);
+      $('#removeAction').hide();
+    }
+  },
+  editAction:function(inspection, extraData, callback, cancelCallback){
+    actionSettings.title(extraData.title);
+    actionSettings.notification(extraData.notification);
+    actionSettings.action(extraData.action);
+    actionSettings.userOrGroup(extraData.userOrGroup);
+    $('#wrapper').addClass("toggled");
+    $('#confirmAction').unbind("click").click(function(){
+      var userOrGroupTitle=$("#userOrGroup option:selected").text();
+      actionlogKO.currentSelectedRow(null);
+      callback({
+        title:actionSettings.title(),
+        notification:actionSettings.notification(),
+        action:actionSettings.action(),
+        userOrGroup:parseInt(actionSettings.userOrGroup()),
+        userOrGroupTitle:userOrGroupTitle
+      });
+    });
+    $('#cancelAction').unbind("click").click(function(){
+      actionlogKO.currentSelectedRow(null);
+      cancelCallback();
+    });
+    $('#removeAction').show();
+    $('#removeAction').unbind("click").click(function(){
+      aegis.removeInspection(inspection);
+      cancelCallback();
+    });
+  },
+  closeEditAction:function(){
+    $('#wrapper').removeClass("toggled");
+  },
+  removeInspection:function(inspection){
+      /* Find selection in current case*/
+      for(var i=0,l=aegis.currentCase.inspector.length;i&lt;l;i++){
+        if( (aegis.currentCase.inspector[i].baseUrl===inspection.baseUrl) &amp;&amp;
+            (aegis.currentCase.inspector[i].xpath===inspection.xpath) ) 
+        {
+          //find row of inspection
+          var array=actionlogKO.data();
+          for(var j=0,k=array.length;j&lt;k;j++){
+            if( array[j].inspection===aegis.currentCase.inspector[i] ) {
+              setTimeout(function(){ AEGIS.IInspector.activateInspect(); }, 0);
+              actionlogKO.data.splice(j,1);
+              aegis.currentCase.inspector.splice(i,1);
+              AEGIS.IInspector.loadSelection( aegis.currentCase.inspector );
+              return;
+            }
+          }
+          break;
+        }
+      }
+  },
+  selectAll:function(){
+    AEGIS.IInspector.selectAll();
+  },
+  onselectInspectionRow:function(rowInspection){
+    aegis.editAction(rowInspection.inspection, rowInspection.inspection.extra, 
+    function(extraData){
+      rowInspection.title=extraData.title;
+      rowInspection.type=extraData.action;
+      rowInspection.notification=extraData.notification;
+      rowInspection.userOrGroup=extraData.userOrGroup;
+      rowInspection.userOrGroupTitle=extraData.userOrGroupTitle;
+
+      rowInspection.inspection.type=extraData.action;
+      rowInspection.inspection.extra=extraData;
+
+      //actionlogKO.data.valueHasMutated();
+      var rowI=actionlogKO.data.indexOf(rowInspection);
+      actionlogKO.data.splice(rowI,1);
+      actionlogKO.data.splice(rowI,0, rowInspection);
+
+      AEGIS.IInspector.loadSelection( aegis.currentCase.inspector );
+      aegis.closeEditAction();
+    }, 
+    function(){
+      aegis.closeEditAction();
+    });
+  },
+  onselect:function(data){
+    try{
+      /* Find selection in current case*/
+      for(var i=0,l=aegis.currentCase.inspector.length;i&lt;l;i++){
+        if( (aegis.currentCase.inspector[i].baseUrl===data.baseUrl) &amp;&amp;
+            (aegis.currentCase.inspector[i].xpath===data.xpath) ) 
+        {
+          //find row of inspection
+          var array=actionlogKO.data();
+          for(var j=0,k=array.length;j&lt;k;j++){
+            if( array[j].inspection===aegis.currentCase.inspector[i] ) {
+              setTimeout(function(){ AEGIS.IInspector.activateInspect(); }, 0);
+              if(!data.fromSelectAll){
+                aegis.onselectInspectionRow( array[j] );
+              }
+              return;
+            }
+          }
+          break;
+        }
+      }
+      if(vm.isEditing()) {
+        return;
+      }
+      /* Insert new selection */
+      document.getElementById("log").value+="\n"+JSON.stringify(data);
+      var last = actionlogKO.data()[actionlogKO.data().length-1];
+      var next = {
+        first: null,
+        baseUrl: data.baseUrl,
+        type: "inspect",
+        target: data.xpath,
+        actions: ''
+      };
+      if(data.baseUrl!=aegis.lastUrl){aegis.lastUrl=data.baseUrl; aegis.newCase=true;}
+      if(typeof last!=="undefined") {var s=last.first;last.first=null;}
+      if(aegis.newCase || (typeof last==="undefined") || (JSON.stringify(last.target)!==JSON.stringify(next.target))){
+        aegis.openEditAction(data.fromSelectAll, function(extraData){
+          var inspection={
+            baseUrl: data.baseUrl,
+            type: extraData.action,
+            computedStyle: data.computedStyle,
+            xpath: data.xpath,
+            extra:extraData,
+            outerHTML: data.outerHTML,
+            outerHTMLWithStyle: data.outerHTMLWithStyle
+          };
+          setTimeout(function(){ AEGIS.IInspector.activateInspect(); }, 0);
+          next.first=aegis.newCase;//actionlogKO.data.length===0?true:(actionlogKO.data[actionlogKO.data.length-1].baseUrl!==data.baseUrl);
+          next.type=extraData.action;
+          next.title=extraData.title;
+          next.notification=extraData.notification;
+          next.userOrGroup=extraData.userOrGroup;
+          next.userOrGroupTitle=extraData.userOrGroupTitle;
+          next.inspection=inspection;
+          actionlogKO.data.push(next);
+          aegis.newCase=false;
+          aegis.currentCase.inspector.push(inspection);
+          AEGIS.IInspector.loadSelection( aegis.currentCase.inspector );
+          aegis.closeEditAction();
+        }, function(){
+          aegis.closeEditAction();
+          setTimeout(function(){ AEGIS.IInspector.activateInspect(); }, 0);
+        });
+      } else {
+          setTimeout(function(){ AEGIS.IInspector.activateInspect(); }, 0);
+      }
+      if(typeof last!=="undefined") {last.first=s;}
+    } catch(e) {
+      console.log(e);
+    }
+  },
+  onrecord:function(data){
+    if(vm.isEditing()) {
+      return;
+    }
+    try{
+        document.getElementById("log").value+="\n"+JSON.stringify(data);
+        var last = recordsKO.data()[recordsKO.data().length-1];
+        var next = {
+          first: null,
+          baseUrl: data.baseUrl,
+          command: data.command,
+          target: data.target[data.target.length-1],
+          value: data.value,
+          user:"",
+          userName:"",
+          timestamp:new Date().getTime()
+        };
+        if(data.baseUrl!=aegis.lastUrl){
+          aegis.lastUrl=data.baseUrl;
+          aegis.newCase=true;
+        }
+        if(typeof last!=="undefined") {var s=last.first;last.first=null;}
+        if(aegis.newCase || (JSON.stringify(last.baseUrl+last.command+last.target+last.value)!==JSON.stringify(next.baseUrl+next.command+next.target+next.value))){
+          next.first=aegis.newCase;
+          if(aegis.currentCase.inspector.length&gt;0) {
+            aegis.startCase();
+          }
+            aegis.startCase();
+          recordsKO.data.push(next);
+          aegis.newCase=false;
+          aegis.currentCase.recorder.push({
+            baseUrl: data.baseUrl,
+            command: data.command,
+            target: aegis.array2object(data.target, "xpath:attributes"),
+            value: data.value,
+            extra:{
+              user:next.user,
+              userName:next.userName,
+              timestamp:next.timestamp
+            }
+          });
+        }
+        if(typeof last!=="undefined") {last.first=s;}
+    } catch(e) {
+      console.log(e);
+    }
+  },
+  onloadselection:function(){
+    AEGIS.IInspector.loadSelection( aegis.currentCase.inspector );
+  },
+  autoSetInspectionValues:{
+    enabled:false,
+    counter:0,
+    doit:function(){
+      this.counter++;
+      actionSettings.title("Action-"+this.counter);
+      actionSettings.notification("none");
+      actionSettings.action("watch");
+      actionSettings.userOrGroup("");
+    }
+  },
+  newJob:function(url){
+    vm.isEditing(false);
+    actionlogKO.data.removeAll();
+    recordsKO.data.removeAll();
+    aegis.cases=[];
+    aegis.startCase();
+  },
+  loadJob:function(job){
+    vm.isEditing(true);
+    actionlogKO.data.removeAll();
+    recordsKO.data.removeAll();
+    aegis.cases=job.cases;
+    for(var i=0,l=aegis.cases.length;i&lt;l;i++){
+      for(var j=0,k=aegis.cases[i].recorder.length;j&lt;k;j++){
+        var data=aegis.cases[i].recorder[j];
+        recordsKO.data.push({
+          first: j===0,
+          baseUrl: data.baseUrl,
+          command: data.command,
+          target: data.target["xpath:position"],
+          value: data.value,
+          user: typeof data.extra!=="undefined" ? data.extra.user:"",
+          userName: typeof data.extra!=="undefined" ? data.extra.userName:"",
+          timestamp: typeof data.extra!=="undefined" ? data.extra.timestamp:""
+        });
+      }
+      for(var j=0,k=aegis.cases[i].inspector.length;j&lt;k;j++){
+        var data=aegis.cases[i].inspector[j];
+        actionlogKO.data.push({
+          first: j===0,
+          baseUrl: data.baseUrl,
+          type: data.type,
+          target: data.xpath,
+          title: typeof data.extra!=="undefined" ? data.extra.title:"",
+          notification: typeof data.extra!=="undefined" ? data.extra.notification:"",
+          userOrGroup: typeof data.extra!=="undefined" ? data.extra.userOrGroup:"",
+          userOrGroupTitle: typeof data.extra!=="undefined" ? data.extra.userOrGroupTitle:"",
+          inspection: data
+        });
+      }
+    }
+    aegis.currentCase=aegis.cases[0];
+    if( vm.isRecording() ) {
+      aegis.toggle();
+    }
+    AEGIS.IController.loadJob(job, function(currentCase){
+      //console.log("TERMINO DE CARGAR JOB");
+      aegis.currentCase=aegis.cases[currentCase];
+    });
+  },
+  nextCase:function(){
+    if(aegis.cases.indexOf(aegis.currentCase)===aegis.cases.length-1){
+      return;
+    }
+    AEGIS.IController.nextCase(function(currentCase){
+      aegis.currentCase=aegis.cases[currentCase];
+    });
+  },
+  onDoLoadJob:function(job){
+    aegis.loadJob(job);
+  },
+  onDoNewJob:function(){
+    aegis.newJob("");
+  }
+};
+
+function bootAegis(){
+  AEGIS.IInspector.addEventListener(
+    aegis,
+    "select",
+    aegis.onselect
+  );
+  AEGIS.IRecorder.addEventListener(
+    aegis,
+    "record",
+    aegis.onrecord
+  );
+  AEGIS.IController.addEventListener(
+    aegis,
+    "loadSelected",
+    aegis.onloadselection
+  );
+  AEGIS.IController.addEventListener(
+    aegis,
+    "loadjob",
+    aegis.onDoLoadJob
+  );
+  AEGIS.IController.addEventListener(
+    aegis,
+    "newjob",
+    aegis.onDoNewJob
+  );
+  aegis.seleniumServer=AEGIS.IController.getSeleniumServer();
+  aegis.previewServer=AEGIS.IController.getPluginServer();
+  aegis.apikey=AEGIS.IController.getApikey();
+  aegis.newJob("");
+}</file><php __ideNodeOpen="true">$handle = fopen("/home/david/mysql-slow.log", "r");
+if ($handle) {
+    while (($line = fgets($handle)) !== false) {
+        if(preg_match('/# Query_time: ([\.\d]+)/', $line, $ma)){
+          echo ($ma[1]*1)."\n";
+        }
+    }
+
+    fclose($handle);
+} else {
+    // error opening the file.
+} </php><file name="rest.php" preprocess="">{"url":"http://www.google.com"}&lt;?php
+
+
+  $STDERR = fopen('/home/david/entradaJob.js', 'w');
+  fwrite($STDERR, ":O".var_export($_POST, true));
+  fclose($STDERR);</file><previewPage __ideNodeOpen="true"><navbar __ideNodeOpen="true"><navHeader url="javascript:void(0)" name="AEGIS"/><navMain __ideNodeOpen="true"><navNavbar class="" __ideNodeOpen="false"/><navForm class="navbar-right" __ideNodeOpen="true"><groupbutton __ideNodeOpen="false"/><groupbutton __ideNodeOpen="false"/></navForm></navMain></navbar>&lt;!--  initialize the TN3 when the DOM is ready --&gt;
+&lt;script type="text/javascript"&gt;
+    $(document).ready(function() {
+      var images = &lt;?php echo ($imageList=@$_SESSION['cr24_images']); ?&gt;;
+      /*[
+        {"baseUrl":"http://www.bankofamerica.com","target":"//div/a[5]","imageUrl":"http://127.0.0.1:8081/cr24/preview/examples/images/ss/1.png"},
+        {"baseUrl":"http://www.bankofamerica.com","target":"//div/a[5]","imageUrl":"http://127.0.0.1:8081/cr24/preview/examples/images/ss/1.png"}
+      ];*/
+
+      var $ol=$('.mygallery div ol');
+      for(var i=0,l=images.length;i&lt;l;i++){
+        var baseUrl=images[i].baseUrl;
+        var target=images[i].target;
+        var command=images[i].command;
+        var imageUrl=images[i].imageUrl;
+        var smallImageUrl=images[i].imageUrl;
+        $ol.append('&lt;li&gt;&lt;h4&gt;'+baseUrl+'&lt;/h4&gt;&lt;div class="tn3 description"&gt;'+target+'&lt;/div&gt;&lt;a href="'+imageUrl+'"&gt;&lt;img width="35px" height="35px" src="'+smallImageUrl+'" /&gt;&lt;/a&gt;&lt;/li&gt;');
+      }
+
+      //Thumbnailer.config.shaderOpacity = 1;
+      var tn1 = $('.mygallery').tn3({
+        skinDir:"skins",
+        imageClick:"fullscreen",
+        image:{
+          maxZoom:1.5,
+          crop:true,
+          clickEvent:"dblclick",
+          transitions:[
+            {
+              type:"blinds"
+            },{
+              type:"grid"
+            },{
+              type:"grid",
+              duration:460,
+              easing:"easeInQuad",
+              gridX:1,
+              gridY:8,
+              // flat, diagonal, circle, random
+              sort:"flat",
+              sortReverse:false,
+              diagonalStart:"bl",
+              // fade, scale
+              method:"scale",
+              partDuration:360,
+              partEasing:"easeOutSine",
+              partDirection:"left"
+            }
+          ]
+        }
+      });
+    });
+&lt;/script&gt;
+&lt;div id="content"&gt;
+    &lt;div class="mygallery"&gt;
+	&lt;div class="tn3 album"&gt;
+            &lt;?php if(empty($imageList)): ?&gt;
+            &lt;h4&gt;&lt;img src="loading.gif" height="64px"&gt; Initializing job&lt;/h4&gt;
+            &lt;?php endif; ?&gt;
+	    &lt;!-- h4&gt;Fixed Dimensions&lt;/h4&gt;
+	    &lt;div class="tn3 description"&gt;Images with fixed dimensions&lt;/div --&gt;
+	    &lt;div class="tn3 thumb"&gt;examples/images/35x35/1.jpg&lt;/div&gt;
+	    &lt;ol&gt;
+
+	    &lt;/ol&gt;
+	&lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div id="desc"&gt;
+	&lt;!-- p&gt;Images toke in job's benchmark.&lt;/p --&gt;
+    &lt;/div&gt;
+&lt;/div&gt;</previewPage><file name="updatedoc.php" preprocess="" __ideNodeOpen="true">&lt;?php
+  ini_set("display_errors", "on");
+  error_reporting(E_ALL);
+  define('MY_SIMPLE_API_KEY', 'AIzaSyChW3FQwHDadDDXVynuCa4PjGaxjQ5EclM');
+
+/*  require_once('../youtube/lib/Madcoda/Youtube.php');
+
+  use Madcoda\Youtube;
+
+  $youtube = new Youtube(array('key' =&gt; MY_SIMPLE_API_KEY));
+
+  $videoList = $youtube-&gt;searchVideos('Android');
+
+var_dump($videoList);
+
+die;*/
+
+  set_include_path(get_include_path() . PATH_SEPARATOR . '/home/david/php/www/google/src');
+
+  function autoload($className)
+  {
+      $fileName = str_replace('_','/', $className).'.php';
+      require $fileName;
+  }
+  spl_autoload_register('autoload');
+
+// Call set_include_path() as needed to point to your client library.
+require_once 'Google/Client.php';
+require_once 'Google/Service/YouTube.php';
+session_start();
+
+if(@$_GET['reset']) {
+  unset($_SESSION['token']);
+}
+/*
+ * You can acquire an OAuth 2.0 client ID and client secret from the
+ * Google Developers Console &lt;https://console.developers.google.com/&gt;
+ * For more information about using OAuth 2.0 to access Google APIs, please see:
+ * &lt;https://developers.google.com/youtube/v3/guides/authentication&gt;
+ * Please ensure that you have enabled the YouTube Data API for your project.
+ */
+$OAUTH2_CLIENT_ID = '182120710500-vq5dmupmq6ambtpf8c0drp8n4j3i5sf3.apps.googleusercontent.com';
+$OAUTH2_CLIENT_SECRET = 'OT02wD60wsYzWtopyrUv1n0V';
+
+$client = new Google_Client();
+$client-&gt;setClientId($OAUTH2_CLIENT_ID);
+$client-&gt;setClientSecret($OAUTH2_CLIENT_SECRET);
+$client-&gt;setScopes('https://www.googleapis.com/auth/youtube');
+$redirect = filter_var('http://' . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF'],
+    FILTER_SANITIZE_URL);
+$client-&gt;setRedirectUri($redirect);
+
+// Define an object that will be used to make all API requests.
+$youtube = new Google_Service_YouTube($client);
+
+if (isset($_GET['code'])) {
+  if (strval($_SESSION['state']) !== strval($_GET['state'])) {
+    die('The session state did not match.');
+  }
+
+  $client-&gt;authenticate($_GET['code']);
+  $_SESSION['token'] = $client-&gt;getAccessToken();
+  header('Location: ' . $redirect);
+}
+
+if (isset($_SESSION['token'])) {
+  $client-&gt;setAccessToken($_SESSION['token']);
+}
+$htmlBody="";
+// Check to ensure that the access token was successfully acquired.
+if ($client-&gt;getAccessToken()) {
+  try{
+    // REPLACE this value with the path to the file you are uploading.
+    $videoPath = "/home/david/workspaceXUL/seleniumIDE1/aegisPlugin.webm";
+
+    // Create a snippet with title, description, tags and category ID
+    // Create an asset resource and set its snippet metadata and type.
+    // This example sets the video's title, description, keyword tags, and
+    // video category.
+    $snippet = new Google_Service_YouTube_VideoSnippet();
+    $snippet-&gt;setTitle("Aegis Plugin");
+    $snippet-&gt;setDescription("Aegis Plugin development");
+    $snippet-&gt;setTags(array("aegis", "plugin"));
+
+    // Numeric video category. See
+    // https://developers.google.com/youtube/v3/docs/videoCategories/list 
+    $snippet-&gt;setCategoryId("22");
+
+    // Set the video's status to "public". Valid statuses are "public",
+    // "private" and "unlisted".
+    $status = new Google_Service_YouTube_VideoStatus();
+    $status-&gt;privacyStatus = "public";
+
+    // Associate the snippet and status objects with a new video resource.
+    $video = new Google_Service_YouTube_Video();
+    $video-&gt;setSnippet($snippet);
+    $video-&gt;setStatus($status);
+
+    // Specify the size of each chunk of data, in bytes. Set a higher value for
+    // reliable connection as fewer chunks lead to faster uploads. Set a lower
+    // value for better recovery on less reliable connections.
+    $chunkSizeBytes = 5 * 1024 * 1024;
+
+    // Setting the defer flag to true tells the client to return a request which can be called
+    // with -&gt;execute(); instead of making the API call immediately.
+    $client-&gt;setDefer(true);
+
+    // Create a request for the API's videos.insert method to create and upload the video.
+    $insertRequest = $youtube-&gt;videos-&gt;insert("status,snippet", $video);
+
+    // Create a MediaFileUpload object for resumable uploads.
+    $media = new Google_Http_MediaFileUpload(
+        $client,
+        $insertRequest,
+        'video/*',
+        null,
+        true,
+        $chunkSizeBytes
+    );
+    $media-&gt;setFileSize(filesize($videoPath));
+
+
+    // Read the media file and upload it chunk by chunk.
+    $status = false;
+    $handle = fopen($videoPath, "rb");
+    while (!$status &amp;&amp; !feof($handle)) {
+      $chunk = fread($handle, $chunkSizeBytes);
+      $status = $media-&gt;nextChunk($chunk);
+    }
+
+    fclose($handle);
+
+    // If you want to make other calls after the file upload, set setDefer back to false
+    $client-&gt;setDefer(false);
+
+
+    $htmlBody .= "&lt;h3&gt;Video Uploaded&lt;/h3&gt;&lt;ul&gt;";
+    $htmlBody .= sprintf('&lt;li&gt;%s (%s)&lt;/li&gt;',
+        $status['snippet']['title'],
+        $status['id']);
+
+    $htmlBody .= '&lt;/ul&gt;';
+
+  } catch (Google_ServiceException $e) {
+    $htmlBody .= sprintf('&lt;p&gt;A service error occurred: &lt;code&gt;%s&lt;/code&gt;&lt;/p&gt;',
+        htmlspecialchars($e-&gt;getMessage()));
+  } catch (Google_Exception $e) {
+    $htmlBody .= sprintf('&lt;p&gt;An client error occurred: &lt;code&gt;%s&lt;/code&gt;&lt;/p&gt;',
+        htmlspecialchars($e-&gt;getMessage())) . '&lt;a href="?reset"&gt;Reset session&lt;/a&gt;';
+  }
+
+  $_SESSION['token'] = $client-&gt;getAccessToken();
+} else {
+  // If the user hasn't authorized the app, initiate the OAuth flow
+  $state = mt_rand();
+  $client-&gt;setState($state);
+  $_SESSION['state'] = $state;
+
+  $authUrl = $client-&gt;createAuthUrl();
+  $htmlBody = &lt;&lt;&lt;END
+  &lt;h3&gt;Authorization Required&lt;/h3&gt;
+  &lt;p&gt;You need to &lt;a href="$authUrl"&gt;authorize access&lt;/a&gt; before proceeding.&lt;p&gt;
+END;
+}
+?&gt;
+
+&lt;!doctype html&gt;
+&lt;html&gt;
+&lt;head&gt;
+&lt;title&gt;Video Uploaded&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;?=$htmlBody?&gt;
+&lt;/body&gt;
+&lt;/html&gt;</file><file name="unit_test.html" preprocess="" __ideNodeOpen="true">&lt;html&gt;
+    &lt;body&gt;
+        &lt;link rel="stylesheet" href="//code.jquery.com/qunit/qunit-1.18.0.css"&gt;
+        &lt;script src="//code.jquery.com/qunit/qunit-1.18.0.js"&gt;&lt;/script&gt;
+          &lt;div id="qunit"&gt;&lt;/div&gt;
+  &lt;div id="qunit-fixture"&gt;&lt;/div&gt;
+            &lt;script src="chrome://selenium-ide/content/aegis/plugin/DOMInjector.js" type="text/javascript"&gt;&lt;/script&gt;
+&lt;img src="chrome://selenium-ide/content/DOM-inspector-master/img/dom_view.png"&gt;
+    &lt;/body&gt;
+&lt;/html&gt;</file><frontPage __ideNodeOpen="true"><wrapper __ideNodeOpen="true"><wrapperSidebar __ideNodeOpen="false"><panel title="" extra="style=&quot;bottom: 0px; position: absolute; margin-bottom: 0px; width: 100%; top: 61px;&quot;" __ideNodeOpen="false">&lt;form id="actionSettings"&gt;
+&lt;div class="row"&gt;
+  &lt;div class=".col-xs-12 .col-md-12"&gt;
+    &lt;input name="title" type="text" class="form-control" placeholder="Enter title"data-bind="value: title"&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="row"&gt;
+  &lt;div class="col-xs-12 col-sm-6 col-md-6"&gt;
+    &lt;div class="form-group"&gt;
+      &lt;label class="control-label"&gt;Notifications:&lt;/label&gt;
+      &lt;div class="col-lg-10"&gt;
+        &lt;div class="radio"&gt;
+          &lt;label&gt;
+            &lt;input type="radio" name="optionsRadios" value="none" data-bind="checked: notification"&gt;
+            None
+          &lt;/label&gt;
+        &lt;/div&gt;
+        &lt;div class="radio"&gt;
+          &lt;label&gt;
+            &lt;input type="radio" name="optionsRadios" value="daily" data-bind="checked: notification"&gt;
+            Daily
+          &lt;/label&gt;
+        &lt;/div&gt;
+        &lt;div class="radio"&gt;
+          &lt;label&gt;
+            &lt;input type="radio" name="optionsRadios" value="weekly" data-bind="checked: notification"&gt;
+            Weekly
+          &lt;/label&gt;
+        &lt;/div&gt;
+        &lt;div class="radio"&gt;
+          &lt;label&gt;
+            &lt;input type="radio" name="optionsRadios" value="instant" data-bind="checked: notification"&gt;
+            Instant
+          &lt;/label&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class="col-xs-12 col-sm-6 col-md-6"&gt;
+    &lt;div class="form-group"&gt;
+      &lt;label class="control-label"&gt;Action:&lt;/label&gt;
+      &lt;ul class="nav nav-pills nav-stacked"&gt;
+        &lt;li data-bind="css:{active: action()==='watch'}"&gt;&lt;a href="#" onclick="actionSettings.action('watch')"&gt;&amp;lt;o&amp;gt; Watch&lt;/a&gt;&lt;/li&gt;
+        &lt;li data-bind="css:{active: action()==='ignore'}"&gt;&lt;a href="#" onclick="actionSettings.action('ignore')"&gt;&amp;lt;/&amp;gt; Ignore&lt;/a&gt;&lt;/li&gt;
+      &lt;/ul&gt;
+      &lt;select id="userOrGroup" class="form-control" placeholder="User -or- Group" data-bind="value: userOrGroup"&gt;
+        &lt;option value=""&gt;User -or- Group&lt;/option&gt;
+        &lt;option value="1"&gt;Hugo&lt;/option&gt;
+        &lt;option value="2"&gt;Iggy&lt;/option&gt;
+        &lt;option value="3"&gt;Luis&lt;/option&gt;
+      &lt;/select&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="form-group"&gt;
+  &lt;div class="col-lg-10 col-lg-offset-2"&gt;
+    &lt;button id="confirmAction" type="button" class="btn btn-primary"&gt;Save&lt;/button&gt;
+    &lt;button id="cancelAction" type="button" class="btn btn-default"&gt;Cancel&lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;/form&gt;
+&lt;script type="text/javascript"&gt;
+$(function(){
+  var vm = {
+    title: ko.observable(""),
+    notification: ko.observable("none"),
+    action: ko.observable("watch"),
+    userOrGroup: ko.observable("")
+  };
+  ko.applyBindings(vm, document.getElementById("actionSettings"));
+  window.actionSettings=vm;
+});
+&lt;/script&gt;</panel></wrapperSidebar><wrapperContent __ideNodeOpen="true"><navbar __ideNodeOpen="true"><navHeader url="javascript:void(0)" name="AEGIS" __ideNodeOpen="false"/><navMain __ideNodeOpen="true"><navNavbar class="" __ideNodeOpen="false"/><navForm class="navbar-right" __ideNodeOpen="true"><groupbutton/><groupbutton><aButton url="https://www.youtube.com/watch?v=zE5hS0kqBQ4" name="Extra" class="btn-primary" extra="target=&quot;_blank&quot;"/></groupbutton></navForm></navMain></navbar>&lt;style&gt;
+#page-content-wrapper {
+  padding: 0px;
+}
+.splash{
+  padding: 9em 0 2em;
+  background-color: #141d27;
+  background-image: url(background.jpg);
+  background-size: cover;
+  background-attachment: fixed;
+  color: #fff;
+  text-align: center;
+  background-size: 100% auto;
+  min-height:450px;
+}
+.section-tout {
+  padding: 4em 0 3em;
+  border-bottom: 1px solid rgba(0,0,0,.05);
+  background-color: #eaf1f1;
+  color:black;
+}
+.section-tout .fa {
+  margin-right: .5em;
+}
+&lt;/style&gt;
+    &lt;div class="splash"&gt;
+      &lt;div class="container"&gt;
+
+        &lt;div class="row"&gt;
+          &lt;div class="col-lg-12"&gt;
+            &lt;h1&gt;AEGIS DEMO&lt;/h1&gt;
+            &lt;div class="row"&gt;
+              &lt;div class="col-md-6 col-md-offset-3"&gt;
+              &lt;/div&gt;
+            &lt;/div&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+
+      &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;div id="pageSettings" class="section-tout"&gt;
+      &lt;div class="container"&gt;
+
+        &lt;div class="row"&gt;
+          &lt;div class="col-lg-6 col-sm-6"&gt;
+            &lt;h3&gt;&lt;i class="fa fa-file-o"&gt;&lt;/i&gt;Create Job&lt;/h3&gt;
+            &lt;p&gt;Test the Aegis plugin to save a Job.&lt;/p&gt;
+            &lt;p data-bind="visible:!isAegisEnabled()" style="color:red;"&gt;Aegis plugin is required to save a job.&lt;/p&gt;
+            &lt;a class="btn btn-default" data-bind="css:{disabled:!isAegisEnabled()}" onclick="newJob()" target="_blank" href="https://www.bankofamerica.com"&gt;Go&lt;/a&gt;
+          &lt;/div&gt;
+          &lt;div class="col-lg-6 col-sm-6"&gt;
+            &lt;h3&gt;&lt;i class="fa fa-folder-open-o"&gt;&lt;/i&gt;Load Job&lt;/h3&gt;
+            &lt;p&gt;Load a predefined Job.&lt;/p&gt;
+            &lt;p data-bind="visible:!isAegisEnabled()" style="color:red;"&gt;Aegis plugin is required to save a job.&lt;/p&gt;
+            &lt;a class="btn btn-default" data-bind="css:{disabled:!isAegisEnabled()}" onclick="loadJob1()" target="_blank" href="loadJob.html"&gt;Go&lt;/a&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+
+        &lt;div class="row"&gt;
+          &lt;div class="col-lg-6 col-sm-6"&gt;
+            &lt;h3&gt;&lt;i class="fa fa-cogs"&gt;&lt;/i&gt;Aegis Plugin&lt;/h3&gt;
+            &lt;p&gt;Install the Aegis plugin.&lt;/p&gt;
+            &lt;a class="btn btn-default" href="/cr24/plugins/aegis.0.0.3.xpi"&gt;Install&lt;/a&gt;
+          &lt;/div&gt;
+          &lt;div class="col-lg-6 col-sm-6"&gt;
+            &lt;h3&gt;&lt;i class="fa fa-github"&gt;&lt;/i&gt;Job Preview&lt;/h3&gt;
+            &lt;p&gt;View last job's execution.&lt;/p&gt;
+            &lt;a class="btn btn-default" target="_blank" href="http://52.6.171.25/cr24/preview/index.html"&gt;View&lt;/a&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+
+        &lt;div class="row"&gt;
+          &lt;div class="col-lg-6 col-sm-6"&gt;
+            &lt;h3&gt;&lt;i class="fa fa-cogs"&gt;&lt;/i&gt;Unit Tests&lt;/h3&gt;
+            &lt;p&gt;Run the Unit Tests.&lt;/p&gt;
+            &lt;p data-bind="visible:!isAegisEnabled()" style="color:red;"&gt;Aegis plugin is required to run the unit tests.&lt;/p&gt;
+            &lt;p&gt;For security reasons, please copy and paste the link to the url bar to execute the test.&lt;/p&gt;
+            &lt;a href="chrome://aegis/content/aegis/test.html" target="_blank"&gt;chrome://aegis/content/aegis/test.html&lt;/a&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+
+      &lt;/div&gt;
+    &lt;/div&gt;
+&lt;script type="text/javascript" src="http://localhost:8081/cr24/aegis.connector.js"&gt;&lt;/script&gt;
+&lt;script type="text/javascript"&gt;
+/**
+ * AEGIS CONFIG
+ */
+aegis.init({
+  onboot:function(){
+    window.pageSettings.isAegisEnabled(true);
+  }
+});
+function newJob(){
+  aegis.newJob();
+}
+function loadJob1(){
+  aegis.loadJob({
+    "baseUrl": "https://www.bankofamerica.com/",
+    "screen": {
+        "width": "1800",
+        "height": "760"
+    },
+    "window": {
+        "width": "1800",
+        "height": "760"
+    },
+    "cases": [
+        {
+            "recorder": [],
+            "inspector": [
+                {
+                    "baseUrl": "https://www.bankofamerica.com/",
+                    "extra": {
+                        "title": "",
+                        "notification": "none",
+                        "userOrGroup": "",
+                        "userOrGroupTitle": "",
+                        "action": "watch"
+                    },
+                    "type": "watch",
+                    "xpath": "//*[@id=\"hp-section-4\"]/div/div[2]/div/div/div[2]/p",
+                    "outerHTML": "&lt;p&gt;If you're a homeowner struggling with your loan payments, you may want to learn about our home loan assistance programs. Bank of America is committed to helping homeowners and is a participant in the national mortgage settlement agreement.&lt;/p&gt;",
+                    "outerHTMLWithStyle": "&lt;p style=\"outline: 4px solid green; opacity : 0.7; \"&gt;If you're a homeowner struggling with your loan payments, you may want to learn about our home loan assistance programs. Bank of America is committed to helping homeowners and is a participant in the national mortgage settlement agreement.&lt;/p&gt;",
+                    "computedStyle": null
+                },
+                {
+                    "baseUrl": "https://www.bankofamerica.com/",
+                    "extra": {
+                        "title": "",
+                        "notification": "none",
+                        "userOrGroup": "",
+                        "userOrGroupTitle": "",
+                        "action": "ignore"
+                    },
+                    "type": "ignore",
+                    "xpath": "//*[@id=\"hp-section-4\"]/div/div[2]/div/div/div[3]/ul/li[2]",
+                    "outerHTML": "&lt;li&gt;\n\t\t\t\t\t\t\t\t\t\t\t\t\t&lt;a name=\"dz2_DOJSettlement\" href=\"http://homeloanhelp.bankofamerica.com/en/doj-settlement.html\" class=\"style-link guillemet-right\"&gt;Learn about the Department of Justice settlement&amp;nbsp;&lt;span class=\"guillemet ls-n1 guillement-set\"&gt;››&lt;/span&gt;&lt;/a&gt; &lt;span class=\"clearboth\"&gt;&lt;/span&gt;\n\t\t\t\t\t\t\t\t\t\t\t\t\t&lt;/li&gt;",
+                    "outerHTMLWithStyle": "&lt;li style=\"outline: 4px solid green; opacity : 0.7; \"&gt;\n\t\t\t\t\t\t\t\t\t\t\t\t\t&lt;a name=\"dz2_DOJSettlement\" href=\"http://homeloanhelp.bankofamerica.com/en/doj-settlement.html\" class=\"style-link guillemet-right\"&gt;Learn about the Department of Justice settlement&amp;nbsp;&lt;span class=\"guillemet ls-n1 guillement-set\"&gt;››&lt;/span&gt;&lt;/a&gt; &lt;span class=\"clearboth\"&gt;&lt;/span&gt;\n\t\t\t\t\t\t\t\t\t\t\t\t\t&lt;/li&gt;",
+                    "computedStyle": null
+                },
+                {
+                    "baseUrl": "https://www.bankofamerica.com/",
+                    "extra": {
+                        "title": "",
+                        "notification": "none",
+                        "userOrGroup": "",
+                        "userOrGroupTitle": "",
+                        "action": "watch"
+                    },
+                    "type": "watch",
+                    "xpath": "//*[@id=\"hp-section-4\"]/div/div[2]/div/div",
+                    "outerHTML": "&lt;div class=\"flex-content-section\"&gt; \n         \t\t\t\n         \t\t\t\n         \t\t\t\t\t \n         \t\t\t\t\t\t\n\t             \t\t\t\t\t&lt;div class=\"header-row\"&gt;\n\t\t\t\t\t\t\t\t\t\t &lt;h2&gt;Need help with your home loan payments?&lt;/h2&gt;\n\t\t\t\t\t\t\t\t\t\t &lt;div class=\"clearboth\"&gt;&lt;/div&gt;\n\t\t\t\t\t\t\t\t\t&lt;/div&gt;\n               \t\t\t\t\t\n               \t\t\t\t\t\t&lt;div class=\"paragraph-row\"&gt;                     \n                  \t\t\t\t\t\t&lt;p style=\"\"&gt;If you're a homeowner struggling with your loan payments, you may want to learn about our home loan assistance programs. Bank of America is committed to helping homeowners and is a participant in the national mortgage settlement agreement.&lt;/p&gt;\n                  \t\t\t\t\t\t&lt;div class=\"clearboth\"&gt;&lt;/div&gt;\n               \t\t\t\t\t\t&lt;/div&gt;\n       \t\t\t\t\t\n       \t\t\t\t\t             \t\t\t\t\t\t               \t\t\t\t\t\t\t\n\t\t\t\t\t\t\t&lt;div class=\"list-row\"&gt;\t\t\t\t\t\t\t\t\t\t\t           \n\t\t\t\t\t\t\t\t\t&lt;ul&gt;                \n\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t&lt;li&gt;\n\t\t\t\t\t\t\t\t\t\t\t\t\t&lt;a name=\"dz2_homeLoanAssistance\" href=\"http://homeloanhelp.bankofamerica.com/en/index.html?cm_sp=Cre-LoanModification-_-Home%20Loan%20Assistance%20Q4%202012-_-MI14LT0001_Dialogue%20Zone%202_LearnMoreLAH\" class=\"style-link guillemet-right\"&gt;Learn more about home loan assistance&amp;nbsp;&lt;span class=\"guillemet ls-n1 guillement-set\"&gt;››&lt;/span&gt;&lt;/a&gt; &lt;span class=\"clearboth\"&gt;&lt;/span&gt;\n\t\t\t\t\t\t\t\t\t\t\t\t\t&lt;/li&gt; \t\n\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t&lt;li style=\"\"&gt;\n\t\t\t\t\t\t\t\t\t\t\t\t\t&lt;a name=\"dz2_DOJSettlement\" href=\"http://homeloanhelp.bankofamerica.com/en/doj-settlement.html\" class=\"style-link guillemet-right\"&gt;Learn about the Department of Justice settlement&amp;nbsp;&lt;span class=\"guillemet ls-n1 guillement-set\"&gt;››&lt;/span&gt;&lt;/a&gt; &lt;span class=\"clearboth\"&gt;&lt;/span&gt;\n\t\t\t\t\t\t\t\t\t\t\t\t\t&lt;/li&gt; \t\n\t\t\t\t\t\t\t\t\t&lt;/ul&gt;                            \n\t\t\t\t\t\t\t&lt;/div&gt;\n    \t\t\t\t&lt;/div&gt;",
+                    "outerHTMLWithStyle": "&lt;div style=\"outline: 4px solid green; opacity : 0.7; \" class=\"flex-content-section\"&gt; \n         \t\t\t\n         \t\t\t\n         \t\t\t\t\t \n         \t\t\t\t\t\t\n\t             \t\t\t\t\t&lt;div class=\"header-row\"&gt;\n\t\t\t\t\t\t\t\t\t\t &lt;h2&gt;Need help with your home loan payments?&lt;/h2&gt;\n\t\t\t\t\t\t\t\t\t\t &lt;div class=\"clearboth\"&gt;&lt;/div&gt;\n\t\t\t\t\t\t\t\t\t&lt;/div&gt;\n               \t\t\t\t\t\n               \t\t\t\t\t\t&lt;div class=\"paragraph-row\"&gt;                     \n                  \t\t\t\t\t\t&lt;p style=\"\"&gt;If you're a homeowner struggling with your loan payments, you may want to learn about our home loan assistance programs. Bank of America is committed to helping homeowners and is a participant in the national mortgage settlement agreement.&lt;/p&gt;\n                  \t\t\t\t\t\t&lt;div class=\"clearboth\"&gt;&lt;/div&gt;\n               \t\t\t\t\t\t&lt;/div&gt;\n       \t\t\t\t\t\n       \t\t\t\t\t             \t\t\t\t\t\t               \t\t\t\t\t\t\t\n\t\t\t\t\t\t\t&lt;div class=\"list-row\"&gt;\t\t\t\t\t\t\t\t\t\t\t           \n\t\t\t\t\t\t\t\t\t&lt;ul&gt;                \n\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t&lt;li&gt;\n\t\t\t\t\t\t\t\t\t\t\t\t\t&lt;a name=\"dz2_homeLoanAssistance\" href=\"http://homeloanhelp.bankofamerica.com/en/index.html?cm_sp=Cre-LoanModification-_-Home%20Loan%20Assistance%20Q4%202012-_-MI14LT0001_Dialogue%20Zone%202_LearnMoreLAH\" class=\"style-link guillemet-right\"&gt;Learn more about home loan assistance&amp;nbsp;&lt;span class=\"guillemet ls-n1 guillement-set\"&gt;››&lt;/span&gt;&lt;/a&gt; &lt;span class=\"clearboth\"&gt;&lt;/span&gt;\n\t\t\t\t\t\t\t\t\t\t\t\t\t&lt;/li&gt; \t\n\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t&lt;li style=\"\"&gt;\n\t\t\t\t\t\t\t\t\t\t\t\t\t&lt;a name=\"dz2_DOJSettlement\" href=\"http://homeloanhelp.bankofamerica.com/en/doj-settlement.html\" class=\"style-link guillemet-right\"&gt;Learn about the Department of Justice settlement&amp;nbsp;&lt;span class=\"guillemet ls-n1 guillement-set\"&gt;››&lt;/span&gt;&lt;/a&gt; &lt;span class=\"clearboth\"&gt;&lt;/span&gt;\n\t\t\t\t\t\t\t\t\t\t\t\t\t&lt;/li&gt; \t\n\t\t\t\t\t\t\t\t\t&lt;/ul&gt;                            \n\t\t\t\t\t\t\t&lt;/div&gt;\n    \t\t\t\t&lt;/div&gt;",
+                    "computedStyle": null
+                },
+                {
+                    "baseUrl": "https://www.bankofamerica.com/",
+                    "extra": {
+                        "title": "",
+                        "notification": "none",
+                        "userOrGroup": "",
+                        "userOrGroupTitle": "",
+                        "action": "ignore"
+                    },
+                    "type": "ignore",
+                    "xpath": "//*[@id=\"hp-section-4\"]/div/div/div/div/div[2]/p",
+                    "outerHTML": "&lt;p&gt;Earn cash back with the BankAmericard Cash Rewards credit card – 1% on purchases, 2% at grocery stores and 3% on gas (up to $1500 in grocery/gas quarterly spend) with No Annual Fee and No Changing Categories.&lt;/p&gt;",
+                    "outerHTMLWithStyle": "&lt;p style=\"outline: 4px solid green; opacity : 0.7; \"&gt;Earn cash back with the BankAmericard Cash Rewards credit card – 1% on purchases, 2% at grocery stores and 3% on gas (up to $1500 in grocery/gas quarterly spend) with No Annual Fee and No Changing Categories.&lt;/p&gt;",
+                    "computedStyle": null
+                }
+            ]
+        },
+        {
+            "recorder": [
+                {
+                    "baseUrl": "https://www.bankofamerica.com/",
+                    "command": "click",
+                    "target": {
+                        "id": null,
+                        "name": null,
+                        "css": "css=a.first.select",
+                        "link": "link=Banking menu. Press Enter to access submenu. To move through items press up or down arrow.",
+                        "dom:name": null,
+                        "xpath:attributes": null,
+                        "xpath:idRelative": "//div[@id='hp-section-2']/form/ul/li/a",
+                        "dom:index": null,
+                        "xpath:position": "//form/ul/li/a",
+                        "xpath:link": null,
+                        "xpath:href": "xpath=(//a[contains(@href, 'javascript:void(0);')])[3]",
+                        "xpath:img": null
+                    },
+                    "extra": {
+                        "user": "",
+                        "notification": "userName",
+                        "": "",
+                        "timestamp": "1430426050169"
+                    },
+                    "value": ""
+                }
+            ],
+            "inspector": []
+        },
+        {
+            "recorder": [
+                {
+                    "baseUrl": "https://www.bankofamerica.com/",
+                    "command": "click",
+                    "target": {
+                        "id": null,
+                        "name": "name=online_banking",
+                        "css": "css=a[name=\"online_banking\"]",
+                        "link": "link=Online Banking",
+                        "dom:name": null,
+                        "xpath:attributes": "//a[@name='online_banking']",
+                        "xpath:idRelative": "//div[@id='pm-submenu-first']/div/a[5]",
+                        "dom:index": null,
+                        "xpath:position": "//a[5]",
+                        "xpath:link": "//a[contains(text(),'Online Banking')]",
+                        "xpath:href": "//a[contains(@href, '/onlinebanking/online-banking.go')]",
+                        "xpath:img": null
+                    },
+                    "extra": {
+                        "user": "",
+                        "notification": "userName",
+                        "": "",
+                        "timestamp": "1430426050169"
+                    },
+                    "value": ""
+                }
+            ],
+            "inspector": [
+                {
+                    "baseUrl": "https://www.bankofamerica.com/onlinebanking/online-banking.go",
+                    "extra": {
+                        "title": "",
+                        "notification": "none",
+                        "userOrGroup": "",
+                        "userOrGroupTitle": "",
+                        "action": "ignore"
+                    },
+                    "type": "ignore",
+                    "xpath": "/html/body/div/div/div/div[8]/div[2]/div[7]/div[2]/img",
+                    "outerHTML": "&lt;img src=\"/content/images/ContextualSiteGraphics/Instructional/en_US/OLB/mobile-banking-2.png\" alt=\"Mobile Banking\"&gt;",
+                    "outerHTMLWithStyle": "&lt;img style=\"outline: 4px solid green; opacity : 0.7; \" src=\"/content/images/ContextualSiteGraphics/Instructional/en_US/OLB/mobile-banking-2.png\" alt=\"Mobile Banking\"&gt;",
+                    "computedStyle": null
+                },
+                {
+                    "baseUrl": "https://www.bankofamerica.com/onlinebanking/online-banking.go",
+                    "extra": {
+                        "title": "",
+                        "notification": "none",
+                        "userOrGroup": "",
+                        "userOrGroupTitle": "",
+                        "action": "ignore"
+                    },
+                    "type": "ignore",
+                    "xpath": "/html/body/div/div/div/div[8]/div[2]/div[7]/div/div/p",
+                    "outerHTML": "&lt;p&gt;Access your Bank of America accounts straight from your mobile device. Check your balance, deposit checks&lt;a name=\"fnote4\" href=\"#footnote4\"&gt;&lt;span class=\"ada-hidden\"&gt;Footnote &lt;/span&gt;&lt;sup&gt;4&lt;/sup&gt;&lt;/a&gt;, pay bills, transfer money&lt;a name=\"fnote2\" href=\"#footnote2\"&gt;&lt;span class=\"ada-hidden\"&gt;Footnote &lt;/span&gt;&lt;sup&gt;2&lt;/sup&gt;&lt;/a&gt; and get cash-back deals&lt;a name=\"fnote5\" href=\"#footnote5\"&gt;&lt;span class=\"ada-hidden\"&gt;Footnote &lt;/span&gt;&lt;sup&gt;5&lt;/sup&gt;&lt;/a&gt; whether you’re at home or on the go. Bank on your schedule with &lt;a title=\"Mobile Banking\" name=\"mobile\" href=\"/online-banking/mobile.go\" target=\"_self\"&gt;Mobile Banking&lt;/a&gt;&lt;a name=\"fnote6\" href=\"#footnote6\"&gt;&lt;span class=\"ada-hidden\"&gt;Footnote &lt;/span&gt;&lt;sup&gt;6&lt;/sup&gt;&lt;/a&gt; and get the convenience and security of Online Banking from almost anywhere.&lt;/p&gt;",
+                    "outerHTMLWithStyle": "&lt;p style=\"outline: 4px solid green; opacity : 0.7; \"&gt;Access your Bank of America accounts straight from your mobile device. Check your balance, deposit checks&lt;a name=\"fnote4\" href=\"#footnote4\"&gt;&lt;span class=\"ada-hidden\"&gt;Footnote &lt;/span&gt;&lt;sup&gt;4&lt;/sup&gt;&lt;/a&gt;, pay bills, transfer money&lt;a name=\"fnote2\" href=\"#footnote2\"&gt;&lt;span class=\"ada-hidden\"&gt;Footnote &lt;/span&gt;&lt;sup&gt;2&lt;/sup&gt;&lt;/a&gt; and get cash-back deals&lt;a name=\"fnote5\" href=\"#footnote5\"&gt;&lt;span class=\"ada-hidden\"&gt;Footnote &lt;/span&gt;&lt;sup&gt;5&lt;/sup&gt;&lt;/a&gt; whether you’re at home or on the go. Bank on your schedule with &lt;a title=\"Mobile Banking\" name=\"mobile\" href=\"/online-banking/mobile.go\" target=\"_self\"&gt;Mobile Banking&lt;/a&gt;&lt;a name=\"fnote6\" href=\"#footnote6\"&gt;&lt;span class=\"ada-hidden\"&gt;Footnote &lt;/span&gt;&lt;sup&gt;6&lt;/sup&gt;&lt;/a&gt; and get the convenience and security of Online Banking from almost anywhere.&lt;/p&gt;",
+                    "computedStyle": null
+                },
+                {
+                    "baseUrl": "https://www.bankofamerica.com/onlinebanking/online-banking.go",
+                    "extra": {
+                        "title": "",
+                        "notification": "none",
+                        "userOrGroup": "",
+                        "userOrGroupTitle": "",
+                        "action": "ignore"
+                    },
+                    "type": "ignore",
+                    "xpath": "/html/body/div/div/div/div[8]/div[2]/div[5]/div",
+                    "outerHTML": "&lt;div class=\"ipc-col ipc-left-col\"&gt;\n           \t\t\t \t&lt;img src=\"/content/images/ContextualSiteGraphics/Instructional/en_US/financial-planning-tools1.png\" alt=\"Online Financial Planning Tools\"&gt;\n       \t\t &lt;/div&gt;",
+                    "outerHTMLWithStyle": "&lt;div style=\"outline: 4px solid green; opacity : 0.7; \" class=\"ipc-col ipc-left-col\"&gt;\n           \t\t\t \t&lt;img src=\"/content/images/ContextualSiteGraphics/Instructional/en_US/financial-planning-tools1.png\" alt=\"Online Financial Planning Tools\"&gt;\n       \t\t &lt;/div&gt;",
+                    "computedStyle": null
+                },
+                {
+                    "baseUrl": "https://www.bankofamerica.com/onlinebanking/online-banking.go",
+                    "extra": {
+                        "title": "",
+                        "notification": "none",
+                        "userOrGroup": "",
+                        "userOrGroupTitle": "",
+                        "action": "ignore"
+                    },
+                    "type": "ignore",
+                    "xpath": "/html/body/div/div/div/div[8]/div[2]/div[7]",
+                    "outerHTML": "&lt;div class=\"ipc-section ipc-alt-section extra-shadow-below\"&gt;\n\t\t\t&lt;div class=\"ipc-col ipc-left-col\"&gt;\n        \t\t\t\t&lt;div class=\"ipc-main-content\"&gt;\n               \t\t\t\t&lt;div class=\"ipc-header h-100\"&gt;\n                 \t\t\t\t&lt;div class=\"ipc-icon ipc-mobile_banking ipc-inactive\"&gt;&lt;/div&gt;\n                 \t\t\t\t&lt;h2 class=\"cnx-light\" data-font=\"#!\" id=\"mobile-banking\"&gt;&lt;span&gt;Mobile Banking&lt;/span&gt;&lt;/h2&gt;\n                  \t\t\t\t&lt;div class=\"clearboth\"&gt;&lt;/div&gt;\n               \t\t\t\t&lt;/div&gt;\n              \t\t\t\t&lt;p style=\"\"&gt;Access your Bank of America accounts straight from your mobile device. Check your balance, deposit checks&lt;a name=\"fnote4\" href=\"#footnote4\"&gt;&lt;span class=\"ada-hidden\"&gt;Footnote &lt;/span&gt;&lt;sup&gt;4&lt;/sup&gt;&lt;/a&gt;, pay bills, transfer money&lt;a name=\"fnote2\" href=\"#footnote2\"&gt;&lt;span class=\"ada-hidden\"&gt;Footnote &lt;/span&gt;&lt;sup&gt;2&lt;/sup&gt;&lt;/a&gt; and get cash-back deals&lt;a name=\"fnote5\" href=\"#footnote5\"&gt;&lt;span class=\"ada-hidden\"&gt;Footnote &lt;/span&gt;&lt;sup&gt;5&lt;/sup&gt;&lt;/a&gt; whether you’re at home or on the go. Bank on your schedule with &lt;a title=\"Mobile Banking\" name=\"mobile\" href=\"/online-banking/mobile.go\" target=\"_self\"&gt;Mobile Banking&lt;/a&gt;&lt;a name=\"fnote6\" href=\"#footnote6\"&gt;&lt;span class=\"ada-hidden\"&gt;Footnote &lt;/span&gt;&lt;sup&gt;6&lt;/sup&gt;&lt;/a&gt; and get the convenience and security of Online Banking from almost anywhere.&lt;/p&gt;\n            \t\t\t&lt;/div&gt;\n       \t\t &lt;/div&gt;\n        \t&lt;div class=\"ipc-col\"&gt;\n\t\t\t\t\t&lt;img style=\"\" src=\"/content/images/ContextualSiteGraphics/Instructional/en_US/OLB/mobile-banking-2.png\" alt=\"Mobile Banking\"&gt;\n\t\t\t\t   \n        \t&lt;/div&gt;\n            &lt;div class=\"clearboth\"&gt;&lt;/div&gt;\n    \t&lt;/div&gt;",
+                    "outerHTMLWithStyle": "&lt;div style=\"outline: 4px solid green; opacity : 0.7; \" class=\"ipc-section ipc-alt-section extra-shadow-below\"&gt;\n\t\t\t&lt;div class=\"ipc-col ipc-left-col\"&gt;\n        \t\t\t\t&lt;div class=\"ipc-main-content\"&gt;\n               \t\t\t\t&lt;div class=\"ipc-header h-100\"&gt;\n                 \t\t\t\t&lt;div class=\"ipc-icon ipc-mobile_banking ipc-inactive\"&gt;&lt;/div&gt;\n                 \t\t\t\t&lt;h2 class=\"cnx-light\" data-font=\"#!\" id=\"mobile-banking\"&gt;&lt;span&gt;Mobile Banking&lt;/span&gt;&lt;/h2&gt;\n                  \t\t\t\t&lt;div class=\"clearboth\"&gt;&lt;/div&gt;\n               \t\t\t\t&lt;/div&gt;\n              \t\t\t\t&lt;p style=\"\"&gt;Access your Bank of America accounts straight from your mobile device. Check your balance, deposit checks&lt;a name=\"fnote4\" href=\"#footnote4\"&gt;&lt;span class=\"ada-hidden\"&gt;Footnote &lt;/span&gt;&lt;sup&gt;4&lt;/sup&gt;&lt;/a&gt;, pay bills, transfer money&lt;a name=\"fnote2\" href=\"#footnote2\"&gt;&lt;span class=\"ada-hidden\"&gt;Footnote &lt;/span&gt;&lt;sup&gt;2&lt;/sup&gt;&lt;/a&gt; and get cash-back deals&lt;a name=\"fnote5\" href=\"#footnote5\"&gt;&lt;span class=\"ada-hidden\"&gt;Footnote &lt;/span&gt;&lt;sup&gt;5&lt;/sup&gt;&lt;/a&gt; whether you’re at home or on the go. Bank on your schedule with &lt;a title=\"Mobile Banking\" name=\"mobile\" href=\"/online-banking/mobile.go\" target=\"_self\"&gt;Mobile Banking&lt;/a&gt;&lt;a name=\"fnote6\" href=\"#footnote6\"&gt;&lt;span class=\"ada-hidden\"&gt;Footnote &lt;/span&gt;&lt;sup&gt;6&lt;/sup&gt;&lt;/a&gt; and get the convenience and security of Online Banking from almost anywhere.&lt;/p&gt;\n            \t\t\t&lt;/div&gt;\n       \t\t &lt;/div&gt;\n        \t&lt;div class=\"ipc-col\"&gt;\n\t\t\t\t\t&lt;img style=\"\" src=\"/content/images/ContextualSiteGraphics/Instructional/en_US/OLB/mobile-banking-2.png\" alt=\"Mobile Banking\"&gt;\n\t\t\t\t   \n        \t&lt;/div&gt;\n            &lt;div class=\"clearboth\"&gt;&lt;/div&gt;\n    \t&lt;/div&gt;",
+                    "computedStyle": null
+                },
+                {
+                    "baseUrl": "https://www.bankofamerica.com/onlinebanking/online-banking.go",
+                    "extra": {
+                        "title": "",
+                        "notification": "none",
+                        "userOrGroup": "",
+                        "userOrGroupTitle": "",
+                        "action": "watch"
+                    },
+                    "type": "watch",
+                    "xpath": "/html/body/div/div/div/div[8]/div[2]/div[5]",
+                    "outerHTML": "&lt;div class=\"ipc-section ipc-alt-section\"&gt;\n\t\t\t&lt;div style=\"\" class=\"ipc-col ipc-left-col\"&gt;\n           \t\t\t \t&lt;img src=\"/content/images/ContextualSiteGraphics/Instructional/en_US/financial-planning-tools1.png\" alt=\"Online Financial Planning Tools\"&gt;\n       \t\t &lt;/div&gt;\n        \t&lt;div class=\"ipc-col\"&gt;\n\t        \t\t&lt;div class=\"ipc-main-content\"&gt;\n               \t\t\t&lt;div class=\"ipc-header h-100\"&gt;\n                  \t\t\t&lt;div class=\"ipc-icon ipc-budget_and_track ipc-inactive\"&gt;&lt;/div&gt;\n                 \t\t\t&lt;h2 class=\"cnx-light\" data-font=\"#!\" id=\"budget-and-track\"&gt;&lt;span&gt;Budget and track&lt;/span&gt;&lt;/h2&gt;\n                 \t\t\t&lt;div class=\"clearboth\"&gt;&lt;/div&gt;\n               \t\t\t&lt;/div&gt;\n              \t\t\t&lt;p&gt;From a single site, you can set up budgets, get organized for tax season and track spending in all your accounts, even at other financial institutions&lt;a name=\"fnote3\" href=\"#footnote3\"&gt;&lt;span class=\"ada-hidden\"&gt;Footnote &lt;/span&gt;&lt;sup&gt;3&lt;/sup&gt;&lt;/a&gt;. Sign into your &lt;a title=\"Financial Management Tools\" name=\"financial-management-tools\" href=\"/onlinebanking/financial-management-tools.go\" target=\"_self\"&gt;all accounts dashboard&lt;/a&gt; for easy accounts access and comparison so you never have to hop from site to site again.&lt;/p&gt;\n           \t\t\t &lt;/div&gt;        \n        \t&lt;/div&gt;\n            &lt;div class=\"clearboth\"&gt;&lt;/div&gt;\n    \t&lt;/div&gt;",
+                    "outerHTMLWithStyle": "&lt;div style=\"outline: 4px solid green; opacity : 0.7; \" class=\"ipc-section ipc-alt-section\"&gt;\n\t\t\t&lt;div style=\"\" class=\"ipc-col ipc-left-col\"&gt;\n           \t\t\t \t&lt;img src=\"/content/images/ContextualSiteGraphics/Instructional/en_US/financial-planning-tools1.png\" alt=\"Online Financial Planning Tools\"&gt;\n       \t\t &lt;/div&gt;\n        \t&lt;div class=\"ipc-col\"&gt;\n\t        \t\t&lt;div class=\"ipc-main-content\"&gt;\n               \t\t\t&lt;div class=\"ipc-header h-100\"&gt;\n                  \t\t\t&lt;div class=\"ipc-icon ipc-budget_and_track ipc-inactive\"&gt;&lt;/div&gt;\n                 \t\t\t&lt;h2 class=\"cnx-light\" data-font=\"#!\" id=\"budget-and-track\"&gt;&lt;span&gt;Budget and track&lt;/span&gt;&lt;/h2&gt;\n                 \t\t\t&lt;div class=\"clearboth\"&gt;&lt;/div&gt;\n               \t\t\t&lt;/div&gt;\n              \t\t\t&lt;p&gt;From a single site, you can set up budgets, get organized for tax season and track spending in all your accounts, even at other financial institutions&lt;a name=\"fnote3\" href=\"#footnote3\"&gt;&lt;span class=\"ada-hidden\"&gt;Footnote &lt;/span&gt;&lt;sup&gt;3&lt;/sup&gt;&lt;/a&gt;. Sign into your &lt;a title=\"Financial Management Tools\" name=\"financial-management-tools\" href=\"/onlinebanking/financial-management-tools.go\" target=\"_self\"&gt;all accounts dashboard&lt;/a&gt; for easy accounts access and comparison so you never have to hop from site to site again.&lt;/p&gt;\n           \t\t\t &lt;/div&gt;        \n        \t&lt;/div&gt;\n            &lt;div class=\"clearboth\"&gt;&lt;/div&gt;\n    \t&lt;/div&gt;",
+                    "computedStyle": null
+                }
+            ]
+        }
+    ]
+  });
+}
+&lt;/script&gt;
+&lt;script type="text/javascript"&gt;
+$(function(){
+  var vm = {
+    isAegisEnabled: ko.observable(false)
+  };
+  ko.applyBindings(vm, document.getElementById("pageSettings"));
+  window.pageSettings=vm;
+});
+&lt;/script&gt;</wrapperContent></wrapper></frontPage><file name="index.html" preprocess="" __ideNodeOpen="true">&lt;html&gt;&lt;head&gt;&lt;script&gt;window.location.href="cr24/front/index.html"&lt;/script&gt;&lt;/head&gt;&lt;/html&gt;</file><file name="aegis.connector.js" preprocess="">var aegis={
+  init:function(config){
+    for(var a in config){
+      aegis[a]=config[a];
+    }
+  },
+  onboot:function(){},
+  onselect:function(data){},
+  onrecord:function(data){},
+  newJob:function(){
+    AEGIS.IController.notify('newjob');
+  },
+  onLoadJobOpen:function(){},
+  loadJob:function(job){
+    aegis.onLoadJobOpen=function(){
+console.log(job);
+      AEGIS.IController.notify('loadjob', job);
+    }
+  }
+}
+
+
+function bootAegis(){
+  AEGIS.IInspector.addEventListener(
+    aegis,
+    "select",
+    aegis.onselect
+  );
+  AEGIS.IRecorder.addEventListener(
+    aegis,
+    "record",
+    aegis.onrecord
+  );
+  aegis.seleniumServer=AEGIS.IController.getSeleniumServer();
+  aegis.apikey=AEGIS.IController.getApikey();
+  aegis.onboot();
+}</file><file name="front/loadJob.html" preprocess="" __ideNodeOpen="true">&lt;html&gt;
+  &lt;head&gt;
+    &lt;style&gt;
+      body{background-image: url("ajax-loader.gif");
+      background-repeat: no-repeat;
+      background-position: center center;
+      height: 100%;
+      background-color: black;}
+    &lt;/style&gt;
+    &lt;script&gt;
+      try{
+        window.opener.aegis.onLoadJobOpen();
+      } catch(e){
+      }
+    &lt;/script&gt;
+  &lt;/head&gt;
+&lt;/html&gt;</file></path></root>

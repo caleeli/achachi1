@@ -1,0 +1,480 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root><path path="/php/www/openbank2" main="" __ideNodeOpen="true"><package name="components" type="" __ideNodeOpen="true"><component name="class" transparent="" precode="" __ideNodeOpen="true"><file name="@{isset($owner)?$owner:'.'}/classes/@{$name}.php" preprocess="" __ideNodeOpen="true">&lt;?php
+#{
+  $_name=str_replace('/','\\',dirname($name));
+  if($_name=='.'):
+    return '';
+  endif;
+  return 'namespace '.$_name.';';
+}
+@{node::content($_)}</file></component></package><package name="interfaces" type="" __ideNodeOpen="false"><class name="dvf/ISingleton" __ideNodeOpen="true">
+interface ISingleton {
+  public static function getInstance();
+}
+</class><class name="dvf/IAgregate" __ideNodeOpen="true">
+interface IAgregate {
+  function _get($name);
+  function _set($name, $value);
+}
+</class><class name="dvf/IGlobal" __ideNodeOpen="true">
+interface IGlobal {
+  public static function __callStatic($name, $arguments);
+  public function __call($name, $arguments);
+}
+</class><class name="dvf/IElement" __ideNodeOpen="true">
+interface IElement {
+  public function getOwner();
+}
+</class><class name="dvf/model/IView" __ideNodeOpen="true">
+interface IView {
+  public function execute($params);
+  public function fetch();
+  public function fetchAll();
+}
+</class><class name="dvf/model/IRow" __ideNodeOpen="true">
+interface IRow {
+  public function onfetch();
+}
+</class><class name="dvf/IRouter" __ideNodeOpen="true">
+interface IRouter {
+  public static function run();
+  public static function url($relativeUrl);
+}
+</class></package><package name="traits" type="" __ideNodeOpen="false"><class name="dvf/Singleton" __ideNodeOpen="true">
+trait Singleton {
+  public static function getInstance() {
+    static $aoInstance = array();
+    $calledClassName = get_called_class();
+    if (! isset ($aoInstance[$calledClassName])) {
+        $aoInstance[$calledClassName] = new $calledClassName();
+    }
+    return $aoInstance[$calledClassName];
+  }
+}
+</class><class name="dvf/Agregate" __ideNodeOpen="true">
+trait Agregate {
+  function _get($name){
+    return $this-&gt;$name;
+  }
+  function _set($name, $value){
+    $this-&gt;$name = $value;
+  }
+}
+</class><class name="dvf/GlobalScope" __ideNodeOpen="true">
+trait GlobalScope {
+  public static function __callStatic($name, $arguments){
+    return call_user_func_array(array(static::getInstance(), '_'.$name), $arguments);
+  }
+  public function __call($name, $arguments){
+    return call_user_func_array(array($this, '_'.$name), $arguments);
+  }
+}
+</class><class name="dvf/Element" __ideNodeOpen="true">
+trait Element {
+  public function getOwner(){
+    return $this-&gt;owner;
+  }
+}
+</class><class name="dvf/model/PDOConnector" __ideNodeOpen="true">
+trait PDOConnector {
+  function prepareView($class){
+    $this-&gt;setAttribute(\PDO::ATTR_STATEMENT_CLASS, array($class, array($this)));
+    return $this-&gt;prepare($class::$query);
+  }
+}
+</class><class name="dvf/model/QueryView" __ideNodeOpen="true">
+trait QueryView {
+  public $dbh;
+  protected function __construct($dbh) {
+    $this-&gt;dbh = $dbh;
+  }
+  public function fetch($fetch_style = \PDO::FETCH_CLASS, $cursor_orientation = \PDO::FETCH_ORI_NEXT, $cursor_offset = 0 ){
+    $this-&gt;setFetchMode( \PDO::FETCH_CLASS, static::$rowClass);
+    $row = \PDOStatement::fetch($fetch_style, $cursor_orientation, $cursor_offset);
+    if(is_object($row)) {
+      $row-&gt;onfetch();
+    }
+    return $row;
+  }
+}
+</class><class name="dvf/model/RowImpl" __ideNodeOpen="true">
+trait RowImpl {
+  public function onfetch(){
+    $methods=get_class_methods($this);
+    foreach($methods as $m){
+      if(substr($m,0,3)=="get"){
+        $name=strtolower(substr($m,3,1)).substr($m,4);
+        $this-&gt;$name=$this-&gt;$m();
+      }
+    }
+  }
+}
+</class></package><package name="classes" type="" __ideNodeOpen="false"><class name="Context" __ideNodeOpen="true">
+class Context implements \dvf\ISingleton, \dvf\IGlobal, \dvf\IAgregate {
+  use \dvf\Singleton, \dvf\GlobalScope, \dvf\Agregate;
+}
+</class><class name="Application" __ideNodeOpen="true">
+abstract class Application implements \dvf\ISingleton, \dvf\IGlobal, \dvf\IAgregate {
+  use \dvf\GlobalScope, \dvf\Agregate;
+  public static function getInstance(){
+    return Context::get("Application");
+  }
+  abstract public function loadComponents();
+}
+</class><class name="dvf/model/Connection" __ideNodeOpen="true">
+class Connection extends \PDO {
+  use PDOConnector;
+}
+</class><class name="dvf/model/View" __ideNodeOpen="true">
+abstract class View extends \PDOStatement {
+  use QueryView;
+}
+</class><class name="dvf/model/Row" __ideNodeOpen="true">
+abstract class Row {
+  use RowImpl;
+  
+}
+</class><class name="dvf/Module" __ideNodeOpen="true">
+abstract class Module implements \dvf\ISingleton, \dvf\IGlobal, \dvf\IAgregate {
+  use \dvf\GlobalScope, \dvf\Agregate;
+  public static function getInstance(){
+    return Application::get("Module");
+  }
+}
+</class><class name="dvf/Component" __ideNodeOpen="true">
+abstract class Component implements \dvf\ISingleton, \dvf\IGlobal, \dvf\IAgregate {
+  use \dvf\GlobalScope, \dvf\Agregate;
+  public static function getInstance(){
+    return Context::get("Component");
+  }
+  function request($path){
+    return require($path);
+  }
+}
+</class><class name="Router" __ideNodeOpen="true">
+class Router implements \dvf\IRouter {
+
+  static $routes=array(
+    array(
+      'regexp'=&gt;'/^\/(\w+)\/(.+)$/',
+      'callback'=&gt;array('Router', 'ComponentRoute'),
+    ),
+  );
+
+  public static function run(){
+    $parse = parse_url($_SERVER['REQUEST_URI']);
+    $route = substr($parse['path'], STRLEN($_SERVER['SCRIPT_NAME']));
+    foreach(static::$routes as $r){
+      if(preg_match($r['regexp'], $route, $match)) {
+        call_user_func_array($r['callback'], $match);
+      }
+    }
+  }
+
+  public static function url($relativeUrl){
+    return $_SERVER['SCRIPT_NAME'].'/'.$relativeUrl;
+  }
+
+  public static function ComponentRoute($url, $component, $rest){
+    $oComponent = Application::get($component);
+    $path = PagePaths::resolve(get_class($oComponent), '/'.$rest);
+    if($path){
+      return $oComponent-&gt;request($path);
+    }
+/*
+    if(file_exists('./'.$component.'/public/'.$rest)) {
+      return $context-&gt;Component-&gt;request('./'.$component.'/public/'.$rest);
+    }*/
+    echo 'Route not found: ',$url;
+  }
+}
+</class><class name="Paths" __ideNodeOpen="true">class Paths {
+  public static $paths=array();
+
+  public static function add($path){
+    static::$paths[]=$path;
+  }
+
+  public static function resolve($nombre_clase, $complemento){
+    $nombre_clase = str_replace('\\','/',$nombre_clase);
+    if(substr($nombre_clase,0,1)!='/')$nombre_clase='/'.$nombre_clase;
+    $path=false;
+    foreach(static::$paths as $p){
+      $P=$p.$nombre_clase . $complemento;
+      if(file_exists($P)){
+        $path=$P;
+      }
+    }
+    return $path;
+  }
+}
+</class><class name="ClassPaths" __ideNodeOpen="true">require_once('Paths.php');
+
+class ClassPaths extends Paths {
+
+}
+</class><class name="PagePaths" __ideNodeOpen="true">require_once('Paths.php');
+
+class PagePaths extends Paths {
+
+}
+</class></package><package name="application" type="" __ideNodeOpen="true"><component name="dvComp" transparent="" precode="" __ideNodeOpen="true"><class owner="@{$application}" name="@{$name}" __ideNodeOpen="true">
+class @{basename($name)} extends \dvf\Component {
+
+    public function userView(){
+    $userView = \Application::get("db")-&gt;prepareView('\test\model\UserView');
+    $userView-&gt;execute();
+    return $userView;
+  }
+
+}
+</class></component><class name="test/Test" __ideNodeOpen="true" owner="test">
+class Test extends \Application {
+  public function loadComponents(){
+    $this-&gt;MyComponent = new \test\MyComponent();
+    $this-&gt;MyComponent1 = new \test\MyComponent();
+    $this-&gt;MyComponent2 = new \test\MyComponent();
+    $this-&gt;MyComponent3 = new \test\MyComponent();
+    $this-&gt;MyComponent4 = new \test\MyComponent();
+  }
+}
+</class><class name="test/model/UserView" __ideNodeOpen="true" owner="test">
+class UserView extends \dvf\model\View{
+  static $query="select * from adusr";
+  static $rowClass='\test\model\User';
+}
+</class><class name="test/model/User" __ideNodeOpen="true" owner="test">
+class User extends \dvf\model\Row {
+  function getTest(){
+    return $this-&gt;adusrcorr*2;
+  }
+}
+</class><class name="test/MyModule" __ideNodeOpen="false" owner="test">
+class MyModule extends \dvf\Module {
+
+}
+</class><class name="test\MyComponent" __ideNodeOpen="true" owner="test">
+class MyComponent extends \dvf\Component {
+
+  public function userView(){
+    $userView = \Application::get("db")-&gt;prepareView('\test\model\UserView');
+    $userView-&gt;execute();
+    return $userView;
+  }
+
+}
+</class><file name="test/pages/test/MyComponent/template.php" preprocess="" __ideNodeOpen="true">&lt;html&gt;
+&lt;head&gt;
+  &lt;link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css"&gt;
+  &lt;link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css"&gt;
+  &lt;script type="text/javascript" charset="utf8" src="//code.jquery.com/jquery-1.10.2.min.js"&gt;&lt;/script&gt;
+  &lt;script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"&gt;&lt;/script&gt;
+  &lt;link rel="stylesheet" type="text/css" href="//cdn.datatables.net/1.10.3/css/jquery.dataTables.css"&gt;
+  &lt;script type="text/javascript" charset="utf8" src="//cdn.datatables.net/1.10.3/js/jquery.dataTables.js"&gt;&lt;/script&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;table id="example" class="display" cellspacing="0" width="100%"&gt;
+    &lt;thead&gt;
+        &lt;tr&gt;
+            &lt;th&gt;Código&lt;/th&gt;
+            &lt;th&gt;Nombre&lt;/th&gt;
+            &lt;th&gt;Login&lt;/th&gt;
+            &lt;th&gt;Región&lt;/th&gt;
+            &lt;th&gt;Agencia&lt;/th&gt;
+        &lt;/tr&gt;
+    &lt;/thead&gt;
+
+    &lt;tfoot&gt;
+        &lt;tr&gt;
+            &lt;th&gt;Código&lt;/th&gt;
+            &lt;th&gt;Nombre&lt;/th&gt;
+            &lt;th&gt;Login&lt;/th&gt;
+            &lt;th&gt;Región&lt;/th&gt;
+            &lt;th&gt;Agencia&lt;/th&gt;
+        &lt;/tr&gt;
+    &lt;/tfoot&gt;
+&lt;/table&gt;
+&lt;script&gt;
+//
+// Pipelining function for DataTables. To be used to the `ajax` option of DataTables
+//
+$.fn.dataTable.pipeline = function ( opts ) {
+    // Configuration options
+    var conf = $.extend( {
+        pages: 5,     // number of pages to cache
+        url: '',      // script url
+        data: null,   // function or object with parameters to send to the server
+                      // matching how `ajax.data` works in DataTables
+        method: 'GET' // Ajax HTTP method
+    }, opts );
+ 
+    // Private variables for storing the cache
+    var cacheLower = -1;
+    var cacheUpper = null;
+    var cacheLastRequest = null;
+    var cacheLastJson = null;
+ 
+    return function ( request, drawCallback, settings ) {
+        var ajax          = false;
+        var requestStart  = request.start;
+        var drawStart     = request.start;
+        var requestLength = request.length;
+        var requestEnd    = requestStart + requestLength;
+         
+        if ( settings.clearCache ) {
+            // API requested that the cache be cleared
+            ajax = true;
+            settings.clearCache = false;
+        }
+        else if ( cacheLower &lt; 0 || requestStart &lt; cacheLower || requestEnd &gt; cacheUpper ) {
+            // outside cached data - need to make a request
+            ajax = true;
+        }
+        else if ( JSON.stringify( request.order )   !== JSON.stringify( cacheLastRequest.order ) ||
+                  JSON.stringify( request.columns ) !== JSON.stringify( cacheLastRequest.columns ) ||
+                  JSON.stringify( request.search )  !== JSON.stringify( cacheLastRequest.search )
+        ) {
+            // properties changed (ordering, columns, searching)
+            ajax = true;
+        }
+         
+        // Store the request for checking next time around
+        cacheLastRequest = $.extend( true, {}, request );
+ 
+        if ( ajax ) {
+            // Need data from the server
+            if ( requestStart &lt; cacheLower ) {
+                requestStart = requestStart - (requestLength*(conf.pages-1));
+ 
+                if ( requestStart &lt; 0 ) {
+                    requestStart = 0;
+                }
+            }
+             
+            cacheLower = requestStart;
+            cacheUpper = requestStart + (requestLength * conf.pages);
+ 
+            request.start = requestStart;
+            request.length = requestLength*conf.pages;
+ 
+            // Provide the same `data` options as DataTables.
+            if ( $.isFunction ( conf.data ) ) {
+                // As a function it is executed with the data object as an arg
+                // for manipulation. If an object is returned, it is used as the
+                // data object to submit
+                var d = conf.data( request );
+                if ( d ) {
+                    $.extend( request, d );
+                }
+            }
+            else if ( $.isPlainObject( conf.data ) ) {
+                // As an object, the data given extends the default
+                $.extend( request, conf.data );
+            }
+ 
+            settings.jqXHR = $.ajax( {
+                "type":     conf.method,
+                "url":      conf.url,
+                "data":     request,
+                "dataType": "json",
+                "cache":    false,
+                "success":  function ( json ) {
+                    cacheLastJson = $.extend(true, {}, json);
+ 
+                    if ( cacheLower != drawStart ) {
+                        json.data.splice( 0, drawStart-cacheLower );
+                    }
+                    json.data.splice( requestLength, json.data.length );
+                     
+                    drawCallback( json );
+                }
+            } );
+        }
+        else {
+            json = $.extend( true, {}, cacheLastJson );
+            json.draw = request.draw; // Update the echo for each response
+            json.data.splice( 0, requestStart-cacheLower );
+            json.data.splice( requestLength, json.data.length );
+ 
+            drawCallback(json);
+        }
+    }
+};
+ 
+// Register an API method that will empty the pipelined data, forcing an Ajax
+// fetch on the next draw (i.e. `table.clearPipeline().draw()`)
+$.fn.dataTable.Api.register( 'clearPipeline()', function () {
+    return this.iterator( 'table', function ( settings ) {
+        settings.clearCache = true;
+    } );
+} );
+ 
+ 
+//
+// DataTables initialisation
+//
+$(document).ready(function() {
+    $('#example').dataTable( {
+        "processing": true,
+        "serverSide": true,
+        "ajax": $.fn.dataTable.pipeline( {
+            url: '&lt;?=Router::url("MyComponent/data.php")?&gt;',
+            pages: 5 // number of pages to cache
+        } )
+    } );
+} );
+&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;</file><file name="test/pages/test/MyComponent/data.php" preprocess="" __ideNodeOpen="true">&lt;?php
+header('Content-Type: text/javascript; charset=utf-8');
+
+$res=array(
+  "data"=&gt;array(),
+  "request"=&gt;$_REQUEST
+);
+$userView = $this-&gt;userView();
+while($row=$userView-&gt;fetch()) {
+  $res["data"][]=
+        array(
+          $row-&gt;adusrcodi,
+          $row-&gt;adusrnomb,
+          $row-&gt;test,
+          $row-&gt;desc_regi,
+          $row-&gt;desc_agen,
+        );
+}
+
+echo json_encode($res);
+?&gt;</file></package><file name="index.php" preprocess="" __ideNodeOpen="true">&lt;?php
+//LOAD AUTOLOADER
+require_once('./classes/ClassPaths.php');
+ClassPaths::add('./classes');
+function __autoload($nombre_clase) {
+  $path=ClassPaths::resolve($nombre_clase, '.php');
+  if($path){
+    require_once($path);
+  }
+}
+
+//PAGE PATHS:
+PagePaths::add('./pages');
+
+////--- Load Application dependencies ---
+ClassPaths::add('./test/classes');
+PagePaths::add('./test/pages');
+
+////-------------------------------------------------------
+$CONTEXT=Context::getInstance();
+$CONTEXT-&gt;Application = new \test\Test($CONTEXT);
+$CONTEXT-&gt;Application-&gt;path='test';
+$CONTEXT-&gt;Application-&gt;fecha=Date("Y-m-d");
+$CONTEXT-&gt;Application-&gt;db = new \dvf\model\Connection('mysql:host=localhost;dbname=openbank', 'root', 'root', array(
+    PDO::MYSQL_ATTR_INIT_COMMAND =&gt; 'SET NAMES utf8',
+));
+$CONTEXT-&gt;Application-&gt;dbInf = new \dvf\model\Connection('mysql:host=localhost;dbname=openbank', 'root', 'root', array(
+    PDO::MYSQL_ATTR_INIT_COMMAND =&gt; 'SET NAMES utf8',
+));
+$CONTEXT-&gt;Application-&gt;loadComponents();
+
+Router::run();
+</file></path></root>

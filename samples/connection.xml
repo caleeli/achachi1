@@ -1,0 +1,4 @@
+<?xml version="1.0"?>
+<root>
+    <connection driver="pdo_Mysql" host="127.0.0.1" username="root" password="" dbname="test"/>
+</root>

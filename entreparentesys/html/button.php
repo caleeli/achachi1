@@ -1,0 +1,1 @@
+<button class="btn <?=$DATA['cssClass']/*btn-lg btn-block*/ ?>" type="button" onclick="<?=htmlentities(@$DATA['handler'], ENT_QUOTES, 'utf-8')?>"><?=$DATA['text']?></button>

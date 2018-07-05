@@ -1,0 +1,701 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root __ideNodeOpen="true"><path path="/php" main="" __ideNodeOpen="true"><include src="diagramPlugin.xml"/><package name="components" type="" __ideNodeOpen="false"><php __ideNodeOpen="true">function dd(){
+  call_user_func_array('var_dump', func_get_args());
+  die;
+}
+class DVF {
+  static function getNamespace($e){
+    if(!$e) return '';
+    if($e-&gt;nodeName=='module') {
+      return '';
+    }
+    if($e-&gt;nodeName=='package') {
+      return DVF::getNamespace($e-&gt;parentNode).'\\'.$e-&gt;getAttribute('name');
+    }
+    return DVF::getNamespace($e-&gt;parentNode);
+  }
+  static function getPath($e){
+    if(!$e) return '';
+    if($e-&gt;nodeName=='path') {
+      return $e-&gt;getAttribute('path');
+    }
+    if($e-&gt;nodeName=='module') {
+      return $e-&gt;getAttribute('name');
+    }
+    if($e-&gt;nodeName=='package') {
+      return DVF::getPath($e-&gt;parentNode).'/'.$e-&gt;getAttribute('name');
+    }
+    return DVF::getPath($e-&gt;parentNode);
+ }
+}
+</php><component name="class" transparent="" precode="" __ideNodeOpen="true"><file name="@{DVF::getPath($_e)}/@{$name}.php" preprocess="" __ideNodeOpen="true">&lt;?php
+#{
+/*  $_name=str_replace('/','\\',dirname($name));
+  if($_name=='.'):
+    return '';
+  endif;
+  return 'namespace '.$_name.';';*/
+$_name=substr(DVF::getNamespace($_e),1);
+return $_name ? "namespace $_name;":'';
+}
+@{node::content($_)}</file></component><component name="page" transparent="" precode="" __ideNodeOpen="true"><file name="@{DVF::getPath($_e)}/@{$name}" preprocess="" __ideNodeOpen="true">@{node::content($_)}</file></component><component name="module" transparent="" precode="" __ideNodeOpen="true"><file name="@{$name}/index.php" preprocess="" __ideNodeOpen="true">&lt;?php
+//Using Naming conventions for code released by PHP-FIG [https://github.com/php-fig/fig-standards/blob/master/bylaws/002-psr-naming-conventions.md]
+//LOAD AUTOLOADER
+require_once('@{$vendor}/dvf/ClassPaths.php');
+ClassPaths::add('@{$vendor}/dvf');
+function __autoload($nombre_clase) {
+  $path=ClassPaths::resolve($nombre_clase, '.php');
+  if($path){
+    //[http://www.php-fig.org/psr/psr-4/]
+    include_once($path);
+  }
+}
+
+//ClassPaths::add('./classes');
+//todo relative class path
+ClassPaths::add('./');
+//PagePaths::add('./pages');
+
+if(file_exists('config.php')){
+  include('config.php');
+}
+
+Router::resolveRequest();
+</file></component><component name="newComponent" transparent="" precode="" __ideNodeOpen="false"><package name="interfaces" type="" __ideNodeOpen="false"><class name="dvf/ISingleton" __ideNodeOpen="false">
+interface ISingleton {
+  public static function getInstance();
+}
+</class><class name="dvf/IAgregate" __ideNodeOpen="false">
+interface IAgregate {
+  function _get($name);
+  function _set($name, $value);
+}
+</class><class name="dvf/IGlobal" __ideNodeOpen="false">
+interface IGlobal {
+  public static function __callStatic($name, $arguments);
+  public function __call($name, $arguments);
+}
+</class><class name="dvf/IElement" __ideNodeOpen="false">
+interface IElement {
+  public function getOwner();
+}
+</class><class name="dvf/model/IView" __ideNodeOpen="false">
+interface IView {
+  public function execute($params);
+  public function fetch();
+  public function fetchAll();
+}
+</class><class name="dvf/model/IRow" __ideNodeOpen="false">
+interface IRow {
+  public function onfetch();
+}
+</class><class name="dvf/IRouter" __ideNodeOpen="false">
+interface IRouter {
+  public static function run();
+  public static function url($relativeUrl);
+}
+</class><class name="dvf/RequestInterface" __ideNodeOpen="true" owner="lib/vendor/dvf">
+interface RequestInterface {
+  public function request($REQUEST, $DIR='');
+}
+</class></package><package name="traits" type="" __ideNodeOpen="true"><class name="dvf/Singleton" __ideNodeOpen="true">
+trait Singleton {
+  public static function getInstance() {
+    static $aoInstance = array();
+    $calledClassName = get_called_class();
+    if (! isset ($aoInstance[$calledClassName])) {
+        $aoInstance[$calledClassName] = new $calledClassName();
+    }
+    return $aoInstance[$calledClassName];
+  }
+}
+</class><class name="dvf/Agregate" __ideNodeOpen="true">
+trait Agregate {
+  function _get($name){
+    return $this-&gt;$name;
+  }
+  function _set($name, $value){
+    $this-&gt;$name = $value;
+  }
+}
+</class><class name="dvf/GlobalScope" __ideNodeOpen="true">
+trait GlobalScope {
+  public static function __callStatic($name, $arguments){
+    return call_user_func_array(array(static::getInstance(), '_'.$name), $arguments);
+  }
+  public function __call($name, $arguments){
+    return call_user_func_array(array($this, '_'.$name), $arguments);
+  }
+}
+</class><class name="dvf/Element" __ideNodeOpen="true">
+trait Element {
+  public function getOwner(){
+    return $this-&gt;owner;
+  }
+}
+</class><class name="dvf/model/PDOConnector" __ideNodeOpen="true">
+trait PDOConnector {
+  function prepareView($class){
+    $this-&gt;setAttribute(\PDO::ATTR_STATEMENT_CLASS, array($class, array($this)));
+    return $this-&gt;prepare($class::$query);
+  }
+}
+</class><class name="dvf/model/QueryView" __ideNodeOpen="true">
+trait QueryView {
+  public $dbh;
+  protected function __construct($dbh) {
+    $this-&gt;dbh = $dbh;
+  }
+  public function fetch($fetch_style = \PDO::FETCH_CLASS, $cursor_orientation = \PDO::FETCH_ORI_NEXT, $cursor_offset = 0 ){
+    $this-&gt;setFetchMode( \PDO::FETCH_CLASS, static::$rowClass);
+    $row = \PDOStatement::fetch($fetch_style, $cursor_orientation, $cursor_offset);
+    if(is_object($row)) {
+      $row-&gt;onfetch();
+    }
+    return $row;
+  }
+}
+</class><class name="dvf/model/RowImpl" __ideNodeOpen="true">
+trait RowImpl {
+  public function onfetch(){
+    $methods=get_class_methods($this);
+    foreach($methods as $m){
+      if(substr($m,0,3)=="get"){
+        $name=strtolower(substr($m,3,1)).substr($m,4);
+        $this-&gt;$name=$this-&gt;$m();
+      }
+    }
+  }
+}
+</class><class name="dvf/RequestTrait" __ideNodeOpen="true" owner="lib/vendor/dvf">
+trait RequestTrait {
+  public function request($ROUTE, $DIR='') {
+    if($ROUTE=='') $ROUTE='index.php';
+    $aREQUEST=explode("/", $ROUTE);
+    $NAME=array_shift($aREQUEST);
+    @list($METHOD)=explode('.',empty($aREQUEST[0])?'index':$aREQUEST[0]);
+    $FILE=$DIR.$NAME;
+    $CLASS='\\'.str_replace('/', '\\', $DIR).ucfirst($NAME);
+    $PAGE = \PagePaths::resolve($DIR, $NAME);
+    if(class_exists($CLASS)){
+      $INSTANCE=new $CLASS();
+      $PATH=implode("/", $aREQUEST);
+      if(method_exists($INSTANCE, $METHOD)) {
+        $INSTANCE-&gt;$METHOD($PATH);
+      }
+      $INSTANCE-&gt;request($PATH, $FILE.'/');
+    } elseif(is_dir($PAGE)) {
+      static::request(implode("/", $aREQUEST), $FILE.'/');
+    } elseif(file_exists($PAGE)) {
+      require($PAGE);
+    } else {
+    }
+  }
+}
+</class></package><package name="classes" type="" __ideNodeOpen="true"><class name="Context" __ideNodeOpen="true">
+class Context implements \dvf\ISingleton, \dvf\IGlobal, \dvf\IAgregate {
+  use \dvf\Singleton, \dvf\GlobalScope, \dvf\Agregate;
+}
+</class><class name="Application" __ideNodeOpen="true">
+abstract class Application implements \dvf\ISingleton, \dvf\IGlobal, \dvf\IAgregate {
+  use \dvf\GlobalScope, \dvf\Agregate;
+  public static function getInstance(){
+    return Context::get("Application");
+  }
+  abstract public function loadComponents();
+}
+</class><class name="dvf/model/Connection" __ideNodeOpen="true">
+class Connection extends \PDO {
+  use PDOConnector;
+}
+</class><class name="dvf/model/View" __ideNodeOpen="true">
+abstract class View extends \PDOStatement {
+  use QueryView;
+}
+</class><class name="dvf/model/Row" __ideNodeOpen="true">
+abstract class Row {
+  use RowImpl;
+  
+}
+</class><class name="dvf/Module" __ideNodeOpen="true">
+abstract class Module implements \dvf\ISingleton, \dvf\IGlobal, \dvf\IAgregate {
+  use \dvf\GlobalScope, \dvf\Agregate;
+  public static function getInstance(){
+    return Application::get("Module");
+  }
+}
+</class><class name="dvf/Component" __ideNodeOpen="true">
+abstract class Component implements \dvf\ISingleton, \dvf\IGlobal, \dvf\IAgregate {
+  use \dvf\GlobalScope, \dvf\Agregate;
+  public static function getInstance(){
+    return Context::get("Component");
+  }
+  function request($path){
+    return require($path);
+  }
+}
+</class><class name="Router" __ideNodeOpen="true">
+class Router implements \dvf\IRouter {
+
+  static $routes=array(
+    array(
+      'regexp'=&gt;'/^\/(\w+)\/(.+)$/',
+      'callback'=&gt;array('Router', 'ComponentRoute'),
+    ),
+  );
+
+  public static function run(){
+    $parse = parse_url($_SERVER['REQUEST_URI']);
+    $route = substr($parse['path'], STRLEN($_SERVER['SCRIPT_NAME']));
+    foreach(static::$routes as $r){
+      if(preg_match($r['regexp'], $route, $match)) {
+        call_user_func_array($r['callback'], $match);
+      }
+    }
+  }
+
+  public static function url($relativeUrl){
+    return $_SERVER['SCRIPT_NAME'].'/'.$relativeUrl;
+  }
+
+  public static function ComponentRoute($url, $component, $rest){
+    $oComponent = Application::get($component);
+    $path = PagePaths::resolve(get_class($oComponent), '/'.$rest);
+    if($path){
+      return $oComponent-&gt;request($path);
+    }
+/*
+    if(file_exists('./'.$component.'/public/'.$rest)) {
+      return $context-&gt;Component-&gt;request('./'.$component.'/public/'.$rest);
+    }*/
+    echo 'Route not found: ',$url;
+  }
+}
+</class><class name="Paths" __ideNodeOpen="true" owner="lib/vendor/dvf">class Paths {
+  public static $paths=array();
+
+  public static function add($path){
+    static::$paths[]=$path;
+  }
+
+  public static function resolve($nombre_clase, $complemento){
+    $nombre_clase = str_replace('\\','/',$nombre_clase);
+    if(substr($nombre_clase,0,1)!='/')$nombre_clase='/'.$nombre_clase;
+    $path=false;
+    foreach(static::$paths as $p){
+      $P=$p.$nombre_clase . $complemento;
+      if(file_exists($P)){
+        $path=$P;
+      }
+    }
+    return $path;
+  }
+}
+</class><class name="ClassPaths" __ideNodeOpen="true" owner="lib/vendor/dvf">require_once('Paths.php');
+
+class ClassPaths extends Paths {
+
+}
+</class><class name="PagePaths" __ideNodeOpen="true" owner="lib/vendor/dvf">require_once('Paths.php');
+
+class PagePaths extends Paths {
+
+}
+</class><class name="dvf/Controller" __ideNodeOpen="true" owner="lib/vendor/dvf">
+class Controller implements \dvf\RequestInterface {
+  use \dvf\RequestTrait;
+}
+</class></package></component><component name="dvComp" transparent="" precode="" __ideNodeOpen="false"><class owner="@{$application}" name="@{$name}" __ideNodeOpen="true">
+class @{basename($name)} extends \dvf\Component {
+
+    public function userView(){
+    $userView = \Application::get("db")-&gt;prepareView('\test\model\UserView');
+    $userView-&gt;execute();
+    return $userView;
+  }
+
+}
+</class></component><component name="diagram" transparent="" precode="" __ideNodeOpen="true">@{node::content($_)}</component><component name="package" transparent="" precode=""/></package><module name="lib/dvf" __ideNodeOpen="true" vendor="../../lib"><diagram __ideNodeOpen="false"><!--{"diagram":{"zoom":1,"scrollTop":6,"scrollLeft":9},"dgc08f2979c4a041d38064360f5693f17d":"position: absolute; height: 80.1418px; left: 249.22px; top: 69.0189px; width: 175.887px;","dgfafd63dd7024480d84f31e53bbf6d6c1":"position: absolute; height: 80.1418px; left: 50.5792px; top: 70px; width: 185.816px;","dgd4b43c0bedd14d4ea4e90832136c402b":"position: absolute; height: 20px; left: 18.0023px; top: 15.9811px; width: 443px;","dga5cb5850ac9e41e1836c42f79ff1b516":"position: absolute; height: 74px; left: 489.017px; top: 50px; width: 162px;","dg50adfe6b39714b0b93febc5fc6f61947":"position: absolute; height: 67px; left: 669.9px; top: 53.0167px; width: 149px;","dg7a9c81806f444263ad0940b780a87e69":"position: absolute; height: 7px; left: 480px; top: 15.9811px; width: 365px;","dg37009b634a914a7ea580300ef0043fcd":"position: absolute; height: 176px; left: 864.021px; top: 15.9811px; width: 559px;","dgdd0ae323eec841b7979b6a8a3db4fd57":"position: absolute; height: 80px; left: 1174.83px; top: 232.767px; width: 104.965px;","dg11483d8d20034d8ab1752d0b01038e41":"position: absolute; height: 79px; left: 1294.62px; top: 232.933px; width: 126px;","dgc728667300ea442a9b2392241f00dd5a":"position: absolute; height: 80.1418px; left: 1010.67px; top: 71.2177px; width: 143.262px;","dgdfd88f37f9994eca8169297d5d4b921f":"position: absolute; height: 80.1418px; left: 883.936px; top: 232.896px; width: 114.184px;","dgd65761e7810c4676a727dd903b912135":"position: absolute; height: 80.1418px; left: 1020.43px; top: 231.796px; width: 134.043px;","dgb042503174b54bdfa38d3335fc0390c7":"position: absolute; height: 69px; left: 53.1167px; top: 183.7px; width: 179px;","dg14b2839df6a5467699343c8ced07a046":"position: absolute; height: 80px; left: 1172.98px; top: 71px; width: 180.142px;","dg7c82fe3f0d7b458b98963316757849a2":"position: absolute; height: 156.738px; left: 877.106px; top: 42.0213px; width: 519.858px;","dg86890450cded4fee87d2aba138bf2c0d":"position: absolute; height: 73px; left: 488px; top: 160px; width: 164px;","dgdff93f722fc04cedac86f141fba05be9":"position: absolute; height: 76px; left: 677px; top: 165px; width: 165px;","dgdce3ac2fb0584f5789ebdc6e53a11537":"position: absolute; height: 81px; left: 251px; top: 183px; width: 173px;"}--><package name="interfaces" type="" __ideNodeOpen="false" __ideDiagramId="dgd4b43c0bedd14d4ea4e90832136c402b"/><package name="traits" type="" __ideNodeOpen="false" __ideDiagramId="dg7a9c81806f444263ad0940b780a87e69"/><package name="classes" type="" __ideNodeOpen="false" __ideDiagramId="dg37009b634a914a7ea580300ef0043fcd"><package name="paths" type="" __ideDiagramId="dg7c82fe3f0d7b458b98963316757849a2"><class name="PagePaths" __ideNodeOpen="true" __ideDiagramId="dgc728667300ea442a9b2392241f00dd5a">require_once('Paths.php');
+
+class PagePaths extends Paths {
+
+}
+</class><class name="templates/DvTpl" __ideNodeOpen="true" __ideDiagramId="dg14b2839df6a5467699343c8ced07a046">
+class DvTpl {
+  public static function __callStatic($tpl, $arguments){
+    $path=basename(get_called_class());
+    $path=strtolower(substr($path,0,1)).substr($path,1);
+    $path=str_replace('\\', '/', dirname(get_called_class())) .'/' . $path;
+    $view=$arguments[0];
+    $PAGE = \PagePaths::resolve($path, '/'.$tpl.'.php');
+    if(is_array($view)){
+      foreach($view as $__=&gt;$_){
+        $$__=$_;
+      }
+    }
+    require($PAGE);
+  }
+}</class></package></package><class name="Paths" __ideNodeOpen="true" __ideDiagramId="dgdd0ae323eec841b7979b6a8a3db4fd57">class Paths {
+  public static $paths=array();
+
+  public static function add($path){
+    static::$paths[]=$path;
+  }
+
+  public static function resolve($nombre_clase, $complemento){
+    $nombre_clase = str_replace('\\','/',$nombre_clase);
+    if(substr($nombre_clase,0,1)!='/')$nombre_clase='/'.$nombre_clase;
+    $path=false;
+    foreach(static::$paths as $p){
+      $P=$p.$nombre_clase . $complemento;
+      if(file_exists($P)){
+        $path=$P;
+      }
+    }
+    return $path;
+  }
+}
+</class><class name="ClassPaths" __ideNodeOpen="true" __ideDiagramId="dg11483d8d20034d8ab1752d0b01038e41">require_once('Paths.php');
+
+class ClassPaths extends Paths {
+
+}
+</class><class name="Router" __ideNodeOpen="true" __ideDiagramId="dgdfd88f37f9994eca8169297d5d4b921f">
+class Router implements ResolveRouteInterface, ResolveRequestInterface {
+  use ResolveRouteTrait, ResolveRequestTrait;
+
+}
+</class><class name="Controller" __ideNodeOpen="true" __ideDiagramId="dgd65761e7810c4676a727dd903b912135">
+class Controller implements IncludeScriptInterface, LoadContextInterface {
+  use IncludeScriptTrait, LoadContextTrait;
+}
+</class><class __ideNodeOpen="true" __ideDiagramId="dgc08f2979c4a041d38064360f5693f17d" name="ResolveRouteInterface">
+interface ResolveRouteInterface {
+  public static function resolveRoute($ROUTE, $DATA, $BASE='');
+}
+</class><class __ideNodeOpen="true" __ideDiagramId="dgfafd63dd7024480d84f31e53bbf6d6c1" name="IncludeScriptInterface">
+interface IncludeScriptInterface {
+  public function includeScript($PATH, $DATA, $CONTENT);
+}
+</class><class __ideNodeOpen="true" __ideDiagramId="dgb042503174b54bdfa38d3335fc0390c7" name="LoadContextInterface">
+interface LoadContextInterface {
+  public function loadContext();
+}
+</class><class __ideDiagramId="dgdce3ac2fb0584f5789ebdc6e53a11537" name="ResolveRequestInterface">
+interface ResolveRequestInterface {
+  static public function resolveRequest();
+  static public function url($route);
+}</class><class __ideNodeOpen="true" __ideDiagramId="dga5cb5850ac9e41e1836c42f79ff1b516" name="IncludeScriptTrait">
+trait IncludeScriptTrait {
+  public function includeScript($PATH, $DATA, $CONTENT) {
+    return include($PATH);
+  }
+}
+</class><class __ideNodeOpen="true" __ideDiagramId="dg50adfe6b39714b0b93febc5fc6f61947" name="ResolveRouteTrait">
+trait ResolveRouteTrait {
+  static protected $controllerClass='\\Controller';
+
+  /*  |----route1----||------route2------|
+   *  /route1a/route1b/route2a/route2b.php
+   *  route1:
+   *    class=\route1a\Route1b
+   *    method=indexAction   (route2aAction no existe)
+   *    script=\route1a\route1b\index.php (\route1a\route1b\route2a no existe)
+   *  route2:
+   *    class=\Route2a
+   *    method=route2bAction
+   *    script=\route2a\route2b.php
+   *  @param $ROUTE = abc/def/... (No empieza con /)
+   *  @param $DIR = abc/def/ (Termina con / o es vacio, no puede ser ./)
+   */
+  public static function resolveRoute($ROUTE, $DATA, $CONTENT=null, $DIR='') {
+    if($ROUTE=='') $ROUTE='index.php';
+    $aROUTE=explode("/", $ROUTE);
+    $NAME=array_shift($aROUTE);
+    $FILE=$DIR.$NAME;
+    $CLASS='\\'.str_replace('/', '\\', $DIR).ucfirst($NAME);
+    //var_dump([$CLASS =&gt; class_exists($CLASS), "$FILE/"=&gt; IS_DIR($FILE), "$FILE"=&gt; FILE_EXISTS($FILE) ]);
+    if(class_exists($CLASS)){
+      return static::loadClass($CLASS, $FILE, $aROUTE, $DATA, $CONTENT, false);
+    } elseif(is_dir($FILE)) {
+      return static::resolveRoute(implode("/", $aROUTE), $DATA, $CONTENT, $FILE.'/');
+    } elseif(file_exists($FILE)) {
+      return static::loadClass(static::$controllerClass, $FILE, $aROUTE, $DATA, $CONTENT, true);
+    } else {
+    }
+  }
+  protected static function loadClass($CLASS, $FILE, &amp;$aROUTE, $DATA, $CONTENT=null, $isScript=false){
+    $INSTANCE=new $CLASS();
+    if(method_exists($INSTANCE, 'loadContext')) {
+      $INSTANCE-&gt;loadContext();
+    }
+    if(count($aROUTE)&gt;0) {
+      $METHOD = explode('.',$aROUTE[0])[0].'Action';
+      $SCRIPT = $FILE.'/'.$aROUTE[0];//\PagePaths::resolve($DIR, $NAME);
+      if(method_exists($INSTANCE, $METHOD) || (file_exists($SCRIPT))) {
+        array_shift($aROUTE);
+      }
+      if(!method_exists($INSTANCE, $METHOD) &amp;&amp; !file_exists($SCRIPT)) {
+        $METHOD = 'indexAction';
+        $SCRIPT = $FILE.'/index.php';//\PagePaths::resolve($DIR, $NAME);
+      }
+    } else {
+      $METHOD='indexAction';
+      $SCRIPT = $FILE.'/'.'index.php';//\PagePaths::resolve($DIR, $NAME);
+    }
+    if(count($aROUTE)&gt;0) {
+      //Start from base='' a new absolute route.
+      $res0=static::resolveRoute(implode("/", $aROUTE), $DATA, $CONTENT, '');
+      if(isset($res0)) $CONTENT=$res0;
+    } else {
+      //$CONTENT=null;
+    }
+    if(method_exists($INSTANCE, $METHOD)) {
+      $res0 = $INSTANCE-&gt;$METHOD($DATA, $CONTENT);
+      if(isset($res0)) $CONTENT=$res0;
+      //$INSTANCE-&gt;$METHOD($CONTENT);
+    }
+    if(file_exists($SCRIPT)) {
+      $res0 = $INSTANCE-&gt;includeScript($SCRIPT, $DATA, $CONTENT);
+      if(isset($res0)) $CONTENT=$res0;
+    }
+    if($isScript) {
+      $res0 = $INSTANCE-&gt;includeScript($FILE, $DATA, $CONTENT);
+      if(isset($res0)) $CONTENT=$res0;
+    }
+    return $CONTENT;
+  }
+}
+</class><class __ideDiagramId="dg86890450cded4fee87d2aba138bf2c0d" __ideNodeOpen="true" name="LoadContextTrait">
+trait LoadContextTrait {
+
+  public function loadContext(){
+    
+  }
+}
+</class><class __ideDiagramId="dgdff93f722fc04cedac86f141fba05be9" name="ResolveRequestTrait">/*
+ * requires ResolveRouteInterface;
+ */
+trait ResolveRequestTrait{
+  static public function resolveRequest(){
+    $parse = parse_url($_SERVER['REQUEST_URI']);
+    $route = substr($parse['path'], STRLEN($_SERVER['SCRIPT_NAME'])+1);
+    static::resolveRoute($route, $_REQUEST);
+  }
+  static public function url($route){
+    return $_SERVER['SCRIPT_NAME'].'/'.$route;
+  }
+}</class></diagram></module><module name="www/manager" type="" __ideNodeOpen="true" vendor="../../lib"><page name="main/index.php" __ideNodeOpen="true">&lt;pre&gt;
+Content:
+&lt;?=$INNER_CONTENT?&gt;
+
+
+$this-&gt;name:
+&lt;?=$this-&gt;name?&gt;
+
+&lt;?php return "Index"; ?&gt;</page><diagram __ideNodeOpen="false"><!--{"diagram":{"zoom":1,"scrollTop":0,"scrollLeft":0},"dg5180e81f2b044fd59544fbfd9331bc40":"position: absolute; height: 52.0179px; left: 57.0031px; top: 276.001px; width: 131.839px;","dgf759cde5cc31416f9c893a84ab999c2d":"position: absolute; height: 247.085px; left: 432.003px; top: 128.999px; width: 486.996px;","dg3b593689d73c4dc483ec9bfef3b5ef96":"position: absolute; height: 73.0942px; left: 430px; top: 20px; width: 191.031px;","dgedadc7e3772c4a9fbbfbaf9b8dcc4b15":"position: absolute; height: 56.0538px; left: 220px; top: 271.001px; width: 144.843px;","dg8e5ea6bf59b04b37bb9a5baa469d4981":"position: absolute; height: 51.1211px; left: 445px; top: 162.003px; width: 124.215px;","dgd83ac1175f3f415f9f80f659e20ae10e":"position: absolute; height: 38.1166px; left: 451px; top: 311.001px; width: 122.87px;","dg644ab89f7259438cb8fad26bffa5a07a":"position: absolute; height: 42.1525px; left: 587.004px; top: 161.001px; width: 170.852px;","dg44a975ef192c430d9b3ac48cc89852ee":"position: absolute; height: 47.0852px; left: 592.996px; top: 235px; width: 147.085px;","dg8fc7407bcd394c15a26286e60f8aa7cd":"position: absolute; height: 42.1525px; left: 443.999px; top: 241.001px; width: 127.803px;","dgfda11c89ef9f4d1781387e4919d2bcd8":"position: absolute; height: 35.8744px; left: 595px; top: 311.001px; width: 117.04px;","dg807d4af29adb464b8147ede7b3251105":"position: absolute; height: 227.803px; left: 43.9985px; top: 0px; width: 333.184px;","dgf38d3a9178a24171bacf75c547a2e6ef":"position: absolute; height: 42.1525px; left: 62.0031px; top: 32.997px; width: 107.175px;","dgf5f23569fb0f4c26946494a78efbc19d":"position: absolute; height: 41px; left: 771.749px; top: 160.12px; width: 125px;","dgdc9a7d759a1a4dd1b1bb656985c8e763":"position: absolute; height: 39.9103px; left: 175.575px; top: 33.2063px; width: 106.278px;","dgac935d9fea0749d580635a5034bbbd12":"position: absolute; height: 51px; left: 759px; top: 236px; width: 134px;","dgf7b4519e6c024fb583e9095d7523ff07":"position: absolute; height: 34px; left: 763px; top: 319px; width: 128px;"}--><package __ideDiagramId="dgf759cde5cc31416f9c893a84ab999c2d" name="html" __ideNodeOpen="false"><page __ideDiagramId="dg8e5ea6bf59b04b37bb9a5baa469d4981" name="panel.php" __ideNodeOpen="true">&lt;div class="container &lt;?=@$DATA['cssClass']?&gt;"&gt;
+&lt;?php if(!empty($DATA['title'])) : ?&gt;
+&lt;h2 class="form-signin-heading"&gt;&lt;?=$DATA['title'] ?&gt;&lt;/h2&gt;
+&lt;?php endif; ?&gt;
+&lt;?php Router::resolveRoute('html/content.php', $DATA, $CONTENT)?&gt;
+
+&lt;/div&gt;</page><page __ideDiagramId="dgd83ac1175f3f415f9f80f659e20ae10e" name="input.php">&lt;label for="&lt;?=@$DATA['name']?&gt;" class="sr-only"&gt;&lt;?=@$DATA['label']?&gt;&lt;/label&gt;&lt;input name="&lt;?=@$DATA['name']?&gt;" class="form-control" placeholder="&lt;?=@$DATA['label']?&gt;"/&gt;</page><page __ideDiagramId="dg644ab89f7259438cb8fad26bffa5a07a" name="passwordfield.php">&lt;?php $DATA['type']='password';Router::resolveRoute('html/input.php', $DATA, $CONTENT ); ?&gt;</page><page __ideDiagramId="dg44a975ef192c430d9b3ac48cc89852ee" name="index.php">&lt;!DOCTYPE HTML&gt;
+&lt;html&gt;
+&lt;head&gt;
+&lt;link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css"&gt;
+&lt;link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap-theme.min.css"&gt;
+&lt;script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"&gt;&lt;/script&gt;
+&lt;script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"&gt;&lt;/script&gt;
+&lt;script src="&lt;?=Router::url('html/driver.js')?&gt;"&gt;&lt;/script&gt;
+&lt;?php if(!empty($CONTENT['stylesheet'])): ?&gt;
+&lt;link href="&lt;?=$CONTENT['stylesheet'] ?&gt;" rel="stylesheet"&gt;
+&lt;?php endif; ?&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;?php Router::resolveRoute('html/content.php', $DATA, $CONTENT) ?&gt;
+
+&lt;/body&gt;
+&lt;/html&gt;</page><page name="textfield.php" __ideDiagramId="dg8fc7407bcd394c15a26286e60f8aa7cd">&lt;?php $DATA['type']='text';Router::resolveRoute('html/input.php', $DATA, $CONTENT ); ?&gt;</page><page __ideDiagramId="dgfda11c89ef9f4d1781387e4919d2bcd8" name="button.php">&lt;button class="btn btn-lg btn-primary btn-block" type="button" onclick="&lt;?=htmlentities(@$DATA['handler'], ENT_QUOTES, 'utf-8')?&gt;"&gt;&lt;?=$DATA['text']?&gt;&lt;/button&gt;</page><page __ideDiagramId="dgf5f23569fb0f4c26946494a78efbc19d" name="checkbox.php">&lt;div class="checkbox"&gt;&lt;label&gt;&lt;input type="checkbox" value="&lt;?=empty($DATA['inputValue'])?'on':$DATA['inputValue']?&gt;"&gt;&lt;?=$DATA['boxLabel']?&gt;&lt;/label&gt;&lt;/div&gt;</page><page __ideDiagramId="dgac935d9fea0749d580635a5034bbbd12" name="form.php">&lt;form class="" action="&lt;?=@$DATA['action']?&gt;"&gt;&lt;?php Router::resolveRoute('html/content.php', $DATA, $CONTENT)?&gt;&lt;/form&gt;</page><page __ideDiagramId="dgf7b4519e6c024fb583e9095d7523ff07" name="driver.js">&lt;?php header('Content-type: text/javascript'); ?&gt;
+$.fn.ajaxSubmit=function(callback){
+    this.each(function(index){
+      var multipart=this.enctype=="multipart/form-data";
+      var formData=new FormData(this);
+      if(!multipart){
+        formData=$(this).serialize();
+      }
+      $.ajax({
+          url:this.action ,
+          method:this.method?this.method:'get',
+          contentType:multipart?false:'application/x-www-form-urlencoded; charset=UTF-8',
+          processData: false,
+          data:formData,
+          success:function(res){
+              if(typeof callback=="function") callback(res);
+          }
+      });
+    });
+}
+</page></package><class name="Main" __ideNodeOpen="true" __ideDiagramId="dg5180e81f2b044fd59544fbfd9331bc40">class Main extends \Controller {
+  public $title="MANAGER";
+  function indexAction($data, $content){
+    echo "Main::indexAction";
+  }
+  function listAction($data, $content){
+    //$this-&gt;view-&gt;data=glob("../*", GLOB_ONLYDIR);
+    return json_encode($content);
+  }
+  function applistAction(){
+    return glob("../*", GLOB_ONLYDIR);
+  }
+  function authAction($data, $content){
+    echo 'window.location.href="index.php"';
+  }
+}</class><class __ideDiagramId="dg3b593689d73c4dc483ec9bfef3b5ef96" name="Html">
+class Html extends \Controller {
+  function indexAction($data, $content){
+  }
+  function stylesheetAction($data, $content){
+    header('Content-type:text/css');
+    echo $content;
+  }
+  function contentAction($data, $content){
+    if(!empty($content) &amp;&amp; is_array($content)){
+      foreach($content as $node) if(is_array($node)){
+        Router::resolveRoute('html/'.strtolower($node['class']).'.php', $node, @$node['items']);
+      }
+    }
+  }
+}</class><class __ideDiagramId="dgedadc7e3772c4a9fbbfbaf9b8dcc4b15" name="Panel">
+class Panel {
+  function indexAction($data, $content){
+echo 'Entro!!!!';
+    return '&lt;div&gt;&lt;/div&gt;';
+  }
+}</class><package name="main" __ideDiagramId="dg807d4af29adb464b8147ede7b3251105"><page __ideNodeOpen="true" __ideDiagramId="dgf38d3a9178a24171bacf75c547a2e6ef" name="login.php">&lt;?php
+return array(
+  'stylesheet'=&gt;'../stylesheet/main/login.css',
+  [
+    'class'=&gt;'panel',
+    'cssClass'=&gt;'login-panel',
+    'title'=&gt;'Ingresar',
+    'items'=&gt;array(
+      ['class'=&gt;'form',
+        'action'=&gt;Router::url('main/auth.php'),
+        'items'=&gt;array(
+          ['class'=&gt;'textfield',    'name'=&gt;'user', 'label'=&gt;'Usuario'],
+          ['class'=&gt;'passwordfield','name'=&gt;'pass', 'label'=&gt;'Contraseña'],
+          ['class'=&gt;'checkbox','boxLabel'=&gt;'Recuerdame'],
+          ['class'=&gt;'button','text'=&gt;'Ingresar',
+            'handler'=&gt;'$(this.form).ajaxSubmit(function(res){eval(res)})',
+          ],
+        )
+      ]
+    )
+  ]
+);</page><page __ideDiagramId="dgdc9a7d759a1a4dd1b1bb656985c8e763" name="login.css">&lt;?php
+return "
+body {
+  padding-top:40px;
+  background-color:#eee;
+}
+.login-panel {
+  max-width:330px;
+}
+";
+</page></package></diagram></module><module name="lib/DvGui1" vendor="../../lib" __ideNodeOpen="false"><class name="gui/Viewport" __ideNodeOpen="true">
+class Viewport extends \templates\DvTpl {
+
+}</class><page name="gui/viewport/make.php" __ideNodeOpen="true">&lt;html&gt;
+&lt;head&gt;
+  &lt;title&gt;&lt;?=@$view-&gt;parent-&gt;title?&gt;&lt;/title&gt;
+  &lt;style&gt;
+  html{
+    margin:0px;padding:0px;
+    width:100%;
+    height:100%;
+  }
+  body{
+    border:4px solid green;
+  }
+  &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;?php call_user_func($view-&gt;content); ?&gt;
+&lt;/body&gt;
+&lt;/html&gt;</page><class name="gui/Table" __ideNodeOpen="true">
+class Table extends \templates\DvTpl {
+
+}</class><page name="gui/table/make.php" __ideNodeOpen="true">&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;&lt;td&gt;Item&lt;/td&gt;&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;?php foreach(call_user_func(array(new $data[0](), $data[1].'Action')) as $row) { ?&gt;
+&lt;tr&gt;&lt;td&gt;&lt;?=$row?&gt;&lt;/td&gt;&lt;/tr&gt;
+&lt;?php } ?&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;</page></module><module name="lib/DvModel" vendor="../../lib" __ideNodeOpen="true"><package name="interfaces" type="" __ideNodeOpen="true"><class name="dvf/model/ViewInterface" __ideNodeOpen="true">
+interface ViewInterface {
+  public function execute($params);
+  public function fetch();
+  public function fetchAll();
+}
+</class></package><package name="traits" type="" __ideNodeOpen="true"><class name="dvf/model/RowTrait" __ideNodeOpen="true">
+trait FetchModelTrait {
+  public function fetch($fetch_style = \PDO::FETCH_CLASS, $cursor_orientation = \PDO::FETCH_ORI_NEXT, $cursor_offset = 0 ){
+    $this-&gt;setFetchMode( \PDO::FETCH_CLASS, static::$rowClass);
+    $row = \PDOStatement::fetch($fetch_style, $cursor_orientation, $cursor_offset);
+    if(is_object($row)) {
+      $row-&gt;onfetch();
+    }
+    return $row;
+  }
+}
+</class></package><package name="classes" type="" __ideNodeOpen="true"><class name="dvf/model/Row" __ideNodeOpen="true">
+abstract class Row {
+  use RowTrait;
+  
+}
+</class></package><diagram __ideNodeOpen="true"><!--{"diagram":{"zoom":1,"scrollTop":0,"scrollLeft":0},"dge5acf61f5a1b4749a192bfbd32ba4684":"position: absolute; height: 76.8519px; left: 622.655px; top: 52.0062px; width: 210.185px;","dgf4a453bff9d74e3b8b4bc248bf77d608":"position: absolute; height: 69.4444px; left: 357.994px; top: 55px; width: 197.222px;","dg7e3ca83d18bf4266870735a3deae0782":"position: absolute; height: 373.148px; left: 41.0031px; top: 13.9969px; width: 836.111px;","dgab9264c1212348f2a7584528d6726469":"position: absolute; height: 66.6667px; left: 68.9969px; top: 57.0062px; width: 233.333px;","dg521fce25e83f4eaeaf5685a3f252b648":"position: absolute; height: 45.3704px; left: 357.994px; top: 165px; width: 190.741px;","dg849c2ec82427472282b7c9a4b990c056":"position: absolute; height: 48.1481px; left: 365px; top: 255px; width: 192.593px;","dg3e7ae0d989244873b14039064ddf3464":"position: absolute; height: 59.2593px; left: 625px; top: 171.003px; width: 207.407px;","dgaf4ee1b10a624a2ca84afbb08bfb6295":"position: absolute; height: 39.8148px; left: 77.9938px; top: 252.994px; width: 210.185px;"}--><package __ideDiagramId="dg7e3ca83d18bf4266870735a3deae0782" name="model"><class __ideNodeOpen="true" __ideDiagramId="dge5acf61f5a1b4749a192bfbd32ba4684" name="Connection">
+class Connection extends \PDO implements InstanceModelInterface {
+  use PDOInstanceModelTrait;
+}
+</class><class __ideNodeOpen="true" __ideDiagramId="dgf4a453bff9d74e3b8b4bc248bf77d608" name="PDOInstanceModelTrait">
+trait PDOInstanceModelTrait{
+  public function instanceModel($class, $params=array()){
+    $this-&gt;setAttribute(\PDO::ATTR_STATEMENT_CLASS, array($class, array($this)));
+    $stmt=$this-&gt;prepare($class::$query);
+    foreach($params as $a=&gt;&amp;$b){
+      $stmt-&gt;bindParam($a,$b);
+    }
+    return $stmt;
+  }
+}
+</class><class __ideDiagramId="dgab9264c1212348f2a7584528d6726469" name="InstanceModelInterface" __ideNodeOpen="false">
+interface InstanceModelInterface {
+  public function instanceModel($class, $params=array());
+}</class><class __ideNodeOpen="true" __ideDiagramId="dg521fce25e83f4eaeaf5685a3f252b648" name="FetchModelTrait">
+trait FetchModelTrait {
+  public function fetch($fetch_style = \PDO::FETCH_CLASS, $cursor_orientation = \PDO::FETCH_ORI_NEXT, $cursor_offset = 0 ){
+    $this-&gt;setFetchMode( \PDO::FETCH_CLASS, static::$rowClass);
+    $row = \PDOStatement::fetch($fetch_style, $cursor_orientation, $cursor_offset);
+    if(is_object($row) &amp;&amp; $row instanceof RowInterface) {
+      $row-&gt;onfetch();
+    }
+    return $row;
+  }
+}
+</class><class __ideDiagramId="dg849c2ec82427472282b7c9a4b990c056" name="ConnectionReferenceTrait">trait ConnectionReferenceTrait{
+  public $dbh;
+  protected function __construct($dbh) {
+    $this-&gt;dbh = $dbh;
+  }
+}</class><class __ideNodeOpen="true" __ideDiagramId="dg3e7ae0d989244873b14039064ddf3464" name="Model">
+abstract class Model extends \PDOStatement {
+  use FetchModelTrait;
+}
+</class><class __ideNodeOpen="true" __ideDiagramId="dgaf4ee1b10a624a2ca84afbb08bfb6295" name="RowInterface">
+interface RowInterface {
+  public function onfetch();
+}
+</class></package></diagram></module></path></root>

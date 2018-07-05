@@ -1,0 +1,1767 @@
+<?xml version="1.0" encoding="UTF-8"?><root><path path="/home/david/php/www/mojix" main="/mojix/view.php" __ideNodeOpen="true"><component name="mojixModel1" transparent="" precode="" __ideNodeOpen="true">#{
+  $_res=[];
+  $_ls=explode("\n", node::content($_));
+  foreach($_ls as $_l):
+    $_l=preg_replace('/\s+/',' ',$_l);
+    $_l=explode(" ",$_l);
+    $_res[]='
+		case '.$_l[0].':
+			// type '.$_l[1].'
+			result = "'.$_l[2].'";
+			break;
+
+';
+  endforeach;
+  return implode("", $_res);
+}</component><component name="mojixModel2" transparent="" precode="" __ideNodeOpen="true">          case @{$name}:
+            // type @{$type}
+#{
+  $_res=[];
+  $_ls=explode("\n", node::content($_));
+  $_c=count($_ls)-1;
+  foreach($_ls as $_i=&gt;$_l):
+    $_l=preg_replace('/\s+/',' ',$_l);
+    $_l=explode(" ",$_l, 3);
+    $_l[0]=trim($_l[0]);
+    $_l[1]=trim($_l[1]);
+    $_l[2]=trim($_l[2]);
+    if($_i&lt;$_c):
+      $_res[]='            printOffset += do_'.$_l[0].'(payload, printOffset, "'.$_l[1].'", '.$_l[2].', 0);';
+    else:
+      $_res[]='            printOffset += do_'.$_l[0].'(payload, printOffset, "'.$_l[1].'", '.$_l[2].', 1);';
+    endif;
+  endforeach;
+  return implode("\n", $_res);
+}
+
+</component><component name="mojixModel3x" transparent="" precode="" __ideNodeOpen="true" engine="php">&lt;?php
+$lines=explode("\n",node::content($_));
+$arr=[];
+foreach($lines as $line){
+  if(preg_match('/^\s+([\w_]+)\s+([\w_]+)\s*;\s*$/',$line,$ma)){
+    $ma[2] = strtoupper(preg_replace('/([a-z])([A-Z])/', '$1_$2', $ma[2]));
+    if(array_search($ma[2], $arr)===false) {
+      $arr[]=$ma[2];
+      echo "\tSPEC_",$ma[2],",\n";
+    }
+  }
+}
+echo "\t";
+?&gt;SPEC_MAX_ALL_EVENT_PROPERTIES
+};
+
+
+
+&lt;?php
+$lines=explode("\n",node::content($_));
+$arr=[];
+foreach($lines as $line){
+  if(preg_match('/^\s+([\w_]+)\s+([\w_]+)\s*;\s*$/',$line,$ma)){
+    $ma[2] = strtoupper(preg_replace('/([a-z])([A-Z])/', '$1_$2', $ma[2]));
+    //if(array_search($ma[2], $arr)===false) 
+    if(@$owner)
+    {
+//      $arr[]=$ma[2];
+      $prop=$ma[2];
+      echo "defaultSpec[$owner][$prop]=1;\n";
+    }
+  }
+  if(preg_match('/^\/\/\/([\w_]+)/',$line,$ma)){
+    $owner=$ma[1];
+    $specName = 'Spec'.str_replace(' ', '', ucwords(str_replace('-', ' ', $owner)));
+    echo "enum {$specName} {\n";
+  }
+}
+echo "\t";
+?&gt;</component><component name="mojixModel3" transparent="" precode="" __ideNodeOpen="true" engine="php">&lt;?php
+$lines=explode("\n",node::content($_));
+$arr=[];
+$i=0;
+foreach($lines as $line){
+  if(preg_match('/^\s+([\w_]+)\s+([\w_]+)\s*;\s*$/',$line,$ma)){
+    $ma[2] = strtoupper(preg_replace('/([a-z])([A-Z])/', '$1_$2', $ma[2]));
+    //if(array_search($ma[2], $arr)===false) 
+    if(@$owner)
+    {
+//      $arr[]=$ma[2];
+      $prop=$ma[2];
+      echo "\t{$owner}_{$prop}=$i,\n";
+      $i++;
+    }
+  }
+  if(preg_match('/^\/\/\/([\w_]+)/',$line,$ma)){
+    $owner=$ma[1];
+    $i=0;
+    $specName = 'Spec'.str_replace(' ', '', ucwords(strtolower(str_replace('_', ' ', $owner))));
+    echo "}\nenum {$specName} {\n";
+  }
+}
+?&gt;
+}
+</component><component name="mojixModel3B" transparent="" precode="" __ideNodeOpen="true" engine="php">
+&lt;?php
+$lines=explode("\n",node::content($_));
+$arr=[];
+foreach($lines as $line){
+  if(preg_match('/^\s+([\w_]+)\s+([\w_]+)\s*;\s*$/',$line,$ma)){
+    $ma[2] = strtoupper(preg_replace('/([a-z])([A-Z])/', '$1_$2', $ma[2]));
+    //if(array_search($ma[2], $arr)===false) 
+    if(@$owner)
+    {
+//      $arr[]=$ma[2];
+      $prop=$ma[2];
+      echo "\n\t[{$owner}_{$prop}]=1,";
+    }
+  }
+  if(preg_match('/^\/\/\/([\w_]+)/',$line,$ma)){
+    $owner=$ma[1];
+    $specName = 'Spec'.str_replace(' ', '', ucwords(strtolower(str_replace('_', ' ', $owner))));
+    //echo "//$owner\n";
+    echo "\n}\n[$owner]={";
+  }
+}
+echo "\t";
+?&gt;</component><file name="subEvents.c" preprocess="" __ideNodeOpen="true">#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+#include &lt;unistd.h&gt;
+#include &lt;arpa/inet.h&gt;
+#include &lt;sys/types.h&gt;
+#include &lt;sys/stat.h&gt;
+#include &lt;sys/socket.h&gt;
+#include &lt;fcntl.h&gt;
+#include &lt;assert.h&gt;
+#include &lt;signal.h&gt;
+#include &lt;netinet/tcp.h&gt;
+#include &lt;time.h&gt;
+#include "pubEvents.h"
+#include "mac_task.h"
+#include "udpxfer.h"
+#include "zmq.h"
+
+// Space allocated to stage outbound HTTP traffic
+#define CHUNK_HDR_PAD 6
+#define BUF_LEN (1024*64)
+static char payload[BUF_LEN];
+
+// Transmit staged payload when close to running out of buffer space
+#define XMIT_BUF_THRESHOLD (BUF_LEN - 256)
+
+// Transmit staged payload at least this often
+#define XMIT_TIME_THRESHOLD_MS 100
+
+inline double currentTime_ms() {
+	struct timeval tv;
+	gettimeofday(&amp;tv, NULL);
+	double now_ms = (tv.tv_sec)*1000.0 + (tv.tv_usec)/1000.0;
+
+	return now_ms;
+}
+
+static void daemonize(void) {
+    pid_t pid, sid;
+
+    /* already a daemon */
+    if ( getppid() == 1 ) return;
+
+    /* Fork off the parent process */
+    pid = fork();
+    if (pid &lt; 0) {
+        exit(EXIT_FAILURE);
+    }
+    /* If we got a good PID, then we can exit the parent process. */
+    if (pid &gt; 0) {
+        exit(EXIT_SUCCESS);
+    }
+
+    /* At this point we are executing as the child process */
+
+    /* Change the file mode mask */
+    umask(0);
+
+    /* Create a new SID for the child process */
+    sid = setsid();
+    if (sid &lt; 0) {
+        exit(EXIT_FAILURE);
+    }
+
+    /* Change the current working directory.  This prevents the current
+       directory from being locked; hence not being able to remove it. */
+    if ((chdir("/")) &lt; 0) {
+        exit(EXIT_FAILURE);
+    }
+
+    /* Redirect standard files to /dev/null */
+    freopen( "/dev/null", "r", stdin);
+    freopen( "/dev/null", "w", stdout);
+    freopen( "/dev/null", "w", stderr);
+}
+
+XferDatagram xd;
+unsigned sseID = 0;
+
+void chunkEncode(char *sectionStart, int payloadLen) {
+	char chunkHdr[CHUNK_HDR_PAD+1];
+	sprintf(chunkHdr, "%04x\r\n", payloadLen);
+	memcpy(sectionStart, chunkHdr, CHUNK_HDR_PAD);
+}	
+
+static char *sectionStart;
+static int sectionLen;
+inline int do_chunk_hdr(char *buf, int offset) {
+	sectionStart = buf + offset;
+	sectionLen = CHUNK_HDR_PAD;
+	return sectionLen;
+}
+
+inline int do_start_section(char *buf, int offset) {
+	int len = sprintf(buf+offset, "event: mac_event\nid: %u\ndata: {", sseID++);
+	sectionLen += len;
+	return len;
+}
+
+inline int do_end_section(char *buf, int offset) {
+	int len = sprintf(buf+offset, "}\n\n");
+	sectionLen += len;
+	return len;
+}
+
+inline int do_end_chunk(char *buf, int offset) {
+	int len = sprintf(buf+offset, "\r\n");
+	sectionLen += len;
+	return len;
+}
+
+inline int do_int(char *buf, int offset, char *name, int i, int last) {
+	int len = sprintf(buf+offset, "\"%s\":%d%c", name, i, last?' ':',');
+	sectionLen += len;
+	return len;
+}
+
+inline int do_uint(char *buf, int offset, char *name, unsigned int u, int last) {
+	int len = sprintf(buf+offset, "\"%s\":%u%c", name, u, last?' ':',');
+	sectionLen += len;
+	return len;
+}
+
+inline int do_ulint(char *buf, int offset, char *name, unsigned long int u, int last) {
+	int len = sprintf(buf+offset, "\"%s\":%lu%c", name, u, last?' ':',');
+	sectionLen += len;
+	return len;
+}
+
+inline int do_str(char *buf, int offset, char *name, char *s, int last) {
+	int len = sprintf(buf+offset, "\"%s\":\"%s\"%c", name, s, last?' ':',');
+	sectionLen += len;
+	return len;
+}
+
+inline int do_uq_str(char *buf, int offset, char *name, char *s, int last) {
+	int len = sprintf(buf+offset, "\"%s\":%s%c", name, s, last?' ':',');
+	sectionLen += len;
+	return len;
+}
+
+inline int  do_hex32(char *buf, int offset, char *name, unsigned int x, int last) {
+	int len = sprintf(buf+offset, "\"%s\":\"0x%08X\"%c", name, x, last?' ':',');
+	sectionLen += len;
+	return len;
+}
+
+inline int do_bool(char *buf, int offset, char *name, int b, int last) {
+	int len = sprintf(buf+offset, "\"%s\":%s%c", name, b?"true":"false", last?' ':',');
+	sectionLen += len;
+	return len;
+}
+
+inline int do_float(char *buf, int offset, char *name, float f, int last) {
+	int len = sprintf(buf+offset, "\"%s\":%f%c", name, f, last?' ':',');
+	sectionLen += len;
+	return len;
+}
+
+char *getEventTypeString(int type) {
+	char *result = "UndefinedEventType";
+
+	switch (type) {
+<mojixModel1 __ideNodeOpen="true">MAC_EVENTTYPE_RESERVED              0 Reserved
+MAC_EVENTTYPE_HEALTH                1 Health
+MAC_EVENTTYPE_ROUND_START           2 RoundStart
+MAC_EVENTTYPE_RN16_DATA             3 RN16Data
+MAC_EVENTTYPE_TAG_READ_DATA         4 TagReadData
+MAC_EVENTTYPE_READ_REPLY_DATA       5 ReadReplyData
+MAC_EVENTTYPE_ACCESS_STATUS         6 AccessStatus
+MAC_EVENTTYPE_SENSOR_DATA           7 SensorData
+MAC_EVENTTYPE_SENSOR_HEALTH         8 SensorHealth
+MAC_EVENTTYPE_MAX                   9 Max</mojixModel1>		default:
+			break;
+	}
+
+	return result;
+}
+	
+
+int main(int argc, char *argv[]) {
+	int rc, c;
+	int portno = 8080;	// HTTP client GET from this port
+	char *connect_addr = BIND_MACEVENT;
+	void *zmq_context;
+	void *zmq_sock;
+	int debug = 0;
+	int foreground = 0;
+	double prevXmitTime_ms = 0;
+
+	while (1) {
+		c = getopt(argc, argv, "dfh:c:");
+		if (c == -1)
+			break;
+		switch (c) {
+			case 'h':
+				printf("usage: subEvents [-d] [-c connect-addr]\n"
+					   "       -d  debug-on\n"
+		   			   "       -f  foreground mode (default is daemon mode)\n");
+				exit(1);
+				break;
+			case 'd':
+				debug = 1;
+				break;
+			case 'f':
+				foreground = 1;
+				break;
+			case 'c':
+				if (optarg)
+					connect_addr = optarg;
+				break;
+		}
+	}
+
+	if (foreground == 0) {
+		daemonize();
+	}
+
+	// Socket structs for fielding incoming connections from HTTP clients
+	int sockfd, newsockfd;
+	socklen_t clilen;
+	int pid;
+	struct sockaddr_in serv_addr, cli_addr;
+	
+	// Open server socket
+	sockfd = socket(AF_INET, SOCK_STREAM, 0);
+	if (sockfd &lt;0) {
+		perror("ERROR opening server socket");
+		exit(1);
+	}
+
+	// Initialize socket structure
+	memset(&amp;serv_addr, 0, sizeof(serv_addr));
+	serv_addr.sin_family = AF_INET;
+	serv_addr.sin_addr.s_addr = INADDR_ANY;
+	serv_addr.sin_port = htons(portno);
+
+	// Bind server socket
+	if (bind(sockfd, (struct sockaddr *)&amp;serv_addr, sizeof(serv_addr)) &lt; 0) {
+		perror("ERROR binding server socket");
+		exit(1);
+	}
+
+	// Listen for HTTP clients wanting SSE RFID event feed
+	rc = listen(sockfd, 5);
+	if (rc) {	
+		perror("ERROR listening on server socket");
+		exit(1);
+	}
+	clilen = sizeof(cli_addr);
+
+	while(1) {
+		newsockfd = accept(sockfd, (struct sockaddr *)&amp;cli_addr, &amp;clilen);
+		if (newsockfd &lt; 0) {
+			perror("ERROR on accept");
+			exit(1);
+		}
+
+		pid = fork();
+		if (pid &lt; 0) {
+			perror("ERROR on fork");
+			exit(1);
+		}
+
+		// Reap zombine children
+		if (signal(SIGCHLD, SIG_IGN) == SIG_ERR) {
+			perror(0);
+			exit(1);
+		}
+
+		if (pid == 0) {
+			// Child process
+			// Stream RFID events over HTTP
+			close(sockfd);
+
+			// open input zmq socket.
+			zmq_context = zmq_ctx_new();
+			if (zmq_context == NULL) {
+				printf("zmq_init: %s\n", zmq_strerror(errno));
+				return -1;
+			}
+			zmq_sock = zmq_socket(zmq_context, ZMQ_SUB);
+			if (zmq_sock == NULL) {
+				printf("zmq_sock: %s\n", zmq_strerror(errno));
+				return -1;
+			}
+			rc = zmq_setsockopt (zmq_sock, ZMQ_SUBSCRIBE, NULL, 0);
+			if (rc != 0) {
+				printf("zmq_setsockopt: %s\n", zmq_strerror(errno));
+				return -1;
+			}
+
+			printf("connecting to %s\n", connect_addr);
+			rc = zmq_connect(zmq_sock, connect_addr);
+			if (rc != 0) {
+				printf("zmq_connect: %s\n", zmq_strerror(errno));
+				return -1;
+			}
+
+			char header[4096];
+			sprintf(header, "HTTP/1.1 200 OK\r\n");
+			sprintf(header, "%s%s\r\n", header, "X-Powered-By: subEvents");
+			sprintf(header, "%s%s\r\n", header, "apiVersion: 1");
+			sprintf(header, "%s%s\r\n", header, "Content-Type: text/event-stream");
+			sprintf(header, "%s%s\r\n", header, "Cache-Control: no-cache");
+			sprintf(header, "%s%s\r\n", header, "Transfer-Encoding: chunked\r\n");
+			sprintf(header, "%s1\r\n\n\r\n", header);
+			int bytesLeft = strlen(header);
+			int idx = 0;
+			//printf("!!!! bytesLeft %d header %s", bytesLeft, header);
+			while (bytesLeft &gt; 0) {
+				int bytesWritten = write(newsockfd, header+idx, bytesLeft);
+				if (bytesWritten &lt; 0) {
+					perror("ERROR writing HTTP header to client");
+					break;
+				}
+				else {
+					idx += bytesWritten;
+					bytesLeft -= bytesWritten;
+				}
+			}
+
+			int printOffset = 0;
+			bytesLeft = 0;
+
+			zmq_msg_t msg;
+			rc = zmq_msg_init(&amp;msg);
+			if (rc != 0) {
+				printf("zmq_msg_init: %s\n", zmq_strerror(errno));
+				break;
+			}
+			while (1) {
+				rc = zmq_msg_recv(&amp;msg, zmq_sock, 0);
+				if (rc &lt; 0) {
+					printf("zmq_msg_recv: %s\n", zmq_strerror(errno));
+					break;
+				}
+				// copy into XferDatagram.
+				int len;
+				mac_event_t *me;
+				len = sizeof(xd.dspraw) - sizeof(xd.dspraw.text) + sizeof(mac_event_t) + 1;
+
+				//me = (mac_event_t *) &amp;xd.dspraw.text;
+				me = (mac_event_t *)(zmq_msg_data(&amp;msg));
+				struct me_PacketData *p = (struct me_PacketData *) me;
+//TODO: Review is new.type=old.type_seq
+				unsigned type = MAC_EVENT_TYPE(me-&gt;base.type);
+				unsigned sequence = MAC_EVENT_SEQUENCE(me-&gt;base.type);
+
+#if 0 // Need to let everything through to avoid filtering out end-of-round marker packet and RN16 packets (if requested)
+				// Only process good=
+				if (type == MAC_EVENTTYPE_PACKET) {
+					if (p-&gt;valid &amp; VALID_CRC &amp;&amp; p-&gt;valid &amp; VALID_PREAMBLE &amp;&amp; 
+					PACKET_TYPE(p-&gt;valid) == PACKET_TYPE_EPC ) {
+						// Good EPC 
+					}
+					else {
+						// Don't bother processing further
+						continue;
+					}
+				}
+#endif                                
+
+				printOffset += do_chunk_hdr(payload, printOffset);
+				printOffset += do_start_section(payload, printOffset);
+				printOffset += do_str(payload, printOffset, "type", getEventTypeString(type), 0);
+				printOffset += do_str(payload, printOffset, "timestamp", "todo:YY/MM/DD hh:mm:ss.xxx", 0);
+				printOffset += do_uint(payload, printOffset, "seqNum", sequence, 0);
+
+				// middle part depends on type.  
+				switch (type) {
+					case MAC_EVENTTYPE_RESERVED:
+						// type 0
+						break;
+            
+          case MAC_EVENTTYPE_HEALTH:
+            // type 1
+            //whats is the meaning of the last parameter?
+            printOffset += do_uint(payload, printOffset, "uptime", (unsigned) me-&gt;health.uptime, 0);
+            printOffset += printOffset += do_float(payload, printOffset, "temperature", p-&gt;health.temperature, 0);
+            
+            break;
+
+  //				case MAC_EVENTTYPE_PACKET: {
+	//					// type 1
+	//					int validEPC = (p-&gt;valid &amp; VALID_CRC &amp;&amp; p-&gt;valid &amp; VALID_PREAMBLE &amp;&amp; 
+	//					PACKET_TYPE(p-&gt;valid) == PACKET_TYPE_EPC) ? 1 : 0;
+  //
+	//					printOffset += do_uint(payload, printOffset, "round", PACKET_ROUND(p-&gt;packet_id), 0);
+	//					printOffset += do_uint(payload, printOffset, "query", PACKET_QUERY(p-&gt;packet_id), 0);
+	//					printOffset += do_int(payload, printOffset, "validFlags", p-&gt;valid, 0);
+	//					printOffset += do_int(payload, printOffset, "validEPC", validEPC, 0);
+	//					printOffset += do_uint(payload, printOffset, "preambleQuality", p-&gt;quality, 0);
+	//					printOffset += do_uint(payload, printOffset, "decoderQuality", p-&gt;decoder_quality, 0);
+  //
+	//					char tempBuf[128];
+	//					sprintf(tempBuf, "[%d, %d, %d, %d]", p-&gt;vga_values[0], p-&gt;vga_values[1], p-&gt;vga_values[2], p-&gt;vga_values[3]);
+	//					printOffset += do_uq_str(payload, printOffset, "vgaValues", tempBuf, 0);
+  //
+	//					printOffset += do_uint(payload, printOffset, "numBits", p-&gt;n_bits, 0);
+  //
+	//					sprintf(tempBuf, "[[%d,%d],[%d,%d]]", p-&gt;beamform_coeffs[0][0], p-&gt;beamform_coeffs[0][1],
+	//					p-&gt;beamform_coeffs[1][0], p-&gt;beamform_coeffs[1][1]);
+	//					printOffset += do_uq_str(payload, printOffset, "rxPhasors", tempBuf, 0);
+	//					printOffset += do_uint(payload, printOffset, "exciterId", p-&gt;tx_id, 0);
+	//					
+	//					printOffset += do_float(payload, printOffset, "digitalGain", p-&gt;bf_sig_max, 0);
+  //
+	//					{
+	//						char hexbytes[MAX_PACKET_WORDS*4+1];
+  //
+	//						// Length in long words
+	//						int len = (p-&gt;n_bits+31)/32;
+  //
+	//						//printf("!!!! n_bits %d len %d\n", p-&gt;n_bits, len);
+  //
+	//						int i;
+	//						for (i=0; i&lt;len; i++) {
+	//							char buf[32];
+	//							sprintf(buf, "%08x", p-&gt;syms[i]);
+	//							//printf("!!!! %s\n", buf);
+	//							sprintf(hexbytes+(i*8), "%s", buf);
+	//						}
+	//						//printf("!!! composed: %s\n", hexbytes);
+  //
+	//						printOffset += do_str(payload, printOffset, "data", hexbytes, 1);
+  //
+	//					}
+	//					break;
+	//				}
+  //
+	//				case MAC_EVENTTYPE_PROGRAM_LOAD:
+	//				case MAC_EVENTTYPE_PROGRAM_DONE:
+	//					// type 2 &amp; type 7
+  //                                              printOffset += do_uint(payload, printOffset, "programId", (unsigned) me-&gt;program.program_id, 1);
+	//					break;
+  //
+	//				case MAC_EVENTTYPE_ROUND_INFO:
+	//					// type 3
+	//					//printOffset += do_str(payload, printOffset, "name", "Round Info", 1);
+  //                                              printOffset += do_uint(payload, printOffset, "programId", (unsigned) me-&gt;round_info.program_id, 0);
+  //                                              printOffset += do_uint(payload, printOffset, "inventoryId", (unsigned) me-&gt;round_info.inventory_id, 0);
+  //                                              printOffset += do_uint(payload, printOffset, "rounds", (unsigned) me-&gt;round_info.rounds, 0);
+  //                                              printOffset += do_uint(payload, printOffset, "roundId", (unsigned) me-&gt;round_info.round_id, 0);
+  //                                              printOffset += do_uint(payload, printOffset, "roundTime", me-&gt;round_info.round_time, 0);
+  //                                              printOffset += do_uint(payload, printOffset, "queryCount", me-&gt;round_info.query_count, 0);
+  //                                              printOffset += do_uint(payload, printOffset, "rn16Count", me-&gt;round_info.rn16_count, 0);
+  //                                              printOffset += do_uint(payload, printOffset, "epcCount", me-&gt;round_info.epc_count, 0);
+  //                                              printOffset += do_uint(payload, printOffset, "rnCount", me-&gt;round_info.rn_count, 0);
+  //                                              printOffset += do_uint(payload, printOffset, "exciterId", (unsigned) me-&gt;round_info.exciter_id | (((unsigned) me-&gt;round_info.exciter_id_msw) &lt;&lt; 16), 0);
+  //                                              printOffset += do_uint(payload, printOffset, "channel", (unsigned) me-&gt;round_info.freq_chan, 1);
+	//					break;
+	//				case MAC_EVENTTYPE_EVENTS_READY:
+	//					printOffset += do_str(payload, printOffset, "name", "Events Ready", 1);
+	//					// type 4
+	//					break;
+	//				case MAC_EVENTTYPE_PARM_OPT:
+	//					printOffset += do_str(payload, printOffset, "name", "PARM_OPT", 1);
+	//					// type 5
+	//					break;
+	//				case MAC_EVENTTYPE_SQL_LOG:
+	//					printOffset += do_str(payload, printOffset, "name", "SQL_LOG", 1);
+	//					// type 6
+	//					break;
+	//				case MAC_EVENTTYPE_SENSOR_DATA:
+	//					printOffset += do_str(payload, printOffset, "name", "Sensor Data", 1);
+	//					// type 8
+	//					break;
+	//				case MAC_EVENTTYPE_EXCITER_FAILED:
+	//					printOffset += do_str(payload, printOffset, "name", "Exciter Failed", 1);
+	//					// type 9
+	//					break;
+	//				case MAC_EVENTTYPE_ACCESS_STATUS:
+	//					// type 10
+	//					printOffset += do_str(payload, printOffset, "name", "Access Status", 1);
+	//					break;
+	//				case MAC_EVENTTYPE_TRANSMIT_INFO:
+	//					// type 11
+	//					printOffset += do_str(payload, printOffset, "name", "Transmit Info", 1);
+	//					break;
+	//				case MAC_EVENTTYPE_ERROR_STATUS:
+	//					// type 12
+	//					printOffset += do_str(payload, printOffset, "name", "Error Status", 1);
+	//					break;
+	//				case MAC_EVENTTYPE_GATHER_READY:
+	//					// type 13
+	//					printOffset += do_str(payload, printOffset, "name", "Gather Data Ready", 1);
+	//					break;
+	//				case MAC_EVENTTYPE_TAG_CORRELATIONS:
+	//					// type 14
+	//					printOffset += do_str(payload, printOffset, "name", "Tag Correlation Data", 1);
+	//					break;
+	//				case MAC_EVENTTYPE_HEALTH:
+	//					// type 15
+	//					printOffset += do_ulint(payload, printOffset, "uptime_S", me-&gt;health.uptime, 0);
+	//					printOffset += do_uint(payload, printOffset, "temperature_C", me-&gt;health.temperature/256, 0);
+	//					printOffset += do_uint(payload, printOffset, "minTemperature_C", me-&gt;health.min_temperature/256, 0);
+	//					printOffset += do_uint(payload, printOffset, "maxTemperature_C", me-&gt;health.max_temperature/256, 1);
+	//					break;
+	//				case MAC_EVENTTYPE_ENG_PACKET_1:
+	//					// type 16
+	//					printOffset += do_str(payload, printOffset, "name", "Engineering Packet 1", 1);
+	//					break;
+	//				case MAC_EVENTTYPE_ENG_PACKET_2:
+	//					// type 17
+	//					printOffset += do_str(payload, printOffset, "name", "Engineering Packet 2", 1);
+	//					break;
+	//				case MAC_EVENTTYPE_ENG_PACKET_3:
+	//					// type 18
+	//					printOffset += do_str(payload, printOffset, "name", "Engineering Packet 3", 1);
+	//					break;
+	//				case MAC_EVENTTYPE_DISCOVERY_PACKET:
+	//					// type 19
+	//					printOffset += do_str(payload, printOffset, "name", "Discovery Packet", 1);
+	//					break;
+	//				case MAC_EVENTTYPE_SENSOR_HEALTH:
+	//					// type 20
+	//					printOffset += do_str(payload, printOffset, "name", "Sensor Health", 1);
+	//					break;
+	//				case MAC_EVENTTYPE_NBH_REQUEST:
+	//					// type 21
+	//					printOffset += do_str(payload, printOffset, "name", "NBH Request", 1);
+	//					break;
+	//				case MAC_EVENTTYPE_GPS_PACKET:
+	//					// type 22
+	//					printOffset += do_str(payload, printOffset, "name", "GPS Packet", 1);
+	//					break;
+	//				case MAC_EVENTTYPE_BINDING_PACKET:
+	//					// type 23 
+	//					printOffset += do_str(payload, printOffset, "name", "Binding", 1);
+	//					break;
+	//				case MAC_EVENTTYPE_PERCKT_STATUS_PACKET:
+	//					// type 24
+	//					printOffset += do_str(payload, printOffset, "name", "PER", 0);
+	//					printOffset += do_hex32(payload, printOffset, "exciter_id", me-&gt;percktStatusPacket.exciter_id_msw &lt;&lt; 16 | me-&gt;percktStatusPacket.exciter_id, 0);
+	//					printOffset += do_int(payload, printOffset, "success", me-&gt;percktStatusPacket.success, 1);
+	//					break;
+  //
+					default:
+						break;
+				}
+				printOffset += do_end_section(payload, printOffset);
+
+				chunkEncode(sectionStart, sectionLen-CHUNK_HDR_PAD);
+				//printf("!!!! sectionlen %d payload: %s\n", sectionLen-CHUNK_HDR_PAD, payload);
+
+				printOffset += do_end_chunk(payload, printOffset);
+				sectionLen = 0;
+
+				double now_ms = currentTime_ms();
+
+				bytesLeft = printOffset;
+				if (bytesLeft &gt;= XMIT_BUF_THRESHOLD || now_ms - prevXmitTime_ms &gt; XMIT_TIME_THRESHOLD_MS) {
+					int idx = 0;
+					while (bytesLeft &gt; 0) {
+						int bytesWritten = write(newsockfd, payload + idx, bytesLeft);
+						idx += bytesWritten;
+						if (bytesWritten &lt; 0) {
+							perror("ERROR writing payload to HTTP client");
+							break;
+						}
+						else {
+							idx += bytesWritten;
+							bytesLeft -= bytesWritten;
+						}
+					}
+					printOffset = 0;
+					prevXmitTime_ms = now_ms;
+				}
+			}
+
+			rc = zmq_msg_close(&amp;msg);
+			if (rc != 0) {
+				printf("zmq_msg_close: %s\n", zmq_strerror(errno));
+				return -1;
+			}
+
+			// Cleanup
+			close(newsockfd);
+			return 0;
+		}
+		else {
+			// Parent
+			// Get ready to listen for additional HTTP client requests
+			close(newsockfd);
+		}
+	}
+	return 0;
+}
+
+</file><file name="view.php" preprocess="" __ideNodeOpen="true">&lt;?php
+header("Content-type:text/text");
+//readfile("subEvents.c");
+?&gt;
+<mojixModel2 name="MAC_EVENTTYPE_HEALTH" type="1" __ideNodeOpen="true">uint   uptime          (unsigned) me-&gt;health.uptime
+float  temperature     me-&gt;health.temperature
+float  minTemperature  me-&gt;health.min_temperature
+float  maxTemperature  me-&gt;health.max_temperature</mojixModel2><mojixModel2 name="MAC_EVENTTYPE_TAG_READ_DATA" type="4" __ideNodeOpen="true">uint   round           me-&gt;packet.round
+uint   txAntennaPort   me-&gt;packet.txAntennaPort
+uint   txExpanderPort  me-&gt;packet.txExpanderPort
+float  rssi            me-&gt;packet.rssi
+uint   preambleQuality me-&gt;packet.preambleQuality
+uint   decoderQuality  me-&gt;packet.decoderQuality
+uintA  vgaValues       me-&gt;packet.vgaValues
+uint   numBits         me-&gt;packet.numBits
+intA   rxPhasors       me-&gt;packet.rxPhasors
+float  digitalGain     me-&gt;packet.digitalGain
+hex32A data            me-&gt;packet.data</mojixModel2></file><file name="view.php" preprocess="" __ideNodeOpen="true">&lt;?php
+header("Content-type:text/text");
+//readfile("subEvents.c");
+?&gt;
+<mojixModel3 __ideNodeOpen="true">/**
+ * \brief the base event type.
+ *
+ * This is the base typ for all events. The type_seq field should be the first
+ * field in all other event structures, so that this member of the union can be used
+ * to determine the actual event type.
+ */
+struct me_Base {
+    /**
+     * \brief the type of this event.
+     */
+    uint32_t type;
+    /**
+     * brief the sequence number for this event
+     */
+    uint32_t seqNum;
+    /**
+     * \brief the timestamp for this event
+     */
+    uint64_t timestamp;
+};
+
+///MAC_EVENTTYPE_READ_REPLY_DATA
+struct me_TagData {
+     /**
+      * \brief the type of this event.
+      */
+     uint32_t type;
+     /**
+      * brief the sequence number for this event
+      */
+     uint32_t seqNum;
+     /**
+      * \brief the timestamp for this event
+      */
+     uint64_t timestamp;
+  
+     /**
+      * \brief the count of inventory rounds
+      */
+     uint32_t round;
+
+     /**
+      * \brief the internal transmit port or eNode ID
+      */
+     uint32_t txAntennaPort;
+
+     /**
+      * \brief the transmit expander port (0 (none) or 1-4)
+      */
+     uint32_t txExpanderPort;
+
+     /**
+      * \brief the RSSI for each channel
+      */
+     float rssi[2];
+    /**
+     * \brief The quality of the packet.
+     *
+     * This is a measure of the Eb/N0 for the packet, though it has an
+     * offset. It is Eb^2/PN
+     */
+    unsigned preambleQuality;
+
+    /**
+     * \brief The quality of the packet from the decoder.
+     */
+    unsigned decoderQuality;
+
+    /**
+     * \brief The per-channel VGA values read from the hardware.
+     *
+     * These values can be used to help recover the signal scaling.
+     */
+    uint8_t vgaValues[N_RX_CHANNELS];
+
+    /**
+     * \brief the number of bits in the packet.
+
+     */
+    int numBits;
+
+    /**
+     * \brief The beamforming coefficients for the packet.
+     *
+     * Disabled channels will have coefficients of (0, 0).
+     * For each pair, index 0 is the I and index 1 is the Q.
+     */
+    int16_t rxPhasors[N_RX_CHANNELS][2];
+
+    /**
+     * \brief digital gain
+     */
+    float digitalGain;
+
+    /**              
+     * \brief the actual bits, packed in MSB first.
+     */
+    uint32_t data[MAX_PACKET_WORDS];
+
+
+    int valid;
+};
+
+///MAC_EVENTTYPE_RN16_DATA             3 RN16Data
+struct me_TagData {
+     /**
+      * \brief the type of this event.
+      */
+     uint32_t type;
+     /**
+      * brief the sequence number for this event
+      */
+     uint32_t seqNum;
+     /**
+      * \brief the timestamp for this event
+      */
+     uint64_t timestamp;
+  
+     /**
+      * \brief the count of inventory rounds
+      */
+     uint32_t round;
+
+     /**
+      * \brief the internal transmit port or eNode ID
+      */
+     uint32_t txAntennaPort;
+
+     /**
+      * \brief the transmit expander port (0 (none) or 1-4)
+      */
+     uint32_t txExpanderPort;
+
+     /**
+      * \brief the RSSI for each channel
+      */
+     float rssi[2];
+    /**
+     * \brief The quality of the packet.
+     *
+     * This is a measure of the Eb/N0 for the packet, though it has an
+     * offset. It is Eb^2/PN
+     */
+    unsigned preambleQuality;
+
+    /**
+     * \brief The quality of the packet from the decoder.
+     */
+    unsigned decoderQuality;
+
+    /**
+     * \brief The per-channel VGA values read from the hardware.
+     *
+     * These values can be used to help recover the signal scaling.
+     */
+    uint8_t vgaValues[N_RX_CHANNELS];
+
+    /**
+     * \brief the number of bits in the packet.
+
+     */
+    int numBits;
+
+    /**
+     * \brief The beamforming coefficients for the packet.
+     *
+     * Disabled channels will have coefficients of (0, 0).
+     * For each pair, index 0 is the I and index 1 is the Q.
+     */
+    int16_t rxPhasors[N_RX_CHANNELS][2];
+
+    /**
+     * \brief digital gain
+     */
+    float digitalGain;
+
+    /**              
+     * \brief the actual bits, packed in MSB first.
+     */
+    uint32_t data[MAX_PACKET_WORDS];
+
+
+    int valid;
+};
+
+///MAC_EVENTTYPE_TAG_READ_DATA         4 TagReadData
+struct me_TagData {
+     /**
+      * \brief the type of this event.
+      */
+     uint32_t type;
+     /**
+      * brief the sequence number for this event
+      */
+     uint32_t seqNum;
+     /**
+      * \brief the timestamp for this event
+      */
+     uint64_t timestamp;
+  
+     /**
+      * \brief the count of inventory rounds
+      */
+     uint32_t round;
+
+     /**
+      * \brief the internal transmit port or eNode ID
+      */
+     uint32_t txAntennaPort;
+
+     /**
+      * \brief the transmit expander port (0 (none) or 1-4)
+      */
+     uint32_t txExpanderPort;
+
+     /**
+      * \brief the RSSI for each channel
+      */
+     float rssi[2];
+    /**
+     * \brief The quality of the packet.
+     *
+     * This is a measure of the Eb/N0 for the packet, though it has an
+     * offset. It is Eb^2/PN
+     */
+    unsigned preambleQuality;
+
+    /**
+     * \brief The quality of the packet from the decoder.
+     */
+    unsigned decoderQuality;
+
+    /**
+     * \brief The per-channel VGA values read from the hardware.
+     *
+     * These values can be used to help recover the signal scaling.
+     */
+    uint8_t vgaValues[N_RX_CHANNELS];
+
+    /**
+     * \brief the number of bits in the packet.
+
+     */
+    int numBits;
+
+    /**
+     * \brief The beamforming coefficients for the packet.
+     *
+     * Disabled channels will have coefficients of (0, 0).
+     * For each pair, index 0 is the I and index 1 is the Q.
+     */
+    int16_t rxPhasors[N_RX_CHANNELS][2];
+
+    /**
+     * \brief digital gain
+     */
+    float digitalGain;
+
+    /**              
+     * \brief the actual bits, packed in MSB first.
+     */
+    uint32_t data[MAX_PACKET_WORDS];
+
+
+    int valid;
+};
+
+// End Packet_Data
+/**
+ * @}
+ */
+
+/**
+ * \brief An event which signals the start of an inventory round
+ *
+ *
+ * \ingroup MAC_EVENT
+ */
+///MAC_EVENTTYPE_ROUND_START           2 RoundStart
+struct me_RoundStart {
+    /**
+     * \brief packet type
+     */
+    uint16_t type;
+
+    /**
+     * packet sequence number
+     */
+    uint32_t seqNum;
+
+    /**
+     * \brief timestamp of the packet
+     */
+    uint64_t timestamp;
+
+    /**
+     * \brief the frequency (in MHz) currently being used
+     */
+    float freq_MHz;
+
+    /**
+     * \brief the frequency band (jurisdiction)
+     */
+    uint16_t jurisdiction;
+
+    /**
+     * \brief the internal transmit port or eNode ID
+     */
+    uint32_t txAntennaPort;
+
+    /**
+     * \brief the transmit expander port (0 (none) or 1-4)
+     */
+    uint32_t txExpanderPort;
+
+    /**
+     * \brief transmit power in dBm
+     */
+    float txPower_dBm;
+
+    /**
+     * \brief array of [rx port 1, rx expander port 1, rx port 2, rx expander port 2]
+     */
+    uint8_t rxAntennaConfig[4];
+
+    /**
+     * \brief Backchannel valid
+     */
+    uint32_t validBackChannel;
+
+};
+
+
+/**
+ * \brief An event for sensors.
+ * \ingroup MAC_EVENT
+ */
+///MAC_EVENTTYPE_SENSOR_DATA           7 SensorData
+struct me_SensorData {
+    /**
+     * \brief packet type
+     */
+    uint16_t type;
+
+    /**
+     * packet sequence number
+     */
+    uint32_t seqNum;
+
+    /**
+     * \brief timestamp of the packet
+     */
+    uint64_t timestamp;
+
+    /**
+     * \brief the GPIO address
+     */
+    uint16_t gpioID;
+
+    /**
+     * \brief The set of sensors that were triggered.
+     *
+     * This is a bit mask of the bottom 4 bits of the number. It is 16 bits to
+     * allow for future expansion, but there are currently only 2 valid
+     * positions.
+     */
+    uint16_t sensor_set;
+
+    /**
+     * \brief The previous set of sensors that were triggered.
+     *
+     * This is a bit mask of the bottom 4 bits of the number. It is 16 bits to
+     * allow for future expansion, but there are currently only 2 valid
+     * positions. This allows the recieving side to be sure that the state
+     * transition is what was expected.
+     */
+    uint16_t old_sensor_set;
+};
+
+/**
+ * \brief An event for sensors health.
+ * \ingroup MAC_EVENT
+ */
+///MAC_EVENTTYPE_SENSOR_HEALTH         8 SensorHealth
+struct me_SensorHealth {
+    /**
+     * \brief packet type
+     */
+    uint16_t type;
+
+    /**
+     * packet sequence number
+     */
+    uint32_t seqNum;
+
+    /**
+     * \brief timestamp of the packet
+     */
+    uint64_t timestamp;
+
+
+    /**
+     * \brief The exciter id. (10 bits base + 2 bit actuator selection)
+     */
+    uint16_t gpioID;
+
+    /**
+     * \brief The status of the sensor health
+     *
+     * 0 : FAILED
+     * 1 : PASSES
+     */
+    uint16_t  status;
+
+};
+
+/**
+ * \brief An event for access ops.
+ * \ingroup MAC_EVENT
+ */
+///MAC_EVENTTYPE_ACCESS_STATUS         6 AccessStatus
+struct me_AccessStatus {
+    /**
+     * \brief packet type
+     */
+    uint16_t type;
+
+    /**
+     * packet sequence number
+     */
+    uint32_t seqNum;
+
+    /**
+     * \brief timestamp of the packet
+     */
+    uint64_t timestamp;
+
+    /**
+     * \brief the internal transmit port or eNode ID
+     */
+    uint32_t txAntennaPort;
+
+    /**
+     * \brief the transmit expander port (0 (none) or 1-4)
+     */
+    uint32_t txExpanderPort;
+
+    /**
+     * \brief the actual access operation.
+     */
+    uint8_t access_op;
+
+    /**
+     * \brief Did an error occur? 0-&gt;Success, 1-&gt;Error Packet, 2-&gt;No Reply
+     */
+    uint8_t error;
+
+    /**
+     * \brief error code.
+     */
+    uint8_t error_code;
+
+    /**
+     * \brief data offset for the following data.
+     */
+    uint16_t data_offset;
+
+    /**
+     * \brief data length for the following data.
+     */
+    uint16_t data_len;
+
+    /**
+     * \brief the actual bits, packed in MSB first.
+     */
+    uint32_t data[MAX_PACKET_WORDS];
+};
+
+///MAC_EVENTTYPE_HEALTH                1 Health
+struct me_Health {
+    /**
+     * \brief packet type
+     */
+    uint16_t type;
+
+    /**
+     * packet sequence number
+     */
+    uint32_t seqNum;
+
+    /**
+     * \brief timestamp of the packet
+     */
+    uint64_t timestamp;
+
+    /**
+     * \brief uptime indicator
+     */
+    uint64_t uptime;
+    
+    /**
+     * \brief current temperature sensor value
+     */
+    int16_t temperature;
+
+    /**
+     * \brief lowest temperature sensor value recorded
+     */
+    int16_t min_temperature;
+    
+    /**
+     * \brief highest temperature sensor value recorded
+     */
+    int16_t max_temperature;        
+};
+</mojixModel3><mojixModel3B __ideNodeOpen="true">/**
+ * \brief the base event type.
+ *
+ * This is the base typ for all events. The type_seq field should be the first
+ * field in all other event structures, so that this member of the union can be used
+ * to determine the actual event type.
+ */
+struct me_Base {
+    /**
+     * \brief the type of this event.
+     */
+    uint32_t type;
+    /**
+     * brief the sequence number for this event
+     */
+    uint32_t seqNum;
+    /**
+     * \brief the timestamp for this event
+     */
+    uint64_t timestamp;
+};
+
+///MAC_EVENTTYPE_READ_REPLY_DATA
+struct me_TagData {
+     /**
+      * \brief the type of this event.
+      */
+     uint32_t type;
+     /**
+      * brief the sequence number for this event
+      */
+     uint32_t seqNum;
+     /**
+      * \brief the timestamp for this event
+      */
+     uint64_t timestamp;
+  
+     /**
+      * \brief the count of inventory rounds
+      */
+     uint32_t round;
+
+     /**
+      * \brief the internal transmit port or eNode ID
+      */
+     uint32_t txAntennaPort;
+
+     /**
+      * \brief the transmit expander port (0 (none) or 1-4)
+      */
+     uint32_t txExpanderPort;
+
+     /**
+      * \brief the RSSI for each channel
+      */
+     float rssi[2];
+    /**
+     * \brief The quality of the packet.
+     *
+     * This is a measure of the Eb/N0 for the packet, though it has an
+     * offset. It is Eb^2/PN
+     */
+    unsigned preambleQuality;
+
+    /**
+     * \brief The quality of the packet from the decoder.
+     */
+    unsigned decoderQuality;
+
+    /**
+     * \brief The per-channel VGA values read from the hardware.
+     *
+     * These values can be used to help recover the signal scaling.
+     */
+    uint8_t vgaValues[N_RX_CHANNELS];
+
+    /**
+     * \brief the number of bits in the packet.
+
+     */
+    int numBits;
+
+    /**
+     * \brief The beamforming coefficients for the packet.
+     *
+     * Disabled channels will have coefficients of (0, 0).
+     * For each pair, index 0 is the I and index 1 is the Q.
+     */
+    int16_t rxPhasors[N_RX_CHANNELS][2];
+
+    /**
+     * \brief digital gain
+     */
+    float digitalGain;
+
+    /**              
+     * \brief the actual bits, packed in MSB first.
+     */
+    uint32_t data[MAX_PACKET_WORDS];
+
+
+    int valid;
+};
+
+///MAC_EVENTTYPE_RN16_DATA             3 RN16Data
+struct me_TagData {
+     /**
+      * \brief the type of this event.
+      */
+     uint32_t type;
+     /**
+      * brief the sequence number for this event
+      */
+     uint32_t seqNum;
+     /**
+      * \brief the timestamp for this event
+      */
+     uint64_t timestamp;
+  
+     /**
+      * \brief the count of inventory rounds
+      */
+     uint32_t round;
+
+     /**
+      * \brief the internal transmit port or eNode ID
+      */
+     uint32_t txAntennaPort;
+
+     /**
+      * \brief the transmit expander port (0 (none) or 1-4)
+      */
+     uint32_t txExpanderPort;
+
+     /**
+      * \brief the RSSI for each channel
+      */
+     float rssi[2];
+    /**
+     * \brief The quality of the packet.
+     *
+     * This is a measure of the Eb/N0 for the packet, though it has an
+     * offset. It is Eb^2/PN
+     */
+    unsigned preambleQuality;
+
+    /**
+     * \brief The quality of the packet from the decoder.
+     */
+    unsigned decoderQuality;
+
+    /**
+     * \brief The per-channel VGA values read from the hardware.
+     *
+     * These values can be used to help recover the signal scaling.
+     */
+    uint8_t vgaValues[N_RX_CHANNELS];
+
+    /**
+     * \brief the number of bits in the packet.
+
+     */
+    int numBits;
+
+    /**
+     * \brief The beamforming coefficients for the packet.
+     *
+     * Disabled channels will have coefficients of (0, 0).
+     * For each pair, index 0 is the I and index 1 is the Q.
+     */
+    int16_t rxPhasors[N_RX_CHANNELS][2];
+
+    /**
+     * \brief digital gain
+     */
+    float digitalGain;
+
+    /**              
+     * \brief the actual bits, packed in MSB first.
+     */
+    uint32_t data[MAX_PACKET_WORDS];
+
+
+    int valid;
+};
+
+///MAC_EVENTTYPE_TAG_READ_DATA         4 TagReadData
+struct me_TagData {
+     /**
+      * \brief the type of this event.
+      */
+     uint32_t type;
+     /**
+      * brief the sequence number for this event
+      */
+     uint32_t seqNum;
+     /**
+      * \brief the timestamp for this event
+      */
+     uint64_t timestamp;
+  
+     /**
+      * \brief the count of inventory rounds
+      */
+     uint32_t round;
+
+     /**
+      * \brief the internal transmit port or eNode ID
+      */
+     uint32_t txAntennaPort;
+
+     /**
+      * \brief the transmit expander port (0 (none) or 1-4)
+      */
+     uint32_t txExpanderPort;
+
+     /**
+      * \brief the RSSI for each channel
+      */
+     float rssi[2];
+    /**
+     * \brief The quality of the packet.
+     *
+     * This is a measure of the Eb/N0 for the packet, though it has an
+     * offset. It is Eb^2/PN
+     */
+    unsigned preambleQuality;
+
+    /**
+     * \brief The quality of the packet from the decoder.
+     */
+    unsigned decoderQuality;
+
+    /**
+     * \brief The per-channel VGA values read from the hardware.
+     *
+     * These values can be used to help recover the signal scaling.
+     */
+    uint8_t vgaValues[N_RX_CHANNELS];
+
+    /**
+     * \brief the number of bits in the packet.
+
+     */
+    int numBits;
+
+    /**
+     * \brief The beamforming coefficients for the packet.
+     *
+     * Disabled channels will have coefficients of (0, 0).
+     * For each pair, index 0 is the I and index 1 is the Q.
+     */
+    int16_t rxPhasors[N_RX_CHANNELS][2];
+
+    /**
+     * \brief digital gain
+     */
+    float digitalGain;
+
+    /**              
+     * \brief the actual bits, packed in MSB first.
+     */
+    uint32_t data[MAX_PACKET_WORDS];
+
+
+    int valid;
+};
+
+// End Packet_Data
+/**
+ * @}
+ */
+
+/**
+ * \brief An event which signals the start of an inventory round
+ *
+ *
+ * \ingroup MAC_EVENT
+ */
+///MAC_EVENTTYPE_ROUND_START           2 RoundStart
+struct me_RoundStart {
+    /**
+     * \brief packet type
+     */
+    uint16_t type;
+
+    /**
+     * packet sequence number
+     */
+    uint32_t seqNum;
+
+    /**
+     * \brief timestamp of the packet
+     */
+    uint64_t timestamp;
+
+    /**
+     * \brief the frequency (in MHz) currently being used
+     */
+    float freq_MHz;
+
+    /**
+     * \brief the frequency band (jurisdiction)
+     */
+    uint16_t jurisdiction;
+
+    /**
+     * \brief the internal transmit port or eNode ID
+     */
+    uint32_t txAntennaPort;
+
+    /**
+     * \brief the transmit expander port (0 (none) or 1-4)
+     */
+    uint32_t txExpanderPort;
+
+    /**
+     * \brief transmit power in dBm
+     */
+    float txPower_dBm;
+
+    /**
+     * \brief array of [rx port 1, rx expander port 1, rx port 2, rx expander port 2]
+     */
+    uint8_t rxAntennaConfig[4];
+
+    /**
+     * \brief Backchannel valid
+     */
+    uint32_t validBackChannel;
+
+};
+
+
+/**
+ * \brief An event for sensors.
+ * \ingroup MAC_EVENT
+ */
+///MAC_EVENTTYPE_SENSOR_DATA           7 SensorData
+struct me_SensorData {
+    /**
+     * \brief packet type
+     */
+    uint16_t type;
+
+    /**
+     * packet sequence number
+     */
+    uint32_t seqNum;
+
+    /**
+     * \brief timestamp of the packet
+     */
+    uint64_t timestamp;
+
+    /**
+     * \brief the GPIO address
+     */
+    uint16_t gpioID;
+
+    /**
+     * \brief The set of sensors that were triggered.
+     *
+     * This is a bit mask of the bottom 4 bits of the number. It is 16 bits to
+     * allow for future expansion, but there are currently only 2 valid
+     * positions.
+     */
+    uint16_t sensor_set;
+
+    /**
+     * \brief The previous set of sensors that were triggered.
+     *
+     * This is a bit mask of the bottom 4 bits of the number. It is 16 bits to
+     * allow for future expansion, but there are currently only 2 valid
+     * positions. This allows the recieving side to be sure that the state
+     * transition is what was expected.
+     */
+    uint16_t old_sensor_set;
+};
+
+/**
+ * \brief An event for sensors health.
+ * \ingroup MAC_EVENT
+ */
+///MAC_EVENTTYPE_SENSOR_HEALTH         8 SensorHealth
+struct me_SensorHealth {
+    /**
+     * \brief packet type
+     */
+    uint16_t type;
+
+    /**
+     * packet sequence number
+     */
+    uint32_t seqNum;
+
+    /**
+     * \brief timestamp of the packet
+     */
+    uint64_t timestamp;
+
+
+    /**
+     * \brief The exciter id. (10 bits base + 2 bit actuator selection)
+     */
+    uint16_t gpioID;
+
+    /**
+     * \brief The status of the sensor health
+     *
+     * 0 : FAILED
+     * 1 : PASSES
+     */
+    uint16_t  status;
+
+};
+
+/**
+ * \brief An event for access ops.
+ * \ingroup MAC_EVENT
+ */
+///MAC_EVENTTYPE_ACCESS_STATUS         6 AccessStatus
+struct me_AccessStatus {
+    /**
+     * \brief packet type
+     */
+    uint16_t type;
+
+    /**
+     * packet sequence number
+     */
+    uint32_t seqNum;
+
+    /**
+     * \brief timestamp of the packet
+     */
+    uint64_t timestamp;
+
+    /**
+     * \brief the internal transmit port or eNode ID
+     */
+    uint32_t txAntennaPort;
+
+    /**
+     * \brief the transmit expander port (0 (none) or 1-4)
+     */
+    uint32_t txExpanderPort;
+
+    /**
+     * \brief the actual access operation.
+     */
+    uint8_t access_op;
+
+    /**
+     * \brief Did an error occur? 0-&gt;Success, 1-&gt;Error Packet, 2-&gt;No Reply
+     */
+    uint8_t error;
+
+    /**
+     * \brief error code.
+     */
+    uint8_t error_code;
+
+    /**
+     * \brief data offset for the following data.
+     */
+    uint16_t data_offset;
+
+    /**
+     * \brief data length for the following data.
+     */
+    uint16_t data_len;
+
+    /**
+     * \brief the actual bits, packed in MSB first.
+     */
+    uint32_t data[MAX_PACKET_WORDS];
+};
+
+///MAC_EVENTTYPE_HEALTH                1 Health
+struct me_Health {
+    /**
+     * \brief packet type
+     */
+    uint16_t type;
+
+    /**
+     * packet sequence number
+     */
+    uint32_t seqNum;
+
+    /**
+     * \brief timestamp of the packet
+     */
+    uint64_t timestamp;
+
+    /**
+     * \brief uptime indicator
+     */
+    uint64_t uptime;
+    
+    /**
+     * \brief current temperature sensor value
+     */
+    int16_t temperature;
+
+    /**
+     * \brief lowest temperature sensor value recorded
+     */
+    int16_t min_temperature;
+    
+    /**
+     * \brief highest temperature sensor value recorded
+     */
+    int16_t max_temperature;        
+};
+</mojixModel3B></file></path></root>

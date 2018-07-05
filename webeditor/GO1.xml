@@ -1,0 +1,513 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root __ideNodeOpen="true"><package __ideNodeOpen="true" name="GOlib1"><component name="json" transparent="" precode="" __ideNodeOpen="false">		case 'calls':
+			
+			if(isset($_POST['delete_keys']))
+			{
+				try
+				{
+					if($GO_MODULES-&gt;modules['calllog']['permission_level'] &lt; GO_SECURITY::MANAGE_PERMISSION)
+					{
+						throw new AccessDeniedException();
+					}
+					
+					$response['deleteSuccess']=true;
+					$delete_calls = json_decode($_POST['delete_keys']);
+					foreach($delete_calls as $call)
+					{
+						$calllog-&gt;delete_call($call);
+					}
+				}catch(Exception $e)
+				{
+					$response['deleteSuccess']=false;
+					$response['deleteFeedback']=$e-&gt;getMessage();
+				}
+			}
+			
+			$sort = isset($_REQUEST['sort']) ? $_REQUEST['sort'] : 'mtime';
+			$dir = isset($_REQUEST['dir']) ? $_REQUEST['dir'] : 'DESC';
+			$start = isset($_REQUEST['start']) ? $_REQUEST['start'] : '0';
+			$limit = isset($_REQUEST['limit']) ? $_REQUEST['limit'] : '0';
+			$query = isset($_REQUEST['query']) ? '%'.$_REQUEST['query'].'%' : '';
+
+			if($sort == 'grid_time')
+			{
+				$sort = 'time';
+			}
+
+			$response['results'] = array();
+			$response['total'] = $calllog-&gt;get_calls($query, $sort, $dir, $start, $limit);
+			while($call = $calllog-&gt;next_record())
+			{
+				$time = $call['time'];
+				$call['date']=date($_SESSION['GO_SESSION']['date_format'], $time);
+				$call['time']=date($_SESSION['GO_SESSION']['time_format'], $time);
+				$call['grid_time']=$call['date'].' '.$call['time'];
+				
+				$response['results'][] = $call;
+			}
+			
+			break;
+
+</component><component name="main" transparent="" precode="" __ideNodeOpen="true"><file name="MainPanel.js" preprocess="">GO.@{$modulo}.MainPanel = function(config)
+{
+  if(!config)
+  {
+    config = {};
+  }
+
+  config.id='cl_@{$modulo}_grid';
+
+@{node::content($_nodes['main_config'])}
+
+@{node::content($_nodes['main_toolbar'])}
+
+  GO.@{$modulo}.MainPanel.superclass.constructor.call(this,config);
+
+  this.on("rowdblclick",this.rowDoubleClick, this);
+  this.on('rowcontextmenu', this.onContextClick, this);
+  
+};
+
+Ext.extend(GO.@{$modulo}.MainPanel, GO.grid.GridPanel,{
+
+  afterRender : function(){
+    GO.@{$modulo}.MainPanel.superclass.afterRender.call(this);
+    
+    this.store.load();
+
+    if(!this.@{$Dialog}Dialog)
+    {
+      this.@{strtolower($Dialog)}Dialog = new GO.@{$modulo}.@{$Dialog}Dialog();
+      this.@{strtolower($Dialog)}Dialog.on('save', function()
+      {
+        this.store.reload();
+      },this)
+    }
+  },
+
+  rowDoubleClick : function (grid)
+  {
+    var selectionModel = grid.getSelectionModel();
+    var record = selectionModel.getSelected();
+
+    this.@{strtolower($Dialog)}Dialog.show(record.data);
+  },
+
+  onContextClick : function(grid, index, e)
+  {
+    if(!this.menu)
+    {
+      this.menu = new Ext.menu.Menu({
+        id:'cf-calls-grid-ctx',
+        items: [
+        {
+          text:GO.@{$modulo}.lang.saveAs@{Dialog},
+          scope:this,
+          handler: function()
+          {
+            var record = grid.selModel.getSelected();
+
+            GO.@{$modulo}.show@{Dialog}Dialog();
+            GO.@{$modulo}.@{Dialog}Dialog.personalPanel.setValues(record.data);
+          }
+        }]
+      });
+    }
+
+    e.stopEvent();
+
+    if(GO.@{$modulo} &amp;&amp; GO.settings.has_admin_permission)
+    {
+      this.ctxRecord = this.store.getAt(index);
+      this.menu.showAt(e.getXY());
+    }
+  }
+  
+});
+
+GO.moduleManager.addModule('@{$modulo}', GO.@{$modulo}.MainPanel, {
+  title : GO.@{$modulo}.lang.@{$modulo},
+  iconCls : 'go-tab-icon-@{$modulo}'
+});
+</file></component><component name="dialog" transparent="" precode="" __ideNodeOpen="false"><file name="@{$dialog}Dialog.js" preprocess="">GO.@{$module}.@{$dialog}Dialog = function(config){
+
+  if(!config)
+  {
+    config = {};
+  }
+
+  this.buildForm();
+
+  config.layout='fit';
+  config.title=GO.@{$module}.lang.@{strtolower($dialog)};
+  config.modal=false;
+  config.border=false;
+  config.width=800;
+  config.autoHeight=true;
+  config.resizable=false;
+  config.plain=true;
+  config.shadow=false,
+  config.closeAction='hide';
+  config.items=this.formPanel;
+
+@{@node::content($_nodes['dialog_config'])}
+    
+  GO.@{$module}.@{$dialog}Dialog.superclass.constructor.call(this,config);
+  
+  this.addEvents({'save' : true});
+}
+
+Ext.extend(GO.@{$module}.@{$dialog}Dialog, Ext.Window, {
+@{@node::content($_nodes['dialog_extend'])}
+  buildForm : function () 
+  {
+@{@node::content($_nodes['dialog_buildForm'])}
+  }  
+});</file></component><component name="main_toolbar" transparent="" precode="" __ideNodeOpen="false">  var tbar = [
+@{node::content($_nodes['main_toolbar_button'],",")}
+  ];
+
+@{node::content($_nodes['main_toolbar_conditionalButton'],",")}
+
+  config.tbar = new Ext.Toolbar({
+    cls:'go-head-tb',
+    items: [tbar,
+        '-',
+            GO.lang['strSearch']+':',
+            this.searchField]
+  });
+</component><component name="main_toolbar_button" transparent="" precode="" __ideNodeOpen="false">  {
+    iconCls: ${$iconCls/*btn-add|btn-delete*/},
+    text: GO.lang[${lang/*cmdAdd|cmdDelete*/}],
+    cls: 'x-btn-text-icon',
+    handler: function()
+    {
+      @{node::content($_)}
+    },
+    scope: this
+  }
+</component><component name="main_toolbar_conditionalButton" transparent="" precode="" __ideNodeOpen="false">  if(@{$condition/*GO.settings.has_admin_permission*/})
+  {
+    tbar.push({
+      iconCls: ${$iconCls/*btn-add|btn-delete*/},
+      text: GO.lang[${lang/*cmdAdd|cmdDelete*/}],
+      cls: 'x-btn-text-icon',
+      handler: function()
+      {  
+        @{node::content($_)}
+      },
+      scope: this
+    });
+  }
+</component><component name="datefield" transparent="" precode="" __ideNodeOpen="false">    this.@{$name} = new Ext.form.DateField({
+      name : ${$name},
+      format : GO.settings['date_format'],
+      fieldLabel: GO.lang.strDate,
+      allowBlank : false
+    });
+</component><component name="timefield" transparent="" precode="" __ideNodeOpen="false">    this.@{$name} = new Ext.form.TimeField({
+      name : ${$name},
+      format : GO.settings['time_format'],
+      fieldLabel: GO.lang.strTime,
+      allowBlank : false
+    });
+</component><component name="combofield" transparent="" precode="" __ideNodeOpen="false">    this.@{$name}_store = new GO.data.JsonStore({
+//        url: GO.url('calllog/tasklist/store'),
+//        baseParams:{permissionLevel: GO.permissionLevels.create},
+        url: GO.settings.modules.@{$module}.url+'json.php',
+        baseParams: {'task': '@{$name}', 'auth_type':'write'},
+        root: 'results',
+        totalProperty: 'total',
+        id: ${$name},
+        fields:['value'],
+        remoteSort: true,
+//        autoLoad: true,
+    });
+    this.@{$name} = new Ext.form.ComboBox({
+      name : ${$name},
+      store : this.@{$name}_store,
+      fieldLabel: @{$lang},
+      allowBlank : false
+    });
+</component><component name="SelectLink" transparent="" precode="" __ideNodeOpen="false">    this.@{$name} = new GO.form.SelectLink({});
+</component><component name="dialog_config" transparent="" precode="" __ideNodeOpen="false">@{node::content($_)}</component><component name="dialog_extend" transparent="" precode="" __ideNodeOpen="false">@{node::content($_)}</component><component name="dialog_buildForm" transparent="" precode="" __ideNodeOpen="false">@{node::content($_)}</component><component name="dialog_extend_onsubmit" transparent="" precode="" __ideNodeOpen="false">  submitForm : function(hide)
+  {
+    this.formPanel.form.submit(
+    {    
+      url:GO.settings.modules.@{$module}.url+'json.php',
+      waitMsg:GO.lang['waitMsgSave'],
+      scope:this,
+@{node::content($_)}
+    });    
+  },
+</component><component name="module" transparent="" precode="" __ideNodeOpen="true"><path path="C:\Program Files (x86)\Zend\Apache2\htdocs\gov1\modules\@{$module}" __ideNodeOpen="true"><php __ideNodeOpen="true">createDir("classes");
+createDir("themes/Default/images");
+createDir("themes/Black/images");
+</php><if condition="!file_exists(&quot;install/install.sql&quot;)"><file name="install/install.sql" preprocess=""/></if><if condition="!file_exists(&quot;install/uninstall.sql&quot;)"><file name="install/uninstall.sql" preprocess=""/></if><if condition="!file_exists(&quot;language/en.js&quot;)"><file name="language/en.js" preprocess=""/></if><if condition="!file_exists(&quot;language/en.php&quot;)"><file name="language/en.php" preprocess=""/></if><if condition="!file_exists(&quot;jslibs.txt&quot;)"><file name="jslibs.txt" preprocess="" __ideNodeOpen="false">modules/calllog/MainPanel.js
+@{node::content($_nodes['module_jslibs'])}#{
+$_res=array();
+foreach($_e-&gt;getElementsByTagName('dialog') as $_b):
+  $_res[]="modules/".$module."/".$_b-&gt;getAttribute("dialog")."Dialog.js";
+endforeach;
+return implode("\n", $_res);
+}
+</file></if><if condition="!file_exists(&quot;themes/Default/style.css&quot;)"><file name="themes/Default/style.css" preprocess="" __ideNodeOpen="true">.go-module-icon-@{module} , .go-menu-icon-@{module} {
+	background-image: url('images/@{module}.png') !important;
+}
+
+.go-tab-icon-@{module} {
+	background-image: none !important;
+}
+</file></if><if condition="!file_exists(&quot;themes/Black/style.css&quot;)"><file name="themes/Black/style.css" preprocess="" __ideNodeOpen="true">.go-module-icon-@{module} , .go-menu-icon-@{module} {
+	background-image: url('images/@{module}.png') !important;
+}
+
+.go-tab-icon-@{module} {
+	background-image: none !important;
+}
+</file></if><if condition="!file_exists(&quot;scripts.inc.php&quot;)"><file name="scripts.inc.php" preprocess="" __ideNodeOpen="true">&lt;?php
+require($GO_LANGUAGE-&gt;get_language_file('@{$module}'));
+
+require_once($GO_MODULES-&gt;modules['@{$module}']['class_path'].'@{$module}.class.inc.php');
+
+if(isset($GO_MODULES-&gt;modules['customfields']))
+{
+	require_once($GO_MODULES-&gt;modules['customfields']['class_path'].'customfields.class.inc.php');
+	$cf = new customfields();
+	$GO_SCRIPTS_JS .= $cf-&gt;get_javascript(18, $lang['@{$module}']['name']);
+}
+</file></if><if condition="!file_exists(&quot;CalllogModule.php&quot;)"><file name="CalllogModule.php" preprocess="" __ideNodeOpen="true">&lt;?php
+class GO_@{UpperCamelCase($module)}_@{UpperCamelCase($module)}Module extends GO_Base_Module{
+}
+</file></if><if condition="!file_exists(&quot;json.php&quot;)"><file name="json.php" preprocess="" __ideNodeOpen="true">&lt;?php
+require_once('../../Phoenix.php');
+$GO_SECURITY-&gt;json_authenticate('@{$module}');
+require_once ($GO_MODULES-&gt;modules['@{$module}']['class_path'].'@{$module}.class.inc.php');
+$@{$module} = new @{$module}();
+require_once($GLOBALS['GO_MODULES']-&gt;modules['addressbook']['class_path'].'addressbook.class.inc.php');
+$ab = new addressbook;
+
+$task=isset($_REQUEST['task']) ? $_REQUEST['task'] : '';
+try{
+  switch($task)
+  {
+    case '@{$module}':
+  }
+}catch(Exception $e)
+{
+  $response['feedback']=$e-&gt;getMessage();
+  $response['success']=false;
+}
+echo json_encode($response);
+</file></if></path></component><component name="module_jslibs" transparent="" precode="" __ideNodeOpen="false">@{node::content($_)}</component><component name="module_linkable" transparent="" precode="" __ideNodeOpen="false">/*
+ * If your module has a linkable item, you should add a link handler like this. 
+ * The index (no. 1 in this case) should be a unique identifier of your item.
+ * See classes/base/links.class.inc for an overview.
+ * 
+ * Basically this function opens a project window when a user clicks on it from a 
+ * panel with links. 
+ */
+
+GO.linkHandlers["GO_@{$module}_Model_@{$dialog}"]=function(id){
+  if(!GO.@{$module}.linkWindow){
+    var panel = new GO.@{$module}.@{$dialog}Dialog();
+    GO.@{$module}.linkWindow= new GO.LinkViewWindow({
+      title: GO.@{$module}.lang.@{strtolower($dialog)},
+      items: panel,
+      panel: panel,
+      closeAction:"hide"
+    });
+  }
+  GO.@{$module}.linkWindow.panel.load(id);
+  GO.@{$module}.linkWindow.show();
+  return GO.@{$module}.linkWindow;
+}
+
+GO.linkPreviewPanels["GO_@{$module}_Model_@{$dialog}"]=function(config){
+  config = config || {};
+  return new GO.@{$module}.@{$dialog}Dialog(config);
+}
+/* {LINKHANDLERS} */
+GO.@{$module}.show@{$dialog}Dialog = function(config){
+
+  if(!GO.@{$module}.@{strtolower(substr($dialog,0,1)).substr($dialog,1)}Dialog)
+    GO.@{$module}.@{strtolower(substr($dialog,0,1)).substr($dialog,1)}Dialog = new GO.@{$module}.@{$dialog}Dialog();
+  
+  GO.@{$module}.@{strtolower(substr($dialog,0,1)).substr($dialog,1)}Dialog.show(config);
+}
+
+GO.newMenuItems.push({
+  text: GO.@{$module}.lang.@{strtolower($dialog)},
+  iconCls: 'go-model-icon-GO_@{$module}_Model_@{$dialog}-toolbar',
+  handler:function(item, e){
+    //by scrapy
+    if(typeof item.parentMenu=="undefined"){
+      item.parentMenu={
+        link_config:GO.MainLayout.link_config
+      };
+    }
+    GO.@{$module}.show@{$dialog}Dialog(0, {
+      link_config: item.parentMenu.link_config      
+    });
+  }
+});</component><component name="imprime" transparent="" precode="" __ideNodeOpen="false">#{echo node::content($_);}</component></package><module module="leads" __ideNodeOpen="true"><module_jslibs __ideNodeOpen="false"></module_jslibs><dialog dialog="Lead" module="leads" __ideNodeOpen="false"><dialog_config __ideNodeOpen="true">  config.buttons=[
+    {
+      text:GO.lang['cmdSave'],
+      handler: function()
+      {
+        this.submitForm(true)
+      },
+      scope: this
+    },
+    {
+      text:GO.lang['cmdCancel'],
+      handler: function()
+      {
+        this.hide()
+      },
+      scope: this
+    }
+  ];
+</dialog_config><dialog_extend __ideNodeOpen="true">  show : function(config) {console.log(config);
+    if (config.link_config) {
+      this.link_config = config.link_config;
+      if (config.link_config.modelNameAndId) {
+        this.selectLinkField.setValue(config.link_config.modelNameAndId);
+        this.selectLinkField.setRemoteText(config.link_config.text);
+        this.phone_store.load({params:{link:config.link_config.modelNameAndId}});
+      }
+    }
+    GO.calllog.CallDialog.superclass.show.call(this);
+  },
+<dialog_extend_onsubmit module="calllog" __ideNodeOpen="true">      params: {
+        task:'save_call',
+        id:this.call_id
+      },
+      waitMsg:GO.lang['waitMsgSave'],
+      success:function(form, action)
+      {
+        if(action.result.id)
+        {
+          this.call_id=action.result.id;
+        }
+      
+        this.fireEvent('save');
+        
+        if(hide)
+        {
+          this.hide();
+        }
+      },
+      failure: function(form, action) 
+      {
+        var error = '';
+        if(action.failureType=='client')
+        {
+          error = GO.lang['strErrorsInForm'];
+        }else
+        {
+          error = action.result.feedback;
+        }
+        Ext.MessageBox.alert(GO.lang['strError'], error);
+      },
+</dialog_extend_onsubmit></dialog_extend><dialog_buildForm __ideNodeOpen="true"><SelectLink name="selectLinkField"/><datefield name="date"/><timefield name="time"/><combofield name="phone" module="calllog" lang="GO.lang.strPhone"/>    this.TypeCallCombo = new GO.form.ComboBox({
+      fieldLabel: GO.calllog.lang.callType,
+      hiddenName:'callType',
+      store: new Ext.data.SimpleStore({
+        fields: ['value', 'text'],
+        data : [
+        ['I', GO.calllog.lang.inbound],
+        ['O', GO.calllog.lang.outbound]
+        ]
+        
+      }),
+      value:'I',
+      valueField:'value',
+      displayField:'text',
+      mode: 'local',
+      triggerAction: 'all',
+      editable: false,
+      selectOnFocus:true,
+      forceSelection: true
+    });
+    
+    var fieldsetIO = new Ext.form.FieldSet({
+      cls:'go-form-panel',
+      collapsed:false,
+      items:this.TypeCallCombo,  
+    });
+    var fieldset = new Ext.form.FieldSet({
+      //title:GO.lang.strProperties,
+      cls:'go-form-panel',
+      anchor:'100% 100%',      
+      defaults:{
+        anchor:'-20',
+        labelWidth:140
+      },
+      defaultType:'textfield',
+      collapsed:false,
+      items:[this.selectLinkField,this.date,this.time,this.phone,
+      {
+        //fieldLabel: 'Subject',
+        //name: 'subject'
+        xtype : 'compositefield',
+                        anchor: '-20',
+                        msgTarget: 'side',
+                        fieldLabel: GO.calllog.lang.subject,
+                        items : [
+                            {
+                                /* cargar datos de la base */
+                                width:          330,
+                                xtype:          'combo',
+                                mode:           'local',
+                                value:          '',
+                                triggerAction:  'all',
+                                forceSelection: true,
+                                editable:       false,
+                                fieldLabel:     'Subject',
+                                name:           GO.calllog.lang.subject,
+                                hiddenName:     'subject',
+                                displayField:   'value',
+                                valueField:     'value',
+                                store:          new Ext.data.JsonStore({
+                                    fields : ['name', 'value'],
+                                    data   : [
+                                        {name : '0',   value: ''},
+                                        {name : '1',   value: 'Greetings'},
+                                        {name : '2',   value: 'Important'},
+                    {name : '3',   value: 'Sending Notification'}
+                                    ]
+                                })
+                            },
+                            {
+                                xtype: 'button',
+                                name : 'addSubject',
+                                text : GO.calllog.lang.addSubject
+                            }
+                        ]
+        
+        
+      },{
+        fieldLabel: GO.lang.strDescription,
+        name: 'description',
+        xtype:'textarea'
+      },]
+    });
+
+    var items_left_col=[];
+    var items_right_col=[];
+    items_left_col.push(fieldset);
+    items_right_col.push(fieldsetIO);
+
+    this.formPanel = new Ext.FormPanel({
+      cls:'go-form-panel',
+      labelWidth: 75,
+      autoHeight:true,
+      border:false,
+      width: 500,
+      items: [
+      {
+        border:false,
+        items:items_left_col
+      }]
+    });</dialog_buildForm></dialog><main modulo="leads" Dialog="Lead"/></module></root>

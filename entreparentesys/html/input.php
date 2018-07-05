@@ -1,0 +1,1 @@
+<label for="<?=@$DATA['name']?>" class="sr-only"><?=@$DATA['label']?></label><input name="<?=@$DATA['name']?>" type="<?=@$DATA['type']?>" class="form-control" placeholder="<?=@$DATA['label']?>"/>

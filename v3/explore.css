@@ -1,0 +1,33 @@
+html,body{
+    font-family: sans-serif;
+    font-size: 10pt;
+	padding:0px;
+	margin:0px;
+}
+.exTree ul li{
+    list-style-image: url("images/folder.png");
+}
+.exTree ul li.page{
+    list-style-image: url("images/page.png");
+}
+.exTree ul li:hover{
+    background-color: Highlight;
+    cursor: pointer;
+}
+
+#explore{
+    display:inline-block;
+    width:30%;
+    border: 1px dotted lightgray;
+}
+#diagram{
+    display:inline-block;
+    width:69%;
+//    border: 1px dotted lightgray;
+}
+#diagramCode{
+    display:inline-block;
+    width:69%;
+    border: 1px dotted lightgray;
+	float:right;
+}

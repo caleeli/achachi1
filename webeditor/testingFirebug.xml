@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root><path path="output/testFirebug" main="output/testFirebug/index.php"><file name="index.php" preprocess="">&lt;pre&gt;&lt;?php
+$logPath = "./log";
+define("SITE", "sigephelp.sigma.gob.bo:7001");
+$myarray = glob($logPath.'/*');
+usort($myarray, create_function('$a,$b', 'return filemtime($a) - filemtime($b);'));
+
+foreach($myarray as $fn){
+  $f = basename($fn,".har");
+  list($site, $date, $time) = explode("+", $f);
+  $site = str_replace("-", ":", $site);
+  $time = str_replace("-", ":", $time);
+echo $f, "\n";
+  if($site==SITE){
+    $data = file_get_contents($fn);
+    $data = json_decode($data);
+
+    //CALCULA PESO DE LA PAGINA
+    $tam = 0; $max = 0; $tamH=0;
+    foreach($data-&gt;log-&gt;entries as $i =&gt; $e){
+      $tam0 = $e-&gt;response-&gt;bodySize;
+      $tam+=$tam0;
+      $tamH+=$tam0+$e-&gt;response-&gt;headersSize;
+      if($e-&gt;time &gt; $data-&gt;log-&gt;entries[$max]-&gt;time) $max = $i;
+    }
+    //DATOS DE LA PAGINA
+    echo 'PAGES:&lt;table border="1"&gt;';
+/*    echo '&lt;tr&gt;';
+    echo '&lt;td&gt;PAGINA&lt;/td&gt;';
+    echo '&lt;td&gt;TT&lt;/td&gt;';
+    echo '&lt;td&gt;Bloqueado&lt;/td&gt;';
+    echo '&lt;td&gt;Consulta DNS&lt;/td&gt;';
+    echo '&lt;td&gt;Conectando&lt;/td&gt;';
+    echo '&lt;td&gt;Enviando&lt;/td&gt;';
+    echo '&lt;td&gt;En espera&lt;/td&gt;';
+    echo '&lt;td&gt;Recibiendo&lt;/td&gt;';
+    echo '&lt;td&gt;Tamaño&lt;/td&gt;';
+    echo '&lt;td&gt;OBSERVACIONES ESPECIFICAS&lt;/td&gt;';
+    echo '&lt;/tr&gt;';*/
+    foreach($data-&gt;log-&gt;pages as $page){
+      $t1 = formatTime($page-&gt;pageTimings-&gt;onContentLoad);
+      $t2 = formatTime($page-&gt;pageTimings-&gt;onLoad);
+      echo '&lt;tr&gt;';
+      echo '&lt;td&gt;'.$page-&gt;title.'&lt;/td&gt;';
+      echo '&lt;td&gt;'.$t1.' (onload: '.$t2.')'.'&lt;/td&gt;';
+      //MAYOR REQUEST
+      $e = $data-&gt;log-&gt;entries[$max];
+      $tam0 = $e-&gt;response-&gt;bodySize;
+      echo '&lt;td&gt;'.$e-&gt;timings-&gt;blocked.'&lt;/td&gt;';
+      echo '&lt;td&gt;'.$e-&gt;timings-&gt;dns.'&lt;/td&gt;';
+      echo '&lt;td&gt;'.$e-&gt;timings-&gt;connect.'&lt;/td&gt;';
+      echo '&lt;td&gt;'.$e-&gt;timings-&gt;send.'&lt;/td&gt;';
+      echo '&lt;td&gt;'.$e-&gt;timings-&gt;wait.'&lt;/td&gt;';
+      echo '&lt;td&gt;'.$e-&gt;timings-&gt;receive.'&lt;/td&gt;';
+      //TAMAÑO TOTAL
+      echo '&lt;td&gt;'.formatSize($tam). ' (withheader='.formatSize($tamH).')'.'&lt;/td&gt;';
+      //OBS
+      echo '&lt;td&gt;'.$e-&gt;request-&gt;url . ' (size= '.formatSize($tam0).')'.'&lt;/td&gt;';
+      echo '&lt;/tr&gt;';
+    }
+    echo '&lt;/table&gt;';
+    /*echo 'ENTRIES:&lt;table border="1"&gt;';
+    echo '&lt;tr&gt;';
+    echo '&lt;td&gt;URL&lt;/td&gt;';
+    echo '&lt;td&gt;Tiempo&lt;/td&gt;';
+    echo '&lt;td&gt;Bloqueado&lt;/td&gt;';
+    echo '&lt;td&gt;Consulta DNS&lt;/td&gt;';
+    echo '&lt;td&gt;Conectando&lt;/td&gt;';
+    echo '&lt;td&gt;Enviando&lt;/td&gt;';
+    echo '&lt;td&gt;En espera&lt;/td&gt;';
+    echo '&lt;td&gt;Recibiendo&lt;/td&gt;';
+    echo '&lt;td&gt;Tamaño&lt;/td&gt;';
+    echo '&lt;/tr&gt;';
+    $tam = 0;
+    foreach($data-&gt;log-&gt;entries as $i =&gt; $e){
+      $tam0 = $e-&gt;response-&gt;bodySize;
+      $tam+=$tam0;
+      echo '&lt;tr&gt;';
+      echo '&lt;td&gt;'.$e-&gt;request-&gt;url.'&lt;/td&gt;';
+      echo '&lt;td&gt;'.$e-&gt;time.'&lt;/td&gt;';
+      echo '&lt;td&gt;'.$e-&gt;timings-&gt;blocked.'&lt;/td&gt;';
+      echo '&lt;td&gt;'.$e-&gt;timings-&gt;dns.'&lt;/td&gt;';
+      echo '&lt;td&gt;'.$e-&gt;timings-&gt;connect.'&lt;/td&gt;';
+      echo '&lt;td&gt;'.$e-&gt;timings-&gt;send.'&lt;/td&gt;';
+      echo '&lt;td&gt;'.$e-&gt;timings-&gt;wait.'&lt;/td&gt;';
+      echo '&lt;td&gt;'.$e-&gt;timings-&gt;receive.'&lt;/td&gt;';
+      echo '&lt;td&gt;'.formatSize($tam0).'&lt;/td&gt;';
+      echo '&lt;/tr&gt;';
+    }
+    echo '&lt;/table&gt;';*/
+  }
+}
+
+
+function formatTime($t1){
+  if($t1&gt;1000) $t1 = number_format($t1/1000, 2) . " s";
+  else $t1 = $t1 . " ms";
+  return $t1;
+}
+
+function formatSize($s){
+  $metric = " B";
+  if($s&gt;=1024) {$s = $s / 1024; $metric="KB";}
+  if($s&gt;=1024) {$s = $s / 1024; $metric="MB";}
+  return number_format($s,1)." $metric";
+}</file></path></root>

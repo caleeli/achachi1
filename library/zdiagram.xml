@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root __ideNodeOpen="true"><include src="$library/zplugin.xml"/><path path="output/arch" main="output/arch/index.html" __ideNodeOpen="true"><file name="index.html" preprocess="" __ideNodeOpen="false">HELLO WORLD</file><component name="arch" transparent="" precode="" __ideNodeOpen="true"/><arch __ideNodeOpen="false"><!--console.log(123);--><file name="filename" preprocess=""/><file name="filename" preprocess=""/></arch></path><zplugin name="arch" nodesEditor="arch" __ideNodeOpen="true"><!--#editor.plugin
+
+
+window.zArch={
+    ondragover:function(event){
+        event.preventDefault();
+        if(event.dataTransfer.getData("IsResizer")=="true"){
+            zArch.resizer.ondragover(event);
+        }
+    },
+    ondrop:function(event){
+        event.preventDefault();
+        var data = event.dataTransfer.getData("Text");
+        var source = event.dataTransfer.getData("Id");
+        source = document.getElementById(source);
+        if(source){
+            var pos=$(source).position();
+            source.style.position="absolute";
+            var deltaX=event.clientX-event.dataTransfer.getData("clientX")*1;
+            var deltaY=event.clientY-event.dataTransfer.getData("clientY")*1;
+            source.style.left=(pos.left+deltaX)+'px';
+            source.style.top=(pos.top+deltaY)+'px';
+            if($(source.nextSibling).hasClass("resizer")){
+              source.nextSibling.style.left=(pos.left+deltaX+$(source).width())+'px';
+              source.nextSibling.style.top=(pos.top+deltaY+$(source).height())+'px';
+            }
+        }
+    },
+    ondragstart:function(event){
+        var pos=$(event.target).position();
+        var width=$(event.target.previousSibling).width();
+        var height=$(event.target.previousSibling).height();
+        event.target.style.position="absolute";
+        event.target.style.top=pos.top+'px';
+        event.target.style.left=pos.left+'px';
+        if(!event.target.id) event.target.id = new Date().getTime();
+        event.dataTransfer.setData("Id", event.target.id);
+        event.dataTransfer.setData("clientX", event.clientX );
+        event.dataTransfer.setData("clientY", event.clientY );
+        event.dataTransfer.setData("width", width );
+        event.dataTransfer.setData("height", height );
+        event.target.style.border="1px dashed black";
+    },
+    resizer:{
+        ondragover:function(event){
+            var source = event.dataTransfer.getData("Id");
+            source = document.getElementById(source);
+            source = source.previousSibling;
+            if(source){
+                var width=event.dataTransfer.getData("width")*1;
+                var height=event.dataTransfer.getData("height")*1;
+                source.style.height=(height + event.clientY-event.dataTransfer.getData("clientY")*1)+'px';
+                source.style.width =(width  +event.clientX-event.dataTransfer.getData("clientX")*1)+'px';
+            }
+        },
+        ondragstart:function(event){
+            zArch.ondragstart(event);
+            event.dataTransfer.setData("IsResizer", "true");
+        }
+    }
+};
+
+zplugin.create($this.parentNode);
+componentsIndex[$this.parentNode.nodeName].editor=zcomponent.launch;
+
+--><zplugin.components __ideNodeOpen="true"/><zplugin.base __ideNodeOpen="true">"div",{},[
+  "style",{},".draggable{display:inline-block;border:1px solid black;background-color:rgba(255,255,0,0.4);} .resizer{width:4px;height:4px;background:black;position:absolute;display:inline-block;cursor:move;}",
+],
+"div",{style:"border:none;width:100%;height:100%;position:relative;",
+    ondragover:zArch.ondragover,
+    ondrop:zArch.ondrop
+  },[
+  "span",{id:"elem1",draggable:"true",ondragstart:zArch.ondragstart,class:"draggable"},"drag me 1",
+  "span",{draggable:"true",ondragstart:zArch.resizer.ondragstart,class:"resizer"},"",
+ /* (function(){
+    return ["span",{},""];
+    var source="elem1";
+    var target="elem2";
+    source=document.getElementById(source);
+    target=document.getElementById(target);
+    var posSource=$(source).position();
+    var posTarget=$(target).position();
+    var c=document.createElement("canvas");
+    c.style.position="absolute";
+    c.style.left=Math.min(posSource.left,posTarget.left);
+    c.style.top=Math.min(posSource.top,posTarget.top);
+    c.width=Math.abs(posSource.left-posTarget.left)+1;
+    c.height=Math.abs(posSource.top-posTarget.top)+1;
+    var ctx = c.getContext("2d");
+    ctx.moveTo(0,0);
+    ctx.lineTo(c.width,c.height);
+    ctx.stroke();
+
+    return c;
+  })(),*/
+  "img",{src:"/achachi/webeditor/images/32/component.gif"},[]
+]</zplugin.base><zplugin.launch>
+/**
+ * This plugin needs HTML5
+ */
+var diagramData={
+  "/#comment":{left:0,top:0,with:100,height:32}
+}
+var $comment;
+if(node.firstChild){
+  if(node.firstChild.nodeName=="#comment"){
+    $comment=node.firstChild;
+  } else {
+    $comment=node.ownerDocument.createComment("");
+    node.insertBefore($comment, node.firstChild);
+  }
+} else {
+  $comment=node.ownerDocument.createComment("");
+  node.appendChild($comment);
+}
+var xPathBase=getXPath(node);
+var getRelativeXPath=function(e){
+  return getXPath(e).substr(xPathBase.length);
+}
+var saveDiagramData=function(e){
+  var data={};
+  for(var i=0,l=e.childNodes.length;i&lt;l;i++){
+    data[getRelativeXPath(e.childNodes[i])]=saveDiagramData(e.childNodes[i]);
+  }
+  if(!e) {
+    $comment.nodeValue='diagramData='+JSON.stringify(data);
+    return data;
+  } else {
+    return $.extend(data, links[e]);
+  }
+}
+var drawElement=function(e){
+  var arr=Z.xml2array(e);
+  return [
+    "span",{draggable:"true",ondragstart:zArch.ondragstart,class:"draggable"},[
+      "div",{style:"border-bottom:1px solid black"},arr[0],
+      "div",{},JSON.stringify(arr[1])],
+  "span",{draggable:"true",ondragstart:zArch.resizer.ondragstart,class:"resizer"},""];
+}
+//var styles=canvas.firstChild.firstChild;
+//$(canvas.firstChild).empty();
+//$(canvas.firstChild).append(styles);
+$(canvas.childNodes[1]).empty();
+for(var i=0,l=node.childNodes.length;i&lt;l;i++){
+  draw3(canvas.childNodes[1], drawElement(node.childNodes[i]));
+}
+</zplugin.launch></zplugin></root>

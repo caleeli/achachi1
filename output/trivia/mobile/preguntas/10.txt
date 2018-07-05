@@ -1,0 +1,3 @@
+var res={"pregunta":"\u00bfComo evito Dios que los hombres terminaran la torre de Babel? ","respuestas":["Haciendo que la gente hablara diferentes idiomas","Haciendo que la gente llorara","Haciendo que la gente se arrepintiera","Ninguno"],"correcta":"0","imagen":"img\/1300.jpeg"};
+dibujaPregunta($pregunta,$respuestas,$imagen,res);
+

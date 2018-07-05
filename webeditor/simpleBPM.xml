@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root><path path="output/simpleBPM" main="output/simpleBPM/index.php"><file name="index.php" preprocess="">&lt;pre&gt;
+&lt;?php
+define(SB_INPUT_MISS, "No se encuentra la entrada requerida: ");
+
+class Error {
+  var $errors=array();
+  function add($error){
+    $this-&gt;errors[]=$error;
+  }
+  function hasErrors(){
+    return count($this-&gt;errors);
+  }
+  function info(){
+    print "ERROR\n";
+    print_r($this-&gt;errors);
+  }
+}
+
+class Task {
+  var $responsables=array();
+  var $entradas=array();
+  var $salidas=array();
+  function Task($responsables, $entradas, $salidas=array()) {
+    $this-&gt;responsables=$responsables;
+    $this-&gt;entradas=$entradas;
+    $this-&gt;salidas=$salidas;
+  }
+  function run($inputs) {
+    $error = new Error();
+    foreach($this-&gt;entradas as $_) if(!isset($inputs[$_])) $error-&gt;add(SB_INPUT_MISS . $_);
+    if($error-&gt;hasErrors()) return $error;
+    return new TaskInstance($this, $inputs);
+  }
+  function addOutput($condition, $task, $name=null){
+    if(isset($name)) $this-&gt;salidas[$name]=array($condition, $task);
+    else $this-&gt;salidas[]=array($condition, $task);
+    return $task;
+  }
+  function getOutput($name){
+    return $this-&gt;salidas[$name][1];
+  }
+  function getOutputCondition($name){
+    return $this-&gt;salidas[$name][0];
+  }
+}
+
+class TaskInstance {
+  var $task;
+  var $responsables=array();
+  var $entradas=array();
+  var $salidas=array();
+  function TaskInstance($task, $inputs) {
+    $this-&gt;task = $task;
+    $this-&gt;entradas = $inputs;
+  }
+  function step($__inputs){
+    foreach($__inputs as $_ =&gt; $__) $$_ = $__;
+    $__output = array();
+    foreach($this-&gt;task-&gt;salidas as $__task){
+      $__result = true;
+      if($__task[0]) eval('$__result=' . $__task[0] . ';');
+      if($__result) {
+        $__t = $__task[1]-&gt;run($__inputs);
+        if($__t instanceof TaskInstance) $__output[] = $__t;
+      }
+    }
+    return $__output;
+  }
+  function info(){
+    print "TASK: \n";
+    print "Responsables: ".implode(", ",$this-&gt;responsables)."\n";
+    print "Entradas: \n";
+    print_r($this-&gt;entradas);
+  }
+}
+
+function taskInfo($a){
+  print "-----\n";
+  if(is_array($a)){
+    foreach($a as $t) $t-&gt;info();
+  } else {
+    $a-&gt;info();
+  }
+}
+
+//Flow definition
+$task0 = new Task(
+  array("drojas", "bcoca"),
+  array("consulta"),
+  array(
+    array('!empty($respuesta)',new Task(
+      array("*"),
+      array("respuesta"),
+      array(
+        array('@$conforme=="S"',new Task(
+          array("*"),
+          array(),
+          array()
+        ))
+      )
+    ))
+  )
+);
+$task0-&gt;getOutput(0)-&gt;addOutput('!empty($consulta)', $task0);
+//END Flow definition
+
+///
+$task1 = new Task(
+  array("drojas", "bcoca"),
+  array("consulta")
+);
+$task2 = $task1-&gt;addOutput('', new Task(
+  array("*"),
+  array("respuesta")
+));
+$task2-&gt;addOutput('', $task1);
+$fin = $task2-&gt;addOutput('@$conforme=="S"', new Task(
+  array("*"),
+  array("conforme")
+));
+///
+
+
+$e = $task1-&gt;run(array("consulta"=&gt;"Tengo una consulta"));
+taskInfo($e);
+
+$e2 = $e-&gt;step(array("respuesta"=&gt;"Cual es su consulta?"));
+taskInfo($e2);
+
+$e = $e2[0]-&gt;step(array("consulta"=&gt;"como registro mi NIT"));
+taskInfo($e);
+
+$e = $e[0]-&gt;step(array("respuesta"=&gt;"debes hacer click en Registrarme."));
+taskInfo($e);
+
+$e = $e2[0]-&gt;step(array("conforme"=&gt;"S"));
+taskInfo($e);
+
+</file></path></root>

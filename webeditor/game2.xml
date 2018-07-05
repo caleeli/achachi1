@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8"?><root><include src="$library/zend.xml"/><include src="$library/googleimages.xml"/><application name="game" main="index/index" __ideNodeOpen="true"><controller name="index" descripcion="" author=""><action name="index" noRender="false" descripcion="" loadParams=""/><phtml name="index" __ideNodeOpen="true"><jqueryui name="filename" __ideNodeOpen="true">&lt;html xmlns="http://www.w3.org/1999/xhtml"&gt;
+&lt;head&gt;
+&lt;meta http-equiv="Content-Type" content="text/html; charset=utf-8"/&gt;
+&lt;title&gt;&lt;?php print "New Page"; ?&gt;&lt;/title&gt;
+&lt;link type="text/css" href="/jquery/css/face/jquery-ui.custom.css" rel="stylesheet"/&gt;	
+&lt;link type="text/css" href="css" rel="stylesheet"/&gt;	
+&lt;script type="text/javascript" src="/jquery/js/jquery.min.js"&gt;&lt;/script&gt;
+&lt;script type="text/javascript" src="/jquery/js/jquery-ui.custom.min.js"&gt;&lt;/script&gt;
+&lt;style&gt;.qE{
+  display:inline-block;
+  position:absolute;
+}
+html{
+  height:100%;
+}
+body{
+
+  padding:0px;
+  margin:0px;
+  font-size:12px;
+}&lt;/style&gt;
+&lt;script type="text/javascript" src="../../js/core.js"&gt;&lt;/script&gt;
+&lt;script type="text/javascript" id="jsloader"&gt;
+&lt;!--
+$(function(){
+  $("#map").map({});
+//qend//
+});
+--&gt;
+&lt;/script&gt;
+&lt;?php
+//TODO
+/*
+&lt;div jid="" style="width: 80px; height: 80px; background-color: lightgreen; left: 376px; top: 152px;" class="qE div"&gt;
+&lt;div id="progress"/&gt;
+&lt;script&gt;$(&lt;?php
+  $images = glob("images/*");
+  $img=array();
+  foreach($images as $i){
+    $img[]=basename($i);
+  }
+  echo json_encode($img);
+?&gt;).preloadImages();&lt;/script&gt;
+&lt;/div&gt;
+*/
+?&gt;&lt;/head&gt;
+&lt;body&gt;&lt;div id="map" class="qE div" style="width: 753px; height: 313px; background-color: lightgreen; position: absolute; top: 0px; left: 0px;" jid=""/&gt;&lt;/body&gt;
+&lt;/html&gt;
+</jqueryui></phtml><action name="load" noRender="true" descripcion="" loadParams="" __ideNodeOpen="true">//type,x,y,width,height
+$city = array(
+  "su" =&gt; array(
+/*    array("Stone",0,0,20,1,0,2),
+    array("Stone",0,1,15,2,-2,1),
+    array("Stone",0,1,5,2,-1,1),
+    array("Water",5,1,5,2,-1),
+    array("Plain",0,1,1,1),
+    array("Plain",1,1,1,1),
+    array("Stone",0,2,1,1),
+    array("Stone",1,2,1,1),
+    array("RampEast",2,1,1,1),
+    array("Stone",2,2,1,1,-1),*/
+    array("Grass",0,0,4,3),
+    array("Plain",4,0,1,4),
+    array("Plain",0,3,5,1),
+
+    array("Grass",6,0,4,3),
+    array("Stone",0,5,11,1),
+    array("Stone",5,0,1,9),
+    array("Grass",0,6,5,3),
+    array("Grass",6,6,5,3),
+  ),
+  "el" =&gt; array(
+    array("CharacterBoy",1,3),
+    array("TreeTall",10,2),
+    array("TreeTall",6,2),
+    array("TreeTall",6,1),
+    array("TreeTall",10,4),
+    array("TreeTall",6,4,3),
+  ),
+  "pl" =&gt; array(
+    array("player1",0,0)
+  ),
+);
+
+/*el Order By y*/
+for($i=0,$l=count($city["el"]);$i&lt;$l;$i++){
+  for($j=$i+1;$j&lt;$l;$j++){
+    if($city["el"][$i][2]&gt;$city["el"][$j][2]) {
+      $s = $city["el"][$i];
+      $city["el"][$i] = $city["el"][$j];
+      $city["el"][$j] = $s;
+    }
+  }
+}
+echo json_encode($city);
+</action><action name="css" noRender="false" descripcion="" loadParams="" __ideNodeOpen="true"/><phtml name="css" __ideNodeOpen="true">.su{
+  position:absolute;
+  display:inline-block;
+  width:101px;
+  height:171px;
+/*  background-position:0px -50px;*/
+  border:none;
+  margin:0px;
+  padding:0px;
+}
+.el{
+  position:absolute;
+  display:inline-block;
+  width:101px;
+  height:171px;
+  border:none;
+  margin:0px;
+  padding:0px;
+}
+.pl{
+  position:absolute;
+  display:inline-block;
+  with:21px;
+  height:21px;
+}
+.acera{
+  background-image:url('../../images/Water Block.png');
+}
+&lt;?php
+  foreach(glob("images/*Block.png") as $block) {
+    $blockImg = '../../images/' . basename($block);
+    $blockName = basename($block, " Block.png");
+    print ".".$blockName."{background-image:url('".$blockImg."');}";
+  }
+  foreach(glob("images/*.png") as $block) {
+    $blockImg = '../../images/' . basename($block);
+    $blockName = basename($block, ".png");
+    $blockName = str_replace(" ", "", $blockName);
+    print ".".$blockName."{background-image:url('".$blockImg."');}";
+  }
+/*  foreach(glob("images/*Tall.png") as $block) {
+    $blockImg = '../../images/' . basename($block);
+    $blockName = basename($block, " Tall.png")."Tall";
+    print ".".$blockName."{background-image:url('".$blockImg."');}";
+  }*/
+?&gt;</phtml></controller><images path="game" folder="html/images"/><file name="html/js/core.js" preprocess="" __ideNodeOpen="true">/* Helper function, used below.*/
+/* Usage: ['img1.jpg','img2.jpg'].remove('img1.jpg');*/
+
+Array.prototype.remove = function(element) {
+  for (var i = 0; i &lt; this.length; i++) {
+    if (this[i] == element) { this.splice(i,1); }
+  }
+};
+
+// Usage: $(['img1.jpg','img2.jpg']).preloadImages(function(){ ... });
+// Callback function gets called after all images are preloaded
+$.fn.preloadImages = function(callback) {
+  checklist = this.toArray();
+  this.each(function() {
+    $('&lt;img&gt;').attr({ src: '../../images/'+this }).load(function() {
+      $("#progress").html(''+this.src);
+      checklist.remove($(this).attr('src'));
+      if (checklist.length == 0) { callback(); }
+    });
+  });
+};
+$.fn.drawMap=function(map, baseCla, defaultZ){
+  var bw=101,bw1=100+1,bh=171,bh1=80,bhz=40;
+  for (var i = 0, l = map.length; i &lt; l; i++) {
+    var cla = map[i][0];
+    var x = map[i][1]*bw1;
+    var y = map[i][2]*bh1;
+    var w = map[i][3]?map[i][3]:1;
+    var h = map[i][4]?map[i][4]:1;
+    var z = (map[i][5]?map[i][5]:defaultZ)*bhz+50;
+    var zh = (map[i][6]?map[i][6]:1);
+    y = y - z;
+    //for(var zi=zh-1;zi&gt;=0;zi--) for(var hi=0;hi&lt;h;hi++) for(var wi=0;wi&lt;w;wi++)
+    //  this.append('&lt;span class="'+baseCla+' '+cla+'" style="left:'+(x+wi*bw1)+';top:'+(y+hi*bh1+zi*bhz)+';" /&gt;');
+    for(var zi=zh-1;zi&gt;=0;zi--) for(var hi=0;hi&lt;h;hi++)
+      this.append('&lt;span class="'+baseCla+' '+cla+'" style="left:'+(x)+';top:'+(y+hi*bh1+zi*bhz)+';width:'+(bw1*w)+';" /&gt;');
+  }
+}
+$.fn.map=function(options){
+  var $this = this;
+  var settings = $.extend( {
+    'url'         : 'load',
+    'data'        : {city:"smallcity"},
+    type          : 'get',
+    dataType      : 'json',
+    success       : function(res){
+      $this.drawMap(res.su, "su", 0);
+      $this.drawMap(res.el, "el", 1);
+    }
+  }, options);
+  $.ajax(settings);
+}
+</file></application></root>

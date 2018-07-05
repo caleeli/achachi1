@@ -1,0 +1,1351 @@
+<?xml version="1.0" encoding="UTF-8"?><root __ideNodeOpen="true"><php __ideNodeOpen="true">
+class tools {
+    static $tpl;
+
+    public static function tpl($__tpl, $_, $_1=null, $_2=null){
+        ob_start();
+        eval('?&gt;'.$__tpl);
+        $__result = ob_get_contents();
+        ob_end_clean();
+        return $__result;
+    }
+
+    /**
+     * $component=$this, $node=$e
+     */
+    public static function hook($component, $node){
+        $content = $node-&gt;nodeValue;
+        eval('$values = '.$content.';');
+        foreach($values as $key=&gt;$value) {
+            $component-&gt;values[$key] = $value;
+        }
+    }
+    public static function snake_case($input){
+        return ltrim(strtolower(preg_replace('/[A-Z]/', '_$0', $input)), '_');
+    }
+    public static function camel_case($word){
+        return @preg_replace('/(^|_)([a-z])/e', 'strtoupper("\\2")', $word); 
+    }
+    /**
+     * Pluralizes a word if quantity is not one.
+     *
+     * @param int $quantity Number of items
+     * @param string $singular Singular form of word
+     * @param string $plural Plural form of word; function will attempt to deduce plural form from singular if not provided
+     * @return string Pluralized word if quantity is not one, otherwise singular
+     */
+    public static function pluralize($singular, $quantity=2, $plural=null) {
+        if($quantity==1 || !strlen($singular)) return $singular;
+        if($plural!==null) return $plural;
+    
+        $last_letter = strtolower($singular[strlen($singular)-1]);
+        switch($last_letter) {
+            case 'y':
+                return substr($singular,0,-1).'ies';
+            case 's':
+                return $singular.'es';
+            default:
+                return $singular.'s';
+        }
+    }
+    public static function className($class) {
+        return @array_pop(explode('\\', $class));
+    }
+}
+tools::$tpl=new StdClass();
+</php><php __ideNodeOpen="true">?&gt;
+&lt;script src="webeditor/picoModal-3.0.0-Alpha.min.js"&gt;&lt;/script&gt;
+&lt;?php</php><package name="components" type="" __ideNodeOpen="true"><component name="toolsTpl" transparent="" precode="" __ideNodeOpen="true"><php __ideNodeOpen="true">tools::$tpl-&gt;@{$name}=${node::content($_)};
+$filename = ACH_PATH . '/@{$name}.tools.tmp';
+file_put_contents($filename, tools::$tpl-&gt;@{$name});
+passthru('php -l '.$filename);
+unlink($filename);
+</php></component><component name="print" transparent="" precode="" __ideNodeOpen="true">#{echo '&lt;a href="javascript:picoModal(',htmlentities(json_encode('&lt;textarea cols="80" rows="25"&gt;'.htmlentities(node::content($_)).'&lt;/textarea&gt;'), ENT_QUOTES),').show()"&gt;(',$_e-&gt;childNodes[0]-&gt;nodeName,')',$_e-&gt;childNodes[0]-&gt;getAttribute('Name'),'&lt;/a&gt;',"\n";}</component><component name="model" transparent="" precode="tools::hook($this,$e);" __ideNodeOpen="true">&lt;?php
+
+namespace App\Models\Process;
+
+use App\Models\UidModel;
+use App\Models\FlowObject;
+@{$classDependencies}
+
+// @codingStandardsIgnoreStart
+/**
+ * Class @{$Name}
+ *
+ * @property integer $id
+@{tools::tpl(tools::$tpl-&gt;docProperties, $properties)
+} * @property \Carbon\Carbon $created_at
+ * @property \Carbon\Carbon $updated_at
+@{tools::tpl(tools::$tpl-&gt;docRelationships, $relationships)
+} * @method static \Illuminate\Database\Query\Builder|\App\Models\@{$Name} whereId($value)
+ * @method static \Illuminate\Database\Query\Builder|\App\Models\@{$Name} whereUid($value)
+ * @method static \Illuminate\Database\Query\Builder|\App\Models\@{$Name} whereProcessId($value)
+ * @method static \Illuminate\Database\Query\Builder|\App\Models\@{$Name} whereType($value)
+ * @method static \Illuminate\Database\Query\Builder|\App\Models\@{$Name} whereFilename($value)
+ * @method static \Illuminate\Database\Query\Builder|\App\Models\@{$Name} whereContent($value)
+ * @method static \Illuminate\Database\Query\Builder|\App\Models\@{$Name} whereLabel($value)
+ * @method static \Illuminate\Database\Query\Builder|\App\Models\@{$Name} whereVersion($value)
+ * @method static \Illuminate\Database\Query\Builder|\App\Models\@{$Name} whereCreatedAt($value)
+ * @method static \Illuminate\Database\Query\Builder|\App\Models\@{$Name} whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Query\Builder|\App\Models\@{$Name} translatedIn($locale = null)
+ * @method static \Illuminate\Database\Query\Builder|\App\Models\@{$Name} notTranslatedIn($locale = null)
+ * @method static \Illuminate\Database\Query\Builder|\App\Models\@{$Name} translated()
+ * @method static \Illuminate\Database\Query\Builder|\App\Models\@{$Name} listsTranslations($translationField)
+ * @method static \Illuminate\Database\Query\Builder|\App\Models\@{$Name} withTranslation()
+ * @method static \Illuminate\Database\Query\Builder|\App\Models\@{$Name} whereTranslation($key, $value, $locale = null)
+ * @method static \Illuminate\Database\Query\Builder|\App\Models\@{$Name} whereTranslationLike($key, $value, $locale = null)
+ * @mixin \Eloquent
+ */
+// @codingStandardsIgnoreEnd
+class @{$Name} extends @{$ParentClass}@{tools::tpl(tools::$tpl-&gt;implements, $implements)}
+{
+
+@{tools::tpl(tools::$tpl-&gt;traits,$traits)}
+
+    /**
+     * The table associated with the model.
+     * @var string $table Table name
+     */
+    protected $table = '@{$table}';
+@{tools::tpl(tools::$tpl-&gt;domainConstants, $properties)}
+
+@{$timestamps?'    /**
+     * Indicates if the model should be timestamped.
+     * @var bool
+     */
+    public $timestamps = true;':''}
+
+    /**
+     * The attributes that are mass assignable.
+     * @var array $fillable
+     */
+    protected $fillable = [
+@{tools::tpl(tools::$tpl-&gt;fillable, array_merge($properties,$translated))
+}    ];
+
+    /**
+     * Translatible fields
+     * @var array $translatedAttributes
+     */
+    public $translatedAttributes = [
+@{tools::tpl(tools::$tpl-&gt;translated, $translated)}
+    ];
+
+    /**
+     * The attributes that should be casted to native types.
+     * @var array $casts
+     */
+    protected $casts = [
+    ];
+
+    /**
+     * The validation rules that apply during model creation.
+     * @var array $rules
+     */
+    protected $rules = [
+@{tools::tpl(tools::$tpl-&gt;modelRules, array_merge($properties, $translated))}
+    ];
+
+@{tools::tpl(tools::$tpl-&gt;modelMutators, array_merge($properties, $translated))
+}    protected $guarded = [];
+@{tools::tpl(tools::$tpl-&gt;modelRelationships, $relationships)
+}}
+</component><component name="schema" transparent="" precode="tools::hook($this,$e);" __ideNodeOpen="true">&lt;?php
+
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Migrations\Migration;
+
+class Create@{$Name}Table extends Migration
+{
+    /**
+     * Run the migrations.
+     *
+     * @return void
+     * @SuppressWarnings("short")
+     */
+    public function up()
+    {
+        Schema::create('@{$table}', function (Blueprint $table) {
+@{tools::tpl(tools::$tpl-&gt;schemaProperties, $properties)
+}@{tools::tpl(tools::$tpl-&gt;schemaRelationships, $relationships)
+}        });
+@{tools::tpl(tools::$tpl-&gt;schemaTranslations, $translated, tools::snake_case($Name))
+}    }
+
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
+    public function down()
+    {
+@{tools::tpl(tools::$tpl-&gt;schemaDropTranslations, $Name)
+}        Schema::drop('@{$table}');
+    }
+}
+</component><component name="controller" transparent="" precode="tools::hook($this,$e);" __ideNodeOpen="true">&lt;?php
+
+namespace App\Http\Controllers\Api;
+
+use App\Exceptions\MalformedJsonApiRequestException;
+use App\Models\Transformers\Process\@{$Name}Transformer;
+use Illuminate\Http\Request;
+use App\Models\Process\@{$Name};
+use App\ApiCodes;
+use Illuminate\Pagination\LengthAwarePaginator;
+use League\Fractal\Resource\Collection;
+use League\Fractal\Resource\Item;
+use App\Models\Process;
+use Teapot\StatusCode;
+use App\Exceptions\JsonApiException;
+
+/**
+ * Class @{tools::pluralize($Name)}Controller
+ *
+ * @package App\Http\Controllers\Api
+ */
+class @{tools::pluralize($Name)}Controller extends BaseApiController
+{
+
+    /**
+     * Display a listing of the resource.
+     *
+     * @param Request $request
+     * @param string $processUid
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \InvalidArgumentException
+     */
+    public function index(Request $request, $processUid)
+    {
+        /** @var LengthAwarePaginator $paginator */
+        $paginator = @{$Name}::whereProcessId($this-&gt;getProcessId($processUid))
+            -&gt;paginate(
+                $request['per_page'] &lt;= $this-&gt;perPageMax ?
+                $request['per_page'] :
+                $this-&gt;perPageMax
+            );
+        $items = $paginator-&gt;getCollection();
+        $resource = new Collection(
+            $items,
+            new @{$Name}Transformer(
+                $this-&gt;getSparseFields(
+                    $request,
+                    @{$Name}Transformer::JSON_OBJ_TYPE
+                )
+            ),
+            @{$Name}Transformer::JSON_OBJ_TYPE
+        );
+        return $this-&gt;respondWithCollection(
+            $resource,
+            $paginator,
+            $request-&gt;input('include')
+        );
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param string $processUid
+     * @return \Illuminate\Http\JsonResponse
+     * @throws MalformedJsonApiRequestException
+     */
+
+    public function store(Request $request, $processUid)
+    {
+        $this-&gt;validateApiRequest($request);
+        $itemData = $request-&gt;json()-&gt;get('data')['attributes'];
+        $itemData['process_id'] = $this-&gt;getProcessId($processUid);
+        $item = @{$Name}::create($itemData);
+        $resource = new Item(
+            $item,
+            new @{$Name}Transformer(),
+            @{$Name}Transformer::JSON_OBJ_TYPE
+        );
+        return $this-&gt;respondWithItem($resource, "", StatusCode::CREATED);
+    }
+
+    /**
+     * Display the specified resource.
+     *
+     * @param Request $request
+     * @param $processUid
+     * @param $uId
+     * @return \Illuminate\Http\JsonResponse
+     * @throws JsonApiException
+     * @SuppressWarnings("short")
+     */
+    public function show(Request $request, $processUid, $uId)
+    {
+        $item = $this-&gt;fetchItem($processUid, $uId);
+        // Build our transformed resource
+        $resource = new Item(
+            $item,
+            new @{$Name}Transformer(
+                $this-&gt;getSparseFields(
+                    $request,
+                    @{$Name}Transformer::JSON_OBJ_TYPE
+                )
+            ),
+            @{$Name}Transformer::JSON_OBJ_TYPE
+        );
+        return $this-&gt;respondWithItem($resource, $request-&gt;input('include'));
+    }
+
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  \Illuminate\Http\Request $request
+     * @param $processUid
+     * @param $uId
+     * @return \Illuminate\Http\JsonResponse
+     * @throws JsonApiException
+     * @throws \App\Exceptions\MalformedJsonApiRequestException
+     * @throws \App\Exceptions\ModelValidationException
+     * @SuppressWarnings("short")
+     */
+    public function update(Request $request, $processUid, $uId)
+    {
+        $this-&gt;validateApiRequest($request);
+        $item = $this-&gt;fetchItem($processUid, $uId);
+        $processId = $item-&gt;process_id;
+        $item-&gt;fill($request-&gt;json()-&gt;get('data')['attributes']);
+        $item-&gt;process_id = $processId;
+        $item-&gt;save();
+        $resource = new Item(
+            $item,
+            new @{$Name}Transformer(),
+            @{$Name}Transformer::JSON_OBJ_TYPE
+        );
+        return $this-&gt;respondWithItem($resource);
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param integer $processUid
+     * @param integer $uId
+     * @return \Illuminate\Http\JsonResponse
+     * @throws JsonApiException
+     * @SuppressWarnings("short")
+     */
+    public function destroy($processUid, $uId)
+    {
+        $item = $this-&gt;fetchItem($processUid, $uId);
+        // This could throw SQL exception due to foreign constraint
+        $item-&gt;delete();
+        return $this-&gt;respondWithJsonSuccess(
+            trans('api.@{tools::snake_case($Name)}_deleted'),
+            ApiCodes::@{strtoupper(tools::snake_case($Name))}_DELETED_OK
+        );
+    }
+
+    /**
+     * Fetches Gateway object based on its UID and Process UID it belongs to
+     *
+     * @param string $processUid
+     * @param string $uId
+     * @return @{$Name}
+     * @throws JsonApiException if @{$Name} not found or given Process not attached
+     */
+    private function fetchItem($processUid, $uId)
+    {
+        $item = @{$Name}::whereProcessId($this-&gt;getProcessId($processUid))
+            -&gt;whereUid($uId)-&gt;first();
+        if (!$item) {
+            throw new JsonApiException(
+                '@{$Name} Not Found',
+                trans('api.@{tools::snake_case($Name)}_not_found'),
+                ApiCodes::@{strtoupper(tools::snake_case($Name))}_NOT_FOUND,
+                StatusCode::NOT_FOUND
+            );
+        }
+        return $item;
+    }
+
+    /**
+     * Convert Process UID to its ID
+     * @param string $processUid Process UID
+     * @return integer $processId Process ID
+     * @throws JsonApiException if Process not found
+     */
+    private function getProcessId($processUid)
+    {
+        /* @var int $process_id */
+        $processId = (int)Process::whereUid($processUid)-&gt;pluck('id')-&gt;first();
+        if (!$processId) {
+            throw new JsonApiException(
+                'Process Not Found',
+                trans('api.process_not_found'),
+                ApiCodes::PROCESS_NOT_FOUND,
+                StatusCode::NOT_FOUND
+            );
+        }
+        return $processId;
+    }
+}
+</component><component name="transformer" transparent="" precode="tools::hook($this,$e);" __ideNodeOpen="true">&lt;?php
+
+namespace App\Models\Transformers\Process;
+
+use App\Models\Transformers\ProcessTransformer;
+use App\Models\Transformers\BaseTransformer;
+use App\Models\Process\@{$Name};
+
+/**
+ * Class @{$Name}Transformer
+ *
+ * @package App\Models\Transformers
+ */
+class @{$Name}Transformer extends BaseTransformer
+{
+    /**
+     * Represents the JSON API Object type string
+     */
+    const JSON_OBJ_TYPE = '@{tools::snake_case($Name)}';
+
+    /**
+     * List of resources possible to include
+     *
+     * @var array
+     */
+    protected $availableIncludes = [
+@{tools::tpl(tools::$tpl-&gt;transformerAvailableIncludes, $relationships)
+}    ];
+
+    /**
+     * For @{$Name} we include its related objects by default
+     * @var array Json object names for automatic inclusion
+     */
+    protected $defaultIncludes = [
+    ];
+
+    /**
+     * Transform object attributes into array
+     * @param @{$Name} $@{strtolower($Name)}
+     * @return array
+     */
+    public function preTransform(@{$Name} $@{strtolower($Name)})
+    {
+        return [
+@{tools::tpl(tools::$tpl-&gt;transformerPreTransform, array_merge($properties, $translated), strtolower($Name), $relationships)
+}        ];
+    }
+@{tools::tpl(tools::$tpl-&gt;transformerIncludes, $relationships, $Name)
+}}
+</component><component name="unittest" transparent="" precode="tools::hook($this,$e);" __ideNodeOpen="true">&lt;?php
+
+namespace App\Http\Controllers\Api;
+
+use App\ApiCodes;
+use App\Models\@{$Name};
+use App\Models\Transformers\@{$Name}Transformer;
+@{tools::tpl(tools::$tpl-&gt;testTransformerIncludes, $relationships)
+}use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Foundation\Testing\WithoutMiddleware;
+use Teapot\StatusCode;
+use TestCase;
+
+/**
+ * Perform tests for @{tools::pluralize($Name)} API
+ * Class @{tools::pluralize($Name)}ControllerTest
+ * @package App\Http\Controllers\Api
+ * @SuppressWarnings("PMD.TooManyPublicMethods")
+ */
+class @{tools::pluralize($Name)}ControllerTest extends TestCase
+{
+    use DatabaseTransactions;
+    use WithoutMiddleware;
+    
+    /** @var @{$Name} */
+    private $@{lcfirst($Name)};
+
+    /**
+     * Prepare a test DB data, create sample item
+     * @throws Exception
+     * @throws PropelException
+     */
+    protected function setUp()
+    {
+        // Call parent setUp which bootstraps laravel
+        parent::setUp();
+
+        // Add sample @{$Name}
+        $this-&gt;@{lcfirst($Name)} = factory(@{$Name}::class)-&gt;create(@{tools::tpl(tools::$tpl-&gt;testSetup,array_merge($properties,$translated))});
+    }
+
+    /**
+     * Get a list of items
+     */
+    public function testIndex()
+    {
+        $this-&gt;callApi('GET', route('api.v1.@{tools::snake_case(tools::pluralize($Name))}.index'));
+        $this-&gt;assertEquals(StatusCode::OK, $this-&gt;response-&gt;getStatusCode(), "Index response error");
+        $this-&gt;assertApiJsonResponse();
+        $this-&gt;seeJsonStructure([
+            'data'
+        ])-&gt;seeJson([
+            'type' =&gt; @{$Name}Transformer::JSON_OBJ_TYPE
+        ]);
+    }
+
+    /**
+     * Get the item
+     */
+    public function testShow()
+    {
+        $this-&gt;callApi('GET', route('api.v1.@{tools::snake_case(tools::pluralize($Name))}.show', $this-&gt;@{lcfirst($Name)}-&gt;uid));
+
+        $this-&gt;assertEquals(StatusCode::OK, $this-&gt;response-&gt;getStatusCode(), "Item response error");
+        $this-&gt;assertApiJsonResponse();
+        $this-&gt;seeJsonStructure([
+            'data'
+        ])-&gt;seeJson([
+            'type' =&gt; @{$Name}Transformer::JSON_OBJ_TYPE
+        ]);
+
+        foreach ($this-&gt;@{lcfirst($Name)}-&gt;getAttributes() as $attribute =&gt; $value) {
+            $this-&gt;assertEquals($value, $this-&gt;@{lcfirst($Name)}-&gt;$attribute, "Attribute $attribute not equals to expected");
+        }
+    }
+
+    /**
+     * Create a new item
+     */
+    public function testStore()
+    {
+
+        /** @var @{$Name} $item */
+        $item = factory(@{$Name}::class)-&gt;make();
+
+        $itemData = [
+            'data' =&gt; [
+                'type'       =&gt; @{$Name}Transformer::JSON_OBJ_TYPE,
+                'attributes' =&gt; $item-&gt;getAttributes()
+            ]
+        ];
+
+        $this-&gt;callApi(
+            'POST',
+            route('api.v1.@{tools::snake_case(tools::pluralize($Name))}.store'),
+            [],
+            [],
+            [],
+            [],
+            json_encode($itemData)
+        );
+
+        $this-&gt;assertEquals(StatusCode::CREATED, $this-&gt;response-&gt;getStatusCode(), "Resource creation error");
+        $this-&gt;assertApiJsonResponse();
+        $this-&gt;seeJsonStructure(['data']);
+        $this-&gt;seeJson(['type' =&gt; @{$Name}Transformer::JSON_OBJ_TYPE]);
+
+        $json = json_decode($this-&gt;response-&gt;getContent());
+
+        /** @var @{$Name} $dbItem */
+        $dbItem = @{$Name}::whereUid($json-&gt;data-&gt;id)-&gt;first();
+        $this-&gt;assertNotEmpty($dbItem);
+        foreach ($itemData['data']['attributes'] as $attribute =&gt; $value) {
+            $this-&gt;assertEquals($value, $dbItem-&gt;$attribute, "Attribute $attribute not equals to expected");
+        }
+    }
+
+    /**
+     * Try to create a duplicate item
+     */
+    public function testStoreDuplicated()
+    {
+
+        /** @var @{$Name} $item */
+        $item = factory(@{$Name}::class)-&gt;make(['uid'=&gt;$this-&gt;@{lcfirst($Name)}-&gt;uid]);
+
+        $userData = [
+            'data' =&gt; [
+                'type'       =&gt; @{$Name}Transformer::JSON_OBJ_TYPE,
+                'attributes' =&gt; $item-&gt;getAttributes()
+            ]
+        ];
+
+        $this-&gt;callApi(
+            'POST',
+            route('api.v1.@{tools::snake_case(tools::pluralize($Name))}.store'),
+            [],
+            [],
+            [],
+            [],
+            json_encode($userData)
+        );
+        $this-&gt;assertEquals(
+            StatusCode::INTERNAL_SERVER_ERROR,
+            $this-&gt;response-&gt;getStatusCode(),
+            "Duplicate item should generate HTTP 500 error"
+        );
+        $this-&gt;assertApiJsonResponse();
+    }
+
+    /**
+     * Negative case trying to store a wrong data
+     */
+    public function testStoreWrongData()
+    {
+
+        /** @var @{$Name} $item */
+        $item = factory(@{$Name}::class)-&gt;make(@{tools::tpl(tools::$tpl-&gt;testWrongData,array_merge($properties,$translated))});
+
+        $itemData = [
+            'data' =&gt; [
+                'type'       =&gt; @{$Name}Transformer::JSON_OBJ_TYPE,
+                'attributes' =&gt; $item-&gt;getAttributes()
+            ]
+        ];
+
+        $this-&gt;callApi(
+            'POST',
+            route('api.v1.@{tools::snake_case(tools::pluralize($Name))}.store'),
+            [],
+            [],
+            [],
+            [],
+            json_encode($itemData)
+        );
+        $this-&gt;assertEquals(
+            StatusCode::BAD_REQUEST,
+            $this-&gt;response-&gt;getStatusCode(),
+            "Wrong data should generate HTTP 400 error"
+        );
+        $this-&gt;assertApiJsonResponse();
+
+@{tools::tpl(tools::$tpl-&gt;testWrongData1,array_merge($properties,$translated))}
+    }
+
+    /**
+     * Negative case: try to store item with incomplete attribute set
+     */
+    public function testStoreIncompleteData()
+    {
+
+        /** @var @{$Name} $item */
+        $item = factory(@{$Name}::class)-&gt;make(@{tools::tpl(tools::$tpl-&gt;testIncompleteData,array_merge($properties,$translated))});
+
+        $itemData = [
+            'data' =&gt; [
+                'type'       =&gt; @{$Name}Transformer::JSON_OBJ_TYPE,
+                'attributes' =&gt; $item-&gt;getAttributes()
+            ]
+        ];
+        $this-&gt;callApi(
+            'POST',
+            route('api.v1.@{tools::snake_case(tools::pluralize($Name))}.store'),
+            [],
+            [],
+            [],
+            [],
+            json_encode($itemData)
+        );
+        $response = $this-&gt;response;
+        $this-&gt;assertEquals(
+            StatusCode::BAD_REQUEST,
+            $response-&gt;getStatusCode(),
+            "Incomplete data should generate HTTP 400 error"
+        );
+
+@{tools::tpl(tools::$tpl-&gt;testIncompleteData2,array_merge($properties,$translated))}
+    }
+
+    /**
+     * Update item
+     */
+    public function testUpdate()
+    {
+        /** @var @{$Name} $item */
+        $item = factory(@{$Name}::class)-&gt;make();
+
+        $itemData = [
+            'data' =&gt; [
+                'type'       =&gt; @{$Name}Transformer::JSON_OBJ_TYPE,
+                'attributes' =&gt; $item-&gt;getAttributes()
+            ]
+        ];
+
+        $this-&gt;callApi(
+            'PATCH',
+            route('api.v1.@{tools::snake_case(tools::pluralize($Name))}.update', $this-&gt;@{lcfirst($Name)}-&gt;uid),
+            [],
+            [],
+            [],
+            [],
+            json_encode($itemData)
+        );
+        $response = $this-&gt;response;
+
+        $this-&gt;assertEquals(StatusCode::OK, $response-&gt;getStatusCode(), "Update error");
+        $this-&gt;assertApiJsonResponse();
+        $this-&gt;seeJsonStructure([
+            'data'
+        ])-&gt;seeJson([
+            'type' =&gt; @{$Name}Transformer::JSON_OBJ_TYPE
+        ]);
+
+        /* @var @{$Name} */
+        $newItem = @{$Name}::whereId($this-&gt;@{lcfirst($Name)}-&gt;id)-&gt;first();
+        $this-&gt;assertNotEmpty($newItem);
+        foreach ($itemData['data']['attributes'] as $attribute =&gt; $value) {
+            $this-&gt;assertEquals($value, $newItem-&gt;$attribute, "Attribute $attribute not equals to expected");
+        }
+    }
+
+    /**
+     * Negative case: Update item with wrong data
+     */
+    public function testUpdateWrongData()
+    {
+
+        /** @var @{$Name} $item */
+        $item = factory(@{$Name}::class)-&gt;make(@{tools::tpl(tools::$tpl-&gt;testWrongData,array_merge($properties,$translated))});
+
+        $itemData = [
+            'data' =&gt; [
+                'id'         =&gt; $this-&gt;@{lcfirst($Name)}-&gt;uid,
+                'type'       =&gt; @{$Name}Transformer::JSON_OBJ_TYPE,
+                'attributes' =&gt; $item-&gt;getAttributes()
+            ]
+        ];
+
+        $this-&gt;callApi(
+            'PATCH',
+            route('api.v1.@{tools::snake_case(tools::pluralize($Name))}.update', $this-&gt;@{lcfirst($Name)}-&gt;uid),
+            [],
+            [],
+            [],
+            [],
+            json_encode($itemData)
+        );
+        $this-&gt;assertEquals(
+            StatusCode::BAD_REQUEST,
+            $this-&gt;response-&gt;getStatusCode(),
+            "Wrong data should generate HTTP 400 error"
+        );
+        $this-&gt;assertApiJsonResponse();
+        $this-&gt;seeJsonStructure([
+            'errors'
+        ])
+@{tools::tpl(tools::$tpl-&gt;testWrongData2,array_merge($properties,$translated))};
+
+        /* @var @{$Name} $item */
+        $item = @{$Name}::find($this-&gt;@{lcfirst($Name)}-&gt;id);
+        $this-&gt;assertNotEmpty($item);
+        foreach (array_keys($itemData['data']['attributes']) as $attribute) {
+            $this-&gt;assertEquals($this-&gt;@{lcfirst($Name)}-&gt;$attribute, $item-&gt;$attribute, $attribute);
+        }
+    }
+
+    /**
+     * Helper method to run destroy Api call for specified item
+     * @param $uId
+     */
+    private function callDestroyApi($uId)
+    {
+        $this-&gt;callApi(
+            'DELETE',
+            route('api.v1.@{tools::snake_case(tools::pluralize($Name))}.destroy', $uId)
+        );
+    }
+
+    /**
+     * Destroy
+     */
+    public function testDestroy()
+    {
+
+        $this-&gt;callDestroyApi($this-&gt;@{lcfirst($Name)}-&gt;uid);
+        $this-&gt;assertEquals(StatusCode::OK, $this-&gt;response-&gt;getStatusCode(), "Delete error");
+        $this-&gt;seeJsonStructure(['meta'=&gt;['title','code']])
+            -&gt;seeJson(['code'=&gt;ApiCodes::@{strtoupper(tools::snake_case($Name))}_DELETED_OK]);
+        $this-&gt;assertEmpty(@{$Name}::find($this-&gt;@{lcfirst($Name)}-&gt;id), "Item is not deleted");
+    }
+
+    /**
+     * Negative case trying to destroy non existent item
+     */
+    public function testDestroyNonExistent()
+    {
+        $this-&gt;callDestroyApi(-99);
+
+        $this-&gt;assertEquals(
+            StatusCode::NOT_FOUND,
+            $this-&gt;response-&gt;getStatusCode(),
+            "Non existent Uid should return not found code"
+        );
+    }
+
+    /**
+     * Validates the case with selected item fields
+     */
+    public function testItemSparseFields()
+    {
+        $this-&gt;callApi(
+            'GET',
+            route('api.v1.@{tools::snake_case(tools::pluralize($Name))}.index'),
+            [
+                'fields' =&gt; [@{$Name}Transformer::JSON_OBJ_TYPE =&gt; '@{tools::tpl(tools::$tpl-&gt;testSparce,array_merge($properties,$translated))}']
+            ]
+        );
+
+        $this-&gt;assertEquals(StatusCode::OK, $this-&gt;response-&gt;getStatusCode(), "Error getting index with sparse fields");
+        $this-&gt;assertApiJsonResponse();
+        $this-&gt;seeJsonStructure([
+            'data'
+        ])
+            -&gt;seeJson(['type' =&gt; @{$Name}Transformer::JSON_OBJ_TYPE])
+            -&gt;seeJsonStructure(['data' =&gt; ['*' =&gt; ['attributes' =&gt; @{json_encode(explode(',',tools::tpl(tools::$tpl-&gt;testSparce,array_merge($properties,$translated))))}]]])@{tools::tpl(tools::$tpl-&gt;testSparceDont,array_merge($properties,$translated),lcfirst($Name))};
+    }
+
+    /**
+     * Test Process inclusion
+     */
+    public function test@{$Name}Relations()
+    {
+
+        $this-&gt;callApi(
+            'GET',
+            route('api.v1.@{tools::snake_case(tools::pluralize($Name))}.index'),
+            ['include' =&gt; '@{tools::tpl(tools::$tpl-&gt;testIncludes,$relationships)}']
+        );
+
+        $this-&gt;assertEquals(StatusCode::OK, $this-&gt;response-&gt;getStatusCode(), "Error getting index with include");
+        $this-&gt;assertApiJsonResponse();
+        $this-&gt;seeJsonStructure([
+            'data'
+        ])
+            -&gt;seeJson([
+                'type' =&gt; @{$Name}Transformer::JSON_OBJ_TYPE
+            ])
+            -&gt;seeJsonStructure(['included'])@{tools::tpl(tools::$tpl-&gt;testIncludesCheck,$relationships)};
+    }
+}
+</component><component name="factory" transparent="" precode="tools::hook($this,$e);" __ideNodeOpen="true">&lt;?php
+
+/** @var \Illuminate\Database\Eloquent\Factory $factory */
+$factory-&gt;define(App\Models\@{$Name}::class, function (Faker\Generator $faker) {
+    return [
+@{tools::tpl(tools::$tpl-&gt;factoryProperties, array_merge($properties,$translated), $Name)
+}    ];
+});
+</component><component name="translation" transparent="" precode="tools::hook($this,$e);" __ideNodeOpen="true">&lt;?php
+
+namespace App\Models\Process;
+
+use Illuminate\Database\Eloquent\Model;
+
+/**
+ * Class @{$Name}Translation
+ *
+ * @package App\Models
+ * @mixin \Eloquent
+ * @property integer $id
+ * @property integer $@{tools::snake_case($Name)}_id
+ * @property string $locale
+@{tools::tpl(tools::$tpl-&gt;docProperties, $translated)
+} * @method static \Illuminate\Database\Query\Builder|\App\Models\DynaformTranslation whereId($value)
+ * @method static \Illuminate\Database\Query\Builder|\App\Models\DynaformTranslation whereDynaformId($value)
+ * @method static \Illuminate\Database\Query\Builder|\App\Models\DynaformTranslation whereLocale($value)
+ * @method static \Illuminate\Database\Query\Builder|\App\Models\DynaformTranslation whereTitle($value)
+ * @method static \Illuminate\Database\Query\Builder|\App\Models\DynaformTranslation whereDescription($value)
+ */
+class @{$Name}Translation extends Model
+{
+    /**
+     * @var bool
+     */
+    public $timestamps = false;
+
+    /**
+     * @var array
+     */
+    public $fillable = [
+@{tools::tpl(tools::$tpl-&gt;fillable, $translated)
+}    ];
+}
+</component><component name="full" transparent="" precode="" __ideNodeOpen="true"><print><controller Name="@{$Name}" __ideNodeOpen="true">@{node::content($_)}</controller></print><print __ideNodeOpen="true"><model classDependencies="use Dimsav\Translatable\Translatable;" Name="@{$Name}" tpl="" properties="" relationships="" ParentClass="UidModel" implements="" traits="Translatable, FlowObject" table="@{tools::snake_case($Name)}" timestamps="1" code="" __ideNodeOpen="true">@{node::content($_)}</model></print><print __ideNodeOpen="true"><transformer Name="@{$Name}" __ideNodeOpen="true">@{node::content($_)}</transformer></print><print __ideNodeOpen="true"><schema Name="@{$Name}" table="@{tools::snake_case($Name)}" properties="" relationships="" __ideNodeOpen="true">@{node::content($_)}</schema></print><print __ideNodeOpen="true"><unittest Name="@{$Name}" __ideNodeOpen="true">@{node::content($_)}</unittest></print><print __ideNodeOpen="true"><factory Name="@{$Name}" __ideNodeOpen="true">@{node::content($_)}</factory></print><print __ideNodeOpen="true"><translation Name="@{$Name}" __ideNodeOpen="true">@{node::content($_)}</translation></print></component></package><package name="templates" type="" __ideNodeOpen="true"><toolsTpl name="docProperties" __ideNodeOpen="true">&lt;?php foreach($_ as $p) {?&gt;
+ * @property &lt;?=$p-&gt;type?&gt; $&lt;?=$p-&gt;name?&gt;
+
+&lt;?php } ?&gt;</toolsTpl><toolsTpl name="docRelationships" __ideNodeOpen="true">&lt;?php foreach($_ as $p) {?&gt;
+ * @property-read &lt;?=$p-&gt;type?&gt; $&lt;?=$p-&gt;name?&gt;
+
+&lt;?php } ?&gt;</toolsTpl><toolsTpl name="schemaTranslations" __ideNodeOpen="true">&lt;?php
+if(empty($_)) return;
+?&gt;
+        // Create Related Translation Table
+        Schema::create('&lt;?=$_1?&gt;_translations', function (Blueprint $table) {
+            $table-&gt;increments('id');
+            $table-&gt;integer('&lt;?=$_1?&gt;_id')-&gt;unsigned();
+            $table-&gt;string('locale')-&gt;index();
+            $table-&gt;foreign('&lt;?=$_1?&gt;_id')-&gt;references('id')-&gt;on('&lt;?=$_1?&gt;')-&gt;onDelete('cascade');
+&lt;?php foreach($_ as $p) { ?&gt;
+            $table-&gt;&lt;?=$p-&gt;type?&gt;('&lt;?=$p-&gt;name?&gt;')&lt;?=!isset($p-&gt;required) || $p-&gt;required ? '-&gt;required()' : '-&gt;nullable()'?&gt;;
+&lt;?php } ?&gt;
+        });
+</toolsTpl><toolsTpl name="domainConstants" __ideNodeOpen="true">&lt;?php foreach($_ as $p) if(!empty($p-&gt;domain)) { ?&gt;
+
+    /** The enumerated values for the &lt;?=$p-&gt;name?&gt; field */
+&lt;?php
+foreach($p-&gt;domain as $key=&gt;$value) {
+?&gt;
+    const &lt;?=strtoupper($p-&gt;name) ?&gt;_&lt;?=strtoupper(is_string($key)?$key:$value) ?&gt; = &lt;?=var_export($value)?&gt;;
+&lt;?php
+}
+}
+?&gt;</toolsTpl><toolsTpl name="implements" __ideNodeOpen="true">&lt;?=empty($_)?'':' implements '?&gt;&lt;?=is_string($_)?$_:implode(', ', $_)?&gt;</toolsTpl><toolsTpl name="translated" __ideNodeOpen="true">&lt;?php foreach($_ as $p) { ?&gt;
+        '&lt;?=$p-&gt;name?&gt;',
+&lt;?php } ?&gt;</toolsTpl><toolsTpl name="fillable" __ideNodeOpen="true">&lt;?php foreach($_ as $p) if(empty($p-&gt;guarded)) { ?&gt;
+        '&lt;?=$p-&gt;name?&gt;',
+&lt;?php } ?&gt;</toolsTpl><toolsTpl name="modelRules" __ideNodeOpen="true">&lt;?php foreach($_ as $p) {
+if(!isset($p-&gt;rule)) $p-&gt;rule='';
+$isString = is_string($p-&gt;rule);
+if($isString) {
+    $p-&gt;rule=explode('|', $p-&gt;rule);
+}
+if(empty($p-&gt;rule[0])) unset($p-&gt;rule[0]);
+    //add domain into validation
+    if(!empty($p-&gt;domain) &amp;&amp; $p-&gt;type=='string') {
+        $p-&gt;rule[]='in:'.implode(',', $p-&gt;domain);
+    }
+    //add size into validation
+    if(!empty($p-&gt;size) &amp;&amp; $p-&gt;type=='string') {
+        $p-&gt;rule[]='max:'.$p-&gt;size;
+    }
+    if(array_search('required', $p-&gt;rule)===false) {
+        if(!(isset($p-&gt;required) &amp;&amp; !$p-&gt;required)) {
+            $p-&gt;rule[]='required';
+        }
+    }
+if($isString) {
+    $p-&gt;rule=implode('|', $p-&gt;rule);
+}
+if(!empty($p-&gt;rule)) { ?&gt;
+        '&lt;?=$p-&gt;name?&gt;'              =&gt; &lt;?=var_export($p-&gt;rule,true)?&gt;,
+&lt;?php } } ?&gt;</toolsTpl><toolsTpl name="modelMutators" __ideNodeOpen="true">&lt;?php foreach($_ as $p) switch($p-&gt;type){
+    case 'boolean': echo '    public function get'.ucfirst(tools::camel_case($p-&gt;name)).'Attribute($value)
+    {
+        return !!$value;
+    }
+
+';break;
+} ?&gt;</toolsTpl><toolsTpl name="modelRelationships" __ideNodeOpen="true">&lt;?php foreach($_ as $p) if(!empty($p-&gt;name)) { ?&gt;
+
+    /**
+     * &lt;?=ucwords(str_replace('_', ' ', tools::snake_case($p-&gt;name)))?&gt; relationship
+     */
+    public function &lt;?=$p-&gt;name?&gt;()
+    {
+        return $this-&gt;&lt;?=$p-&gt;type?&gt;('&lt;?=$p-&gt;class?&gt;');
+    }
+&lt;?php } ?&gt;</toolsTpl><toolsTpl name="traits" __ideNodeOpen="true">&lt;?php if(!empty($_)){?&gt;    use &lt;?=is_string($_)?$_:implode(', ', $_)?&gt;;&lt;?php } ?&gt;</toolsTpl><toolsTpl name="schemaProperties" __ideNodeOpen="true">            $table-&gt;increments('id');
+&lt;?php foreach($_ as $p) {?&gt;
+            $table-&gt;&lt;?=isset($p-&gt;domain)?'enum':($p-&gt;name=='uid'?'uuid':$p-&gt;type)?&gt;('&lt;?=$p-&gt;name?&gt;'&lt;?=
+    isset($p-&gt;domain)?', '.json_encode(array_values($p-&gt;domain)):''?&gt;)&lt;?=@$p-&gt;required===false?'-&gt;nullable()':''?&gt;&lt;?=
+@$p-&gt;unique===true?'-&gt;unique()':''?&gt;&lt;?=
+@$p-&gt;unsigned===true?'-&gt;unsigned()':''?&gt;&lt;?=
+    isset($p-&gt;default)?'-&gt;default('.var_export($p-&gt;default,true).')':''?&gt;;
+&lt;?php } ?&gt;            $table-&gt;timestamps();
+</toolsTpl><toolsTpl name="schemaDropTranslations" __ideNodeOpen="true">&lt;?php
+if(empty($_)) return;
+?&gt;
+        Schema::drop('&lt;?=tools::snake_case($_)?&gt;_translations');
+</toolsTpl><toolsTpl name="schemaDropFK" __ideNodeOpen="true">&lt;?php foreach($_ as $p) if($p-&gt;type==='belongsTo') {?&gt;
+            $table-&gt;dropForeign('&lt;?=$_1?&gt;_&lt;?=tools::snake_case($p-&gt;name)?&gt;_id_foreign');
+&lt;?php } ?&gt;</toolsTpl><toolsTpl name="schemaRelationships" __ideNodeOpen="true">&lt;?php foreach($_ as $p) if($p-&gt;type==='belongsTo') {?&gt;
+            $table-&gt;foreign('&lt;?=tools::snake_case($p-&gt;name)?&gt;_id')-&gt;references('id')-&gt;on('&lt;?=isset($p-&gt;table)?$p-&gt;table:tools::snake_case(basename(str_replace('\\','/', $p-&gt;class))) ?&gt;')-&gt;onDelete('cascade');
+&lt;?php } ?&gt;</toolsTpl><toolsTpl name="transformerAvailableIncludes" __ideNodeOpen="true">&lt;?php foreach($_ as $p) if($p-&gt;type==='belongsTo') {?&gt;
+            '&lt;?=tools::snake_case($p-&gt;name)?&gt;',
+&lt;?php } ?&gt;</toolsTpl><toolsTpl name="transformerPreTransform" __ideNodeOpen="true">&lt;?php foreach($_ as $p) {
+$isRelationship = false;
+foreach($_2 as $rel) {
+    if($rel-&gt;name.'_id'===$p-&gt;name){
+        $isRelationship = true;
+        break;
+    }
+}
+if($isRelationship){
+?&gt;
+            '&lt;?=$p-&gt;name==='uid'?'id':$p-&gt;name?&gt;' =&gt; (isset($&lt;?=$_1?&gt;-&gt;&lt;?=$p-&gt;name?&gt;) ? $&lt;?=$_1?&gt;-&gt;&lt;?=$rel-&gt;name?&gt;-&gt;pluck('uid') : null),
+&lt;?php
+} else {
+?&gt;
+            '&lt;?=$p-&gt;name==='uid'?'id':$p-&gt;name?&gt;' =&gt; $&lt;?=$_1?&gt;-&gt;&lt;?=$p-&gt;name?&gt;,
+&lt;?php
+}
+} ?&gt;</toolsTpl><toolsTpl name="transformerIncludes" __ideNodeOpen="true">&lt;?php foreach($_ as $p) if($p-&gt;type==='belongsTo') {?&gt;
+
+    /**
+     * @param &lt;?=$_1?&gt; $&lt;?=strtolower($_1)?&gt;
+
+     * @return \League\Fractal\Resource\Item
+     */
+    public function include&lt;?=ucfirst($p-&gt;name)?&gt;(&lt;?=$_1?&gt; $&lt;?=strtolower($_1)?&gt;)
+    {
+        if ($&lt;?=strtolower($_1)?&gt; instanceof &lt;?=ucfirst($_1)?&gt;) {
+            return $this-&gt;item(
+                $&lt;?=strtolower($_1)?&gt;-&gt;&lt;?=$p-&gt;name?&gt;,
+                new &lt;?=tools::className($p-&gt;class)?&gt;Transformer,
+                &lt;?=tools::className($p-&gt;class)?&gt;Transformer::JSON_OBJ_TYPE
+            );
+        }
+    }
+&lt;?php } ?&gt;</toolsTpl><toolsTpl name="testSetup" __ideNodeOpen="true">[
+&lt;?php foreach($_ as $p) if(isset($p-&gt;testSetup)){?&gt;
+            '&lt;?=$p-&gt;name?&gt;' =&gt; &lt;?=$p-&gt;testSetup?&gt;,
+&lt;?php } ?&gt;        ]</toolsTpl><toolsTpl name="testWrongData" __ideNodeOpen="true">[
+&lt;?php foreach($_ as $p) if(isset($p-&gt;testWrongData)){?&gt;
+            '&lt;?=$p-&gt;name?&gt;' =&gt; &lt;?=$p-&gt;testWrongData?&gt;,
+&lt;?php } ?&gt;        ]</toolsTpl><toolsTpl name="testWrongData1" __ideNodeOpen="true">&lt;?php foreach($_ as $p) if(isset($p-&gt;testWrongData)){?&gt;
+        $this-&gt;seeJson(['detail' =&gt; 'Field \'&lt;?=$p-&gt;name?&gt;\' failed validation']);
+&lt;?php } ?&gt;</toolsTpl><toolsTpl name="testWrongData2" __ideNodeOpen="true">&lt;?php foreach($_ as $p) if(isset($p-&gt;testWrongData)){?&gt;
+            -&gt;seeJson(['detail' =&gt; 'Field \'&lt;?=$p-&gt;name?&gt;\' failed validation'])
+&lt;?php } ?&gt;</toolsTpl><toolsTpl name="testIncompleteData" __ideNodeOpen="true">[
+&lt;?php foreach($_ as $p) if(isset($p-&gt;testIncompleteData)){?&gt;
+            '&lt;?=$p-&gt;name?&gt;' =&gt; &lt;?=$p-&gt;testIncompleteData?&gt;,
+&lt;?php } ?&gt;        ]</toolsTpl><toolsTpl name="testIncompleteData2" __ideNodeOpen="true">&lt;?php foreach($_ as $p) if(isset($p-&gt;testIncompleteData)){?&gt;
+        $this-&gt;seeJson(['detail' =&gt; 'Field \'&lt;?=$p-&gt;name?&gt;\' failed validation']);
+&lt;?php } ?&gt;</toolsTpl><toolsTpl name="testSparce" __ideNodeOpen="true">&lt;?php
+//Set =&gt;true verify it exists
+//Set =&gt;false verify if does not exists
+$fields = [];
+foreach($_ as $p) if(isset($p-&gt;testSparce) &amp;&amp; $p-&gt;testSparce){
+    $fields[]=$p-&gt;name;
+}
+echo implode(',', $fields);
+?&gt;</toolsTpl><toolsTpl name="testSparceDont" __ideNodeOpen="true">&lt;?php
+//Set =&gt;true verify it exists
+//Set =&gt;false verify if does not exists
+$fields = [];
+foreach($_ as $p) if(isset($p-&gt;testSparce) &amp;&amp; !$p-&gt;testSparce){
+?&gt;
+
+            -&gt;dontSeeJson(['&lt;?=$p-&gt;name?&gt;' =&gt; $this-&gt;&lt;?=$_1?&gt;-&gt;&lt;?=$p-&gt;name?&gt;])&lt;?php
+}
+?&gt;</toolsTpl><toolsTpl name="testIncludes" __ideNodeOpen="true">&lt;?php
+$rels=[];
+foreach($_ as $p) if($p-&gt;type==='belongsTo') {
+$rels[]=$p-&gt;name;
+}
+echo implode(',', $rels);
+?&gt;</toolsTpl><toolsTpl name="testIncludesCheck" __ideNodeOpen="true">&lt;?php
+foreach($_ as $p) if($p-&gt;type==='belongsTo') {
+?&gt;
+
+            -&gt;seeJson(['type' =&gt; &lt;?=@array_pop(explode('\\', $p-&gt;class))?&gt;Transformer::JSON_OBJ_TYPE])&lt;?php
+}
+?&gt;</toolsTpl><toolsTpl name="testTransformerIncludes" __ideNodeOpen="true">&lt;?php
+foreach($_ as $p) if($p-&gt;type==='belongsTo') {
+?&gt;
+use App\Models\Transformers\&lt;?=@array_pop(explode('\\', $p-&gt;class))?&gt;Transformer;
+&lt;?php
+}
+?&gt;</toolsTpl><toolsTpl name="factoryProperties" __ideNodeOpen="true">&lt;?php foreach($_ as $p) if(isset($p-&gt;faker)) switch($p-&gt;faker){
+case 'randomElement':?&gt;
+        '&lt;?=$p-&gt;name?&gt;' =&gt; $faker-&gt;randomElement(
+            [
+&lt;?php
+foreach($p-&gt;domain as $dom){
+echo '                \App\Models\\Process\\',$_1,'::',strtoupper(tools::snake_case($p-&gt;name)),'_',strtoupper($dom),',',"\n";
+}
+?&gt;
+            ]
+        ),
+&lt;?php
+  break;
+case 'model': ?&gt;
+        '&lt;?=$p-&gt;name?&gt;' =&gt; function () {
+            return factory(App\Models&lt;?=$p-&gt;fakerModel=='Process'?'':'\Process'?&gt;\&lt;?=$p-&gt;fakerModel?&gt;::class)-&gt;create(&lt;?=@$p-&gt;fakerModelParams?&gt;)-&gt;id;
+        },
+&lt;?php
+  break;
+default: ?&gt;
+        '&lt;?=$p-&gt;name?&gt;' =&gt; $faker-&gt;&lt;?=$p-&gt;faker?&gt;,
+&lt;?php
+}
+?&gt;</toolsTpl></package><component name="TRASH" transparent="" precode="" __ideNodeOpen="false"><print1 __ideNodeOpen="false"><model classDependencies="" Name="Process" properties="" relationships="" ParentClass="UidModel" implements="" traits="Translatable" table="process" timestamps="1" code="">/*
+    (object) ['name'=&gt;'uid','type'=&gt;'string'],
+    (object) ['name'=&gt;'parent','type'=&gt;'int', 'rule'=&gt;'required|max:100','domain'=&gt;['a','b']],
+*/
+[
+  'properties'=&gt;[
+    (object) ['name'=&gt;'uid','type'=&gt;'string'],
+//    (object) ['name'=&gt;'parent','type'=&gt;'integer'],
+    (object) ['name'=&gt;'time','type'=&gt;'double'],
+    (object) ['name'=&gt;'time_unit','type'=&gt;'string', 'rule'=&gt;'','size'=&gt;'20','domain'=&gt;['WEEKS','MONTHS','DAYS','HOURS','MINUTES']],
+    (object) ['name'=&gt;'status','type'=&gt;'string', 'rule'=&gt;'','size'=&gt;'20','domain'=&gt;['ACTIVE','INACTIVE','DISABLED']],
+    (object) ['name'=&gt;'type_day','type'=&gt;'integer', 'rule'=&gt;'','domain'=&gt;['WORKING_DAYS'=&gt;1,'CALENDAR_DAYS'=&gt;2]],
+    (object) ['name'=&gt;'type','type'=&gt;'string', 'rule'=&gt;'','size'=&gt;'20','domain'=&gt;['NORMAL','SUB_PROCESS']],
+    (object) ['name'=&gt;'assignment','type'=&gt;'boolean', 'rule'=&gt;''],
+    (object) ['name'=&gt;'show_map','type'=&gt;'boolean', 'rule'=&gt;''],
+    (object) ['name'=&gt;'show_message','type'=&gt;'boolean', 'rule'=&gt;''],
+/*    (object) ['name'=&gt;'trigger_open','type'=&gt;'integer'],
+    (object) ['name'=&gt;'trigger_deleted','type'=&gt;'integer'],
+    (object) ['name'=&gt;'trigger_canceled','type'=&gt;'integer'],
+    (object) ['name'=&gt;'trigger_paused','type'=&gt;'integer'],
+    (object) ['name'=&gt;'trigger_reassigned','type'=&gt;'integer'],
+    (object) ['name'=&gt;'trigger_unpased','type'=&gt;'integer'],*/
+    (object) ['name'=&gt;'design_access','type'=&gt;'string', 'rule'=&gt;'','size'=&gt;'20','domain'=&gt;['PUBLIC','PRIVATE']],
+    (object) ['name'=&gt;'show_delegate','type'=&gt;'boolean', 'rule'=&gt;'','default'=&gt;1],
+    (object) ['name'=&gt;'show_dynaform','type'=&gt;'boolean', 'rule'=&gt;'','default'=&gt;0],
+//    &lt;column name="PRO_CATEGORY" type="VARCHAR" size="48" required="true" default=""/&gt;
+    (object) ['name'=&gt;'category_id','type'=&gt;'integer'],
+//    &lt;column name="PRO_SUB_CATEGORY" type="VARCHAR" size="48" required="true" default=""/&gt;
+    (object) ['name'=&gt;'sub_category_id','type'=&gt;'integer'],
+//    &lt;column name="PRO_INDUSTRY" type="INTEGER" required="true" default="1"/&gt;
+    (object) ['name'=&gt;'industry','type'=&gt;'integer'],
+//    &lt;column name="PRO_UPDATE_DATE" type="TIMESTAMP" required="false"/&gt;
+//    &lt;column name="PRO_CREATE_DATE" type="TIMESTAMP" required="true"/&gt;
+//    &lt;column name="PRO_CREATE_USER" type="VARCHAR" size="32" required="true" default=""/&gt;
+    (object) ['name'=&gt;'create_user_id','type'=&gt;'integer'],
+//    &lt;column name="PRO_HEIGHT" type="INTEGER" required="true" default="5000"/&gt;
+  //  (object) ['name'=&gt;'height','type'=&gt;'double'],
+//    &lt;column name="PRO_WIDTH" type="INTEGER" required="true" default="10000"/&gt;
+  //  (object) ['name'=&gt;'width','type'=&gt;'double'],
+//    &lt;column name="PRO_TITLE_X" type="INTEGER" required="true" default="0"/&gt;
+//    &lt;column name="PRO_TITLE_Y" type="INTEGER" required="true" default="6"/&gt;
+    (object) ['name'=&gt;'debug','type'=&gt;'boolean'],
+    (object) ['name'=&gt;'dynaform_summary','type'=&gt;'integer'],
+    (object) ['name'=&gt;'derivation_screen_tpl','type'=&gt;'integer'],
+    (object) ['name'=&gt;'cost','type'=&gt;'decimal','size'=&gt;'7,2','require'=&gt;false,'default'=&gt;0],
+    (object) ['name'=&gt;'unit_cost','type'=&gt;'string','size'=&gt;50,'require'=&gt;false],
+//    &lt;column name="PRO_ITEE" type="INTEGER" required="true" default="0"/&gt;
+  ],
+  'relationships'=&gt;[
+    (object) ['name'=&gt;'createdByUser','type'=&gt;'belongsTo','class'=&gt;'App\Model\User'],
+    (object) ['name'=&gt;'category','type'=&gt;'belongsTo','class'=&gt;'App\Model\Category'],
+    (object) ['name'=&gt;'subCategory','type'=&gt;'belongsTo','class'=&gt;'App\Model\SubCategory'],
+    (object) ['name'=&gt;'events','type'=&gt;'hasMany','class'=&gt;'App\Model\Trigger'],
+  ],
+]</model></print1><print2 __ideNodeOpen="false"><model classDependencies="" Name="Report" properties="" relationships="" ParentClass="Model" implements="" traits="" table="reports" timestamps="1" code="" __ideNodeOpen="false">[
+  'properties'=&gt;[
+    (object) ['name'=&gt;'name','type'=&gt;'string'],
+    (object) ['name'=&gt;'folder_id','type'=&gt;'integer'],
+    (object) ['name'=&gt;'owner_id','type'=&gt;'integer'],
+  ],
+  'relationships'=&gt;[
+    (object) ['name'=&gt;'folder','type'=&gt;'belongsTo','class'=&gt;'App\Model\Folder'],
+    (object) ['name'=&gt;'owner','type'=&gt;'belongsTo','class'=&gt;'App\Model\User'],
+  ],
+]</model><schema classDependencies="" Name="Report" properties="" relationships="" ParentClass="Model" implements="" traits="" table="reports" timestamps="1" code="" __ideNodeOpen="false">[
+  'properties'=&gt;[
+    (object) ['name'=&gt;'name','type'=&gt;'string'],
+    (object) ['name'=&gt;'folder_id','type'=&gt;'integer'],
+    (object) ['name'=&gt;'owner_id','type'=&gt;'integer'],
+  ],
+  'relationships'=&gt;[
+    (object) ['name'=&gt;'folder','type'=&gt;'belongsTo','class'=&gt;'App\Model\Folder'],
+    (object) ['name'=&gt;'owner','type'=&gt;'belongsTo','class'=&gt;'App\Model\User'],
+  ],
+]</schema><model classDependencies="" Name="Folder" properties="" relationships="" ParentClass="Model" implements="" traits="" table="folders" timestamps="1" code="" __ideNodeOpen="false">[
+  'properties'=&gt;[
+    (object) ['name'=&gt;'name','type'=&gt;'string'],
+    (object) ['name'=&gt;'parent_id','type'=&gt;'integer'],
+  ],
+  'relationships'=&gt;[
+    (object) ['name'=&gt;'parent','type'=&gt;'belongsTo','class'=&gt;'App\Model\Folder'],
+  ],
+]</model><schema classDependencies="" Name="Folder" properties="" relationships="" ParentClass="Model" implements="" traits="" table="folders" timestamps="1" code="" __ideNodeOpen="false">[
+  'properties'=&gt;[
+    (object) ['name'=&gt;'name','type'=&gt;'string'],
+    (object) ['name'=&gt;'parent_id','type'=&gt;'integer'],
+  ],
+  'relationships'=&gt;[
+    (object) ['name'=&gt;'parent','type'=&gt;'belongsTo','class'=&gt;'App\Model\Folder'],
+  ],
+]</schema></print2><full Name="Process" __ideNodeOpen="true">[
+  'properties'=&gt;[
+    (object) ['name'=&gt;'uid','type'=&gt;'string'],
+    (object) ['name'=&gt;'time','type'=&gt;'double'],
+    (object) ['name'=&gt;'time_unit','type'=&gt;'string', 'rule'=&gt;'','size'=&gt;'20','domain'=&gt;['WEEKS','MONTHS','DAYS','HOURS','MINUTES']],
+    (object) ['name'=&gt;'status','type'=&gt;'string', 'rule'=&gt;'','size'=&gt;'20','domain'=&gt;['ACTIVE','INACTIVE','DISABLED'],'testSetup'=&gt;'Process::STATUS_ACTIVE','testWrongData'=&gt;'"INVALID.STATUS!"','testIncompleteData'=&gt;'null','testSparce'=&gt;false],
+    (object) ['name'=&gt;'type_day','type'=&gt;'integer', 'rule'=&gt;'','domain'=&gt;['WORKING_DAYS'=&gt;1,'CALENDAR_DAYS'=&gt;2]],
+    (object) ['name'=&gt;'type','type'=&gt;'string', 'rule'=&gt;'','size'=&gt;'20','domain'=&gt;['NORMAL','SUB_PROCESS']],
+    (object) ['name'=&gt;'assignment','type'=&gt;'boolean', 'rule'=&gt;''],
+    (object) ['name'=&gt;'show_map','type'=&gt;'boolean', 'rule'=&gt;''],
+    (object) ['name'=&gt;'show_message','type'=&gt;'boolean', 'rule'=&gt;''],
+    (object) ['name'=&gt;'design_access','type'=&gt;'string', 'rule'=&gt;'','size'=&gt;'20','domain'=&gt;['PUBLIC','PRIVATE']],
+    (object) ['name'=&gt;'show_delegate','type'=&gt;'boolean', 'rule'=&gt;'','default'=&gt;1],
+    (object) ['name'=&gt;'show_dynaform','type'=&gt;'boolean', 'rule'=&gt;'','default'=&gt;0],
+//    &lt;column name="PRO_CATEGORY" type="VARCHAR" size="48" required="true" default=""/&gt;
+    (object) ['name'=&gt;'category_id','type'=&gt;'integer'],
+//    &lt;column name="PRO_SUB_CATEGORY" type="VARCHAR" size="48" required="true" default=""/&gt;
+    (object) ['name'=&gt;'sub_category_id','type'=&gt;'integer'],
+//    &lt;column name="PRO_INDUSTRY" type="INTEGER" required="true" default="1"/&gt;
+    (object) ['name'=&gt;'industry','type'=&gt;'integer'],
+//    &lt;column name="PRO_UPDATE_DATE" type="TIMESTAMP" required="false"/&gt;
+//    &lt;column name="PRO_CREATE_DATE" type="TIMESTAMP" required="true"/&gt;
+//    &lt;column name="PRO_CREATE_USER" type="VARCHAR" size="32" required="true" default=""/&gt;
+    (object) ['name'=&gt;'create_user_id','type'=&gt;'integer'],
+//    &lt;column name="PRO_HEIGHT" type="INTEGER" required="true" default="5000"/&gt;
+  //  (object) ['name'=&gt;'height','type'=&gt;'double'],
+//    &lt;column name="PRO_WIDTH" type="INTEGER" required="true" default="10000"/&gt;
+  //  (object) ['name'=&gt;'width','type'=&gt;'double'],
+//    &lt;column name="PRO_TITLE_X" type="INTEGER" required="true" default="0"/&gt;
+//    &lt;column name="PRO_TITLE_Y" type="INTEGER" required="true" default="6"/&gt;
+    (object) ['name'=&gt;'debug','type'=&gt;'boolean'],
+    (object) ['name'=&gt;'dynaform_summary','type'=&gt;'integer'],
+    (object) ['name'=&gt;'derivation_screen_tpl','type'=&gt;'integer'],
+    (object) ['name'=&gt;'cost','type'=&gt;'decimal','size'=&gt;'7,2','require'=&gt;false,'default'=&gt;0],
+    (object) ['name'=&gt;'unit_cost','type'=&gt;'string','size'=&gt;50,'require'=&gt;false],
+//    &lt;column name="PRO_ITEE" type="INTEGER" required="true" default="0"/&gt;
+  ],
+  'translated'=&gt;[
+    (object) ['name'=&gt;'title','type'=&gt;'text','testIncompleteData'=&gt;'null','testSparce'=&gt;true],
+    (object) ['name'=&gt;'description','type'=&gt;'text','required'=&gt;false],
+  ],
+  'relationships'=&gt;[
+    (object) ['name'=&gt;'createdByUser','type'=&gt;'belongsTo','class'=&gt;'App\Model\User'],
+    (object) ['name'=&gt;'category','type'=&gt;'belongsTo','class'=&gt;'App\Model\ProcessCategory'],
+    (object) ['name'=&gt;'subCategory','type'=&gt;'belongsTo','class'=&gt;'App\Model\ProcessCategory'],
+    (object) ['name'=&gt;'events','type'=&gt;'hasMany','class'=&gt;'App\Model\Trigger'],
+  ],
+]</full><full Name="ProcessCategory" __ideNodeOpen="true">[
+  'properties'=&gt;[
+    (object) ['name'=&gt;'uid','type'=&gt;'string'],
+    (object) ['name'=&gt;'parent_category_id','type'=&gt;'integer'],
+    (object) ['name'=&gt;'icon','type'=&gt;'string', 'rule'=&gt;'','required'=&gt;false],
+  ],
+  'translated'=&gt;[],
+  'relationships'=&gt;[
+    (object) ['name'=&gt;'parentCategory','type'=&gt;'belongsTo','class'=&gt;'App\Model\ProcessCategory'],
+  ],
+]</full><full Name="Dynaform" __ideNodeOpen="true">[
+  'properties'=&gt;[
+    (object) ['name'=&gt;'uid','type'=&gt;'string','required'=&gt;true,'unique'=&gt;true],
+    (object) ['name'=&gt;'process_id','type'=&gt;'integer','required'=&gt;true,'testIncompleteData'=&gt;'null','testSparce'=&gt;false,'faker'=&gt;'model','fakerModel'=&gt;'Process'],
+    (object) ['name'=&gt;'type','type'=&gt;'string', 'rule'=&gt;'','size'=&gt;'20','domain'=&gt;['FORM','GRID'],'required'=&gt;true,'testSetup'=&gt;'Dynaform::TYPE_FORM','testWrongData'=&gt;'"INVALID.TYPE"','testIncompleteData'=&gt;'null','testSparce'=&gt;false,'faker'=&gt;'randomElement'],
+    (object) ['name'=&gt;'filename','type'=&gt;'text', 'rule'=&gt;'','required'=&gt;false,'faker'=&gt;'url'],
+    (object) ['name'=&gt;'content','type'=&gt;'text', 'rule'=&gt;'','required'=&gt;true,'faker'=&gt;'paragraph'],
+    (object) ['name'=&gt;'label','type'=&gt;'text', 'rule'=&gt;'','required'=&gt;false,'faker'=&gt;'text'],
+    (object) ['name'=&gt;'version','type'=&gt;'integer', 'rule'=&gt;'','required'=&gt;false,'testSparce'=&gt;true,'faker'=&gt;'randomDigit'],
+  ],
+  'translated'=&gt;[
+    (object) ['name'=&gt;'title','type'=&gt;'text','testIncompleteData'=&gt;'null','testSparce'=&gt;true,'faker'=&gt;'name'],
+    (object) ['name'=&gt;'description','type'=&gt;'text','required'=&gt;false,'faker'=&gt;'paragraph'],
+  ],
+  'relationships'=&gt;[
+    (object) ['name'=&gt;'process','type'=&gt;'belongsTo','class'=&gt;'App\Models\Process'],
+  ],
+]</full><full Name="OutputDocument" __ideNodeOpen="true">[
+  'properties'=&gt;[
+    (object) ['name'=&gt;'uid','type'=&gt;'string','required'=&gt;true,'unique'=&gt;true],
+    (object) ['name'=&gt;'process_id','type'=&gt;'integer','unsigned'=&gt;true,'required'=&gt;true,'testIncompleteData'=&gt;'null','testSparce'=&gt;false,'faker'=&gt;'model','fakerModel'=&gt;'Process'],
+
+    (object) ['name'=&gt;'media','type'=&gt;'string', 'domain'=&gt;['Letter','Legal','Executive','B5','Folio','A0Oversize','A0','A1','A2','A3','A4','A5','A6','A7','A8','A9','A10','SH640','SH800','SH1024'], 'defaultValue'=&gt;'Letter', 'rule'=&gt;'','required'=&gt;false,'faker'=&gt;'randomElement'],
+    (object) ['name'=&gt;'orientation','type'=&gt;'string', 'domain'=&gt;['landscape','portrait'], 'defaultValue'=&gt;'portrait', 'rule'=&gt;'','required'=&gt;false,'faker'=&gt;'randomElement'],
+    (object) ['name'=&gt;'margin_left','type'=&gt;'integer', 'rule'=&gt;'','required'=&gt;false,'testSparce'=&gt;true,'faker'=&gt;'randomDigit'],
+    (object) ['name'=&gt;'margin_right','type'=&gt;'integer', 'rule'=&gt;'','required'=&gt;false,'testSparce'=&gt;true,'faker'=&gt;'randomDigit'],
+    (object) ['name'=&gt;'margin_top','type'=&gt;'integer', 'rule'=&gt;'','required'=&gt;false,'testSparce'=&gt;true,'faker'=&gt;'randomDigit'],
+    (object) ['name'=&gt;'margin_bottom','type'=&gt;'integer', 'rule'=&gt;'','required'=&gt;false,'testSparce'=&gt;true,'faker'=&gt;'randomDigit'],
+    (object) ['name'=&gt;'generate','type'=&gt;'string', 'domain'=&gt;['BOTH','DOC','PDF'], 'defaultValue'=&gt;'BOTH', 'rule'=&gt;'','required'=&gt;true,'testIncompleteData'=&gt;'null','testWrongData'=&gt;'"GENERATE.WRONG"','faker'=&gt;'randomElement'],
+
+    (object) ['name'=&gt;'enable_versioning','type'=&gt;'boolean', 'rule'=&gt;'','required'=&gt;false,'defaultValue'=&gt;false,'faker'=&gt;'boolean'],
+    (object) ['name'=&gt;'open_type','type'=&gt;'string', 'domain'=&gt;['OPEN','DOWNLOAD'], 'defaultValue'=&gt;'DOWNLOAD', 'rule'=&gt;'','required'=&gt;false,'testWrongData'=&gt;'"WRONG.UPLOAD.PARAM"','faker'=&gt;'randomElement'],
+    (object) ['name'=&gt;'destination_path','type'=&gt;'text', 'rule'=&gt;'','required'=&gt;false,'faker'=&gt;'name'],
+
+    (object) ['name'=&gt;'security_enabled','type'=&gt;'boolean', 'rule'=&gt;'','required'=&gt;false,'faker'=&gt;'boolean'],
+    (object) ['name'=&gt;'security_open_password','type'=&gt;'string', 'rule'=&gt;'','required'=&gt;false,'faker'=&gt;'password'],
+    (object) ['name'=&gt;'security_owner_password','type'=&gt;'string', 'rule'=&gt;'','required'=&gt;false,'faker'=&gt;'password'],
+
+    (object) ['name'=&gt;'can_pdf_print','type'=&gt;'boolean', 'rule'=&gt;'','required'=&gt;false,'faker'=&gt;'boolean'],
+    (object) ['name'=&gt;'can_pdf_modify','type'=&gt;'boolean', 'rule'=&gt;'','required'=&gt;false,'faker'=&gt;'boolean'],
+    (object) ['name'=&gt;'can_pdf_copy','type'=&gt;'boolean', 'rule'=&gt;'','required'=&gt;false,'faker'=&gt;'boolean'],
+    (object) ['name'=&gt;'can_pdf_forms','type'=&gt;'boolean', 'rule'=&gt;'','required'=&gt;false,'faker'=&gt;'boolean'],
+
+  ],
+  'translated'=&gt;[
+    (object) ['name'=&gt;'title','type'=&gt;'text','testIncompleteData'=&gt;'null','testSparce'=&gt;true,'faker'=&gt;'name'],
+    (object) ['name'=&gt;'description','type'=&gt;'text','required'=&gt;false,'faker'=&gt;'paragraph'],
+  ],
+  'relationships'=&gt;[
+    (object) ['name'=&gt;'process','type'=&gt;'belongsTo','class'=&gt;'App\Models\Process'],
+  ],
+]</full></component><full Name="Event" __ideNodeOpen="true">[
+  'properties'=&gt;[
+    (object) ['name'=&gt;'uid','type'=&gt;'string','required'=&gt;true,'unique'=&gt;true],
+    (object) ['name'=&gt;'process_id','type'=&gt;'integer','unsigned'=&gt;true,'required'=&gt;true,'testIncompleteData'=&gt;'null','testSparce'=&gt;false,'faker'=&gt;'model','fakerModel'=&gt;'Process'],
+
+    (object) ['name'=&gt;'type','type'=&gt;'string', 'domain'=&gt;['START','MESSAGE','TIMER','CONDITIONAL','ERROR','CANCEL','TERMINATE'], 'defaultValue'=&gt;'START', 'rule'=&gt;'','required'=&gt;true,'faker'=&gt;'randomElement','testWrongData'=&gt;'"WRONG.TYPE.PARAM"'],
+    (object) ['name'=&gt;'behavior','type'=&gt;'string', 'domain'=&gt;['THROW','CATCH'], 'rule'=&gt;'','required'=&gt;true,'faker'=&gt;'randomElement','testWrongData'=&gt;'"WRONG.BEHAVIOR.PARAM"'],
+
+    (object) ['name'=&gt;'condition','type'=&gt;'text', 'rule'=&gt;'','required'=&gt;false],
+    (object) ['name'=&gt;'time','type'=&gt;'text', 'rule'=&gt;'','required'=&gt;false],
+    (object) ['name'=&gt;'duration','type'=&gt;'text', 'rule'=&gt;'','required'=&gt;false],
+    (object) ['name'=&gt;'cycle','type'=&gt;'text', 'rule'=&gt;'','required'=&gt;false],
+
+  ],
+  'translated'=&gt;[
+    (object) ['name'=&gt;'name','type'=&gt;'text','testIncompleteData'=&gt;'null','testSparce'=&gt;true,'faker'=&gt;'name'],
+    (object) ['name'=&gt;'description','type'=&gt;'text','required'=&gt;false,'faker'=&gt;'paragraph'],
+  ],
+  'relationships'=&gt;[
+    (object) ['name'=&gt;'process','type'=&gt;'belongsTo','class'=&gt;'App\Models\Process'],
+  ],
+]</full><component name="agua" transparent="" precode="" engine="php" __ideNodeOpen="true">&lt;?php
+$content = node::content($_);
+list($names, $flows) = explode("---\n",$content);
+$names = explode("\n", $names);
+$flows = explode("\n", $flows);
+$nn=[];
+foreach($names as $n) if(trim($n)){
+  $n1= explode("\t", $n);
+  $nn[$n1[0]] = $n1;
+  $name = $n1[3];
+  switch($n1[2]) {
+    case 'TASK': $what='a task'; break;
+    case 'GATEWAY': $what='a gateway'; break;
+    case 'EVENT': $what='an event'; break;
+  }
+    echo "    And I could create $what with name \"$name\"
+";
+}
+foreach($flows as $f) if(trim($f)){
+  $f1 = explode("\t", $f);
+  $from = $nn[$f1[0]][3];
+  $to = $nn[$f1[1]][3];
+  $condition = $f1[3];
+  $type = $f1[4];
+  if($condition) {
+    echo "    And I could create a \"$type\" flow with condition \"$condition\" from \"$from\" to \"$to\"
+";
+  } else {
+    echo "    And I could create a \"$type\" flow without condition from \"$from\" to \"$to\"
+";
+  }
+}
+</component><print __ideNodeOpen="true"><agua __ideNodeOpen="true">1	11997125457024911174c39013067290	TASK	Create Customer in Oracle
+2	135804056570339c89f4641081666562	TASK	Global Credit User
+3	5553320335702491133f4a0086055710	TASK	Operations EVP / COO Approval
+4	594610155570249112a54f9002647931	TASK	Sales SVP / CBO Approval
+5	6900208695702491120c9a2080470858	TASK	Global Credit Team
+6	859128139570249113dc106067998569	TASK	New Customer
+7	gtg-0317457eae58dde8a02079382449	GATEWAY	G1
+8	gtg-0949557eae5320fc391089627717	GATEWAY	G2
+9	gtg-1263457eae5466e2666053416967	GATEWAY	G3
+10	gtg-1409257eae58dc64875068074077	GATEWAY	Approval 1
+11	gtg-1949457eae5ddc04820075644854	GATEWAY	Approval 2
+12	evt-8995257eae5ddd6c9d9000186736	EVENT	Start
+13	evt-9764457eae531eafc16031938369	EVENT	End
+---
+4	10	1		SEQUENTIAL	true
+9	6	1	@@Credit_Action=='No'	SEQUENTIAL	true
+8	2	4	@@Credit_Action=='Reassign'	SEQUENTIAL	true
+11	2	2	@@Approval_Action=='No'	SEQUENTIAL	true
+6	7	1		SEQUENTIAL	true
+8	4	2	@@Credit_Action=='Yes' &amp;&amp; @#Credit_Limit_Amount_Required&lt;=@#Credit_NPI_SVP	SEQUENTIAL	true
+9	6	1		SEQUENTIAL	true
+10	2	2	@@Approval_Action=='No'	SEQUENTIAL	true
+5	8	1		SEQUENTIAL	true
+2	8	1		SEQUENTIAL	true
+7	5	2	@@Credit_Action==''	SEQUENTIAL	true
+8	8	1	1	SEQUENTIAL	true
+8	3	3	@@Credit_Action=='Yes' &amp;&amp; @#Credit_Limit_Amount_Required&gt;@#Credit_NPI_SVP	SEQUENTIAL	true
+3	11	1		SEQUENTIAL	true
+1	13	1		SEQUENTIAL	true
+10	1	1	@@Approval_Action=='Yes'	SEQUENTIAL	true
+11	1	1	@@Approval_Action=='Yes'	SEQUENTIAL	true
+7	2	1	@@Credit_Action=='No'	SEQUENTIAL	true
+12	6	1		SEQUENTIAL	true</agua></print></root>

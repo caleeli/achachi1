@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root __ideNodeOpen="true"><include src="$library/zend.xml"/><application name="zend" main="index/index" __ideNodeOpen="true"><file name="configs/application.ini" preprocess="" __ideNodeOpen="true">[production]
+phpSettings.display_startup_errors = 1
+phpSettings.display_errors = 0
+includePaths.library = APPLICATION_PATH "/library"
+bootstrap.path = APPLICATION_PATH "/Bootstrap.php"
+bootstrap.class = "Bootstrap"
+resources.frontController.controllerDirectory = APPLICATION_PATH "/controllers"
+
+[staging : production]
+
+[testing : production]
+phpSettings.display_startup_errors = 1
+phpSettings.display_errors = 1
+
+[development : production]
+phpSettings.display_startup_errors = 1
+phpSettings.display_errors = 1</file><file name="Bootstrap.php" preprocess="" __ideNodeOpen="true">&lt;?php
+
+class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
+{
+
+
+}
+
+</file><controller name="index" descripcion="" author="" __ideNodeOpen="true"><action name="index" noRender="false" descripcion="" loadParams=""/><phtml name="index">hola mundo</phtml></controller><file name="layouts/scripts/home.phtml" preprocess="" __ideNodeOpen="true">&lt;?php echo $this-&gt;doctype(); ?&gt;  
+&lt;html&gt;  
+&lt;head&gt;  
+    &lt;?php echo $this-&gt;headMeta(); ?&gt;  
+    &lt;?php echo $this-&gt;headTitle(); ?&gt;  
+    &lt;?php echo $this-&gt;headStyle(); ?&gt;  
+    &lt;?php echo $this-&gt;headScript(); ?&gt;  
+&lt;/head&gt;  
+  
+&lt;body&gt;  
+    &lt;div style="text-align: center;"&gt;&lt;?php echo $this-&gt;layout()-&gt;content; ?&gt;&lt;/div&gt;  
+&lt;/body&gt;
+&lt;/html&gt;
+</file></application><component name="zfapplication" transparent="" __ideNodeOpen="true" precode="chdir(ACH_PATH);createDir(ACH_OUTPUT_PATH.'/'.$name);chdir(ACH_OUTPUT_PATH.'/'.$name);"><file name="index.php" preprocess="" __ideNodeOpen="true">&lt;?php
+/**
+ *
+ *  Achachi XML Builder - Framework and applications builder tool
+ *  Copyright (C) 2010-2011, Llankay Achachi
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ *
+ */
+
+header("Location: html/index.php/index/index");</file><file name="public/index.php" preprocess="" __ideNodeOpen="true">&lt;?php
+/**
+ *
+ *  Achachi XML Builder - Framework and applications builder tool
+ *  Copyright (C) 2010-2011, Llankay Achachi
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ *
+ */
+
+@include_once("config.php");
+// Define path to application directory
+defined('APPLICATION_PATH')
+    || define('APPLICATION_PATH', realpath(dirname(__FILE__) . '/../application'));
+
+// Define application environment
+defined('APPLICATION_ENV')
+    || define('APPLICATION_ENV', (getenv('APPLICATION_ENV') ? getenv('APPLICATION_ENV') : 'production'));
+
+// Ensure library/ is on include_path
+set_include_path(implode(PATH_SEPARATOR, array(
+    realpath(APPLICATION_PATH . '/../library'),
+    get_include_path(),
+)));
+
+/** Zend_Application */
+require_once 'Zend/Application.php';  
+
+// Create application, bootstrap, and run
+$application = new Zend_Application(
+    APPLICATION_ENV, 
+    APPLICATION_PATH . '/configs/application.ini'
+);
+$application-&gt;bootstrap()
+            -&gt;run();</file><file name="application/configs/application.ini" preprocess="" __ideNodeOpen="true">[production]
+phpSettings.display_startup_errors = 0
+phpSettings.display_errors = 0
+includePaths.library = APPLICATION_PATH "/../library"
+bootstrap.path = APPLICATION_PATH "/Bootstrap.php"
+bootstrap.class = "Bootstrap"
+resources.frontController.controllerDirectory = APPLICATION_PATH "/controllers"
+
+[staging : production]
+
+[testing : production]
+phpSettings.display_startup_errors = 1
+phpSettings.display_errors = 1
+
+[development : production]
+phpSettings.display_startup_errors = 1
+phpSettings.display_errors = 1</file><file name="application/controllers/ErrorController.php" preprocess="" __ideNodeOpen="true">&lt;?php
+
+class ErrorController extends Zend_Controller_Action
+{
+
+    public function errorAction()
+    {
+        $errors = $this-&gt;_getParam('error_handler');
+        
+        switch ($errors-&gt;type) { 
+            case Zend_Controller_Plugin_ErrorHandler::EXCEPTION_NO_CONTROLLER:
+            case Zend_Controller_Plugin_ErrorHandler::EXCEPTION_NO_ACTION:
+        
+                // 404 error -- controller or action not found
+                $this-&gt;getResponse()-&gt;setHttpResponseCode(404);
+                $this-&gt;view-&gt;message = 'Page not found';
+                break;
+            default:
+                // application error 
+                $this-&gt;getResponse()-&gt;setHttpResponseCode(500);
+                $this-&gt;view-&gt;message = 'Application error';
+                break;
+        }
+        
+        $this-&gt;view-&gt;exception = $errors-&gt;exception;
+        $this-&gt;view-&gt;request   = $errors-&gt;request;
+    }
+
+
+}
+
+</file></component><component name="controller" transparent="" __ideNodeOpen="true"><file name="application/controllers/@{UpperCamelCase($name)}Controller.php" preprocess="" __ideNodeOpen="true">&lt;?php
+require_once 'Zend/Controller/Action.php';
+require_once 'Zend/Loader.php';
+
+class @{UpperCamelCase($name)}Controller extends Zend_Controller_Action
+{
+@{@node::join("\n",$_nodes['method'])}
+@{@node::join("\n",$_nodes['action'])}
+@{@node::join("\n",$_nodes['rule'])}
+@{@node::join("\n",$_nodes['call'])}
+}</file></component></root>

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root><include src="$library/zend.xml"/><application name="newApplication" main="index/index"><controller name="index" descripcion="" author=""><action name="index" noRender="false" descripcion="" loadParams=""/><phtml name="index" __ideNodeOpen="true"><jqueryui name="filename" __ideNodeOpen="true">&lt;html xmlns="http://www.w3.org/1999/xhtml"&gt;
+&lt;head&gt;
+&lt;meta http-equiv="Content-Type" content="text/html; charset=utf-8"/&gt;
+&lt;title&gt;&lt;?php print "New Page"; ?&gt;&lt;/title&gt;
+&lt;link type="text/css" href="/jquery/css/face/jquery-ui.custom.css" rel="stylesheet"/&gt;	
+&lt;script type="text/javascript" src="/jquery/js/jquery.min.js"&gt;&lt;/script&gt;
+&lt;script type="text/javascript" src="/jquery/js/jquery-ui.custom.min.js"&gt;&lt;/script&gt;
+&lt;style&gt;.qE{
+  display:inline-block;
+  position:absolute;
+}
+html{
+  height:100%;
+}
+body{
+  padding:0px;
+  margin:0px;
+  font-size:12px;
+}&lt;/style&gt;
+&lt;script type="text/javascript" id="jsloader"&gt;
+$(function(){
+//#accordion1
+$("#accordion1").accordion({ 
+  //*accordion_options
+   header: "h3"
+  ,collapsible: true
+  ,active:false
+  //*accordion_events
+  ,change:function(event, ui){
+  }
+  //*end
+});
+//qend//
+});
+&lt;/script&gt;
+&lt;/head&gt;
+&lt;body&gt;&lt;div jid="accordion1" style="width: 100%;" class="qE accordion" id="accordion1"&gt;
+  &lt;div&gt;
+  &lt;h3&gt;&lt;a href="#"&gt;First&lt;/a&gt;&lt;/h3&gt;
+  &lt;div&gt;Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet.&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div&gt;
+  &lt;h3&gt;&lt;a href="#"&gt;Second&lt;/a&gt;&lt;/h3&gt;
+  &lt;div&gt;Phasellus mattis tincidunt nibh.&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div&gt;
+  &lt;h3&gt;&lt;a href="#"&gt;Third&lt;/a&gt;&lt;/h3&gt;
+  &lt;div&gt;Nam dui erat, auctor a, dignissim quis.&lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;&lt;/body&gt;
+&lt;/html&gt;
+</jqueryui></phtml></controller></application></root>

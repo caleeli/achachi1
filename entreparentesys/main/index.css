@@ -1,0 +1,36 @@
+<?php
+$fondo="#fbfbfb";//"rgb(64,8,7)";
+$color1="rgb(255,255,255)";
+$color2="black";"rgb(197,185,41)";
+$color3f="rgb(255,255,255)";
+$color3b="rgb(0,0,0)";
+return "
+.mainnavbar{
+  margin-bottom: 0px!important;
+  border-radius:0px!important;
+} 
+.menutree{
+  margin-left: -15px;
+  background-color: $fondo;
+  /*position: fixed;
+  bottom: 0px;
+  top: 52px;
+  overflow-y: auto;*/
+  padding-left: 5px;
+  padding-right: 5px;
+}
+.menutree a{
+  color: $color2!important;
+}
+.menutree a:hover{
+  color: $color3b!important;
+  background-color: $color3f!important;
+}
+.workspace{
+  /*position: fixed;
+  top: 52px;
+  bottom: 0px;
+  width: inherit;
+  margin-left: -15px;*/
+}
+";

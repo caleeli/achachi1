@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root><path path="installer"><file name="install.php">&lt;?php
+function getZendVersion(){
+  $exists=include("Zend/Version.php");
+  if(!$exists) return "none";
+  else return Zend_Version::VERSION;
+}
+function getExtJsVersion(){
+  $path=$_SERVER["DOCUMENT_ROOT"]."/ext";
+  if(file_exists($path)) return $path;
+  else return "none";
+}
+function getAchachiVersion(){
+  $path=$_SERVER["DOCUMENT_ROOT"]."/achachi/version.txt";
+  if(file_exists($path)) return file_get_contents($path);
+  else return "none";
+}
+function getAchachiDevVersion(){
+  $path=$_SERVER["DOCUMENT_ROOT"]."/achachi/webeditor/version.txt";
+  if(file_exists($path)) return file_get_contents($path);
+  else return "none";
+}
+?&gt;
+&lt;table border="1"&gt;
+&lt;tr&gt;
+&lt;th&gt;Achachi Framework Installed:&lt;/td&gt;&lt;td&gt;&lt;?php print(getAchachiVersion()) ?&gt;&lt;/th&gt;&lt;?php if (getAchachiVersion()=="none") {?&gt;&lt;td&gt;Achachi folder must be at DOCUMENT_ROOT:&lt;?php print($_SERVER["DOCUMENT_ROOT"]) ?&gt;&lt;/td&gt;&lt;?php } ?&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;th&gt;Achachi Developer Installed:&lt;/td&gt;&lt;td&gt;&lt;?php print(getAchachiDevVersion()) ?&gt;&lt;/th&gt;&lt;?php if (getAchachiDevVersion()=="none") {?&gt;&lt;td&gt;Achachi folder must be at DOCUMENT_ROOT:&lt;?php print($_SERVER["DOCUMENT_ROOT"]) ?&gt;&lt;/td&gt;&lt;?php } ?&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;th&gt;Zend Framework Installed:&lt;/td&gt;&lt;td&gt;&lt;?php print(getZendVersion()) ?&gt;&lt;/th&gt;&lt;?php if (getZendVersion()=="none") {?&gt;&lt;td&gt;&lt;input type="button" value="Install" /&gt;&lt;/td&gt;&lt;?php } ?&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;th&gt;ExtJs Installed:&lt;/td&gt;&lt;td&gt;&lt;?php print(getExtJsVersion()) ?&gt;&lt;/th&gt;&lt;?php if (getExtJsVersion()=="none") {?&gt;&lt;td&gt;&lt;input type="button" value="Install" /&gt;&lt;/td&gt;&lt;?php } ?&gt;
+&lt;/tr&gt;
+&lt;/table&gt;</file></path></root>

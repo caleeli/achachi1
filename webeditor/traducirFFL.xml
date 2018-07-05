@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?><root __ideNodeOpen="true"><component name="traductor" transparent="" precode="" __ideNodeOpen="true"><php __ideNodeOpen="true">require_once('bing/config.inc.php');
+require_once('bing/class/MicrosoftTranslator.class.php');
+$translator = new MicrosoftTranslator(ACCOUNT_KEY);
+
+$text_to_translate = 'Hello World'; 
+$from = 'en';
+$to = 'es';
+//var_dump($translator-&gt;response);
+
+$token=token_get_all(${node::content($_)});
+set_time_limit(0);
+
+$toTrad=array();
+$res='';
+for($i=0,$l=count($token);$i&lt;$l;$i++){
+  $tk=&amp;$token[$i];
+  $e = is_array($tk) ? $tk[1] : $tk;
+  if(is_array($tk) &amp;&amp; $tk[0]==307){
+    $ct=2;
+    while(true){
+      $i++;
+      $tk=&amp;$token[$i];
+      if(is_array($tk) &amp;&amp; $tk[0]==315) $ct--;
+      if($ct&lt;=0) break;
+      $e.= is_array($tk) ? $tk[1] : $tk;
+    }
+    eval('$text_to_translate='.$tk[1].';');
+
+//    //$text_to_translate='Are you sure you want to reset your player ranking to the default ranking?';
+//    $translator-&gt;translate($from, $to, $text_to_translate);
+//    $trad=$translator-&gt;response-&gt;translation;
+
+    $n=count($toTrad);
+    $e.=var_export('@&lt;'.$n.'&gt;', true);
+    $toTrad[]=$text_to_translate;
+  }
+  $res.=$e;
+}
+$trad='';
+for($i=0,$l=count($toTrad);$i&lt;$l;$i+=100){
+  $txt='';
+  for($j=$i;$j&lt;$l &amp;&amp; $j&lt;($i+100);$j++){
+    $txt.= '(' . $toTrad[$j].").\n";
+  }
+  $translator-&gt;translate($from, $to, $txt);
+  $trad0=$translator-&gt;response-&gt;translation;
+  $u=strpos($trad0, '&gt;');
+  $trad.=substr($trad0, $u+1, -9); 
+}
+$GLOBALS['TRAD']=explode( "\n" , $trad);
+$res = preg_replace_callback('/\@\&lt;(\d+)\&gt;/', 'traduccion', $res);
+//echo htmlentities($trad, ENT_NOQUOTES, 'utf-8');
+echo htmlentities($res, ENT_NOQUOTES, 'utf-8');
+function traduccion($ma){
+  return substr($GLOBALS['TRAD'][$ma[1]*1],1,-2);
+}
+</php></component><component name="traduccion" transparent="" precode="" __ideNodeOpen="true">@{node::content($_)}</component><traductor __ideNodeOpen="true">&lt;?php 
+/*
+Transactions
+This language file contains all of the language phrases used throughout the Transactions section of phpffl. 
+*/
+
+define('DATE_APPROVED', 'Date Approved');
+define('PROTEST_TRADE', 'Protest Trade');
+define('PROTEST_SUBMITTED', 'Protest Submitted');
+define('PROTEST_ALREADY_SUBMITTED_FOR_THIS_TRADE', 'Protest already submitted for this trade.');
+define('PLAYERS_WAIVED_BEFORE_AUTO_PROCESSED', 'Players waived before this date will be automatically processed.');
+
+//New Words - Still need to translate.
+
+define('RED_CLEAR_WAIVER', 'Red = Waiting to Clear Waivers');
+
+
+
+
+
+?&gt;
+</traductor></root>

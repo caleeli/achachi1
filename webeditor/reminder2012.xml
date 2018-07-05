@@ -1,0 +1,541 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root><include src="$library/zend.xml"/><include src="$library/googleimages.xml"/><application name="reminder2012" main="index/index" __ideNodeOpen="true"><controller name="index" descripcion="" author="" __ideNodeOpen="true"><action name="index" noRender="false" descripcion="" loadParams="" __ideNodeOpen="true"><select_row model="configuracion" var="$row" criteria="nombre=&quot;bienvenida&quot;" __ideNodeOpen="true">$this-&gt;view-&gt;bienvenida=$row-&gt;valor;</select_row><select_row model="configuracion" var="$row" criteria="nombre=&quot;fondo&quot;" __ideNodeOpen="true">$this-&gt;view-&gt;fondo=$row-&gt;valor;</select_row></action><phtml name="index" __ideNodeOpen="true"><jqueryui __ideNodeOpen="true">&lt;html xmlns="http://www.w3.org/1999/xhtml"&gt;
+&lt;head&gt;
+&lt;meta http-equiv="Content-Type" content="text/html; charset=utf-8"/&gt;
+&lt;title&gt;RemindersBook&lt;/title&gt;
+&lt;link type="text/css" href="/jquery/css/face/jquery-ui.custom.css" rel="stylesheet"/&gt;	
+&lt;script type="text/javascript" src="/jquery/js/jquery.min.js"&gt;&lt;/script&gt;
+&lt;script type="text/javascript" src="/jquery/js/jquery-ui.custom.min.js"&gt;&lt;/script&gt;
+&lt;style&gt;.qE{
+  display:inline-block;
+  position:absolute;
+}
+.qSS{
+  display:inline-block;
+}
+html{
+  height:100%;
+  
+}
+body{
+  padding:0px;
+  margin:0px;
+  font-family:'lucida grande',tahoma,verdana,arial,sans-serif;
+  font-size:12px;
+  background: linear-gradient(center top , white, #D3D8E8);
+  background: -moz-linear-gradient(center top , white, #D3D8E8);
+}
+a{
+  color:#98A9CA;
+}
+.gradient{
+ background: linear-gradient(center top , white, #D3D8E8);
+ background: -moz-linear-gradient(center top , white, #D3D8E8);
+}
+table{
+  font-family:'lucida grande',tahoma,verdana,arial,sans-serif;
+  font-size:12px;
+}
+&lt;/style&gt;
+&lt;script type="text/javascript" id="jsloader"&gt;
+$(function(){
+$("button").button();
+//qend//
+});
+&lt;/script&gt;
+&lt;/head&gt;
+&lt;body&gt;&lt;div jid="" style="width: 100%; height: 59px; background-color: rgb(59, 89, 152); color: rgb(255, 255, 255); text-align: right;" class="qE div"&gt;&lt;form action="login"&gt;
+&lt;span class="qSS" style="text-align:left;margin-right:8px;vertical-align:top"&gt;Correo electr&amp;#xF3;nico&lt;br/&gt;&lt;input name="username" tabindex="1"/&gt;&lt;br/&gt;&lt;input type="checkbox"/&gt; &lt;a href="#"&gt;No cerrar sesi&amp;#xF3;n&lt;/a&gt;&lt;/span&gt;
+&lt;span class="qSS" style="text-align:left;margin-right:8px;vertical-align:top"&gt;Contrase&amp;#xF1;a&lt;br/&gt;&lt;input type="password" name="password" tabindex="2"/&gt;&lt;br/&gt;&lt;a href="#"&gt;&amp;#xBF;Has olvidado tu contrase&amp;#xF1;a?&lt;/a&gt;&lt;/span&gt;
+&lt;span class="qSS" style="text-align:left;margin-right:8px;vertical-align:top"&gt;&lt;br/&gt;&lt;button tabindex="3" type="submit"&gt;Entrar&lt;/button&gt;&lt;/span&gt;&lt;/form&gt;
+&lt;/div&gt;&lt;div style="width:346px; height: 498px; right: 0px; top: 64px;color:#1D2A5B" class="qE div" jid=""&gt;
+&lt;h2&gt;Registrate&lt;/h2&gt;
+&lt;hr/&gt;
+&lt;center&gt;
+&lt;table&gt;
+&lt;tbody&gt;&lt;tr&gt;&lt;td width="100px"&gt;Nombre:&lt;/td&gt;&lt;td&gt;&lt;input/&gt;&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;Apellido:&lt;/td&gt;&lt;td&gt;&lt;input/&gt;&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;Tu correo electr&amp;#xF3;nico:&lt;/td&gt;&lt;td&gt;&lt;input/&gt;&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;Escribe de nuevo el correo electr&amp;#xF3;nico:&lt;/td&gt;&lt;td&gt;&lt;input/&gt;&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;Contrase&amp;#xF1;a:&lt;/td&gt;&lt;td&gt;&lt;input/&gt;&lt;/td&gt;&lt;/tr&gt;
+&lt;/tbody&gt;&lt;/table&gt;
+&lt;/center&gt;
+&lt;/div&gt;&lt;div jid="" style="width: 640px; height: 499px; left: 0px; top: 59px;background-image:url(&lt;?php echo $this-&gt;fondo ?&gt;)" class="qE div"&gt;
+    &lt;br/&gt;
+  &lt;/div&gt;&lt;div class="qE div" style="width: 295px; height: 66px; background-image: url(../../images/logo.png); left: 15px; top: 2px;" jid=""&gt;
+    &lt;br/&gt;
+  &lt;/div&gt;&lt;div class="qE div" style="width: 530px; height: 100px; left: 40px; top: 168px; font-size:20px" jid=""&gt;
+&lt;?php echo $this-&gt;bienvenida ?&gt;&lt;/div&gt;&lt;/body&gt;
+&lt;/html&gt;
+</jqueryui></phtml><action name="login" loadParams="$username,$password" descripcion="" noRender="true" __ideNodeOpen="true"><select_row model="usuario" var="$row" criteria="usr_login=$username;usr_password=@md5($password)" __ideNodeOpen="true">if($row){
+  $_SESSION["user"]=$row-&gt;toArray();
+  header("Location: ../main/index");
+} else {
+  header("Location: index");
+}</select_row></action></controller><connection driver="Mysqli" host="localhost" username="root" password="root" dbname="reminder"/><table name="configuracion" table="configuracion" primaryKey="nombre" dependentTables=""/><table name="usuario" table="usuario" primaryKey="" dependentTables=""/><controller name="main" descripcion="" author="" __ideNodeOpen="true"><action name="index" noRender="false" descripcion="" loadParams="" __ideNodeOpen="true"/><phtml name="index" __ideNodeOpen="true"><jqueryui __ideNodeOpen="true">&lt;html xmlns="http://www.w3.org/1999/xhtml"&gt;
+&lt;head&gt;
+&lt;meta http-equiv="Content-Type" content="text/html; charset=utf-8"/&gt;
+&lt;title&gt;RemindersBook&lt;/title&gt;
+&lt;link type="text/css" href="/jquery/css/face/jquery-ui.custom.css" rel="stylesheet"/&gt;	
+&lt;script type="text/javascript" src="/jquery/js/jquery.min.js"&gt;&lt;/script&gt;
+&lt;script type="text/javascript" src="/jquery/js/jquery-ui.custom.min.js"&gt;&lt;/script&gt;
+&lt;script type="text/javascript" src="../../ajax.js"&gt;&lt;/script&gt;
+&lt;script type="text/javascript" src="../../jquery-ui-timepicker-addon.js"&gt;&lt;/script&gt;
+&lt;style type="text/css" title="currentStyle"&gt;
+  @import "/jquery/datatable/css/demo_page.css";
+  @import "/jquery/datatable/css/demo_table.css";
+&lt;/style&gt;
+&lt;script type="text/javascript" language="javascript" src="/jquery/datatable/js/jquery.dataTables.js"&gt;&lt;/script&gt;
+&lt;style&gt;.qE{
+  display:inline-block;
+  position:absolute;
+}
+.qSS{
+  display:inline-block;
+}
+html{
+  height:100%;
+  
+}
+body{
+  padding:0px;
+  margin:0px;
+  font-family:'lucida grande',tahoma,verdana,arial,sans-serif;
+  font-size:12px;
+  background: linear-gradient(center top , white, #D3D8E8);
+  background: -moz-linear-gradient(center top , white, #D3D8E8);
+}
+a{
+  color:#98A9CA;
+}
+.gradient{
+ background: linear-gradient(center top , white, #D3D8E8);
+ background: -moz-linear-gradient(center top , white, #D3D8E8);
+}
+table{
+  font-family:'lucida grande',tahoma,verdana,arial,sans-serif;
+  font-size:12px;
+}
+.barra{
+  border-right:1px solid black;
+  background-color:#F1F1F1;
+  -moz-box-shadow:    0px 3px 5px 6px #ccc;
+  -webkit-box-shadow: 0px 3px 5px 6px #ccc;
+  box-shadow:         0px 3px 5px 6px #ccc;
+}
+.barra a {
+  display:block;
+  text-align:center;
+  height:74px;
+}
+.imagescroll{
+  overflow:hidden;
+}
+.imagescroll div{
+  white-space: nowrap;
+}
+.imagescroll div a{
+  margin:4px;
+}
+.contacto{
+  border-bottom:1px solid #4297D7;
+  cursor:pointer;
+}
+.contacto:hover{
+  background-color:lightgray;
+}
+&lt;/style&gt;
+&lt;script type="text/javascript" id="jsloader"&gt;
+$(function(){
+$("button").button();
+var oTable = $('#lista').dataTable( {
+  "bProcessing": true,
+  "sAjaxSource": "reminders",
+  "bJQueryUI":true
+} );
+//qend//
+});
+&lt;/script&gt;
+&lt;/head&gt;
+&lt;body&gt;&lt;div jid="" style="width: 100%; height: 59px; background-color: rgb(59, 89, 152); color: rgb(255, 255, 255); text-align: right;" class="qE div"&gt;&lt;br/&gt;
+&lt;?php echo $_SESSION["user"]["usr_login"] ?&gt;&lt;/div&gt;&lt;div jid="" style="width: 100%; height: 499px; left: 0px; top: 59px" class="qE div"&gt;
+&lt;table cellspacing="0" cellpadding="0" border="0" style="width:100%"&gt;
+&lt;tbody&gt;&lt;tr&gt;
+&lt;td width="97px"&gt;&lt;div class="barra"&gt;
+&lt;a onclick="$('#centro').loadFrom({url:'nuevo'})" href="#"&gt;&lt;img src="../../images/nuevo.gif"/&gt;&lt;br/&gt;Nuevo&lt;/a&gt;
+&lt;a onclick="$('#nuevoRem').ajaxSubmit()" href="#"&gt;&lt;img src="../../images/guardar.png"/&gt;&lt;br/&gt;Guardar como borrador&lt;/a&gt;
+&lt;a href="#"&gt;&lt;img src="../../images/enviar.gif"/&gt;&lt;br/&gt;Guardar y enviar&lt;/a&gt;
+&lt;a&gt;&lt;br/&gt;&lt;/a&gt;
+&lt;a href="#"&gt;&lt;img src="../../images/configuracion.png"/&gt;&lt;br/&gt;Configuraci&amp;#xF3;n&lt;/a&gt;
+&lt;a href="#"&gt;&lt;img src="../../images/contactos.gif"/&gt;&lt;br/&gt;Contactos&lt;/a&gt;
+&lt;/div&gt;&lt;/td&gt;
+&lt;td width="545px" style="vertical-align:top;"&gt;&lt;div id="centro" style="position:relative"&gt;&lt;br/&gt;&lt;/div&gt;&lt;/td&gt;
+&lt;td style="vertical-align:top;text-align:right"&gt;
+&lt;table cellspacing="0" cellpadding="0" border="0" id="lista" style="width:100%"&gt;
+	&lt;thead&gt;
+		&lt;tr&gt;
+			&lt;th width="50%"&gt;Destinatario&lt;/th&gt;
+			&lt;th width="25%"&gt;Asunto&lt;/th&gt;
+			&lt;th width="25%"&gt;Fecha de Envio&lt;/th&gt;
+		&lt;/tr&gt;
+	&lt;/thead&gt;
+	&lt;tbody&gt;
+		
+	&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;&lt;/table&gt;
+&lt;/div&gt;&lt;div jid="" style="width: 295px; height: 66px; background-image: url(../../images/logo.png); left: 15px; top: 2px;" class="qE div"&gt;
+    &lt;br/&gt;
+  &lt;/div&gt;&lt;/body&gt;
+&lt;/html&gt;
+</jqueryui></phtml><action name="reminders" loadParams="" descripcion="" noRender="true" __ideNodeOpen="true">$usuario=$_SESSION["user"]["usr_login"];
+$res=array();
+<select_table model="reminder" limit="" offset="" order="" columns="TO,SUBJECT,DATE" var="$rows" criteria="REM_FROM=$usuario" __ideNodeOpen="true">if($rows){
+  foreach($rows as $row){
+    $res[]=array($row-&gt;TO,$row-&gt;SUBJECT,$row-&gt;DATE);
+  }
+}
+</select_table>
+$result = array("aaData"=&gt;$res);
+echo json_encode($result);
+</action><action name="nuevo" loadParams="" descripcion="" noRender="" __ideNodeOpen="true">$categorias=array();
+foreach(glob("images/categorias/*.png") as $f){
+  $n=basename($f);
+  $t=basename($f,'.png');
+  $categorias[]='&lt;a class="categoria" href="#" onclick="$(\'.templeta\').hide();$(\'.templeta[categoria='.$t.']\').show();"&gt;&lt;img src="../../images/categorias/'.$n.'" /&gt;&lt;/a&gt;';
+}
+$this-&gt;view-&gt;categorias=implode("",$categorias);
+
+$templetas=array();
+foreach(glob("images/templetas/*") as $d){
+  $t=basename($d);
+  foreach(glob("images/templetas/$t/*.png") as $f){
+    $n=basename($f);
+    $n1=basename($f,'.png');
+    $templetas[]='&lt;a class="templeta" categoria="'.$t.'" onclick="$(\'#editor\').cargarNuevaTempleta('.htmlentities(json_encode($t),ENT_QUOTES,'utf-8').','. htmlentities(json_encode($n1),ENT_QUOTES,'utf-8').')" href="#" style="display:none"&gt;&lt;img src="../../images/templetas/'.$t.'/'.$n.'" /&gt;&lt;/a&gt;';
+  }
+}
+$this-&gt;view-&gt;templetas=implode("",$templetas);
+</action><phtml name="nuevo" __ideNodeOpen="true"><jqueryui>&lt;html xmlns="http://www.w3.org/1999/xhtml"&gt;
+&lt;head&gt;
+&lt;meta http-equiv="Content-Type" content="text/html; charset=utf-8"/&gt;
+&lt;title&gt;&lt;?php print "New Page"; ?&gt;&lt;/title&gt;
+&lt;link type="text/css" href="/jquery/css/face/jquery-ui.custom.css" rel="stylesheet"/&gt;	
+&lt;script type="text/javascript" src="/jquery/js/jquery.min.js"&gt;&lt;/script&gt;
+&lt;script type="text/javascript" src="/jquery/js/jquery-ui.custom.min.js"&gt;&lt;/script&gt;
+&lt;style&gt;.qE{
+  display:inline-block;
+  position:absolute;
+}
+html{
+  height:100%;
+}
+body{
+  padding:0px;
+  margin:0px;
+  font-size:12px;
+}&lt;/style&gt;
+&lt;script type="text/javascript" id="jsloader"&gt;
+$(function(){
+try{
+  $("#fecha").datetimepicker({dateFormat:'dd/mm/yy'});
+}catch(e){
+}
+//#dialog1
+$('#dialog1').dialog({
+  //*dialog_options
+  autoOpen: false,
+  width: 400,
+  height:300
+  //*dialog_events
+  ,open:function(event, ui){
+    $('#dialog1').loadFrom({url:'contactos' });
+  }
+});
+  //qend//
+});
+&lt;/script&gt;
+&lt;/head&gt;
+&lt;body&gt;&lt;form action="guardar" id="nuevoRem"&gt;
+    &lt;div class="qE div" style="height: 80px; left: 40px; top: 0px;" jid="" qid="1"&gt;
+&lt;a href="#" onclick="$('#categorias').scrollLeft($('categorias').scrollLeft()-80)"&gt;&lt;img src="../../images/fecha_izq.png"/&gt;&lt;/a&gt;
+&lt;/div&gt;
+    &lt;div jid="" style="width: 240px; height: 80px; left: 72px; top: 0px; overflow: hidden;" class="qE div imagescroll" id="categorias" qid="2"&gt;
+    &lt;div style="white-space: nowrap;"&gt;
+      &lt;?php echo $this-&gt;categorias ?&gt;    &lt;/div&gt;
+  &lt;/div&gt;
+    &lt;div jid="" style="height: 80px; left: 312px; top: 0px;" class="qE div" qid="3"&gt;
+&lt;a href="#" onclick="$('#categorias').scrollLeft($('categorias').scrollLeft()+80)"&gt;&lt;img src="../../images/fecha_der.png"/&gt;&lt;/a&gt;
+&lt;/div&gt;
+    &lt;div class="qE div" style="height: 80px; left: 40px; top: 80px;" jid="" qid="4"&gt;
+&lt;a onclick="$('#templetas').scrollLeft($('templetas').scrollLeft()-80)" href="#"&gt;&lt;img src="../../images/fecha_izq.png"/&gt;&lt;/a&gt;
+&lt;/div&gt;
+    &lt;div qid="5" id="templetas" jid="" style="width: 240px; height: 80px; left: 72px; top: 80px;" class="qE div imagescroll"&gt;
+    &lt;div&gt;
+      &lt;?php echo $this-&gt;templetas ?&gt;    &lt;/div&gt;
+&lt;input type="hidden" name="template" id="template"/&gt;
+  &lt;/div&gt;
+    &lt;div jid="" style="height: 80px; left: 312px; top: 80px;" class="qE div" qid="6"&gt;&lt;a onclick="$('#templetas').scrollLeft($('templetas').scrollLeft()+80)" href="#"&gt;&lt;img src="../../images/fecha_der.png"/&gt;&lt;/a&gt;
+&lt;/div&gt;
+    &lt;div class="qE div" style="width: 80px; height: 20px; background-color: white; left: 48px; top: 160px;" jid="" qid="7"&gt;Para:&lt;/div&gt;
+    &lt;div qid="8" class="qE div" style="width: 208px; height: 20px; background-color: white; left: 128px; top: 160px;" jid=""&gt;
+&lt;input style="border:none;width:100%" id="para" name="para"/&gt;
+&lt;/div&gt;
+    &lt;div jid="" style="width: 80px; height: 20px; background-color: white; left: 48px; top: 184px;" class="qE div" qid="9"&gt;
+Fecha:
+&lt;/div&gt;
+    &lt;div qid="10" jid="" style="width: 208px; height: 20px; background-color: white; left: 128px; top: 184px;" class="qE div"&gt;
+&lt;input name="fecha" id="fecha" style="border:none;width:100%"/&gt;
+&lt;/div&gt;
+    &lt;div jid="" style="width: 80px; height: 20px; background-color: white; left: 48px; top: 208px;" class="qE div" qid="11"&gt;
+Asunto:
+&lt;/div&gt;
+    &lt;div qid="12" class="qE div" style="width: 208px; height: 20px; background-color: white; left: 128px; top: 208px;" jid=""&gt;
+&lt;input name="asunto" id="asunto" style="border:none;width:100%"/&gt;
+&lt;/div&gt;
+    &lt;div id="editor" jid="" style="width: 420px; height: 294px; left: 48px; top: 232px; border-radius: 4px 4px 4px 4px; border: 4px solid black;" class="qE div" qid="13"/&gt;
+  &lt;/form&gt;&lt;div jid="" style="width: 80px; height: 20px; left: 344px; top: 160px;" class="qE div"&gt;
+&lt;a href="#" onclick="$('#dialog1').dialog('open')"&gt;&lt;img src="../../images/icon-l-contacts.jpg"/&gt;Contactos&lt;/a&gt;
+&lt;/div&gt;&lt;div jid="dialog1" class="qE dialog"&gt;
+&lt;div title="Contactos" id="dialog1" style="height:300px;width:200px;"&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;/body&gt;
+&lt;/html&gt;
+</jqueryui></phtml><action name="guardar" noRender="true" descripcion="" loadParams="$para,$fecha,$asunto,$template,$tmp" __ideNodeOpen="true">
+$usuario=$_SESSION["user"]["usr_login"];
+$body=serialize($tmp);
+list($date, $time) = explode(" ", $fecha);
+$date = explode("/", $date);
+$date = $date[2].'-'.$date[1].'-'.$date[0];
+<insert_row model="reminder" var="$values" values="to=$para;subject=$asunto;rem_from=$usuario;date=$date;time=$time;template=$template;body=$body"/>echo 'refreshLista();';
+</action><action name="contactos" loadParams="" descripcion="" noRender="" __ideNodeOpen="true">
+$usuario=$_SESSION["user"]["usr_id"];
+<select_table model="contactos" limit="" offset="" order="" columns="" var="$contactos" criteria="usr_id=$usuario"/>
+$this-&gt;view-&gt;contactos=$contactos;
+</action><phtml name="contactos" __ideNodeOpen="true"><jqueryui>&lt;html xmlns="http://www.w3.org/1999/xhtml"&gt;
+&lt;head&gt;
+&lt;meta http-equiv="Content-Type" content="text/html; charset=utf-8"/&gt;
+&lt;title&gt;&lt;?php print "New Page"; ?&gt;&lt;/title&gt;
+&lt;link type="text/css" href="/jquery/css/face/jquery-ui.custom.css" rel="stylesheet"/&gt;	
+&lt;script type="text/javascript" src="/jquery/js/jquery.min.js"&gt;&lt;/script&gt;
+&lt;script type="text/javascript" src="/jquery/js/jquery-ui.custom.min.js"&gt;&lt;/script&gt;
+&lt;style&gt;.qE{
+  display:inline-block;
+  position:absolute;
+}
+html{
+  height:100%;
+}
+body{
+  padding:0px;
+  margin:0px;
+  font-size:12px;
+}&lt;/style&gt;
+&lt;script type="text/javascript" id="jsloader"&gt;
+$(function(){
+//#contactos_buscar
+$("#contactos_buscar").button();
+//#contactos_agregar
+$("#contactos_agregar").button();
+//#nuevocontacto
+$('#nuevocontacto').dialog({
+  //*dialog_options
+  autoOpen: false,
+  width: 400
+  //*dialog_events
+  ,open:function(event, ui){
+    $('#nuevocontacto').loadFrom({url:'nuevocontacto' });
+  }
+});
+//qend//
+});
+&lt;/script&gt;
+&lt;/head&gt;
+&lt;body&gt;&lt;div class="qE div" style="width: 380px; height: 160px; overflow: auto; left: 8px; top: 40px;" jid=""&gt;
+&lt;?php
+foreach($this-&gt;contactos as $c) {
+  echo "&lt;"."div class='contacto' onclick=\"".
+    htmlentities(
+      '$("#para")[0].value=' . json_encode($c-&gt;email) . ';' .
+      '$("#dialog1").dialog("close");'
+    , ENT_QUOTES, 'utf-8') ."\" "."&gt;";
+  echo "&lt;"."img src='../../images/contacto.png'"." /&gt;";
+  echo $c-&gt;email;
+  echo "&lt;/"."div"."&gt;";
+}
+?&gt;&lt;/div&gt;&lt;div class="qE button" jid="contactos_buscar" style="left: 8px; top: 8px; display:none;"&gt;
+    &lt;button id="contactos_buscar"&gt;&lt;img src="../../images/eye.png"/&gt;&lt;/button&gt;
+  &lt;/div&gt;&lt;div style="left: 344px; top: 8px;" jid="contactos_agregar" class="qE button"&gt;
+    &lt;button id="contactos_agregar" onclick="$('#nuevocontacto').dialog('open')"&gt;&lt;img src="../../images/add.png"/&gt;&lt;/button&gt;
+  &lt;/div&gt;&lt;span class="qE input" style="width: 280px; left: 56px; top: 8px;" jid=""&gt;
+    &lt;input style="height: 28px; width:100%"/&gt;
+  &lt;/span&gt;&lt;div jid="nuevocontacto" class="qE dialog"&gt;
+&lt;div title="Nuevo Contacto" id="nuevocontacto"&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;/body&gt;
+&lt;/html&gt;
+</jqueryui></phtml><action name="nuevocontacto" loadParams="" descripcion="" noRender="" __ideNodeOpen="true"/><phtml name="nuevocontacto" __ideNodeOpen="true"><jqueryui>&lt;html xmlns="http://www.w3.org/1999/xhtml"&gt;
+&lt;head&gt;
+&lt;meta http-equiv="Content-Type" content="text/html; charset=utf-8"/&gt;
+&lt;title&gt;&lt;?php print "New Page"; ?&gt;&lt;/title&gt;
+&lt;link type="text/css" href="/jquery/css/face/jquery-ui.custom.css" rel="stylesheet"/&gt;	
+&lt;script type="text/javascript" src="/jquery/js/jquery.min.js"&gt;&lt;/script&gt;
+&lt;script type="text/javascript" src="/jquery/js/jquery-ui.custom.min.js"&gt;&lt;/script&gt;
+&lt;style&gt;.qE{
+  display:inline-block;
+  position:absolute;
+}
+html{
+  height:100%;
+}
+body{
+  padding:0px;
+  margin:0px;
+  font-size:12px;
+}&lt;/style&gt;
+&lt;script type="text/javascript" id="jsloader"&gt;
+$(function(){
+//#contactos_agregar
+$("#contactos_agregar").button();
+//#nuevocontacto
+$('#nuevocontacto').dialog({
+  //*dialog_options
+  autoOpen: false,
+  width: 600,
+  buttons: {
+    "Ok": function() { 
+     $(this).dialog("close"); 
+    }, 
+    "Cancel": function() { 
+     $(this).dialog("close"); 
+    } 
+  }
+  //*dialog_events
+  ,open:function(event, ui){
+    $('#nuevocontacto').loadFrom({url:'nuevocontacto' });
+  }
+});
+//qend//
+});
+&lt;/script&gt;
+&lt;/head&gt;
+&lt;body&gt;&lt;form action="nuevocontatoguardar" id="frmNuevoContacto"&gt;
+&lt;div qid="1" jid="" style="width: 380px; height: 280px; overflow: auto; left: 8px; top: 40px;" class="qE div"&gt;
+&lt;?php
+foreach($this-&gt;contactos as $c) {
+  echo "&lt;"."div class='contacto'"."&gt;";
+  echo "&lt;"."img src='imgcontactos?c=". $c-&gt;con_id ."'"." /&gt;";
+  echo $c-&gt;email;
+  echo "&lt;/"."div"."&gt;";
+}
+?&gt;&lt;/div&gt;&lt;div qid="2" class="qE button" jid="contactos_agregar" style="left: 296px; top: 8px;"&gt;
+    &lt;button onclick="$('#frmNuevoContacto').ajaxSubmit()" type="button" id="contactos_agregar"&gt;&lt;img src="../../images/add.png"/&gt;&lt;/button&gt;
+  &lt;/div&gt;&lt;span qid="3" class="qE input" style="width: 280px; left: 8px; top: 8px;" jid=""&gt;
+  &lt;input style="height: 28px; width:100%" name="email"/&gt;
+&lt;/span&gt;&lt;div qid="4" jid="nuevocontacto" class="qE dialog"&gt;
+&lt;div title="Nuevo Contacto" id="nuevocontacto"&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/form&gt;&lt;/body&gt;
+&lt;/html&gt;
+</jqueryui></phtml><action name="nuevocontatoguardar" noRender="true" descripcion="" loadParams="$email" __ideNodeOpen="true">
+$usuario=$_SESSION["user"]["usr_id"];
+
+<insert_row model="contactos" var="$values" values="email=$email;usr_id=$usuario"/></action></controller><controller name="templetas" descripcion="" author="" __ideNodeOpen="true"><action name="cumple1" noRender="false" descripcion="" loadParams=""/><phtml name="cumple1" __ideNodeOpen="true"><jqueryui name="filename">&lt;html xmlns="http://www.w3.org/1999/xhtml"&gt;
+&lt;head&gt;
+&lt;meta http-equiv="Content-Type" content="text/html; charset=utf-8"/&gt;
+&lt;title&gt;&lt;?php print "New Page"; ?&gt;&lt;/title&gt;
+&lt;link type="text/css" href="/jquery/css/face/jquery-ui.custom.css" rel="stylesheet"/&gt;	
+&lt;script type="text/javascript" src="/jquery/js/jquery.min.js"&gt;&lt;/script&gt;
+&lt;script type="text/javascript" src="/jquery/js/jquery-ui.custom.min.js"&gt;&lt;/script&gt;
+&lt;style&gt;.qE{
+  display:inline-block;
+  position:absolute;
+}
+html{
+  height:100%;
+}
+body{
+  padding:0px;
+  margin:0px;
+  font-size:12px;
+}&lt;/style&gt;
+&lt;script type="text/javascript" id="jsloader"&gt;
+$(function(){
+//qend//
+});
+&lt;/script&gt;
+&lt;/head&gt;
+&lt;body&gt;&lt;div jid="" style="width:421px;height:294px;background-image:url(../../images/recursos/felicitaciones-de-cumpleanos-para-imprimir7.jpg);" class="qE div"/&gt;&lt;div jid="" style="width: 220px; height: 220px; left: 16px; top: 56px;" class="qE div"&gt;
+    &lt;textarea style="text-align:center;font-family:Comic Sans MS;font-size:30px;border:none;background-color:transparent;width:100%;height:100%;overflow:hidden;" name="tmp[mensaje1]"&gt;Aqui estoy, para 
+desearte 
+un cumplea&amp;#xF1;os feliz&lt;/textarea&gt;
+  &lt;/div&gt;&lt;/body&gt;
+&lt;/html&gt;
+</jqueryui></phtml></controller><images path="reminder2012_images" folder="html/images"/><file name="html/ajax.js" preprocess="" __ideNodeOpen="true">$.fn.loadFrom=function loadHTML(options) {
+  var target=$(this);
+  options.dataType="text";
+  var __success= options.success;
+  options.success=function(data){
+    data=data.split("&lt;html").join("&lt;root");
+    data=data.split("html&gt;").join("root&gt;");
+    data=data.split("&lt;head").join("&lt;adhe");
+    data=data.split("head&gt;").join("adhe&gt;");
+    data=data.split("&lt;link").join("&lt;inkl");
+    data=data.split("link&gt;").join("inkl&gt;");
+    data=data.split("&lt;body").join("&lt;doby");
+    data=data.split("body&gt;").join("doby&gt;");
+    data=data.split("&lt;script").join("&lt;ecript");
+    data=data.split("script&gt;").join("ecript&gt;");
+    var html=$(data);
+    var script = html.find("#jsloader");
+    var body = html.find("doby");
+    target.empty();
+    body.children().each(function(){
+      target.append(this);
+    });
+    eval(script.text());
+    if(typeof(__success)=="function") __success();
+  };
+  $.ajax(options);
+}
+$.fn.cargarNuevaTempleta=function($cat,$tem){
+  $("#template")[0].value=$tem;
+  $(this).loadFrom({
+    url:'../templetas/'+$tem
+  });
+}
+$.fn.ajaxSubmit=function(){
+  $.ajax({
+    url:$(this).attr('action'),data:$(this).serialize(),
+    dataType:'text',
+    success:function(res){
+      eval(res);
+    }
+  });
+}
+
+function refreshLista() {
+  var tb = '&lt;table cellspacing="0" cellpadding="0" border="0" style="width:100%" id="lista"&gt;'+
+  '	&lt;thead&gt;'+
+  '		&lt;tr&gt;'+
+  '			&lt;th width="50%"&gt;Destinatario&lt;/th&gt;'+
+  '			&lt;th width="25%"&gt;Asunto&lt;/th&gt;'+
+  '			&lt;th width="25%"&gt;Fecha de Envio&lt;/th&gt;'+
+  '		&lt;/tr&gt;'+
+  '	&lt;/thead&gt;'+
+  '	&lt;tbody&gt;'+
+  '	&lt;/tbody&gt;'+
+  '&lt;/table&gt;';
+  var $p = $('#lista').parent();
+  $p.empty();
+  $p.append(tb);
+  var oTable = $('#lista').dataTable( {
+    "bProcessing": true,
+    "sAjaxSource": "reminders",
+    "bJQueryUI":true
+  } );
+}
+</file><table name="reminder" table="reminder" primaryKey="" dependentTables=""/><table name="contactos" table="contactos" primaryKey="" dependentTables="" __ideNodeOpen="false"/></application></root>

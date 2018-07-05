@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?><root><path path="/Users/davidcallizaya/NetBeansProjects/processmaker" main="output/example/index.html" __ideNodeOpen="true"><package name="components" type="" __ideNodeOpen="true"><component name="resource" transparent="" precode="" __ideNodeOpen="true"><file name="app/Api/Authorizations/@{$Plural}Authorizations.php" preprocess="" __ideNodeOpen="true">&lt;?php
+
+namespace App\Api\Authorizations;
+
+use App\Api\Authorizations\Authorizations;
+
+/**
+ * Implement authorizations for @{$Plural} model
+ *
+ */
+class @{$Plural}Authorizations extends Authorizations
+{
+
+}
+</file><file name="app/Api/@{$Plural}Api.php" preprocess="" __ideNodeOpen="true">&lt;?php
+
+namespace App\Api;
+
+use Neomerx\JsonApi\Contracts\Encoder\Parameters\EncodingParametersInterface;
+use Neomerx\Limoncello\Contracts\JsonApi\PagedDataInterface;
+use Neomerx\Limoncello\Http\JsonApiRequest;
+use App\Api\Crud;
+use App\Api\Authorizations\@{$Plural}Authorizations;
+use App\Models\@{$Model};
+use App\Events\@{$Model}CreatedEvent;
+use App\Events\@{$Model}UpdatedEvent;
+use App\Schemas\@{$Model}Schema;
+
+/**
+ * @package App\Api
+ */
+class @{$Plural}Api extends Crud
+{
+
+    /**
+     * Constructor.
+     */
+    public function __construct()
+    {
+        parent::__construct(new User(), new @{$Plural}Authorizations());
+    }
+@{node::content($_nodes['relationshipIndex'])}}
+</file><file name="app/Http/Controllers/Api/@{$Plural}Controller.php" preprocess="" __ideNodeOpen="true">&lt;?php
+
+namespace App\Http\Controllers\Api;
+
+use Illuminate\Http\Response;
+use App\Http\Controllers\Api\Controller;
+use App\Api\@{$Plural}Api as Api;
+use App\Http\Requests\@{$Plural}Request as JsonApiRequest;
+
+/**
+ * @package App\Http\Controllers\Api
+ */
+class @{$Plural}Controller extends Controller
+{
+
+    /**
+     * Constructor.
+     */
+    public function __construct()
+    {
+        parent::__construct(app(JsonApiRequest::class), new Api());
+    }
+
+    /**
+     * @return Api
+     */
+    protected function getApi()
+    {
+        return parent::getApi();
+    }
+
+@{node::content($_nodes['relationshipControllerIndex'])}}
+</file></component><component name="relationshipIndex" transparent="" precode="" __ideNodeOpen="true">
+    /**
+     * @param int|string                  $id
+     * @param EncodingParametersInterface $parameters
+     *
+     * @return PagedDataInterface
+     */
+    public function index@{$Name}(
+        $id,
+        EncodingParametersInterface $parameters
+    ) {
+        $result = $this-&gt;indexRelationship($id, @{$Model}Schema::@{$REL}, $parameters);
+        return $result;
+    }
+</component><component name="relationshipControllerIndex" transparent="" precode="" __ideNodeOpen="true">
+    /**
+     * @param string $id
+     *
+     * @return Response
+     */
+    public function index@{$Name}($id)
+    {
+        $parameters = $this-&gt;getRequest()-&gt;getParameters();
+
+        $pagedData = $this-&gt;getApi()-&gt;index@{$Name}($id, $parameters);
+
+        return $this-&gt;getResponses()-&gt;getPagedDataResponse($pagedData);
+    }
+</component></package><package name="main" type=""/></path></root>

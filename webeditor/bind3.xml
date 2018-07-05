@@ -1,0 +1,421 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root><path path="output/bind3" main="output/bind3/index.html"><file name="bind3.js" preprocess="">function __bind3(__obj,__white,__black,__repeatWhite,__repeatBlack){
+  //Object binding and scope
+  var __;
+  for(__a in __obj) {
+    var __type=draw3.getType(__obj[__a]);
+    if(__type==="Array"){
+      observeArray(__obj[__a]);
+    }
+    eval("var "+__a+"=this."+__a+"=__obj[__a]");
+    var def;
+    eval("def={"+
+      "get:function(){return "+__a+";},"+
+      "set:function(__newValue){"+(__type==="Array"?"observeArray(__newValue);":"")+__a+"=__newValue;refresh('"+__a+"');},"+
+      "enumerable: true,"+
+      "configurable: true"+
+    "};");
+    Object.defineProperty(__obj, __a, def);
+  }
+  function observeArray(array){
+    array.indexOf = function (){
+      var $res=Array.prototype.indexOf.apply(this,arguments);
+      refresh();
+      return $res;
+    }
+    array.slice = function (){
+      var $res=Array.prototype.slice.apply(this,arguments);
+      refresh();
+      return $res;
+    }
+    array.push = function (){
+      var $res=Array.prototype.push.apply(this,arguments);
+      refresh();
+      return $res;
+    }
+    array.pop = function (){
+      var $res=Array.prototype.pop.apply(this,arguments);
+      refresh();
+      return $res;
+    }
+    array.shift = function (){
+      var $res=Array.prototype.shift.apply(this,arguments);
+      refresh();
+      return $res;
+    }
+    array.unshift = function (){
+      var $res=Array.prototype.unshift.apply(this,arguments);
+      refresh();
+      return $res;
+    }
+    array.reverse = function (){
+      var $res=Array.prototype.reverse.apply(this,arguments);
+      refresh();
+      return $res;
+    }
+    array.sort = function (){
+      var $res=Array.prototype.sort.apply(this,arguments);
+      refresh();
+      return $res;
+    }
+    array.splice = function (){
+      var $res=Array.prototype.splice.apply(this,arguments);
+      refresh();
+      return $res;
+    }
+  }
+  var $data=__obj;
+  //get repeat template
+  var __repeat3base={};
+  for(var __i=0,__l=__repeatWhite.length;__i&lt;__l;__i++){
+    if(__repeatBlack===null || Array.prototype.indexOf.call(__repeatBlack, __repeatWhite[__i])===-1){
+    __repeat3base[__repeatWhite[__i]]=__repeatWhite[__i].innerHTML;//draw3.reverse(__repeatWhite[__i].childNodes);
+    }
+  }
+  var __whiteValues=[];
+  function refresh(__attribute){
+    //white-black
+    for(var __i=0,__l=__white.length;__i&lt;__l;__i++){
+      if(__black===null || Array.prototype.indexOf.call(__black, __white[__i])===-1){
+        var __current;
+        eval("__current="+__white[__i].getAttribute("bind3")+";");
+        var __currentJSON=JSON.stringify(__current);
+        if(__currentJSON!==__whiteValues[__i]){
+          bind3.config3(__white[__i],__current);
+          __whiteValues[__i]=__currentJSON;
+        }
+      }
+    }
+    //repeat
+    for(var __i=0,__l=__repeatWhite.length;__i&lt;__l;__i++){
+      if(__repeatBlack===null || Array.prototype.indexOf.call(__repeatBlack, __repeatWhite[__i])===-1){
+        var __bind;
+        eval("__bind="+__repeatWhite[__i].getAttribute("repeat3"));
+        __repeatWhite[__i].innerHTML='';
+        for(var __j=0,__k=__bind.length;__j&lt;__k;__j++){
+          var __dom3=bind3.draw3(__repeatWhite[__i],__repeat3base[__repeatWhite[__i]]);
+          __bind[__j].$root=__obj;
+          bind3(__bind[__j], __dom3);
+        }
+      }
+    }
+  }
+  refresh();
+}
+function bind3(__obj,dom){
+  var type=draw3.getType(dom);
+  if(type==="Node"){
+    var __white=dom.querySelectorAll("[bind3]");
+    var __black=dom.querySelectorAll("[repeat3] [bind3]");
+    var __repeatWhite=dom.querySelectorAll("[repeat3]");
+    var __repeatBlack=dom.querySelectorAll("[repeat3] [repeat3]");
+    __bind3(__obj,__white,__black,__repeatWhite,__repeatBlack);
+  } else if(type==="NodeList" || type==="Array"){
+    var __white=[];
+    for(var __i=0,__l=dom.length;__i&lt;__l;__i++){
+      if(typeof dom[__i].getAttribute==="function" &amp;&amp; dom[__i].getAttribute("bind3")) {
+        __white.push(dom[__i]);
+      }
+      if(typeof dom[__i].querySelectorAll==="function") {
+        bind3.concat(__white,dom[__i].querySelectorAll("[bind3]"));
+      }
+    }
+    var __black=[];
+    for(var __i=0,__l=dom.length;__i&lt;__l;__i++){
+      if(typeof dom[__i].querySelectorAll==="function") {
+        bind3.concat(__black,dom[__i].querySelectorAll(":scope[repeat3] [bind3]"));
+      }
+    }
+    var __repeatWhite=[];
+    for(var __i=0,__l=dom.length;__i&lt;__l;__i++){
+      if(typeof dom[__i].getAttribute==="function" &amp;&amp; dom[__i].getAttribute("repeat3")){
+        __repeatWhite.push(dom[__i]);
+      }
+      if(typeof dom[__i].querySelectorAll==="function") {
+        bind3.concat(__repeatWhite,dom[__i].querySelectorAll("[repeat3]"));
+      }
+    }
+    var __repeatBlack=[];
+    for(var __i=0,__l=dom.length;__i&lt;__l;__i++){
+      if(typeof dom[__i].querySelectorAll==="function") {
+        bind3.concat(__repeatBlack,dom[__i].querySelectorAll(":scope[repeat3] [repeat3]"));
+      }
+    }
+    __bind3(__obj,__white,__black,__repeatWhite,__repeatBlack);
+  }
+}
+/**
+ * array1=array1 concat array2
+ * @var Array array1
+ * @var Array|NodeList array2
+ */
+bind3.concat=function(array1, array2){
+  for(var i=0,l=array2.length;i&lt;l;i++){
+    array1.push(array2[i]);
+  }
+}
+bind3.reverse=function(nodeList){
+  var html=[];
+  for(var i=0,l=nodeList.length;i&lt;l;i++){
+    html.push();
+  }
+}
+bind3.draw3=function(dom,innerHTML){
+  var div=dom.ownerDocument.createElement("div");
+  div.innerHTML=innerHTML;
+  var res=[];
+  while(div.childNodes.length&gt;0){
+    res.push(div.firstChild);
+    dom.appendChild(div.firstChild);
+  }
+  return res;
+}
+bind3.config3=function(dom,attributes){
+  draw3(dom, attributes);
+}
+</file><file name="index.html" preprocess="">&lt;script src="draw3.js"&gt;&lt;/script&gt;
+&lt;script src="bind3.js"&gt;&lt;/script&gt;
+&lt;div id="test"&gt;
+Color:
+&lt;div id="test_" bind3="[{style:{color:color}},color]"&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id="test2"&gt; 
+Array:
+&lt;div  repeat3="array"&gt;
+  &lt;span bind3="[{},text]"&gt;&lt;/span&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;div id="knockout" class="col-md-3"&gt;
+    &lt;div class="row"&gt;
+        &lt;div class="col-md-7"&gt;
+            &lt;h3&gt;Knockout&lt;/h3&gt;
+        &lt;/div&gt;
+        &lt;div class="col-md-5 text-right time" id="run-knockout" bind3="[{onclick: run}]"&gt;Run&lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div repeat3="data"&gt;
+        &lt;div class="row"&gt;
+            &lt;div class="col-md-12 test-data"&gt;
+                &lt;span bind3="[{},label]"&gt;&lt;/span&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;script&gt;
+var vm={
+  color:"red"
+};
+var vm2={
+  array:[
+    {text:'hola '},
+    {text:'mundo'}
+  ]
+};
+var t1=new Date().getTime();
+bind3(vm, document.getElementById("test"));
+bind3(vm2, document.getElementById("test2"));
+var t2=new Date().getTime();
+for(var i=0,l=1000;i&lt;l;i++){
+  vm.color="green-"+i;
+}
+var t3=new Date().getTime();
+function _buildData(count) {
+                count = count || 1000;
+
+                var adjectives = ["pretty", "large", "big", "small", "tall", "short", "long", "handsome", "plain", "quaint", "clean", "elegant", "easy", "angry", "crazy", "helpful", "mushy", "odd", "unsightly", "adorable", "important", "inexpensive", "cheap", "expensive", "fancy"];
+                var colours = ["red", "yellow", "blue", "green", "pink", "brown", "purple", "brown", "white", "black", "orange"];
+                var nouns = ["table", "chair", "house", "bbq", "desk", "car", "pony", "cookie", "sandwich", "burger", "pizza", "mouse", "keyboard"];
+                var data = [];
+                for (var i = 0; i &lt; count; i++)
+                    data.push({id: i+1, label: adjectives[_random(adjectives.length)] + " " + colours[_random(colours.length)] + " " + nouns[_random(nouns.length)] });
+                return data;
+            }
+function _random(max) {
+                return Math.round(Math.random()*1000)%max;
+            }
+var ae;
+bind3(ae={
+    selected: null,
+    data: _buildData(),
+
+    select: function(item) {
+        this.selected=item.id;
+    },
+
+    run: function() {
+        var data = _buildData(),
+        date = new Date();
+
+        this.selected=null;
+        this.data=data;
+        console.log((new Date() - date) + " ms");
+    }
+}, document.getElementById("knockout"));
+
+var t4=new Date().getTime();
+console.log(t2-t1,t3-t1,t4-t3);
+
+&lt;/script&gt;</file><file name="draw3.js" preprocess="">/** DRAW3 */
+/**
+ * @param dest HTMLElement Target Object 
+ * @param content Object (Array | String) Elements to be inserted 
+ * @param beforeOf HTMLElement 
+ */
+function draw3(dest,content,beforeOf){
+  var d=draw3.create([content],dest);
+  for(var i=0,l=d.length;i&lt;l;i++){
+    if(beforeOf) dest.insertBefore(d[i],beforeOf);
+    else dest.appendChild(d[i]);
+  }
+  return d;
+}
+/**
+ * Returns an Array of DOMNodes
+ */
+draw3.create=function(arr,dest0){
+  var dest=dest0;
+  var document=dest &amp;&amp; dest.ownerDocument?dest.ownerDocument:window.document;
+  var t,d=[];
+  var modeCreate=!(arr.length==1 &amp;&amp; this.getType(arr[0])=="String");
+  for(var i=0,l=arr.length;i&lt;l;i++){
+    t=this.getType(arr[i]);
+    if(t=="String" &amp;&amp; modeCreate){
+      if(arr[i]=="#text") {
+        if(this.getType(arr[i+1])=="String") dest=document.createTextNode(arr[i=i+1]);
+        if(this.getType(arr[i+2])=="String") dest=document.createTextNode(arr[i=i+2]);
+        d.push(dest);
+      }
+      else if(arr[i]=="#comment") {
+        if(this.getType(arr[i+1])=="String") dest=document.createComment(arr[i=i+1]);
+        if(this.getType(arr[i+2])=="String") dest=document.createComment(arr[i=i+2]);
+        d.push(dest);
+      }
+      else {
+        //The next String will be a TextNode
+        modeCreate=false;
+        var dest=document.createElement(arr[i]);
+        if(arr[i]=="style") dest.setAttribute("type", "text/css");
+        d.push(dest);
+      }
+    }
+    else if((t=="String" || t=="Number") &amp;&amp; !modeCreate) {
+      //dest=dest.appendChild(document.createTextNode(arr[i]));
+      dest.textContent=arr[i];
+      modeCreate=true;
+    }
+    else if(t=="Node") {
+      //If Node is owned by a different Document it will be imported.
+      if(document===arr[i].ownerDocument) o=arr[i]; 
+      else o=this.create(this.reverse(arr[i]),dest);
+      if(modeCreate) d.push(o); else dest.appendChild(o);
+      dest=o;
+      modeCreate=true;
+    }
+    else if(t=="NodeList") {
+      var dest1=[];
+      for(var j=0,k=arr[i].length;j&lt;k;j++) {
+        //If Node is owned by a different Document it will be imported.
+        if(document===arr[i].item(j).ownerDocument) o=arr[i].item(j); 
+        else o=this.create(this.reverse(arr[i].item(j)),dest);
+        if(modeCreate) d.push(o); else dest.appendChild(o);
+        dest1.push(o);
+      }
+      dest=dest1;
+      dest1=null;
+      modeCreate=true;
+    }
+    else if(t=="Object") {
+      this.setAttributes(dest,arr[i]);
+      modeCreate=false;
+    }
+    else if(t=="Array") {
+      if(modeCreate) d=d.concat(dest=this.create(arr[i],dest0));
+      else dest=draw3(dest,arr[i]);
+      modeCreate=true;
+    }
+  }
+  return d;
+}
+/**
+ * Set attributes of a DOMElement(o)
+ */
+draw3.setAttributes=function(o,atts){
+  var type=this.getType(o);
+  if(type=="Array" || type=="NodeList") {
+    console.debug(o);
+    for(var i=0,l=o.length;i&lt;l;i++) {
+      console.debug(o[i]);
+      this.setAttributes(o[i],atts);
+    }
+    return;
+  }
+  for(a in atts){
+    if(a=="class") o.className=atts[a];
+    else if(typeof(atts[a])=="function") o[a]=atts[a];
+    else if(a=="style") {
+      if(typeof atts[a]==="string"){
+        var splitted = atts[a].split(';');
+        for (var i=0, len=splitted.length; i&lt;len; i++) {
+          var s=splitted[i].split(':');
+          if(s.length&gt;0){
+            for(var exp=/-([a-z])/; exp.test(s[0]); 
+               s[0]=s[0].replace(exp,RegExp.$1.toUpperCase())){};
+            if(s[0])eval("o.style."+s[0]+"='"+s[1]+"'");
+          }
+        }
+      } else if(typeof atts[a]==="object"){
+        for (var s in atts[a]) {
+          for(var exp=/-([a-z])/; exp.test(s); 
+             s=s.replace(exp,RegExp.$1.toUpperCase())){};
+          if(s)eval("o.style."+s+"='"+atts[a][s]+"'");
+        }
+      }
+    }
+    else {
+      if(typeof(o.setAttribute)!="undefined") o.setAttribute(a,atts[a]);
+    }
+  }
+}
+/**
+ * Return the class of an Object(o)
+ */
+draw3.getType=function(o){
+  if(typeof(o)=="string") return "String";
+  if((typeof jQuery != "undefined") &amp;&amp; (o instanceof jQuery)) return "Array";
+  if ( typeof Node === "object" ? o instanceof Node : 
+    typeof o === "object" &amp;&amp; o!==null  &amp;&amp; typeof o.nodeType === "number" &amp;&amp; typeof o.nodeName==="string"
+  ) return "Node";
+  if (typeof o === "object" &amp;&amp; o!==null 
+    &amp;&amp; typeof o.length == 'number' 
+    &amp;&amp; typeof o.item == 'function'
+    &amp;&amp; typeof o.nextNode == 'function'  
+    &amp;&amp; typeof o.reset == 'function'
+  ) return "NodeList";
+  return Object.prototype.toString.call(o).split(" ")[1].split("]")[0];
+}
+/**
+ * Convert DOM Node to a draw3 Array
+ */
+draw3.reverse=function(dom){
+  var type=this.getType(dom);
+  var r=[];
+  if(type=="Node"){
+    var atts={},chs=[];
+    if(dom.attributes){
+      for(var i=0,l=dom.attributes.length;i&lt;l;i++){
+        atts[dom.attributes[i].nodeName]=dom.attributes[i].value;//nodeValue warning
+      }
+    }
+    if(dom instanceof Text){
+      chs=dom.textContent;
+    } else if(dom.childNodes){
+      chs=chs.concat(this.reverse(dom.childNodes));
+    }
+    r.push(dom.nodeName,atts,chs);
+  } else if(type=="NodeList"){
+    for(var j=0,k=dom.length;j&lt;k;j++) r=r.concat(this.reverse(dom.item(j)));
+  }
+  return r;
+}
+</file></path></root>

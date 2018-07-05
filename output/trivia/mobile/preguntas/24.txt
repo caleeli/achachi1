@@ -1,0 +1,3 @@
+var res={"pregunta":"\u00bfQue promesa hizo Dios a Abraham?","respuestas":["Se obedecia, perdona a su pueblo de todo pecado","Si obedecia, salvaria a toda la nacion","Si obedecia, salvaria a su familia y la bendeciria","Si obedecia, har\u00eda de Abraham una gran nacion y bedeciria a todas las familias de la tierra por medio de el"],"correcta":"3","imagen":"img\/Abraham.jpg"};
+dibujaPregunta($pregunta,$respuestas,$imagen,res);
+

@@ -1,0 +1,2 @@
+<?php
+$query = TableQuery::create();

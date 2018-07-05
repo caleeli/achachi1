@@ -1,0 +1,70 @@
+<?xml version="1.0"?>
+<definitions version="1.0">
+<def name="property">
+  <function name="run">
+    if(!isset($values["access"]))$values["access"]="public";
+    return $values["access"].' $'.$values["name"]."=".var_export($values["#"],true).";";
+  </function>
+</def>
+<def name="before">
+  <function name="run">
+    return $values["#"];
+  </function>
+</def>
+<def name="template">
+  <function name="run">
+    return $values["#"];
+  </function>
+</def>
+<def name="after">
+  <function name="run">
+    return $values["#"];
+  </function>
+</def>
+<def name="bcomponent">
+  <function name="run">
+    $_tag = $values["name"];
+    $_class = node::getClassName($_tag);
+    $_code = 'class '.$_class.' extends node { ';
+    $_r = node::run();
+    $_code.= "\n".'public $template='.var_export(node::implode("",$_r["template"]),true).';';
+    $_code.= "\nfunction run() {";
+    $_code.= "\n".node::implode("",$_r["before"]);
+    $_code.= "\n".'$template=isset($this-&gt;template)?$this-&gt;doTemplate($this-&gt;template,$this-&gt;values):"";';
+    $_code.= "\n".node::implode("",$_r["after"]);
+    $_code.= "\n".'}';
+    $_code.= "\n".'}';
+    $_code=format_code($_code);
+    node::createTagClass($_tag,$_class,$_code);
+  </function>
+</def>
+
+<def name="package">
+<property name="template">@{$name}@{$type}</property>
+<function name="run">
+  foreach($e-&gt;childNodes as $ch)
+  {
+    $ch2=$ch-&gt;cloneNode(true);
+    $e-&gt;parentNode-&gt;insertBefore($ch2,$e);
+    $this-&gt;makeFromNode($ch2);
+  }
+  return "";
+  $template=isset($this-&gt;template)?$this-&gt;doTemplate($this-&gt;template,$this-&gt;values):"";
+</function>
+</def>
+
+<def name="code">
+  <property name="template">/*ESTA ES UNA TEMPLETA @{$name}*/</property>
+  <function name="run">
+  $template=isset($this-&gt;template)?$this-&gt;doTemplate($this-&gt;template,$this-&gt;values):"";
+  return eval("return ".$values["#"].";");</function>
+</def>
+<def name="code">
+  <property name="template">/*ESTA ES LA NUEVA TEMPLETA @{$name}*/</property>
+  <function name="run">
+    $template=isset($this-&gt;template)?$this-&gt;doTemplate($this-&gt;template,$this-&gt;values):"";
+    var_dump("nuevo codigo");
+    return eval("return ".$values["#"].";");
+  </function>
+</def>
+</definitions>

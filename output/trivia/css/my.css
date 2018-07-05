@@ -1,0 +1,166 @@
+html, body{
+  width:100%;
+  height:100%;
+  padding:0px;
+  margin:0px;
+  overflow:hidden;
+}
+.page {
+  background: url("../images/clouds.jpg") center top;
+  background-repeat:repeat-x;
+  background-attachment:scroll;
+  background-color: #E7F1F2;
+}
+#footer {
+  width: 100%;
+  background: url("../images/loma_pasto.png") no-repeat scroll center top transparent;
+  height: 10%;
+  position:absolute;
+  bottom:0px;
+}
+#content{
+  width:100%;
+  height:100%;
+  overflow:auto;
+}
+#plant {
+  background: url("../images/plant.png") no-repeat;
+  width:121px;
+  height:447px;
+  margin-left:50px;
+  position:absolute;
+  left:15%;
+  bottom:0px;
+}
+.state_0 #plant {
+  background-position: 0px center;
+  width:121px;
+}
+.state_1 #plant {
+  background-position: -121px center;
+  width:121px;
+}
+.state_2 #plant {
+  background-position: -242px center;
+  width:121px;
+}
+.state_3 #plant {
+  background-position: -363px center;
+  width:122px;
+}
+.state_4 #plant {
+  background-position: -485px center;
+  width:122px;
+}
+.state_5 #plant {
+  background-position: -606px center;
+  width:197px;
+  margin-left:0px;
+}
+.state_6 #plant {
+  background-position: -803px center;
+  width:197px;
+  margin-left:0px;
+}
+
+.leaf_0 {
+  display: none;
+}
+.state_0 .leaf_0 {
+  display:inline-block;
+}
+.leaf_1 {
+  display: none;
+}
+.state_1 .leaf_1 {
+  display:inline-block;
+}
+.leaf_2 {
+  display: none;
+}
+.state_2 .leaf_2 {
+  display:inline-block;
+}
+.leaf_3 {
+  display: none;
+}
+.state_3 .leaf_3 {
+  display:inline-block;
+}
+.leaf_4 {
+  display: none;
+}
+.state_4 .leaf_4 {
+  display:inline-block;
+}
+.leaf_5 {
+  display: none;
+}
+.state_5 .leaf_5 {
+  display:inline-block;
+}
+.leaf_6 {
+  display: none;
+}
+.state_6 .leaf_6 {
+  display:inline-block;
+}
+
+.row{
+  display: block;
+}
+
+.block{
+  display: inline-block;
+}
+
+.block-left{
+  margin-left: 30%;
+  margin-right: 30%;
+}
+
+.block-right{
+  margin-left: 60%;
+}
+
+.box{
+  border-radius: 16px 0px 16px 0px;
+  border: 2px solid lightgray;
+  padding: 8px;
+  display: inline-block;
+}
+/*box backgrounds*/
+.bg13 {
+  background-image: url("../images/13.jpg");
+  background-position: center bottom;
+  background-size: 100% auto;
+  min-height: 96px;
+  color:white;
+}
+
+.bg14 {
+  background-image: url("../images/14.jpg");
+  background-position: center bottom;
+  background-size: 100% auto;
+  min-height: 96px;
+  color:yellow;
+}
+
+.bg15 {
+  background-image: url("../images/15.jpg");
+  background-position: center bottom;
+  background-size: 100% auto;
+  min-height: 96px;
+  color:black;
+}
+
+.bgcloud {
+  background-image: url("../images/cloud.png");
+  background-position: center bottom;
+  min-height: 96px;
+  color:black;
+}
+
+h2{
+  margin:0px;
+}

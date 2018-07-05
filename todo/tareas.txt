@@ -1,0 +1,43 @@
+(1) revisar el archivo: achachi/library/base.xml
+extraer la lista de componentes tipo <bcomponent>
+Agregar los componentes a la barra de herramientas del editor web:  
+  archivo: achachi/webeditor/toolbar.js
+  Variable: toolbar = [
+     ...
+               tooltip                                       tagName                imagen
+                   |                                            |                      |
+     {"name":"definition","action":function(){appendChildTag("def");},"image":"images/32/default.gif"},
+     ...
+  ];
+ 
+(2) revisar el archivo: achachi/library/base.xml
+extraer la lista de componentes tipo <bcomponent>
+Agregar los componentes a la definicion de components.js del editor web:  
+  archivo: achachi/webeditor/components.js
+ components=[
+  ...
+    {
+      "name":"definition",                                                    <-- tagName
+      "attributes":[                                                          <-- Array de Atributos
+        {                                                                     ATRIBUTO 1
+          "name":"version",                                                   <-- Atributo "version"
+          "value":{
+              "default":"1.0",                                                <-- Valor por defecto de "version"
+              "domain":"string"                                               <-- Dominio de validacion del atributo (TODO: lista de posible dominios)
+          }
+        },
+
+        {                                                                     ATRIBUTO 2
+          "name":"name",                                                      <-- Atributo "name"
+          "value":{
+              "default":"definition",                                         <-- Valor por defecto de "name"
+              "domain":"string"                                               <-- Dominio de validacion del atributo (TODO)
+          }
+        }
+
+      ]
+    },
+  ...
+  ];
+  
+(3) Para el Editor: Funcionalidad de ordenar nodos

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?><root __ideNodeOpen="true"><package name="components" type="" __ideNodeOpen="true"><component name="xsd2php" transparent="" precode="" __ideNodeOpen="true" engine="php">{
+    "name": "david/xsd",
+    "authors": [
+        {
+            "name": "david",
+            "email": "davidcallizaya@gmail.com"
+        }
+    ],
+    "require": {
+        "goetas/xsd2php": "2.*@dev",
+        "goetas/xsd-reader": "2.*@dev",
+        "jms/serializer": "xsd2php-dev as 0.18.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "DavidC\\": "src/DavidC/"
+        }
+    },
+    "repositories": [{
+            "type": "vcs",
+            "url": "https://github.com/goetas/serializer.git"
+        }],
+    "scripts": {
+        "build": "vendor/bin/xsd2php convert:php 'bpmnxpdl_31a.xsd' --ns-map='http://www.w3.org/2001/XMLSchema;DavidC/Xpdl/Xsd/' --ns-map='http://www.wfmc.org/2002/XPDL1.0;DavidC/Xpdl/Deprecated/' --ns-map='http://www.wfmc.org/2008/XPDL2.1;DavidC/Xpdl/Xpdl/' --ns-dest='DavidC/Xpdl/Xsd/;src/DavidC/Xpdl/Xsd' --ns-dest='DavidC/Xpdl/Deprecated/;src/DavidC/Xpdl/Deprecated' --ns-dest='DavidC/Xpdl/Xpdl/;src/DavidC/Xpdl/Xpdl'",
+        "build:service": "vendor/bin/xsd2php convert:jms-yaml 'bpmnxpdl_31a.xsd' --ns-map='http://www.w3.org/2001/XMLSchema;DavidC/Xpdl/Xsd/' --ns-map='http://www.wfmc.org/2002/XPDL1.0;DavidC/Xpdl/Deprecated/' --ns-map='http://www.wfmc.org/2008/XPDL2.1;DavidC/Xpdl/Xpdl/' --ns-dest='DavidC/Xpdl/Xsd/;src/DavidC/Xpdl/Xsd' --ns-dest='DavidC/Xpdl/Deprecated/;src/DavidC/Xpdl/Deprecated' --ns-dest='DavidC/Xpdl/Xpdl/;src/DavidC/Xpdl/Xpdl'"
+    }
+}
+</component><component name="imprime" transparent="" precode="" __ideNodeOpen="true">#{echo node::content($_);}</component></package><package name="system" type="" __ideNodeOpen="true"><imprime __ideNodeOpen="true"><xsd2php/></imprime></package></root>

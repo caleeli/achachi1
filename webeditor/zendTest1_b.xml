@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root __ideNodeOpen="true"><include src="$library/zend.xml"/><include src="$library/extjslib2.xml"/><component name="zfapplication" transparent="" __ideNodeOpen="true" precode="chdir(ACH_PATH);createDir(ACH_OUTPUT_PATH.'/'.$name);chdir(ACH_OUTPUT_PATH.'/'.$name);var_dump(realpath(&quot;.&quot;));">#{
+  createDir('application');
+    createDir('application/configs');
+    createDir('application/controllers');
+    createDir('application/models');
+    createDir('application/views');
+    createDir('application/views/helpers');
+    createDir('application/views/scripts');
+    createDir('application/layouts');
+  createDir('library');
+  createDir('public');
+  if(!empty($main)) echo "&lt;script&gt;window.location.href=".json_encode("output/".$name."/public/index.php/".$main)."&lt;/script&gt;";
+}<file name="index.php" preprocess="" __ideNodeOpen="true">&lt;?php
+/**
+ *
+ *  Achachi XML Builder - Framework and applications builder tool
+ *  Copyright (C) 2010-2012, Llankay Achachi
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ *
+ */
+
+header("Location: public/index.php/index/index");</file><file name="public/index.php" preprocess="" __ideNodeOpen="true">&lt;?php
+/**
+ *
+ *  Achachi XML Builder - Framework and applications builder tool
+ *  Copyright (C) 2010-2012, Achachi
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ *
+ */
+
+@include_once("config.php");
+// Define path to application directory
+defined('APPLICATION_PATH')
+    || define('APPLICATION_PATH', realpath(dirname(__FILE__) . '/../application'));
+
+// Define application environment
+defined('APPLICATION_ENV')
+    || define('APPLICATION_ENV', (getenv('APPLICATION_ENV') ? getenv('APPLICATION_ENV') : 'production'));
+
+// Ensure library/ is on include_path
+set_include_path(implode(PATH_SEPARATOR, array(
+    realpath(APPLICATION_PATH . '/../library'),
+    get_include_path(),
+)));
+
+/** Zend_Application */
+require_once 'Zend/Application.php';  
+
+// Create application, bootstrap, and run
+$application = new Zend_Application(
+    APPLICATION_ENV, 
+    APPLICATION_PATH . '/configs/application.ini'
+);
+$application-&gt;bootstrap()
+            -&gt;run();</file></component><component name="controller" transparent="" __ideNodeOpen="false"><file name="application/controllers/@{UpperCamelCase($name)}Controller.php" preprocess="" __ideNodeOpen="true">&lt;?php
+require_once 'Zend/Controller/Action.php';
+require_once 'Zend/Loader.php';
+
+class @{UpperCamelCase($name)}Controller extends Zend_Controller_Action
+{
+@{node::content($_)}
+}</file></component><component name="view" transparent="" __ideNodeOpen="false"><file name="application/views/scripts/@{$_e-&gt;parentNode-&gt;getAttribute(&quot;name&quot;)}/@{$name}.phtml" preprocess="" __ideNodeOpen="true">@{node::content($_)}</file></component><component name="layout" transparent="" __ideNodeOpen="false"><file name="application/views/scripts/@{$name}.phtml" preprocess="" __ideNodeOpen="true">@{node::content($_)}</file></component><component name="action" transparent="" __ideNodeOpen="false">  public function @{$name}Action()
+  {
+@{node::content($_)}
+  }
+
+</component><zfapplication name="zend" main="index/index" __ideNodeOpen="true"><file name="application/configs/application.ini" preprocess="" __ideNodeOpen="true">[production]
+phpSettings.display_startup_errors = 1
+phpSettings.display_errors = 1
+includePaths.library = APPLICATION_PATH "/../library"
+bootstrap.path = APPLICATION_PATH "/Bootstrap.php"
+bootstrap.class = "Bootstrap"
+resources.frontController.controllerDirectory = APPLICATION_PATH "/controllers"
+resources.layout.layout = "home"  
+
+[staging : production]
+
+[testing : production]
+phpSettings.display_startup_errors = 1
+phpSettings.display_errors = 1
+
+[development : production]
+phpSettings.display_startup_errors = 1
+phpSettings.display_errors = 1</file><file name="application/Bootstrap.php" preprocess="" __ideNodeOpen="true">&lt;?php
+
+class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
+{
+
+
+}
+
+</file><controller name="error" descripcion="" author="" __ideNodeOpen="false"><action name="error" noRender="false" descripcion="" loadParams="" __ideNodeOpen="true">        $errors = $this-&gt;_getParam('error_handler');
+        
+        switch ($errors-&gt;type) { 
+            case Zend_Controller_Plugin_ErrorHandler::EXCEPTION_NO_CONTROLLER:
+            case Zend_Controller_Plugin_ErrorHandler::EXCEPTION_NO_ACTION:
+        
+                // 404 error -- controller or action not found
+                $this-&gt;getResponse()-&gt;setHttpResponseCode(404);
+                $this-&gt;view-&gt;message = 'Page not found';
+                break;
+            default:
+                // application error 
+                $this-&gt;getResponse()-&gt;setHttpResponseCode(500);
+                $this-&gt;view-&gt;message = 'Application error';
+                break;
+        }
+        
+        $this-&gt;view-&gt;exception = $errors-&gt;exception;
+        $this-&gt;view-&gt;request   = $errors-&gt;request;
+        $this-&gt;_helper-&gt;layout-&gt;disableLayout();
+</action><view name="error">&lt;!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"; "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd&gt; 
+&lt;html xmlns="http://www.w3.org/1999/xhtml"&gt; 
+&lt;head&gt;  
+  &lt;meta http-equiv="Content-Type" content="text/html; charset=utf-8" /&gt; 
+  &lt;title&gt;Zend Framework Default Application&lt;/title&gt; 
+&lt;/head&gt; 
+&lt;body&gt; 
+  &lt;h1&gt;Error&lt;/h1&gt; 
+  &lt;h2&gt;&lt;?= $this-&gt;message ?&gt;&lt;/h2&gt; 
+
+  &lt;? if ('development' == APPLICATION_ENV): ?&gt; 
+  
+  &lt;h3&gt;Exception information:&lt;/h3&gt; 
+  &lt;p&gt; 
+      &lt;b&gt;Message:&lt;/b&gt; &lt;?= $this-&gt;exception-&gt;getMessage() ?&gt; 
+  &lt;/p&gt; 
+
+  &lt;h3&gt;Stack trace:&lt;/h3&gt; 
+  &lt;pre&gt;&lt;?= $this-&gt;exception-&gt;getTraceAsString() ?&gt; 
+  &lt;/pre&gt; 
+
+  &lt;h3&gt;Request Parameters:&lt;/h3&gt; 
+  &lt;pre&gt;&lt;? var_dump($this-&gt;request-&gt;getParams()) ?&gt; 
+  &lt;/pre&gt; 
+  &lt;? endif ?&gt;
+  
+&lt;/body&gt; 
+&lt;/html&gt;</view></controller><layout name="home" preprocess="" __ideNodeOpen="true">&lt;?php echo $this-&gt;doctype(); ?&gt;
+&lt;html&gt;
+&lt;head&gt;
+&lt;meta http-equiv="Content-Type" content="text/html; charset=utf-8"&gt;
+&lt;title&gt;NetBank&lt;/title&gt;
+&lt;link rel="stylesheet" type="text/css" href="/ext/resources/css/ext-all.css" /&gt;
+&lt;script type="text/javascript" src="/ext/bootstrap.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+Ext.onReady(function()
+{
+<ext.fragment encode="" __ideNodeOpen="true"><ext class="Ext.Viewport" layout="border" __ideNodeOpen="true"><ext class="Ext.Panel" region="center" title="Pantalla de Ingreso" frame="true"/><ext class="Ext.Panel" region="west" title="Opciones de Menu" frame="true" width="250" collapsible="true" __ideNodeOpen="true" layout="fit"><ext class="Ext.tree.Panel" __ideNodeOpen="true"><ext.attribute name="store" isArray="false" isString="false" __ideNodeOpen="true"><ext class="Ext.data.TreeStore" text="Autos" __ideNodeOpen="true"><ext.attribute name="root" isArray="false" isString="false" __ideNodeOpen="true">{
+        expanded: true,
+        children: [
+            { text: "detention", leaf: true },
+            { text: "homework", expanded: true, children: [
+                { text: "book report", leaf: true },
+                { text: "alegrbra", leaf: true}
+            ] },
+            { text: "buy lottery tickets", leaf: true }
+        ]
+    }</ext.attribute><ext.attribute name="proxy" isArray="false" isString="false" __ideNodeOpen="true"><ext class="Ext.data.proxy.Ajax" url="../menu/menu" reader="json"/></ext.attribute></ext></ext.attribute></ext></ext><ext class="Ext.Panel" region="north" title="" frame="false" __ideNodeOpen="false"><ext.attribute name="html" isArray="false" isString="false" __ideNodeOpen="true">'&lt;div class="title"&gt;NetBank - Emprender&lt;/div&gt;'</ext.attribute></ext></ext></ext.fragment>;
+});
+&lt;/script&gt;
+&lt;/head&gt;
+&lt;body&gt;&lt;/body&gt;
+&lt;/html&gt;
+</layout><controller name="index" descripcion="" author="" __ideNodeOpen="false"><action name="index" noRender="false" descripcion="" loadParams="" __ideNodeOpen="false"/><view name="index">hola mundo</view></controller><controller name="menu" descripcion="" author="" __ideNodeOpen="true"><action name="menu" noRender="false" descripcion="" loadParams="" __ideNodeOpen="true"/><view name="menu"/></controller></zfapplication></root>

@@ -1,0 +1,450 @@
+<?xml version="1.0" encoding="UTF-8"?><root __ideNodeOpen="true"><include src="$library/zplugin.xml"/><component name="diagram" transparent="" precode="" __ideNodeOpen="true"/><zplugin name="diagram" nodesEditor="diagram" __ideNodeOpen="true"><!--#editor.plugin
+
+zplugin.create($this.parentNode);
+componentsIndex[$this.parentNode.nodeName].editor=zcomponent.launch;
+
+--><zplugin.components __ideNodeOpen="true">"component",{name:"hola"},[
+"div",{},"Holaaa"
+]</zplugin.components><zplugin.base __ideNodeOpen="true">"div",{class:"dg-main"},[
+  "style",{},".menu-item{cursor:pointer} .menu-item:hover{background-color:Highlight} .zdiagram-toolbar{position:absolute;right:0px} .zdiagram-toolbar i{cursor:pointer;margin:4px 4px; border: 1px solid lightgray; border-radius: 8px; padding: 0 4px;background-color: lightblue;} .dg-main{height:100%} .dg-sheet{height:100%; background-color:lightyellow;overflow:auto;position:relative;} .dg-block {background-color: rgb(173, 216, 230); border: 1px solid rgb(128, 128, 128); box-shadow: 2px 2px 2px 0 rgb(119, 136, 153); display: inline-block;position: relative;padding-bottom: 21px;} .dg-block-name {background-color: rgba(255, 255, 255, 0.5);cursor: move;display: block;padding:1px;overflow:hidden;} .dg-block-attributes {color: rgba(0, 0, 0, 0.5);display: block;white-space:pre;overflow: hidden;height: 100%;} .dg-resizer {background-color: rgb(0, 0, 0);position: absolute;bottom: -8px;height: 8px;right: -8px;width: 8px;cursor:pointer;}",
+  "div",{class:"dg-sheet",oncontextmenu:function(event){
+      popupMenu(event,
+        ["div",{"class":"menu-item",onclick:function(){
+            
+          }},"NEW NODE",
+        "div",{},"DELETE"]
+      );
+      return false;
+    }},[],
+  "canvas",{width:1000,height:1000,style:"position:absolute;left:0px;top:0px;pointer-events:none;"},[]
+]</zplugin.base><zplugin.launch>var sheet=canvas.firstChild.getElementsByClassName("dg-sheet")[0];
+var canvas1=canvas.firstChild.getElementsByTagName("canvas")[0];
+var canvasCtx=canvas1.getContext("2d");
+
+$(sheet).empty();
+var dataComment=node.childNodes[0];
+if(!dataComment || dataComment.nodeName!="#comment") {
+  if(dataComment){
+    node.insertBefore(node.ownerDocument.createComment("{}"), dataComment);
+  } else {
+    node.appendChild(node.ownerDocument.createComment("{}"));
+  }
+}
+var data={};
+function loadDataComment(e){
+  if(e &amp;&amp; e.nodeName=="#comment") {
+    try{
+      eval("data="+e.nodeValue);
+    } catch(ee) {
+      console.log(ee);
+    }
+  }
+  if(!data) data={}
+  if(!data['diagram']) data['diagram']={};
+  if(!data['diagram'].zoom) data['diagram'].zoom=1;
+  if(!data['diagram'].scrollTop) data['diagram'].scrollTop=0;
+  if(!data['diagram'].scrollLeft) data['diagram'].scrollLeft=0;
+}
+loadDataComment(dataComment);
+function getNodeById(id,e){
+  if(!e)e=node;
+  for(var i=0,l=e.childNodes.length;i&lt;l;i++) if(e.childNodes[i].hasAttributes &amp;&amp; e.childNodes[i].hasAttributes()){
+    if(e.childNodes[i].getAttribute("__ideDiagramId")==id){
+      return e.childNodes[i];
+    } else if(e.childNodes[i].hasChildNodes()){
+      var d=getNodeById(id,e.childNodes[i]);
+      if(d) return d;
+    }
+  }
+  return false;
+}
+function belongsTo(e,parent){
+  if(!e.parentNode) return false;
+  return e.parentNode===parent || (parent!==node &amp;&amp; belongsTo(e.parentNode,parent));
+}
+/*Devuelve el bloque o diagrama sobre el cual se encuentra graficamente el bloque*/
+function getParentOffset(div){
+  var id=div.getAttribute("id")
+  var $div=$(div);
+  var p0=$div.position();
+  var w0=$div.width();
+  var h0=$div.height();
+  var parent=sheet;
+  var parentE=node;
+  var minArea=w0*h0/100*80;
+  var area=0;
+  for(var a in data)if(a!=id){
+    var $p=$(document.getElementById(a));
+    if(typeof data[a]=="string" &amp;&amp; $p.length&gt;0){
+      var p=$p.position();
+      var w=$p.width();
+      var h=$p.height();
+      var x0=Math.max(p0.left,p.left);
+      var x1=Math.min(p0.left+w0,p.left+w);
+      var y0=Math.max(p0.top,p.top);
+      var y1=Math.min(p0.top+h0,p.top+h);
+      area=Math.max(x1-x0,0)*Math.max(y1-y0,0);
+      if(area&gt;=minArea){
+        //TODO: Esto hace imposible que un bloque tenga dos o mas padres a la vez, solo toma el primero que encuentre
+        var newParentE=getNodeById($p.attr("id"),parentE);
+        if(newParentE){
+          parent=$p[0];
+          parentE=newParentE;
+        }
+      }
+    } else if(a!="diagram") {
+      console.log(["missing node: ", a, data[a]]);
+      delete data[a];
+    }
+  }
+  return {id:(parent!==sheet)?parent.getAttribute("id"):'',div:parent,e:parentE};
+}
+/*Devuelve los bloques que se encuentran dentro del bloque*/
+function getChildrenOffset(div){
+  var id=div.getAttribute("id")
+  var $div=$(div);
+  var p0=$div.position();
+  var w0=$div.width();
+  var h0=$div.height();
+  var children=[];
+  var parentE=getNodeById(id,node).parentNode;
+  for(var a in data)if(a!=id){
+    var $p=$(document.getElementById(a));
+    if(typeof data[a]=="string" &amp;&amp; $p.length&gt;0){
+      var p=$p.position();
+      var w=$p.width();
+      var h=$p.height();
+      var x0=Math.max(p0.left,p.left);
+      var x1=Math.min(p0.left+w0,p.left+w);
+      var y0=Math.max(p0.top,p.top);
+      var y1=Math.min(p0.top+h0,p.top+h);
+      var area=Math.max(x1-x0,0)*Math.max(y1-y0,0);
+      var minArea=w*h/100*80;
+      if(area&gt;=minArea){
+        //TODO: Esto hace imposible que un bloque tenga dos o mas padres a la vez, solo toma el primero que encuentre
+        var childE=getNodeById($p.attr("id"),parentE);
+        if(childE.parentNode==parentE){
+          children.push({
+            id:$p.attr("id"),div:$p[0],e:childE
+          });
+        }
+      }
+    } else if(a!="diagram") {
+      console.log(["missing node: ", a, data[a]]);
+      delete data[a];
+    }
+  }
+  return children;
+}
+function allowDrop(ev) {
+    ev.preventDefault();
+}
+function drag(ev) {
+    if(!ev.target.id){
+      ev.target.id="dg"+(new Date().getTime());
+    }
+    var x=ev.clientX+sheet.scrollLeft;
+    var y=ev.clientY+sheet.scrollTop;
+    ev.dataTransfer.setData("id", ev.target.id);
+    ev.dataTransfer.setData("clientX", x);
+    ev.dataTransfer.setData("clientY", y);
+    //ev.preventDefault();
+}
+function drop(ev) {
+    ev.preventDefault();
+    var id = ev.dataTransfer.getData("id");
+    var clientX = ev.dataTransfer.getData("clientX");
+    var clientY = ev.dataTransfer.getData("clientY");
+    var $div=$("#"+id);
+    var $div0=$div;
+    var x=ev.clientX+sheet.scrollLeft-clientX;
+    var y=ev.clientY+sheet.scrollTop-clientY;
+
+    if($div.hasClass("dg-resizer")){
+        $div = $div.parent();
+        $div.css("position", "absolute");
+        $div.css("width", $div.width()+x);
+        $div.css("height", $div.height()+y);
+    } else {
+        var pos=$div.position();
+        $div.css("position", "absolute");
+        $div.css("with", $div.width());
+        $div.css("height", $div.height());
+        $div.css("left", pos.left+sheet.scrollLeft+x);
+        $div.css("top", pos.top+sheet.scrollTop+y);
+
+        var moverHijos=function(e,dx,dy){
+          for(var i=0,l=e.childNodes.length;i&lt;l;i++){
+            if(e.childNodes[i].hasAttributes &amp;&amp; e.childNodes[i].hasAttributes()) {
+              var d=document.getElementById(e.childNodes[i].getAttribute("__ideDiagramId"));
+              if(d){
+                var $d=$(d);
+                var p=$d.position();
+                $d.css("left", p.left+dx);
+                $d.css("top", p.top+dy);
+              }
+            }
+            if(e.childNodes[i].hasChildNodes &amp;&amp; e.childNodes[i].hasChildNodes()) {
+              moverHijos(e.childNodes[i],dx,dy);
+            }
+          }
+        }
+        moverHijos( getNodeById($div[0].getAttribute('id'),node), sheet.scrollLeft+x, sheet.scrollTop+y );
+    }
+    id=$div.attr('id');
+    data[id]=typeof($div[0].getAttribute('style')) !== 'string' ? $div[0].style.cssText : $div[0].getAttribute('style');
+    dataComment.nodeValue=JSON.stringify(data);
+
+    var e=getNodeById($div[0].getAttribute('id'),node);
+
+    var newParentData=getParentOffset($div[0]);
+    if(e.parentNode!==newParentData.e){
+      newParentData.e.appendChild(e);
+    }
+    for(var i=0;i&lt;e.childNodes.length;i++) if(e.childNodes[i].nodeName!="#text" &amp;&amp; e.childNodes[i].nodeName!="#comment" &amp;&amp; e.childNodes[i].nodeName!="Generalization"){
+      e.parentNode.appendChild(e.childNodes[i]);
+      i--;
+    }
+    var newChildData=getChildrenOffset($div[0]);
+    for(var i=0,l=newChildData.length;i&lt;l;i++) {
+      if(e!==newChildData[i].e.parentNode){
+        e.appendChild(newChildData[i].e);
+      }
+    }
+    var zIndexar=function(e,s){
+      if(s==0){
+        for(var i=0,l=e.childNodes.length;i&lt;l;i++){
+          if(e.childNodes[i].hasAttributes &amp;&amp; e.childNodes[i].hasAttributes()) {
+            var d=document.getElementById(e.childNodes[i].getAttribute("__ideDiagramId"));
+            if(d){
+              sheet.appendChild(d)
+            }
+          }
+        }
+      } else {
+        for(var i=0,l=e.childNodes.length;i&lt;l;i++){
+          if(e.childNodes[i].hasChildNodes &amp;&amp; e.childNodes[i].hasChildNodes()) {
+            zIndexar(e.childNodes[i],0);
+          }
+        }
+        for(var i=0,l=e.childNodes.length;i&lt;l;i++){
+          if(e.childNodes[i].hasChildNodes &amp;&amp; e.childNodes[i].hasChildNodes()) {
+            zIndexar(e.childNodes[i],1);
+          }
+        }
+      }
+    }
+    zIndexar(node,0);
+    zIndexar(node,1);
+    ztree.redrawNode(node);
+}
+function zoom(z){
+  try{
+    if(!(typeof z=="number" &amp;&amp; z&gt;0)) return;
+    for(var a in data) if(typeof data[a]=="string"){
+      var $div0=$(document.getElementById(a));
+      if($div0.length&gt;0) {
+        $div0.css('top', parseFloat($div0.css('top'))*z/data.diagram.zoom);
+        $div0.css('left', parseFloat($div0.css('left'))*z/data.diagram.zoom);
+        $div0.css('width', parseFloat($div0.css('width'))*z/data.diagram.zoom);
+        $div0.css('height', parseFloat($div0.css('height'))*z/data.diagram.zoom);
+        data[a]=typeof($div0[0].getAttribute('style')) !== 'string' ? $div0[0].style.cssText : $div0[0].getAttribute('style');
+      }
+    }
+    data['diagram'].zoom=z;
+    data['diagram'].scrollLeft=sheet.scrollLeft;
+    data['diagram'].scrollTop=sheet.scrollTop;
+    dataComment.nodeValue=JSON.stringify(data);
+  } catch(eee){
+    console.log(eee);
+  }
+}
+function zoomto(){
+  if(this===sheet) if(data.diagram.zoom!=1) return zoom(1);
+  var z1=($(sheet).width()-16-32)/parseFloat(this.style.width)*data.diagram.zoom;
+  var z2=($(sheet).height()-16-32)/parseFloat(this.style.height)*data.diagram.zoom;
+  zoom(Math.floor(Math.min(z1,z2)*100)/100);
+  sheet.scrollLeft=parseFloat(this.style.left)-16;
+  sheet.scrollTop=parseFloat(this.style.top)-16;
+  data['diagram'].scrollLeft=sheet.scrollLeft;
+  data['diagram'].scrollTop=sheet.scrollTop;
+  dataComment.nodeValue=JSON.stringify(data);
+}
+function diagramJsonEncode(obj){
+  var str=[];
+  for(var a in obj)if(a.substr(0,2)!="__"){
+    str.push(a+":"+JSON.stringify(obj[a]));
+  }
+  return "{\n  "+str.join(",\n  ")+"\n}";
+}
+var components={
+  "diagram":function(e){
+    for(var i=0,l=e.childNodes.length;i&lt;l;i++){
+      if(typeof components[e.childNodes[i].nodeName]=="function"){
+        components[e.childNodes[i].nodeName](e.childNodes[i]);
+      } else {
+        components.block(e.childNodes[i]);
+      }
+      if(e.childNodes[i].hasChildNodes()){
+        components.diagram(e.childNodes[i]);
+      }
+    }
+  },
+  "#comment":function(e){},
+  "#text":function(e){},
+  "block":function(e){
+    var arr=Z.xml2array(e);
+    if(e.getAttribute("__ideDiagramId")){
+      var id=e.getAttribute("__ideDiagramId");
+    } else {
+      //var id="dg"+(new Date().getTime());
+      //rfc4122 version 4 
+      var id='dg'+'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+          var r = Math.random()*16|0, v = c == 'x' ? r : (r&amp;0x3|0x8);
+          return v.toString(16);
+      }).split('-').join('')
+      e.setAttribute("__ideDiagramId", id);
+    }
+    //Si se duplico algun nodo:
+    if(document.getElementById(id)){
+      /*var id0=id;
+      var id="dg"+(new Date().getTime());
+      e.setAttribute("__ideDiagramId", id);
+      if(typeof data[id0]!="undefined"){
+        data[id]={};
+        for(var a in data[id0]){
+          data[id][a]=data[id0][a];
+        }
+      }*/
+      document.getElementById(id).remove();
+    }
+    //draw block
+    if(e.nodeName==="Generalization"){
+      var stOwner=data[e.parentNode.getAttribute("__ideDiagramId")];
+      var stDest=data[e.getAttribute('parent')];
+      var x1=stOwner.match(/left:([^;]+)px/)[1];
+      var y1=stOwner.match(/top:([^;]+)px/)[1];
+      var x2=stDest.match(/left:([^;]+)px/)[1];
+      var y2=stDest.match(/top:([^;]+)px/)[1];
+console.log(stOwner);
+console.log(x1,y1);
+console.log(stDest);
+console.log(x2,y2);
+window.canvasCtx=canvasCtx;
+      canvasCtx.beginPath();
+      canvasCtx.moveTo(x1,y1);
+      canvasCtx.lineTo(x2,y2);
+      canvasCtx.stroke();
+    } else {
+      var props={id:id,class:"dg-block",draggable:"true",ondragstart:drag,ondblclick:zoomto};
+      if(typeof data[id]!="undefined"){
+        props.style=data[id];
+      }
+      draw3(sheet, 
+        ["div",props,
+          [
+            "span",{class:"dg-block-name"},[
+              "span",{},arr[0]+(typeof arr[1].name=="string" ? (":"+arr[1].name):""),
+              "span",{class:'zdiagram-toolbar'},[
+                "i",{onclick:function(){
+                  openZPad(e);
+                }},"p",
+                "i",{onclick:function(){
+                  if(!e.firstChild) {
+                    e.appendChild(e.ownerDocument.createTextNode(""));
+                  }
+                  if(e.firstChild.nodeName=="#text"){
+                    openZPad(e.firstChild);
+                  }
+                }},"c"
+              ]
+            ],
+            "span",{class:"dg-block-attributes"},""/*diagramJsonEncode(arr[1])*/,
+            "div",{class:"dg-resizer",draggable:"true",ondragstart:drag},[]
+          ]
+        ]);
+    }
+  }
+}
+function openZPad(e){
+  var fnLoad, fnSave;
+  if(e.nodeName=="#text" || e.nodeName=="#comment") {
+    fnLoad=function(){
+      zpad.setCode("default",e.nodeValue);
+    }
+    fnSave=function(){
+      e.nodeValue=zpad.getCode("default");
+    }
+  } else {
+    fnLoad=function(){
+      var c=["{"];
+      for(var i=0,l=e.attributes.length;i&lt;l;i++)if(e.attributes[i].nodeName.substr(0,2)!="__"){
+        try{var obj=JSON.parse(e.attributes[i].value);}catch(eee){var obj=null;}
+        var val;
+        if(JSON.stringify(obj)===e.attributes[i].value){
+          val='JSON.stringify('+JSON.stringify(obj,null,4)+')';
+        } else {
+          val=JSON.stringify(e.attributes[i].value);
+        }
+        c.push("  "+e.attributes[i].nodeName+":"+val+ ",");
+      }
+      c.push("}");
+      zpad.setCode("default",c.join("\n"));
+    }
+    fnSave=function(){
+      var c=zpad.getCode("default");
+      var cc;
+      eval("cc="+c);
+      for(var i=0;i&lt;e.attributes.length;i++)if(e.attributes[0].nodeName.substr(0,2)!="__"){
+        e.removeAttribute(e.attributes[0].nodeName);
+        i--;
+      }
+      for(var a in cc) if(typeof cc[a]!="function") {
+        e.setAttribute(a, typeof cc[a]=="string"?cc[a]:JSON.stringify(cc[a]));
+      }
+      $(document.getElementById(e.getAttribute("__ideDiagramId"))).find(".dg-block-name span:first").html(
+        e.nodeName+(typeof e.getAttribute('name')=="string" ? (":"+e.getAttribute('name')):"")
+      );
+    }
+  }
+  //if(e.nodeName=="#text") e.nodeValue=zpad.getCode("default");
+  //installEditor to reset Ctrl+Z buffer
+  installEditor("default",zpad.create(),zpad);
+  changeEditor("default");
+  fnLoad();
+  var titleBar = $("#default").parents("table:first").find("th:first div:first")[0];
+  titleBar.innerHTML='';
+  draw3(titleBar, [
+      "#text",{},e.nodeName,
+      "span",{"class":'zdiagram-toolbar'},[
+        "i",{"class":'zdiagram-save', onclick:function(){
+          fnSave();
+          changeEditor("diagram");
+          titleBar.innerHTML='Content';
+        }},"SAVE",
+        "i",{"class":'zdiagram-close', onclick:function(){
+          changeEditor("diagram");
+          titleBar.innerHTML='Content';
+        }},"CLOSE",
+      ]
+    ]);
+}
+canvas1.height = document.getElementById("content").clientHeight;
+canvas1.width = document.getElementById("content").clientWidth;
+
+components.diagram(node);
+sheet.ondragover=allowDrop;
+sheet.ondrop=drop;
+sheet.scrollLeft=data['diagram'].scrollLeft;
+sheet.scrollTop=data['diagram'].scrollTop;
+sheet.ondblclick=function(event){if(event.target==this) zoomto.apply(this);}
+</zplugin.launch></zplugin><diagram __ideNodeOpen="true"><!--{"dg1408408621466":"position: absolute; height: 28.3333332538605px; left: 264.750030517578px; top: 77.0208358764648px; width: 120.185185141034px;","dg1408408621464":"position: absolute; height: 417.407407363256px; left: 10.9891997443305px; top: 10.9891997443305px; width: 627.962962918811px;","dg1408412032467":"position: absolute; height: 29.3333332538605px; left: 62.4583435058594px; top: 68.6458358764648px; width: 120.185185141034px;","dg1408411678926":"position: absolute; height: 71.3333332538605px; left: 30.0625px; top: 41.2291641235352px; width: 589.074074029923px;","dg1408412046744":"position: absolute; height: 231.8518518077px; left: 32.1458435058594px; top: 158.75001695421px; width: 581.296296252145px;","dg1408412151922":"position: absolute; height: 31.8518518077003px; left: 433.125px; top: 69.1782463921439px; width: 161.296296252145px;","diagram":{"zoom":1,"scrollLeft":0,"scrollTop":0}}--><block1 name="AA" __ideDiagramId="dg1408408621464" prop1="www" prop2="123" prop3="true" __ideNodeOpen="true"><block2 name="AABB" __ideDiagramId="dg1408411678926"><block2 name="AABB" __ideDiagramId="dg1408408621466" __ideNodeOpen="true"><Generalization parent="dg1408412032467" __ideDiagramId="dg24b2a6216cc64809a2eb1b9fefd99bab"/></block2><block2 name="BB" __ideDiagramId="dg1408412032467"/><block2 name="BB123" __ideDiagramId="dg1408412151922"/></block2><block2 name="BB" __ideDiagramId="dg1408412046744"/></block1></diagram><php __ideNodeOpen="true">class Diagram{
+  public static function getNamePath($e, $separator='/'){
+    $name=[];var_dump($e-&gt;parentNode);
+    while($e &amp;&amp; $e-&gt;nodeName!=='diagram'){
+      array_unshift($name, $e-&gt;getAttribute('name'));
+      $e=$e-&gt;parentNode;
+    }var_dump($name);
+    return implode($separator, $name);
+  }
+}</php></root>

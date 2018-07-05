@@ -1,0 +1,547 @@
+<?xml version="1.0" encoding="UTF-8"?><root><path path="/Users/davidcallizaya/NetBeansProjects/processmaker/xmaker" main="" __ideNodeOpen="true"><package name="components" type="" __ideNodeOpen="true"><php __ideNodeOpen="true">class Artisan {
+    public static $routes = [];
+
+    public static function tab($spaces, $code){
+        $lines=explode("\n", str_replace("\t", '    ', $code));
+        $minSpaces = null;
+        foreach($lines as $line){
+            if(empty($line)){
+                continue;
+            }
+            $lSpaces= strlen($line) - strlen(ltrim($line));
+            $minSpaces = !isset($minSpaces) || $lSpaces&lt;$minSpaces ? $lSpaces : $minSpaces;
+        }
+        $minSpaces = isset($minSpaces) ? $minSpaces : 0;
+        foreach($lines as &amp;$line){
+            $line= str_repeat(' ', $spaces) . substr(rtrim($line), $minSpaces);
+        }
+        //remove last line
+        if(trim($line)===''){
+            array_pop($lines);
+        }
+        return implode("\n", $lines);
+    }
+
+    public static function getController(Node $node){
+      return ucfirst($node-&gt;node-&gt;parentNode-&gt;getAttribute('name')).'Controller';
+    }
+
+    public static function getTags(Node $node){
+      return $node-&gt;node-&gt;parentNode-&gt;getAttribute('name');
+    }
+
+    public static function addRoute($method, $path, $controller, $name){
+        static::$routes[] = '$app-&gt;'.$method.'('.var_export($path, true).', '.var_export($controller.'@'.$name, true).');';
+    }
+
+    public static function getRoutes(){
+        return implode("\n", static::$routes);
+    }
+
+    public static function swgPathParam($name, $type='string', $required='true', $description=''){
+return '     *     @SWG\Parameter(
+     *         description="'.$description.'",
+     *         in="path",
+     *         name="'.$name.'",
+     *         required='.$required.',
+     *         type="'.$type.'"
+     *     ),
+';
+    }
+    public static function getArrayParams($node) {
+        $params = [];
+        $path = $node-&gt;node-&gt;getAttribute('path');
+        preg_replace_callback(
+          '/\{(\w+)\}/',
+          function($match) use(&amp;$params){
+              $params[] = $match[1];
+          },
+          $path
+        );
+        return $params;
+    }
+    public static function getSwgParams($node){
+        $params = static::getArrayParams($node);
+        $res = [];
+        foreach ($params as $name) {
+            $res[] = static::swgPathParam($name);
+        }
+        return implode("", $res);
+    }
+    public static function getParams($node){
+        $params = static::getArrayParams($node);
+        foreach($params as &amp;$param) {
+            $param = '$'.$param;
+        }
+        return implode(', ', $params);
+    }
+    public static function baseName($name, $base=''){
+        $baseName = ucwords( preg_replace('/[^a-z0-9]+/i',' ', $base).' '.$name );
+        return str_replace(' ', '', $baseName);
+    }
+}
+</php><php __ideNodeOpen="true">
+class ClassBuilder {
+  protected $source='';
+  protected $tokens=[];
+  protected $groupTokens=[
+    '('=&gt;')',
+    '{'=&gt;'}',
+    '['=&gt;']',
+  ];
+
+  public function __construct($source){
+    $this-&gt;parseCode($source);
+  }
+  public function parseCode($source){
+    $this-&gt;source = $source;
+    $this-&gt;tokens = token_get_all($source);
+    $this-&gt;l = count($this-&gt;tokens);
+    $this-&gt;namespace = $this-&gt;loNamespace();
+    $this-&gt;uses = $this-&gt;loadUses();
+    $this-&gt;class = $this-&gt;loadClass();
+    $this-&gt;name = $this-&gt;loadName();
+    $this-&gt;extends = $this-&gt;loadExtends();
+    $this-&gt;implements = $this-&gt;loadImplements();
+    $this-&gt;methods = $this-&gt;loadMethods();
+    $this-&gt;properties = $this-&gt;loadMethods();
+  }
+  function loadNamespace(){
+    foreach($this-&gt;tokens as $i=&gt;$tk) {
+      if(is_array($tk) &amp;&amp; $tk[0]===T_NAMESPACE) {
+        return trim($this-&gt;getExpression($i+1));
+      }
+    }
+  }
+  function getNamespace(){
+    return $this-&gt;namespace;
+  }
+  function setNamespace($namespace){
+    return $this-&gt;namespace=$namespace;
+  }
+  function loadUses(){
+    $uses = [];
+    foreach($this-&gt;tokens as $i=&gt;$tk) {
+      if(is_array($tk) &amp;&amp; $tk[0]===T_USE) {
+        $def = $this-&gt;getExpressionSplited($i+1, -1, T_AS);
+        $name = isset($def[1]) ? $def[1] : basename(str_replace('\\','/',$def[0]));
+        $uses[$name] = $fullName;
+      }
+      if(is_array($tk) &amp;&amp; $tk[0]===T_CLASS) {
+        break;
+      }
+    }
+    return $uses;
+  }
+  function getUses(){
+    return $this-&gt;uses;
+  }
+  function setUses($uses){
+    return $this-&gt;uses=$uses;
+  }
+  function loadClass(){
+    foreach($this-&gt;tokens as $i=&gt;$tk) {
+      if(is_array($tk) &amp;&amp; $tk[0]===T_CLASS) {
+        return $i;
+      }
+    }
+  }
+  function loadName(){
+    return $this-&gt;tokens[$this-&gt;class+2][1];
+  }
+  function getName(){
+    return $this-&gt;name;
+  }
+  function setName($name){
+    $this-&gt;name = $name;
+  }
+  function loadAbstract(){
+    $tk = $this-&gt;tokens[$this-&gt;class-2];
+    return is_array($tk) &amp;&amp; $tk[0]===T_ABSTRACT;
+  }
+  function isAbstract(){
+    return $this-&gt;uses;
+  }
+  function setAbstract($abstract){
+    $this-&gt;abstract=$abstract;
+  }
+  function loadExtends(){
+    $tk = $this-&gt;tokens[$this-&gt;class+3];
+    if(is_array($tk) &amp;&amp; $tk[0]===T_EXTENDS) {
+      return $this-&gt;tokens[$this-&gt;class+5];
+    }
+  }
+  function getExtends(){
+    return $this-&gt;extends;
+  }
+  function setExtends($extends){
+    $this-&gt;extends=$extends;
+  }
+  function loadImplements(){
+    $res=[];
+    $i = $this-&gt;find(T_IMPLEMENTS, $this-&gt;class, '{');
+    $j = $this-&gt;find(T_IMPLEMENTS, '{');
+    if($i&gt;=0){
+      $impls = $this-&gt;getExpressionSplited($i, $j, ',');
+      foreach($impls as $impl){
+        $res[]=$impl;
+      }
+    }
+    return $res;
+  }
+  function getImplements(){
+    return $this-&gt;implements;
+  }
+  function setImplements($implements){
+    $this-&gt;implements=$implements;
+  }
+  //TRAIT GET EXPRESSIONS
+  protected function getExpressionEnd($i){
+    $groups=[];
+    for(;$i&lt;$this-&gt;l;$i++) {
+      $tk = $this-&gt;tokens[$i];
+      if(is_string($tk)){
+        if(isset($this-&gt;groupTokens[$tk])){
+          $groups[$tk] = empty($groups[$tk])?1:$groups[$tk]+1;
+        }
+        if($tk]===';'){
+          return $i-1;
+        }
+      }
+    }
+    return $i-1;
+  }
+  protected function getTokensString($i,$j) {
+    $res='';
+    for(;$i&lt;=$j;$i++){
+      $res.=$this-&gt;tokens[$i];
+    }
+    return $res;
+  }
+  protected function getExpression($i){
+    return $this-&gt;getTokensString($i,$this-&gt;getExpressionEnd($i));
+  }
+  protected function getExpressionSplited($i, $j, $by){
+    if($j==-1){
+      $j = $this-&gt;l;
+    }
+    $res = [];
+    $i0 = $i;
+    for(;$i&lt;=$j;$i++){
+      $code = is_array($this-&gt;tokens[$i]) ? $this-&gt;tokens[$i][0] : 0;
+      $str = is_array($this-&gt;tokens[$i]) ? $this-&gt;tokens[$i][1] : $this-&gt;tokens[$i];
+      if((is_string($by) &amp;&amp; $str==$by) || (!is_string($by) &amp;&amp; $code==$by)){
+        $res[] = $this-&gt;getTokensString($i0,$i-1);
+        $i0=$i+1;
+      }
+    }
+    $res[] = $this-&gt;getTokensString($i0,$j);
+    return $res;
+  }
+  protected function find($what, $i, $until=null){
+    for(;$i&lt;=$this-&gt;l;$i++){
+      $code = is_array($this-&gt;tokens[$i]) ? $this-&gt;tokens[$i][0] : 0;
+      $str = is_array($this-&gt;tokens[$i]) ? $this-&gt;tokens[$i][1] : $this-&gt;tokens[$i];
+      if((is_string($what) &amp;&amp; $str==$what) || (!is_string($what) &amp;&amp; $code==$what)){
+        return $i;
+      }
+      if(isset($until) &amp;&amp; ((is_string($until) &amp;&amp; $str==$until) || (!is_string($until) &amp;&amp; $code==$until))){
+        return break;
+      }
+    }
+    return -1;
+  }
+}
+</php><php __ideNodeOpen="true">
+
+/**
+ * Description of Xmi
+ *
+ * @author David Callizaya &lt;david.callizaya@processmaker.com&gt;
+ */
+class Xmi 
+{
+
+    const CONTENT_NODE = 'XMI.content';
+    const COMPONENT_NODE = 'Component';
+    const COMPONENT_RESIDENT_ELEMENT = 'UML:Component.residentElement';
+    const NS_UML = 'org.omg.xmi.namespace.UML';
+    
+    public static $DATA_TYPES = [
+        'http://argouml.org/profiles/uml14/default-uml14.xmi#-84-17--56-5-43645a83:11466542d86:-8000:000000000000087E'=&gt;'string'
+    ];
+
+    /**
+     *
+     * @var \DOMDocument 
+     */
+    protected $dom;
+
+    /**
+     *
+     * @var \DOMNode
+     */
+    protected $node;
+
+    /**
+     *
+     * @var \DOMXPath
+     */
+    protected $xpath;
+
+    public function open($file)
+    {
+        $this-&gt;dom = new \DOMDocument();
+        $this-&gt;dom-&gt;loadXML($file);
+        $this-&gt;xpath = new \DOMXPath($this-&gt;dom);
+        $this-&gt;xpath-&gt;registerNamespace('UML', self::NS_UML);
+//        foreach ($this-&gt;dom-&gt;getElementsByTagName(self::COMPONENT_NODE) as $component) {
+//            $this-&gt;doComponent($component);
+//        }
+    }
+
+    protected function listNodes()
+    {
+
+        echo "&gt;", $this-&gt;node-&gt;getNodePath(), "\n";
+        foreach ($this-&gt;node-&gt;childNodes as $ch) {
+            echo "    ", $ch-&gt;getNodePath(), "\n";
+        }
+    }
+
+    protected function xpath($expression, $contextnode = null)
+    {
+        //echo "$expression\n";
+        return $this-&gt;xpath-&gt;query($expression, $contextnode);
+    }
+
+    /**
+     * 
+     * @param \DOMElement $contextnode
+     * @param type $id
+     * @return \DOMElement
+     */
+    protected function getByXmiId($id, \DOMElement $contextnode = null)
+    {
+        if (!$contextnode) {
+            $result = $this-&gt;xpath('//UML:Class[@xmi.id=\'' . $id . '\']')-&gt;item(0);
+        } else {
+            $result = $this-&gt;xpath('//UML:Class[@xmi.id="' . $id . '"]', $contextnode)-&gt;item(0);
+        }
+        return $result;
+    }
+
+    protected function doComponent(\DOMElement $component)
+    {
+        foreach ($this-&gt;xpath(self::COMPONENT_RESIDENT_ELEMENT, $component) as $residentElement) {
+            $this-&gt;doComponentResidenceClass($residentElement);
+        }
+    }
+
+    protected function getHref(\DOMElement $contextnode, $expression)
+    {
+        /* @var $node \DOMElement */
+        $node = $this-&gt;xpath-&gt;query($expression, $contextnode)-&gt;item(0);
+        return $node-&gt;getAttribute('href');
+    }
+
+    protected function doComponentResidenceClass(\DOMElement $residentElement)
+    {
+        /* @var $node \DOMElement */
+        foreach ($this-&gt;xpath('UML:ElementResidence/UML:ElementResidence.resident/UML:Class', $residentElement) as $node) {
+            $idRef = $node-&gt;getAttribute('xmi.idref');
+            $class = $this-&gt;getByXmiId($idRef);
+            $this-&gt;doClass($class);
+        }
+    }
+
+    protected function doClassXsl(\DOMElement $class)
+    {
+        $xsl = new \DOMDocument;
+        $xsl-&gt;load(__DIR__ . '/aXmiXslts/Class.xsl');
+        // Configure the transformer
+        $proc = new \XSLTProcessor;
+        $proc-&gt;registerPHPFunctions();
+        $proc-&gt;importStyleSheet($xsl); // attach the xsl rules
+        $proc-&gt;setParameter('', 'namespace', getNamespace($class));
+        $proc-&gt;setParameter('', 'xpath', $class-&gt;getNodePath());
+        $proc-&gt;setParameter('', 'author', 'David Callizaya');
+        $proc-&gt;setParameter('', 'language', 'php');
+        $code = $proc-&gt;transformToDoc($class-&gt;ownerDocument)-&gt;firstChild-&gt;textContent;
+        print($code);
+    }
+
+    protected function doClass(\DOMElement $class)
+    {
+        $smarty = new \Smarty();
+        $smarty-&gt;setCaching(false);
+        $smarty-&gt;setTemplateDir(__DIR__ . '/aTpl/');
+        $smarty-&gt;setCompileDir(ACH_TMP . '/compile/');
+        $smarty-&gt;assign('node', $class);
+        $smarty-&gt;assign('xpath', new XPath($class));
+        $smarty-&gt;assign('author', 'David Callizaya');
+        $smarty-&gt;assign('language', 'php');
+        $smarty-&gt;registerPlugin('function', 'namespace', array($this, 'smartyNamespace'));
+        $smarty-&gt;registerPlugin('function', 'typeof', array($this, 'smartyTypeof'));
+        echo $smarty-&gt;fetch('Class.tpl');
+    }
+
+    public function smartyNamespace($params, $smarty)
+    {
+        $namespace = $this-&gt;getNamespace($params['node']);
+        if (!empty($namespace) &amp;&amp; !empty($params['closed'])) {
+            $namespace = $namespace . '\\';
+        }
+        return $namespace;
+    }
+
+    /**
+     * node: UML:Parameter.type
+     * @param type $params
+     * @param type $smarty
+     * @return type
+     */
+    public function smartyTypeof($params, $smarty)
+    {
+        $node = $params['node'];
+        if(!$node) {
+            return '';
+        }
+        $type = '';
+        //Check if is UML:DataType
+        $umlType = $this-&gt;xpath('UML:DataType', $node)-&gt;item(0);
+        if ($umlType) {
+            $type = static::$DATA_TYPES[$umlType-&gt;getAttribute('href')];
+        }
+        //Check if is UML:DataType
+        $classType = $this-&gt;xpath('UML:Class', $node)-&gt;item(0);
+        if ($classType) {
+            $type = $this
+                -&gt;getByXmiId($classType-&gt;getAttribute('xmi.idref'))
+                -&gt;getAttribute('name');
+        }
+        return $type;
+    }
+
+    /**
+     * 
+     * @param \DOMNodeList $nodeList
+     * @param type $ns
+     * @param type $name
+     * @return \DOMNode
+     */
+    public static function getNodeNS(\DOMNodeList $nodeList, $ns, $name)
+    {
+        /* @var $node \DOMNode */
+        foreach ($nodeList AS $node) {
+            if ($node-&gt;namespaceURI == $ns &amp;&amp; $node-&gt;nodeName == $name) {
+                return $node;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 
+     * @param \DOMNode $node
+     */
+    public function getNamespace(\DOMNode $node)
+    {
+        /* @var $parent \DOMNode */
+        $namespace = [];
+        $parent = $node-&gt;parentNode;
+        while ($parent &amp;&amp; $parent-&gt;nodeName != 'UML:Model') {
+            if ($parent-&gt;nodeName == 'UML:Package') {
+                array_unshift($namespace, $parent-&gt;getAttribute('name'));
+            }
+            $parent = $parent-&gt;parentNode;
+        }
+        return implode('\\', $namespace);
+    }
+
+    public function getClass($name){
+        
+    }
+}
+</php><component name="restController" transparent="" precode="" __ideNodeOpen="true"><file name="Controllers/@{ucfirst($name)}Controller.php" preprocess="" __ideNodeOpen="true">&lt;?php namespace App\Http\Controllers;
+
+/**
+ * @author david
+ */
+class @{ucfirst($name)}Controller
+{
+@{node::content($_, "\n")}
+}
+</file></component><component name="restResource" transparent="" precode="" __ideNodeOpen="true">
+    /**
+     * @SWG\@{ucfirst($method)}(
+     *   tags={"@{Artisan::getTags($this)}"},
+     *     path="@{$path}",
+@{Artisan::getSwgParams($this)}     *     @SWG\Response(response="200", description="@{$description}")
+     * )
+     */
+    public function @{$name}(@{Artisan::getParams($this)})
+    {
+@{Artisan::tab(8,node::content($_))}
+    }<php __ideNodeOpen="true">Artisan::addRoute(${$method/*get|post|delete|put*/}, ${$path}, ${Artisan::getController($this)}, ${$name});
+</php></component><component name="router" transparent="" precode="" __ideNodeOpen="true"><file name="routes.php" preprocess="" __ideNodeOpen="true">&lt;?php
+/*
+  |--------------------------------------------------------------------------
+  | Application Routes
+  |--------------------------------------------------------------------------
+  |
+  | Here is where you can register all of the routes for an application.
+  | It is a breeze. Simply tell Lumen the URIs it should respond to
+  | and give it the Closure to call when that URI is requested.
+  |
+ */
+
+$app-&gt;get('/', function () use ($app) {
+    return $app-&gt;welcome();
+});
+@{Artisan::getRoutes()}
+</file></component><component name="restful" transparent="" precode="" __ideNodeOpen="true"><restController name="@{Artisan::baseName($name, $base)}" title="@{$title}" __ideNodeOpen="true"><if condition="@{isset($_nodes['index'])?'1':''}"><restResource method="get" path="@{$base}/@{$name}" description="Index @{$name}." name="index" __ideNodeOpen="true">@{node::content($_nodes['index'])}</restResource></if><if condition="@{isset($_nodes['create'])?'1':''}" __ideNodeOpen="true"><restResource method="get" path="@{$base}/@{$name}/create" description="Create @{$name}." name="create" __ideNodeOpen="true">@{@node::content($_nodes['create'])}</restResource></if><if condition="@{isset($_nodes['store'])?'1':''}" __ideNodeOpen="true"><restResource method="post" path="@{$base}/@{$name}" description="Store @{$name}." name="store" __ideNodeOpen="true">@{@node::content($_nodes['store'])}</restResource></if><if condition="@{isset($_nodes['show'])?'1':''}" __ideNodeOpen="true"><restResource method="get" path="@{$base}/@{$name}/{@{$name}}" description="Show @{$name}." name="show" __ideNodeOpen="true">@{@node::content($_nodes['show'])}</restResource></if><if condition="@{isset($_nodes['edit'])?'1':''}" __ideNodeOpen="true"><restResource method="get" path="@{$base}/@{$name}/{@{$name}}/edit" description="Edit @{$name}." name="edit" __ideNodeOpen="true">@{@node::content($_nodes['edit'])}</restResource></if><if condition="@{isset($_nodes['update'])?'1':''}" __ideNodeOpen="true"><restResource method="put" path="@{$base}/@{$name}/{@{$name}}" description="Update @{$name}." name="update" __ideNodeOpen="true">@{@node::content($_nodes['update'])}</restResource></if><if condition="@{isset($_nodes['destroy'])?'1':''}" __ideNodeOpen="true"><restResource method="delete" path="@{$base}/@{$name}/{@{$name}}" description="Destroy @{$name}." name="destroy" __ideNodeOpen="true">@{@node::content($_nodes['destroy'])}</restResource></if></restController></component><component name="index" transparent="" precode="" __ideNodeOpen="false">@{node::content($_)}</component><component name="create" transparent="" precode="" __ideNodeOpen="false">@{node::content($_)}</component><component name="store" transparent="" precode="" __ideNodeOpen="false">@{node::content($_)}</component><component name="show" transparent="" precode="" __ideNodeOpen="false">@{node::content($_)}</component><component name="edit" transparent="" precode="" __ideNodeOpen="false">@{node::content($_)}</component><component name="update" transparent="" precode="" __ideNodeOpen="false">@{node::content($_)}</component><component name="destroy" transparent="" precode="" __ideNodeOpen="false">@{node::content($_)}</component><package name="model" type="" __ideNodeOpen="true"><component name="restModel" transparent="" precode="" __ideNodeOpen="true"><file name="Model/@{$name}.php" preprocess="">&lt;?php
+
+namespace App\Model\@{$name};
+
+/**
+ * @SWG\Definition(
+ *   @SWG\Xml(name="@{$name}")
+ * )
+ */
+class @{$name}
+{
+@{Artisan::tab(4, node::content($_))}
+}
+</file></component><component name="restAttribute" transparent="" precode="" __ideNodeOpen="true">
+    /**
+     * @var @{$type}
+     */
+    public $@{$name};
+</component><component name="map" transparent="" precode="" engine="php" __ideNodeOpen="false"/></package></package><router __ideNodeOpen="true"><restController name="swagger" title="Swagger UI service"><restResource path="/swagger/resource" description="Returns swagger ui api description" name="resource" __ideNodeOpen="true" method="get">        $swagger = \Swagger\scan('../app/Http/Controllers');
+        header('Content-Type: application/json');
+        return "$swagger";
+</restResource></restController><restful name="api" title="" __ideNodeOpen="true" base="/swagger"><index __ideNodeOpen="true">        $swagger = \Swagger\scan('../app/Http/Controllers');
+        header('Content-Type: application/json');
+        return "$swagger";
+</index></restful><map __ideNodeOpen="true">[types]
+http://argouml.org/profiles/uml14/default-uml14.xmi#-84-17--56-5-43645a83:11466542d86:-8000:000000000000087E="string"
+
+[model]
+_xpath="UML:Class[xmi.id]"
+_class="restModel"
+name="@name"
+type="$types(UML:StructuralFeature.type/UML:DataType/@href)"
+id="@xmi.id"
+
+[model.attribute]
+_xpath="UML:Attribute[xmi.id]"
+_class="restAttribute"
+name="@name"
+
+[model.association]
+_xpath="//UML:Association/UML:Association.connection/UML:AssociationEnd[isNavigable='true']/UML:AssociationEnd.participant/UML:Class[@xmi.idref=$id]"
+_class="restAttribute"
+type="@name"
+name="../../@name"
+</map></router></path></root>

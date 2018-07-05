@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root><def name="zplugin"><!--#editor.plugin
+
+/**
+ * zdraw3
+ */
+Z.console("Loaded zdraw3.");
+window.zdraw3={};
+zdraw3=window.zdraw3;
+zdraw3.join=function(glue,arr){var res=[];for each(var a in arr)res.push(a[1]);return res.join(glue)};
+zdraw3.evalString=function(__str,__values){
+  var node={
+    join:zdraw3.join
+  }
+  __str=__str.split("node::join").join("node.join");
+  __str=__str.split("isset(").join("('undefined'!=typeof ");
+  try{
+  __str=__str.replace(/@\{([^\}]+)\}/g,function(m0,m1){with(__values){return eval(m1)}});
+  __str=__str.replace(/\$\{([^\}]+)\}/g,function(m0,m1){with(__values){return JSON.stringify(eval(m1))}});
+  __str=__str.replace(/#\{([^\}]+)\}/g,function(m0,m1){with(__values){return eval("(function(){"+m1+"})()")}});
+}catch(e){
+console.debug(["Error Evaluatingggg:",__str,__values,e]);
+}
+  return __str;
+}
+zdraw3.evalNode=function(node,values, noSkipComponents){
+  // Skip component definitions (component, draw3.component)
+  if(!noSkipComponents) if(node.nodeName=="component" || node.nodeName=="draw3.component") return;
+  if(node.attributes) for(var i=0,l=node.attributes.length;i<l;i++){
+    node.attributes[i].nodeValue=zdraw3.evalString(node.attributes[i].nodeValue,values);
+  }
+  if(node.nodeValue){
+    node.nodeValue=zdraw3.evalString(node.nodeValue,values);
+  }
+  if(node.childNodes) for(var i=0,l=node.childNodes.length;i<l;i++){
+    zdraw3.evalNode(node.childNodes[i],values);
+  }
+}
+zdraw3.make=function(node){
+  try{
+    var res=zdraw3.join("",zdraw3.node(node));
+    if(window.execScript) window.execScript(res);
+    else return window.eval(res);
+  }catch(e){
+    console.debug(["Error making: ", res,e]);
+  }
+}
+zdraw3.node=function(node){
+Z.console("doing: "+node.nodeName);
+  if(typeof(zdraw3[node.nodeName])!="undefined"){
+    return zdraw3[node.nodeName](node);
+  } else {
+    return [];
+  }
+}
+zdraw3["#text"]=function(node){return [["#text",node.nodeValue]]};
+zdraw3.component=zdraw3["draw3.component"]=function(base){
+  Z.console("Created component: "+base.getAttribute("name"));
+  structure_node_component_add(base);
+  zdraw3[base.getAttribute("name")]=function(node){
+    var n=base.cloneNode(true);
+    var values={"$_":[],"$e":node},ch;
+    if(node.attributes)for(var i=0,l=node.attributes.length;i<l;i++) values["$"+node.attributes[i].nodeName]=node.attributes[i].nodeValue;
+    if(node.childNodes)for(var i=0,l=node.childNodes.length;i<l;i++) ch=zdraw3.node(node.childNodes[i]),values["$_"]=ch?values["$_"].concat(ch):values["$_"];
+    zdraw3.evalNode(n,values,true);
+    var res=[];
+    for(var i=0,l=n.childNodes.length;i<l;i++){
+      res=res.concat(zdraw3.node(n.childNodes[i]));
+    }
+    return res;
+  }
+  return [];
+}
+zdraw3.library=function(n){
+  var res=[];
+  for(var i=0,l=n.childNodes.length;i<l;i++){
+    res=res.concat(zdraw3.node(n.childNodes[i]));
+  }
+  return res;
+}
+zdraw3.draw3=function(n){
+  var res=[];
+  for(var i=0,l=n.childNodes.length;i<l;i++){
+    res=res.concat(zdraw3.node(n.childNodes[i]));
+  }
+  return "["+zdraw3.join(",",res)+"]";
+}
+
+/**
+ * zplugin
+ */
+
+
+Z.console("Loaded zplugin.");
+window.zplugin={
+  create:function(base){
+    var div;
+    installPlugin({
+      name:base.getAttribute("name"),
+      nodesEditor:base.getAttribute("nodesEditor").split(","),
+      create:function(){
+        var c = base.getElementsByTagName("zplugin.components")[0];
+        if(c)zdraw3.draw3(c);
+        var b = base.getElementsByTagName("zplugin.base")[0];
+        div = document.createElement("div");
+        div.style.position="relative";
+        div.style.width="100%";
+        div.style.height="100%";
+        if(b)draw3(div,eval(zdraw3.draw3(b)));
+div.className="abc";
+        return div;
+      },
+      launch:function(node){
+        var main = base.getElementsByTagName("zplugin.launch")[0];
+        var canvas = div;
+        if(main) eval(main.textContent);
+        if(!main) draw3(canvas, eval(zdraw3.draw3(node)) );
+        changeEditor(base.getAttribute("name"));
+      }
+    });
+  }
+}
+--><function name="run">/**
+ * Parameters:
+ * @{$name}
+ * @{$nodesEditor}
+ */
+
+return $this-&gt;encodeEmpty();</function></def><component name="zflow" transparent=""/><zplugin name="zflow" nodesEditor="zflow"><!--#editor.plugin
+
+zplugin.create($this.parentNode);
+componentsIndex[$this.parentNode.nodeName].editor=zcomponent.launch;
+
+window.zflow={
+  indexE:[],
+  indexN:[],
+  getId:function(){
+    return String(new Date().getTime()+Math.random());
+  },
+  register:function(e,n){
+    this.indexE.push(e);
+    this.indexN.push(n);
+  },
+  registerId:function(n){
+    var id=this.getId();
+    this.register(id,n);
+    return id;
+  },
+  clear:function(){
+    this.indexE.length=0;
+    this.indexN.length=0;
+  },
+  getElement:function(n){
+    return this.indexE[this.indexN.indexOf(n)];
+  },
+  getNode:function(e){
+    return this.indexN[this.indexE.indexOf(e)];
+  },
+  refresh:function(){
+    var flows=currentNode.getElementsByTagName("zflow.flow");
+    for(var i=0,l=flows.length;i<l;i++){
+      zflow_flow_move(flows[i], document.getElementById(zflow.getElement(flows[i])) );
+    }
+  },
+  arrangeIcon:function(event,div,img){
+    event = event || window.event;
+    var source = (event.currentTarget) ? event.currentTarget : event.srcElement;
+
+    var pos = getRelativePosition( source, div );
+    source.parentNode.parentNode.nextSibling.style.left=pos.x;
+    source.parentNode.parentNode.nextSibling.style.top=pos.y;
+
+    source.setAttribute("_drawX0",null);
+    source.setAttribute("_drawY0",null);
+    source.parentNode.parentNode.nextSibling.style.display="block";
+    source.parentNode.parentNode.nextSibling.firstChild.setAttribute("src",img);
+    source.parentNode.parentNode.nextSibling.onmousedown(event);
+
+    if (event.stopPropagation) {
+      event.stopPropagation();
+    } else {
+      event.cancelBubble = true;
+    } 
+
+    return false;
+  }
+};--><zplugin.components><draw3.component name="movableContainer">"div" ,{style:"background:transparent;position:absolute;left:0;top:0;width:100%;height:100%",
+        onmousemove:function(event){
+          for(var i=0,l=this.childNodes.length;i&lt;l;i++){
+            if(this.childNodes[i].getAttribute("_drawX0")!=null &amp;&amp; this.childNodes[i].getAttribute("_drawX0")!=="") {
+              var pos=getEventPosition(event);
+              var pos0=getAbsolutePosition(this);
+              this.childNodes[i].style.left=pos.x-this.childNodes[i].getAttribute("_drawX0")-pos0.x;
+              this.childNodes[i].style.top=pos.y-this.childNodes[i].getAttribute("_drawY0")-pos0.y;
+              if(typeof(this.childNodes[i].onmove)=="function") this.childNodes[i].onmove();
+            }
+          }
+        },
+        onmouseup:function(event){
+          for(var i=0,l=this.childNodes.length;i&lt;l;i++){
+            if(this.childNodes[i].getAttribute("_drawX0")!=null &amp;&amp; this.childNodes[i].getAttribute("_drawX0")!=="") {
+              if(typeof(this.childNodes[i].ondrop)=="function") this.childNodes[i].ondrop();
+            }
+            this.childNodes[i].setAttribute("_drawX0",null);
+            this.childNodes[i].setAttribute("_drawY0",null);
+          }
+        }
+      },[@{node::join(",",$_)}]</draw3.component><draw3.component name="movable">"div" ,{style:"position:absolute;left:@{$left};top:@{$top};width:@{$width};height:@{$height};@{isset($style)?$style:"background-color:white;border:1px solid black;"}",
+          onmousedown:function(event){
+            if(this.getAttribute("_drawX0")==null || this.getAttribute("_drawX0")==="") {
+              var pos=getEventPosition(event);
+              var posE=getAbsolutePosition(this);
+              this.setAttribute("_drawX0",pos.x-posE.x);
+              this.setAttribute("_drawY0",pos.y-posE.y);
+              return false;
+            }
+          },
+          onmouseup:function(event){
+            this.setAttribute("_drawX0",null);
+            this.setAttribute("_drawY0",null);
+            if(this.ondrop)this.ondrop();
+          }
+          @{isset($oncreate)?",oncreate:":""}@{isset($oncreate)?$oncreate:""}
+          @{isset($onmove)?",onmove:":""}@{isset($onmove)?$onmove:""}
+          @{isset($ondrop)?",ondrop:":""}@{isset($ondrop)?$ondrop:""}
+        },[@{node::join(",",$_)}]</draw3.component><draw3.component name="actionButton">"a",
+  {
+    "class":"zflowAction",
+    href:"#",
+    onmousedown:function(event){
+      return window.zflow.arrangeIcon(
+        event,
+        document.getElementById("zflow"),
+        this.firstChild.src
+      );
+    }
+  },
+  ["img",{src:"../library/zflow_link.gif"},[]]</draw3.component><draw3.component name="zflow.page"><movable left="@{$e.getAttribute(&quot;left&quot;) ? $e.getAttribute(&quot;left&quot;): 0}" top="@{$e.getAttribute(&quot;top&quot;) ? $e.getAttribute(&quot;top&quot;): 0}" width="" height="" style="" oncreate="function(){ this.id='@{window.zflow.registerId($e)}'; }" onmove="function(){ var $e=window.zflow.getNode(this.id); $e.setAttribute(&quot;left&quot;,this.offsetLeft); $e.setAttribute(&quot;top&quot;,this.offsetTop); zflow.refresh(); }">"span",{style:"display:inline-block;text-align:center"},[
+"a",{"class":"zflowPage",href:"javascript:void(0)"},["img",{src:"images/32/view.gif"},[]]<actionButton/>"br",{},[],
+"span",{},${$name}
+]</movable><movable left="@{parseInt($e.getAttribute(&quot;left&quot;) ? $e.getAttribute(&quot;left&quot;): 0)+32}" top="@{$e.getAttribute(&quot;top&quot;) ? $e.getAttribute(&quot;top&quot;): 0}" width="" height="" style="display:none;z-index:100;cursor:pointer;" oncreate="function(){ this.id='@{window.zflow.registerId($e)}'; }" onmove="function(){ }" ondrop="function(){ this.style.display=&quot;none&quot; }">"img",{src:"images/16/view.gif"},[]</movable></draw3.component><draw3.component name="draw3.style">"style",{},${node::join("",$_)}</draw3.component></zplugin.components><zplugin.base><movableContainer/><draw3.style>.abc{
+  background-color:AliceBlue;
+}
+.zflowPage :hover{
+
+}
+.zflowAction{
+  filter:alpha(opacity=50);
+  -moz-opacity:0.5;
+  -khtml-opacity: 0.5;
+  opacity: 0.5;
+}
+.zflowAction:hover{
+  filter:alpha(opacity=100);
+  -moz-opacity:1;
+  -khtml-opacity: 1;
+  opacity: 1;
+}</draw3.style></zplugin.base><zplugin.launch>
+Z.emptyNode(canvas.firstChild);
+draw3(canvas.firstChild, eval(zdraw3.draw3(node)));
+</zplugin.launch></zplugin><zflow><zflow.page name="Pagina 1" left="109" top="41"/><zflow.page name="Pagina 2" left="327" top="41"/></zflow></root>

@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root __ideNodeOpen="true"><component name="newComponent" transparent="" __ideNodeOpen="true">Trigger("Force 1"){
+Conditions:
+	Deaths("Current Player", "Jim Raynor (Vulture)", At least, 1);
+
+Actions:
+	Comment("JRVulturePower_Init");
+	Preserve Trigger();
+	Set Switch("JRVulturePowerActivate", set);
+	Set Switch("JRVulturePowerEnabled", set);
+	Move Location("Current Player", "Terran Bunker", "Anywhere", "JRVulturePowerBunker");
+}
+
+//-----------------------------------------------------------------//
+
+Trigger("Force 1"){
+Conditions:
+	Bring("Current Player", "Jim Raynor (Vulture)", "Anywhere", At least, 1);
+
+Actions:
+	Comment("JRVulturePower_Init");
+	Preserve Trigger();
+	Set Switch("JRVulturePowerActivate", set);
+	Set Switch("JRVulturePowerEnabled", set);
+	Move Location("Current Player", "Terran Bunker", "Anywhere", "JRVulturePowerBunker");
+}
+
+//-----------------------------------------------------------------//
+
+Trigger("Force 1"){
+Conditions:
+	Bring("Current Player", "Terran Civilian", "Anywhere", At least, 4);
+	Bring("Current Player", "Jim Raynor (Vulture)", "Anywhere", At least, 1);
+
+Actions:
+	Comment("JRVulturePower_Stack4");
+	Preserve Trigger();
+	Set Switch("JRVulturePowerEnabled", clear);
+}
+
+//-----------------------------------------------------------------//
+
+Trigger("Force 1"){
+Conditions:
+	Bring("Current Player", "Terran Civilian", "Anywhere", At least, 3);
+	Accumulate("Current Player", At most, 4000, ore);
+	Bring("Current Player", "Jim Raynor (Vulture)", "Anywhere", At least, 1);
+
+Actions:
+	Preserve Trigger();
+	Set Switch("JRVulturePowerEnabled", clear);
+	Comment("JRVulturePower_Stack3");
+}
+
+//-----------------------------------------------------------------//
+
+Trigger("Force 1"){
+Conditions:
+	Bring("Current Player", "Terran Civilian", "Anywhere", At least, 2);
+	Accumulate("Current Player", At most, 3000, ore);
+	Bring("Current Player", "Jim Raynor (Vulture)", "Anywhere", At least, 1);
+
+Actions:
+	Comment("JRVulturePower_Stack2");
+	Preserve Trigger();
+	Set Switch("JRVulturePowerEnabled", clear);
+}
+
+//-----------------------------------------------------------------//
+
+Trigger("Force 1"){
+Conditions:
+	Bring("Current Player", "Terran Civilian", "Anywhere", At least, 1);
+	Accumulate("Current Player", At most, 2000, ore);
+	Bring("Current Player", "Jim Raynor (Vulture)", "Anywhere", At least, 1);
+
+Actions:
+	Comment("JRVulturePower_Stack1");
+	Preserve Trigger();
+	Set Switch("JRVulturePowerEnabled", clear);
+}
+
+//-----------------------------------------------------------------//
+
+Trigger("Force 1"){
+Conditions:
+	Accumulate("Current Player", At most, 1000, ore);
+	Bring("Current Player", "Jim Raynor (Vulture)", "Anywhere", At least, 1);
+
+Actions:
+	Comment("JRVulturePower_Stack0");
+	Preserve Trigger();
+	Set Switch("JRVulturePowerEnabled", clear);
+}
+
+//-----------------------------------------------------------------//
+
+Trigger("Force 1"){
+Conditions:
+	Bring("Current Player", "Terran Civilian", "JRVulturePowerBunker", At most, 0);
+	Switch("JRVulturePowerEnabled", set);
+	Bring("Current Player", "Jim Raynor (Vulture)", "Anywhere", At least, 1);
+
+Actions:
+	Comment("JRVulturePower_CreateSCV");
+	Create Unit("Current Player", "Terran Civilian", 1, "JRVulturePowerBunker");
+	Run AI Script At Location("EnBk", "JRVulturePowerBunker");
+	Preserve Trigger();
+	Set Switch("JRVulturePowerActivate", clear);
+}
+
+//-----------------------------------------------------------------//
+
+Trigger("Force 1"){
+Conditions:
+	Bring("Current Player", "Terran Civilian", "JRVulturePowerBunker", At most, 0);
+	Bring("Current Player", "Jim Raynor (Vulture)", "Anywhere", At least, 1);
+
+Actions:
+	Comment("JRVulturePower_ActivateStep1");
+	Preserve Trigger();
+	Set Switch("JRVulturePowerActivate", clear);
+}
+
+//-----------------------------------------------------------------//
+
+
+Trigger("Force 1"){
+Conditions:
+	Bring("Current Player", "Terran Wraith", "Anywhere", At least, 1);
+	Bring("Current Player", "Jim Raynor (Vulture)", "Anywhere", At least, 1);
+
+Actions:
+	Comment("JRVulturePower_RemoveWraiths");
+	Remove Unit At Location("Current Player", "Terran Wraith", 12, "Anywhere");
+	Preserve Trigger();
+}
+
+//-----------------------------------------------------------------//
+
+Trigger("Force 1"){
+Conditions:
+	Switch("JRVulturePowerActivate", set);
+	Bring("Current Player", "Jim Raynor (Vulture)", "Anywhere", At least, 1);
+
+Actions:
+	Comment("JRVulturePower_ActivateStep2");
+	Remove Unit At Location("Current Player", "Terran Civilian", 1, "JRVulturePowerBunker");
+	Preserve Trigger();
+	Set Resources("Current Player", Subtract, 400, ore);
+	Display Text Message(Always Display, "-400");
+	Move Location("Current Player", "Jim Raynor (Vulture)", "Anywhere", "JRVulturePower");
+	Set Switch("JRVulturePower", set);
+	Create Unit with Properties("Current Player", "Terran Wraith", 24, "JRVulturePower", 35);
+}
+
+//-----------------------------------------------------------------//
+
+Trigger("Force 1"){
+Conditions:
+	Switch("JRVulturePower", set);
+	Bring("Current Player", "Jim Raynor (Vulture)", "Anywhere", Exactly, 0);
+
+Actions:
+	Comment("JRVulturePower_AddScore");
+	Run AI Script At Location("EnBk", "JRVulturePowerBunker");
+	Remove Unit At Location("Current Player", "Terran Wraith", All, "Anywhere");
+	Set Switch("JRVulturePower", clear);
+	Preserve Trigger();
+}
+
+//-----------------------------------------------------------------//
+
+</component><component name="power" transparent="" __ideNodeOpen="true"><php __ideNodeOpen="true">
+
+?&gt;
+
+Trigger("Force 1","Force 2"){
+Conditions:
+	Score("Current Player", Kills, At least, 400);
+	Command("Current Player", "Zeratul (Dark Templar)", At least, 1);
+
+Actions:
+	Comment("Poder de Zeratul (Dark Templar)");
+	Move Location("Foes", "Buildings", "Anywhere", "Destino");
+	Move Location("Current Player", "Zeratul (Dark Templar)", "Anywhere", "Crear Sombra");
+	Create Unit with Properties("Current Player", "Protoss Dark Templar", 1, "Crear Sombra", 5);
+	Order("Current Player", "Protoss Dark Templar", "Anywhere", "Destino", move);
+
+@{str_repeat(node::content($_), 14)}
+
+	Kill Unit At Location("Current Player", "Protoss Dark Templar", All, "Anywhere");
+	Preserve Trigger();
+}
+
+//-----------------------------------------------------------------//
+</php></component><power __ideNodeOpen="true">	Move Location("Current Player", "Protoss Dark Templar", "Anywhere", "Crear Sombra");
+	Create Unit with Properties("Current Player", "Zerg Scourge", 1, "Crear Sombra", 5);
+	Kill Unit At Location("Current Player", "Zerg Scourge", 1, "Anywhere");
+;	Wait(0);
+</power></root>

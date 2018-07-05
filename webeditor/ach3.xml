@@ -1,0 +1,309 @@
+<?xml version="1.0" encoding="UTF-8"?><root __ideNodeOpen="true"><component name="component3" transparent="" precode="" __ideNodeOpen="true">#{
+namespace abc;
+  require_once(ACH_PATH."/../achachi3l/classes/class.achachi.php");
+  Achachi::loadBase();
+  return Achachi::runExp(node::content($_), $_e-&gt;getAttributes());
+}</component><path path="output/ach3" main="output/ach3/index.php" __ideNodeOpen="true"><file name="index.php" preprocess="" __ideNodeOpen="true">&lt;?php
+ini_set('display_errors', 'on');
+require_once("../../../achachi3l/classes/class.achachi.php");
+Achachi::loadBase();
+Achachi::runFile('editor.ach');
+?&gt;
+<component3 __ideNodeOpen="true">HOLA</component3></file><file name="editor.ach" preprocess="" __ideNodeOpen="true">{function html_attr {var} return '"'.htmlentities($var, ENT_QUOTES, "utf-8").'"';}
+{function basename {var} return basename($var);}
+{component editor {}
+&lt;html&gt;
+&lt;head&gt;
+&lt;link rel="stylesheet" href="css/zTreeStyle/zTreeStyle.css" type="text/css"&gt;
+&lt;script src="jquery-1.5.1.min.js" type="text/javascript"&gt;&lt;/script&gt;
+&lt;script src="jquery.ztree.all-3.5.min.js" type="text/javascript"&gt;&lt;/script&gt;
+&lt;script src="editor.js" type="text/javascript"&gt;{file "editor.js"
+/**
+ * My Editor
+ */
+var zeditor={
+  save:function(){
+    $("#editor").saveFile();
+  }
+}
+$(function(){
+  $.fn.zTree.init(
+    $("#treeDemo"),
+    {
+      async: {
+        enable: true,
+        url:"editor_ajax.php",
+        autoParam:["id", "name=n", "level=lv"],
+        otherParam:{
+          "action":"loadTree"
+        },
+        //dataFilter: filter,
+        type: "get"
+      },
+      edit: {
+        drag: {
+          autoExpandTrigger: true,
+          /*prev: function(){
+            console.log(arguments);
+          },
+          inner: function(){
+            console.log(arguments);
+          },
+          next: function(){
+            console.log(arguments);
+          }*/
+        },
+        enable: true,
+        showRemoveBtn: false,
+        showRenameBtn: false
+      },
+      data: {
+        simpleData: {
+          enable: true
+        }
+      },
+      callback: {
+        //beforeDrag: beforeDrag,
+        beforeDrop: function(id, sources, dest, position){
+          var tree=$.fn.zTree.getZTreeObj("treeDemo");
+          var sourcesId=[], success=false;
+          for(var i in sources){
+            sourcesId.push(sources[i].id);
+          }
+          $.ajax({
+            url:"editor_ajax.php",
+            data:{
+              action:"drop",
+              sources:JSON.stringify(sourcesId),
+              dest:dest.id,
+              position:position
+            },
+            dataType:'text',
+            success:function(res){
+              eval(res);
+            },
+            async:false
+          });
+          if(position=='inner'){
+            tree.reAsyncChildNodes(dest, "refresh");
+          } else {
+            tree.reAsyncChildNodes(dest.getParentNode(), "refresh");
+          }
+          for(var i in sources){
+            var pa=sources[i].getParentNode();
+            if(pa) tree.reAsyncChildNodes(pa, "refresh");
+          }
+          return success;
+        },
+        /*beforeDragOpen: beforeDragOpen,
+        onDrag: onDrag,
+        onDrop: onDrop,
+        onExpand: onExpand*/
+        onClick:function(event, treeId, treeNode) {
+          $("#editor").loadFile(treeNode.id);
+        }
+      }
+    }
+  );
+});
+$.fn.loadFile=function(file){
+  $this=$(this);
+  $.ajax({
+    url:"editor_ajax.php",
+    data:{
+      action:"loadFile",
+      file:file
+    },
+    dataType:'text',
+    success:function(res){
+      $this.attr("file",file);
+      $this.val(res);
+    }
+  })
+};
+$.fn.saveFile=function(){
+  $this=$(this);
+  var file=$this.attr('file');
+  $.ajax({
+    url:"editor_ajax.php",
+    data:{
+      action:"saveFile",
+      file:file,
+      content:$this.val()
+    },
+    dataType:'text',
+    success:function(res){
+      eval(res);
+    }
+  })
+};
+}{file "editor_ajax.php"
+&lt;?php
+switch($_REQUEST['action']){
+  case 'loadFile':
+      if(strpos($_REQUEST['file'],':')!==false){
+        ini_set('display_errors', 'on');error_reporting(E_ALL);
+        require_once("classes/class.achachieditor.php");
+        $achFile = new AchachiEditor();
+        list($f,$p)=explode(':', $_REQUEST['file']);
+        $achFile-&gt;parseFile($f);
+        echo $achFile-&gt;getContent($p);
+      } elseif(is_file($_REQUEST['file'])) {
+        readfile($_REQUEST['file']);
+      } else {
+        require_once('dom.php');
+        $dom = MyDOM::create($_REQUEST['file'], null);
+        echo $dom-&gt;text;
+      }
+    break;
+  case 'saveFile':
+      ob_start();
+      ini_set('display_errors', 'on');
+      error_reporting(E_ALL);
+      file_put_contents($_REQUEST['file'], $_REQUEST['content']);
+      $msg = ob_get_contents();
+      ob_end_clean();
+      if($msg) echo 'alert('.json_encode($msg).')';
+    break;
+  case 'loadTree':
+    $pId = "workspace";
+    $pName = "";
+    $pLevel = "";
+    $pCheck = "";
+    if(array_key_exists( 'id',$_REQUEST)) {
+      $pId=$_REQUEST['id'];
+    }
+    if(array_key_exists( 'lv',$_REQUEST)) {
+      $pLevel=$_REQUEST['lv'];
+    }
+    if(array_key_exists('n',$_REQUEST)) {
+      $pName=$_REQUEST['n'];
+    }
+    if(array_key_exists('chk',$_REQUEST)) {
+      $pCheck=$_REQUEST['chk'];
+    }
+    if ($pId==null || $pId=="") $pId = "workspace";
+    if ($pLevel==null || $pLevel=="") $pLevel = "0";
+    if ($pName==null) $pName = "";
+    else $pName = $pName.".";
+
+    $tree=array();
+    loadTree($pId, $tree);
+    echo json_encode($tree);
+    break;
+  case 'drop':
+    require_once('dom.php');
+    $sources = json_decode($_REQUEST['sources']);
+    $dest = MyDOM::create($_REQUEST['dest'], true);
+    foreach($sources as $source){
+      $dom = MyDOM::create($source, true);
+      switch($_REQUEST['position']){
+        case 'inner':
+          $dest-&gt;appendChild($dom);
+          break;
+        case 'prev':
+          $dest-&gt;parentNode-&gt;appendChild($dom, 'prev', $dest);
+          break;
+        case 'next':
+          $dest-&gt;parentNode-&gt;appendChild($dom, 'next', $dest);
+          break;
+      }
+    }
+    break;
+}
+function loadTree($path, &amp;$list){
+  if(strpos($path,':')!==false){
+    ini_set('display_errors', 'on');error_reporting(E_ALL);
+    require_once("classes/class.achachieditor.php");
+    $achFile = new AchachiEditor();
+    list($f,$xpath)=explode(":", $path);
+    $achFile-&gt;parseFile($f);
+    return loadTreeFile($achFile,$xpath,$list);
+  }
+  if(is_file($path)){
+    ini_set('display_errors', 'on');error_reporting(E_ALL);
+    require_once("classes/class.achachieditor.php");
+    $achFile = new AchachiEditor();
+    $achFile-&gt;parseFile($path);
+    return loadTreeFile($achFile,'',$list);
+  }
+  foreach(glob($path.'/*') as $f){
+    $list[]=$a=new StdClass();
+    $a-&gt;id = $f;
+    $a-&gt;name = basename($f);
+    $a-&gt;pId = dirname($f);
+    $a-&gt;isLastNode = !is_dir($f);
+    if(is_dir($f)){
+      loadTree($f, $list);
+    } else {
+      ini_set('display_errors', 'on');error_reporting(E_ALL);
+      require_once("classes/class.achachieditor.php");
+      $achFile = new AchachiEditor();
+      $achFile-&gt;parseFile($f);
+      loadTreeFile($achFile,'',$list);
+    }
+  }
+}
+function loadTreeFile($achFile,$path,&amp;$list){
+  foreach($achFile-&gt;glob($path.'/*') as $f){
+    $list[]=$a=new StdClass();
+    $a-&gt;id = $achFile-&gt;file.':'.$path.'/'.$f-&gt;id;
+    $a-&gt;name = $f-&gt;name;
+    $a-&gt;pId = $achFile-&gt;file.($path ? ':'.$path : '');
+    if($f-&gt;name!='#text'){
+      loadTreeFile($achFile,$path.'/'.$f-&gt;id, $list);
+    } else {
+    }
+  }
+}
+}&lt;/script&gt;
+&lt;style&gt;
+html,body{
+  margin:0px;
+  padding:0px;
+  width:100%;
+  height:100%;
+  overflow:hidden;
+}
+.all{
+  margin:0px;
+  padding:0px;
+  width:100%;
+  height:100%;
+}
+&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;table class="all" cellpadding="0" cellspacing="0" border="0"&gt;
+  &lt;tr valign="top"&gt;
+    &lt;td&gt;{treefile}&lt;/td&gt;
+    &lt;td&gt;{editfile}&lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/table&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+}
+{component treenode {name children}
+&lt;li style="cursor:pointer" file={html_attr {name}}&gt;{basename {name}}&lt;ul&gt;{children}&lt;/ul&gt;&lt;/li&gt;}
+{component treefile {}
+&lt;ul id="treeDemo" class="ztree"&gt;&lt;/ul&gt;
+}
+{function listfiles {path}
+  $res=array();
+  foreach(glob($path) as $f):
+    if(is_dir($f)):
+      $res[]=Achachi::node('treenode', $f, Achachi::node('listfiles', $f.'/*'));
+    else:
+      $res[]=Achachi::node('treenode', $f, '');
+    endif;
+  endforeach;
+  return implode('',$res);
+}
+{component editfile {}
+&lt;table class="all" cellpadding="0" cellspacing="0" border="0"&gt;
+&lt;tr&gt;&lt;td&gt;&lt;button onclick="zeditor.save();"&gt;save&lt;/button&gt;&lt;/td&gt;&lt;/tr&gt;
+&lt;tr valign="top" height="100%"&gt;&lt;td&gt;&lt;textarea id="editor" style="width:100%;height:100%"&gt;&lt;/textarea&gt;&lt;/td&gt;
+&lt;/table&gt;
+}
+{print {editor}}
+</file></path></root>

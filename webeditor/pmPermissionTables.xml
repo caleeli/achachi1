@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?><root __ideNodeOpen="true"><package name="print" type=""><component name="print" transparent="" precode="" __ideNodeOpen="true">#{echo '&lt;a href="javascript:picoModal(',htmlentities(json_encode('&lt;textarea cols="80" rows="25"&gt;'.htmlentities(node::content($_)).'&lt;/textarea&gt;'), ENT_QUOTES),').show()"&gt;(',$_e-&gt;childNodes[0]-&gt;nodeName,')',$_e-&gt;childNodes[0]-&gt;getAttribute('Name'),'&lt;/a&gt;',"\n";}</component><php __ideNodeOpen="true">?&gt;
+&lt;script src="webeditor/picoModal-3.0.0-Alpha.min.js"&gt;&lt;/script&gt;
+&lt;?php
+function randy($array){
+  $i=array_rand($array);
+ return $array[$i];
+}</php><component name="printHtml" transparent="" precode="" __ideNodeOpen="true">#{echo '&lt;a href="javascript:picoModal(',htmlentities(json_encode(node::content($_)), ENT_QUOTES),').show()"&gt;(',$_e-&gt;childNodes[0]-&gt;nodeName,')',$_e-&gt;childNodes[0]-&gt;getAttribute('Name'),'&lt;/a&gt;',"\n";}</component></package><component name="toTables" transparent="" precode="" __ideNodeOpen="true" engine="php">&lt;?php
+$blocks=explode("\n--\n", node::content($_));
+foreach($blocks as $block) {
+    $block = trim($block);
+    $lines = explode("\n", $block);
+    $table = array_shift($lines);
+    $tables[$table]=$lines;
+}
+$desc=['ACL Id', 'Resource Id', 'User Id', 'Group Id'];
+foreach($tables as $table=&gt;$columns){
+?&gt;
+&lt;h3&gt;Definition&lt;/h3&gt;
+&lt;table&gt;
+&lt;tr&gt;
+&lt;th colspan="2"&gt;&lt;?=$table?&gt;&lt;/th&gt;
+&lt;/tr&gt;
+&lt;?php
+foreach($columns as $c=&gt;$column){
+?&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;?=$column?&gt;&lt;/td&gt;&lt;td&gt;&lt;?=@$desc[$c]?$desc[$c]:(ucfirst(strtolower(str_replace('_',' ',$column))).' the resource.')?&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;?php
+}
+?&gt;
+&lt;/table&gt;
+&lt;h3&gt;Examples&lt;/h3&gt;
+&lt;table&gt;
+&lt;tr&gt;
+&lt;?php
+foreach($columns as $column){
+?&gt;
+&lt;th&gt;&lt;?=$column?&gt;&lt;/th&gt;
+&lt;?php
+}
+?&gt;
+&lt;/tr&gt;
+&lt;?php
+for($i=0;$i&lt;3;$i++){
+?&gt;
+&lt;tr&gt;
+&lt;?php
+foreach($columns as $c=&gt;$column){
+?&gt;
+&lt;td&gt;&lt;?=$c==0?($i+1):($c==1?'1':($c==2?randy([1,2,'null']):($c==3?randy([10,12,'null']):randy([0,1]))))?&gt;&lt;/td&gt;
+&lt;?php
+}
+?&gt;
+&lt;/tr&gt;
+&lt;?php
+}
+?&gt;
+&lt;/table&gt;
+&lt;br /&gt;
+&lt;?php
+}
+?&gt;</component><printHtml><toTables>FORM
+ID
+ID_FORM
+USER_ID
+GROUP_ID
+CAN_VIEW
+CAN_EDIT
+CAN_PRINT
+CAN_EXPORT
+
+--
+
+INPUT_SUPERVISOR
+ID
+ID_INPUT
+USER_ID
+GROUP_ID
+CAN_UPLOAD
+CAN_DOWNLOAD
+CAN_DELETE
+CAN_UPDATE
+
+--
+
+OUPUT_SUPERVISOR
+ID
+ID_OUPUT
+USER_ID
+GROUP_ID
+CAN_DOWNLOAD
+CAN_DELETE
+CAN_GENERATE
+CAN_REGENERATE
+
+--
+
+CASE_SUPERVISOR
+ID
+ID_PROCESS
+USER_ID
+GROUP_ID
+CAN_SEARCH
+CAN_OPEN_CASE
+CAN_DELETE_CASE
+CAN_CANCEL_CASE
+
+--
+
+PROCESS_PERMISSIONS
+ID_ACL
+ID_PROCESS
+USER_ID
+GROUP_ID
+CAN_SEARCH_CASE
+CAN_ADD_NOTE_CASE
+CAN_PAUSE_CASE
+CAN_DELETE_CASE
+CAN_CANCEL_CASE
+CAN_REASSIGN_CASE
+CAN_CREATE_PROCESS
+CAN_DELETE_PROCESS
+CAN_EXPORT_PROCESS
+CAN_VIEW_PROCESS
+CAN_EDIT_PROCESS_DIAGRAM
+CAN_CREATE_PROCESS_DYNAFORMS</toTables></printHtml></root>

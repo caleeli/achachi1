@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?><root><path path="output/games" main="output/games/game1.html"><file name="game1.html" preprocess="">&lt;!DOCTYPE HTML&gt;
+&lt;html&gt;
+&lt;head&gt;
+&lt;style&gt;
+span{
+  display:inline-block;
+}
+.fila{
+  height:20px;
+}
+.mina{
+  border:2px outset #C1C1C1;
+  background-color: #C1C1C1;
+  width:16px;
+  height:16px;
+}
+table{
+  background-color: #C1C1C1;
+  border: 1px outset #C1C1C1;
+}
+.record{
+  font-family:MONOSPACE;
+  color: #B03226;
+  background-color:#000000;
+  border:1px inset #C1C1C1;
+}
+&lt;/style&gt;
+&lt;script type="text/javascript" src="jquery.min.js"&gt;&lt;/script&gt;
+&lt;script type="text/javascript"&gt;
+$(function(){
+  $b=$("#canvas");
+  for(var i=0,l=10;i&lt;l;i++){
+    var $r=$("&lt;div class='fila'/&gt;");
+    $b.append($r);
+    for(var j=0,m=10;j&lt;m;j++){
+      $r.append("&lt;span class='mina' /&gt;");
+    }
+  }
+});
+&lt;/script&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;table border="1"&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;span class="record"&gt;040&lt;/span&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td id="canvas"&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;/body&gt;
+&lt;/html&gt;</file></path></root>

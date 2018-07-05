@@ -1,0 +1,3 @@
+var res={"pregunta":"Cain se levanto contra:","respuestas":["Su hermana Ruth, y le mat\u00f3","Su hermano Abel, y le mat\u00f3","Su hermano Elias, y le mat\u00f3"],"correcta":"1","imagen":"img\/cain_and_abel.jpg"};
+dibujaPregunta($pregunta,$respuestas,$imagen,res);
+

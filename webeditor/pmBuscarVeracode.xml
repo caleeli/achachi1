@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?><root __ideNodeOpen="true"><component name="finder" transparent="" precode="" engine="php" __ideNodeOpen="true">&lt;?php
+$dir = '/Users/davidcallizaya/NetBeansProjects/processmaker0/';
+$lines = explode("\n", node::content($_));
+foreach($lines as $l) {
+    list($name,$lineNumber)=explode(' ',trim($l));
+    $nameFind = @array_pop(explode('...', $name));
+    $out = [];
+    exec("locate $nameFind", $out);
+    $ok=false;
+    $filename = '';
+    foreach($out as $file) {
+        if(strpos($file, '/NetBeansProjects/processmaker0/')!==false) {
+            $filename = $file;
+            $ok=true;break;
+        }
+    }
+    if($ok) {
+        $codeLines = file($filename);
+        echo substr($filename,53),"\t",$lineNumber,':',htmlentities(@trim($codeLines[$lineNumber-1])."\n");
+    } else {
+        echo "\n";
+    }
+}
+</component><component name="print" transparent="" precode="" __ideNodeOpen="true">#{echo node::content($_);}</component><print __ideNodeOpen="true"><finder __ideNodeOpen="true">.../metadata/SQLiteTableInfo.php 127
+.../AssertionCredentials.php 57
+processmaker/.../PDO/MySQL.php 24
+processmaker/.../tcpdf/tcpdf.php 18296
+.../examples/test.mysql.php 12
+.../examples/test.pgsql.php 10
+.../system/class.dbMaintenance.php 309
+.../dbConnectionsAjax.php 354
+processmaker/.../mainLoad.php 23
+.../securimage/securimage.php 1630
+.../methods/users/users_Ajax.php 94
+.../methods/users/users_Ajax.php 98
+.../AssertionCredentials.php 86
+.../system/class.bootstrap.php 2979
+processmaker/.../class.g.php 5727
+processmaker/.../class.g.php 5738
+processmaker/.../class.g.php 5749
+processmaker/.../Cache/File.php 139
+processmaker/.../Cache/File.php 147
+processmaker/.../Http/Request.php 396
+.../securimage/securimage.php 1290
+.../securimage/securimage.php 1507
+.../securimage/securimage.php 1510
+processmaker/.../pear/Net/FTP.php 1436
+.../DefinitionCache/Serializer.php 100
+.../DefinitionCache/Serializer.php 223
+processmaker/.../FTP/Socket.php 675
+processmaker/.../lib/Capsule.php 129
+processmaker/.../lib/Capsule.php 133
+.../system/IncludePathTask.php 112
+processmaker/.../phing/Phing.php 861
+processmaker/.../box.php 497
+.../system/class.dbMaintenance.php 474
+.../system/class.dbMaintenance.php 523
+.../system/class.dbMaintenance.php 549
+.../phpmailer/class.phpmailer.php 529
+processmaker/.../tasks/cliMafe.php 65
+.../bin/tasks/cliWorkspaces.php 332
+.../bin/tasks/cliWorkspaces.php 350
+.../bin/tasks/cliWorkspaces.php 367
+.../bin/tasks/cliWorkspaces.php 452
+.../bin/tasks/cliWorkspaces.php 687
+.../bin/tasks/cliWorkspaces.php 765
+.../bin/tasks/cliWorkspaces.php 824
+.../bin/tasks/cliWorkspaces.php 849
+.../bin/tasks/cliWorkspaces.php 865
+.../bin/tasks/cliWorkspaces.php 883
+processmaker/.../bin/cron.php 231
+.../engine/bin/cron_single.php 316
+.../engine/bin/cron_single.php 328
+processmaker/.../dashboard.php 176
+.../bin/tasks/pakeGulliver.php 2622
+.../bin/tasks/pakeGulliver.php 2734
+.../processCategory_Ajax.php 177
+.../processes/processes_Ajax.php 996
+processmaker/.../upload.php 164
+.../engine/bin/verify_solr.php 227
+processmaker/.../PEAR/Builder.php 378
+.../phpmailer/class.phpmailer.php 879
+.../phpmailer/class.phpmailer.php 894
+processmaker/.../Frontend/CLI.php 152
+processmaker/.../Frontend/CLI.php 162
+processmaker/.../pear/CMD.php 227
+.../WebDAV/Server/Filesystem.php 265
+processmaker/.../pear/OS/Guess.php 167
+processmaker/.../lime/lime.php 495
+processmaker/.../lime/lime.php 659
+.../tests/OAuthHelper.php 43
+processmaker/.../Package.php 369
+processmaker/.../Package.php 432
+processmaker/.../Package.php 547
+.../pake/pakeFunction.php 285
+.../securimage/securimage.php 2896
+.../securimage/securimage.php 3161
+.../securimage/securimage.php 3203
+.../ZendCodeAnalyzerTask.php 148
+processmaker/.../PEAR/Builder.php 378
+.../phpmailer/class.phpmailer.php 879
+.../phpmailer/class.phpmailer.php 894
+processmaker/.../Frontend/CLI.php 152
+processmaker/.../Frontend/CLI.php 162
+processmaker/.../pear/CMD.php 227
+.../WebDAV/Server/Filesystem.php 265
+processmaker/.../pear/OS/Guess.php 167
+processmaker/.../lime/lime.php 495
+processmaker/.../lime/lime.php 659
+.../tests/OAuthHelper.php 43
+processmaker/.../Package.php 369
+processmaker/.../Package.php 432
+processmaker/.../Package.php 547
+.../pake/pakeFunction.php 285
+.../securimage/securimage.php 2896
+.../securimage/securimage.php 3161
+.../securimage/securimage.php 3203
+.../ZendCodeAnalyzerTask.php 148</finder></print></root>

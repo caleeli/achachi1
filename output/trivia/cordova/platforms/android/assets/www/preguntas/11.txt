@@ -1,0 +1,3 @@
+var res={"pregunta":"\u00bfComo fue puesta a prueba la obediencia de Abraham?","respuestas":["La prueba de la fidelidad","Que dejara a su pueblo fuera a una tierra desconocida que le mostraria","Ninguno"],"correcta":"1","imagen":"img\/017-abraham-strangers.jpg"};
+dibujaPregunta($pregunta,$respuestas,$imagen,res);
+

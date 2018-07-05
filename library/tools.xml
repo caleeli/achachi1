@@ -1,0 +1,361 @@
+<?xml version="1.0" encoding="UTF-8"?><root __ideNodeOpen="true"><php __ideNodeOpen="true" name="IncludeScript picoModal">?&gt;&lt;script src="webeditor/picoModal-3.0.0-Alpha.min.js"&gt;&lt;/script&gt;&lt;?php</php><package name="Tools" type="" __ideNodeOpen="true"><!--#editor.plugin
+window.$templates={
+    $addFrom:function(node) {
+        this[node.parentNode.getAttribute("name")]=node.parentNode.textContent;
+    },
+};
+--><component name="NeoDefaultTemplate" transparent="" precode="" __ideNodeOpen="true"><!--#editor.plugin
+window.$templates.$addFrom(node);
+-->{{node.nodeName}}
+&lt;div v-for="attr in node.attributes"&gt;
+&lt;span style="display:inline-block"&gt;{{attr.nodeName}}=&lt;/span&gt;
+&lt;span style="display:inline-block"&gt;&lt;input v-bind:value="attr.nodeValue"&gt;&lt;/span&gt;
+&lt;span v-if="getDef(attr.nodeName).domainType==='enum'" style="display:inline-block"&gt;&lt;select&gt;&lt;option&gt;&lt;/option&gt;&lt;option v-for="dom in getDef(attr.nodeName).domainValues" v-bind:value="dom"&gt;{{dom}}&lt;/option&gt;&lt;/select&gt;&lt;/span&gt;
+&lt;span v-if="getDef(attr.nodeName).domainType==='prop.list'" style="display:inline-block"&gt;
+{{getDef(attr.nodeName).domainTypeDef}}
+&lt;table&gt;
+&lt;tr&gt;&lt;th v-for="va in getVars(getDef(attr.nodeName).domainTypeDef)"&gt;{{va}}&lt;/th&gt;&lt;th&gt;+&lt;/th&gt;&lt;/tr&gt;
+&lt;tr v-for="vals in getVarsValues(getDef(attr.nodeName).domainTypeDef, attr.nodeValue)"&gt;&lt;td v-for="va in vals"&gt;&lt;input v-bind:value="va" v-on:change="setVarsValue($event.target.value, attr)"&gt;&lt;/td&gt;&lt;th&gt;-&lt;/th&gt;&lt;/tr&gt;
+&lt;/table&gt;
+&lt;/span&gt;
+&lt;/div&gt;
+&lt;hr&gt;
+&lt;div v-for="attr in attributes"&gt;{{attr.name}}={{JSON.stringify(attr.domainValues)}}&lt;/div&gt;
+</component><component name="print" transparent="" precode="" __ideNodeOpen="false">#{echo '&lt;a href="javascript:picoModal(',htmlentities(json_encode('&lt;textarea cols="80" rows="25"&gt;'.htmlentities(node::content($_)).'&lt;/textarea&gt;'), ENT_QUOTES),').show()"&gt;(',$_e-&gt;childNodes[0]-&gt;nodeName,')',@$_e-&gt;childNodes[0]-&gt;getAttribute('Name'),'&lt;/a&gt;',"\n";}</component><component name="RestEndPoint" transparent="" precode="" __ideNodeOpen="true"><!--#editor.plugin
+!function() {
+  var mynode={}, attributes=[];
+  var rebuild=false;
+  var app;
+  //PLUGIN DEFINITION
+  installPlugin({
+    "name":"NeoDefault",
+    "nodesEditor":[],
+    "launch":function(node)
+      {
+        var self=this;
+        if(rebuild) {
+         app = new Vue({
+            el: '#NeoDefault',
+            data: {
+              node: mynode,
+              attributes: attributes,
+            },
+            methods: {
+              getDef: function(attrName) {
+                var def=this.attributes.find(function(attr){return attr.name==attrName});
+                return def?def:{domain:null,domainValues:[],domainType:"string",domainDef:""};
+              },
+//              getVars: function(string) {var vars=[];string.match(/\$\w+/g).forEach(function(i){vars.indexOf(i)===-1?vars.push(i):null});return vars;},
+              getVars: function(string) {return string.match(/\$\w+/g);},
+              getVarsValues: function(string, value) {
+                var values=[];
+                var regexp=new RegExp("^"+string.replace(/\$\w+/g,"@!var!@").replace(/[-[\]{}()*+?.,\\^$|#]/g, '\\$&').split('@!var!@').join('(.*)')+"$","mg");
+                while(match=regexp.exec(value)) {values.push(match.splice(1))}
+                return values;
+              },
+              setVarsValue: function(value,attr) {attr.nodeValue=value},
+            }
+          });
+          rebuild=false;
+        }
+        setTimeout(function(){
+          loadFrom(mynode, node2object(node)[0]);
+          attributes.splice(0);
+          componentsIndex[node.nodeName].attributes.forEach(function(a){
+            a.domainValues=[];try{eval('a.domainValues='+a.domain);a.domainType="enum"}catch(e){a.domainType="string"}
+            if(a.domainType==="enum" && a.domainValues.length===1 && a.domainValues[0].substr(0,1)==="*" && a.domainValues[0].substr(a.domainValues[0].length-1)==="*") {
+              var match=a.domainValues[0].match(/\*([^(]+)\(([^)]*)\)\*/);
+              a.domainType=match[1];
+              a.domainTypeDef=match[2];
+            }
+            attributes.push(a);
+          });
+        },100);
+        changeEditor("NeoDefault");
+      },
+    "setNode":function(node) {
+      this.launch(node);
+    },
+    "create":function()
+      {
+        var div = document.createElement("div");
+        div.style.height="100%";
+        div.style.border="none";
+        div.innerHTML=window.$templates.NeoDefaultTemplate;
+        mynode={nodeName:"",attributes:[],childNodes:[]}
+        rebuild=true;
+        return div;
+      }
+  });
+//HELPERS
+  function node2object(dom, r){
+    var r=[];
+    if(draw3.getType(dom)=="Node"){
+      var atts=[],chs=[],att={};
+      if(dom.attributes){
+        for(var i=0,l=dom.attributes.length;i<l;i++){
+          atts.push({nodeName:dom.attributes[i].nodeName,nodeValue:dom.attributes[i].nodeValue});
+        }
+      }
+      if(dom.childNodes){
+        chs=chs.concat(node2object(dom.childNodes));
+      }
+      r.push({nodeName:dom.nodeName,attributes:atts,childNodes:chs});
+    } else if(draw3.getType(dom)=="NodeList"){
+      for(var j=0,k=dom.length;j<k;j++) r=r.concat(node2object(dom.item(j)));
+    }
+    return r;
+  }
+  function loadFrom(to, from) {
+    for(var a in to) if(typeof from[a]!=="undefined"){
+      if(typeof to[a]==="object" && typeof to[a].forEach==="function") {
+        to[a].splice(0);
+        from[a].forEach(function(item){to[a].push(item)});
+      } else {
+        to[a]=from[a];
+      }
+    }
+  }
+  DEFAULT_ELEMENT_EDITOR="NeoDefault";
+}()
+-->@{$method/*POST|GET|PUT|PATCH|DELETE*/} @{$route}
+@{$headers/**prop.list($key: $value)**/}
+@{$body}
+//RESPONSE:
+@{$response}</component><component name="field" transparent="" precode="" __ideNodeOpen="true"/><ztemplate __ideNodeOpen="true">#text</ztemplate><component name="RestlerController" transparent="" precode="" __ideNodeOpen="true">&lt;?php
+namespace ProcessMaker\Services\Api;
+
+use \ProcessMaker\Services\Api;
+use \Luracast\Restler\RestException;
+
+
+/**
+ * @{$name} Api Controller
+ *
+ */
+class @{$name} extends Api
+{
+    /**
+     * Constructor of the class
+     *
+     * return void
+     */
+    public function __construct()
+    {
+        try {
+            $user = new \ProcessMaker\BusinessModel\User();
+
+            $usrUid = $this-&gt;getUserId();
+
+            if (!$user-&gt;checkPermission($usrUid, "@{$permission}")) {
+                throw new \Exception(\G::LoadTranslation("ID_USER_NOT_HAVE_PERMISSION", array($usrUid)));
+            }
+        } catch (\Exception $e) {
+            throw new RestException(Api::STAT_APP_EXCEPTION, $e-&gt;getMessage());
+        }
+    }
+
+    /**
+     * @url GET
+     *
+     * @return array
+     *
+     */
+    public function doGetDepartments()
+    {
+        try {
+            $model = new \@{$name}();
+            $response = $oDepartment-&gt;getDepartments();
+            return $response;
+        } catch (\Exception $e) {
+            throw (new RestException(Api::STAT_APP_EXCEPTION, $e-&gt;getMessage()));
+        }
+    }
+
+    /**
+     * @url GET /:dep_uid/assigned-user
+     *
+     * @param string $dep_uid {@min 1}{@max 32}
+     *
+     * @return array
+     *
+     */
+    public function doGetAssignedUser($dep_uid)
+    {
+        try {
+            $oDepartment = new \ProcessMaker\BusinessModel\Department();
+
+            $response = $oDepartment-&gt;getUsers(
+                $dep_uid, 'ASSIGNED', null, null, null, null, null, false
+            );
+
+            return $response['data'];
+        } catch (\Exception $e) {
+            throw (new RestException(Api::STAT_APP_EXCEPTION, $e-&gt;getMessage()));
+        }
+    }
+
+    /**
+     * @url GET /:dep_uid/available-user
+     *
+     * @param string $dep_uid {@min 1}{@max 32}
+     * @param string $start   {@from path}
+     * @param string $limit   {@from path}
+     * @param string $search  {@from path}
+     *
+     * @return array
+     *
+     */
+    public function doGetAvailableUser($dep_uid, $start = null, $limit = null, $search = null)
+    {
+        try {
+            $oDepartment = new \ProcessMaker\BusinessModel\Department();
+
+            $response = $oDepartment-&gt;getUsers(
+                $dep_uid, 'AVAILABLE', ['filter' =&gt; $search, 'filterOption' =&gt; ''], null, null, $start, $limit, false
+            );
+
+            return $response['data'];
+        } catch (\Exception $e) {
+            throw (new RestException(Api::STAT_APP_EXCEPTION, $e-&gt;getMessage()));
+        }
+    }
+
+    /**
+     * @url POST /:dep_uid/assign-user
+     *
+     * @param string $dep_uid      {@min 32}{@max 32}
+     * @param array  $request_data
+     *
+     * @status 201
+     *
+     */
+    public function doPostAssignUser($dep_uid, array $request_data)
+    {
+        try {
+            $department = new \ProcessMaker\BusinessModel\Department();
+
+            $arrayData = $department-&gt;assignUser($dep_uid, $request_data);
+        } catch (\Exception $e) {
+            throw new RestException(Api::STAT_APP_EXCEPTION, $e-&gt;getMessage());
+        }
+    }
+
+    /**
+     * @url DELETE /:dep_uid/unassign-user/:usr_uid
+     *
+     * @param string $dep_uid {@min 1}{@max 32}
+     * @param string $usr_uid {@min 1}{@max 32}
+     *
+     * @status 200
+     *
+     */
+    public function doDeleteUnassignUser($dep_uid, $usr_uid)
+    {
+        try {
+            $oDepartment = new \ProcessMaker\BusinessModel\Department();
+            $oDepartment-&gt;unassignUser($dep_uid, $usr_uid);
+        } catch (\Exception $e) {
+            throw (new RestException(Api::STAT_APP_EXCEPTION, $e-&gt;getMessage()));
+        }
+    }
+
+    /**
+     * @url PUT /:dep_uid/set-manager/:usr_uid
+     *
+     * @param string $dep_uid {@min 1}{@max 32}
+     * @param string $usr_uid {@min 1}{@max 32}
+     *
+     * @return array
+     *
+     */
+    public function doPutSetManager($dep_uid, $usr_uid)
+    {
+        try {
+            $oDepartment = new \ProcessMaker\BusinessModel\Department();
+            $response = $oDepartment-&gt;setManagerUser($dep_uid, $usr_uid);
+            return $response;
+        } catch (\Exception $e) {
+            throw (new RestException(Api::STAT_APP_EXCEPTION, $e-&gt;getMessage()));
+        }
+    }
+
+    /**
+     * @url GET /:dep_uid
+     *
+     * @param string $dep_uid {@min 1}{@max 32}
+     *
+     * @return array
+     *
+     */
+    public function doGetDepartment($dep_uid)
+    {
+        try {
+            $oDepartment = new \ProcessMaker\BusinessModel\Department();
+            $response = $oDepartment-&gt;getDepartment($dep_uid);
+            return $response;
+        } catch (\Exception $e) {
+            throw (new RestException(Api::STAT_APP_EXCEPTION, $e-&gt;getMessage()));
+        }
+    }
+
+    /**
+     * @url POST
+     *
+     * @param array $request_data
+     * @param string $dep_title {@from body} {@min 1}
+     *
+     * @return array
+     *
+     * @status 201
+     *
+     */
+    public function doPost($request_data, $dep_title)
+    {
+        try {
+            $oDepartment = new \ProcessMaker\BusinessModel\Department();
+            $response = $oDepartment-&gt;saveDepartment($request_data);
+            return $response;
+        } catch (\Exception $e) {
+            throw (new RestException(Api::STAT_APP_EXCEPTION, $e-&gt;getMessage()));
+        }
+    }
+
+    /**
+     * @url PUT /:dep_uid
+     *
+     * @param string $dep_uid      {@min 1}{@max 32}
+     * @param array  $request_data
+     *
+     */
+    public function doPut($dep_uid, $request_data)
+    {
+        try {
+            $request_data['dep_uid'] = $dep_uid;
+            $oDepartment = new \ProcessMaker\BusinessModel\Department();
+            $response = $oDepartment-&gt;saveDepartment($request_data, false);
+        } catch (\Exception $e) {
+            throw (new RestException(Api::STAT_APP_EXCEPTION, $e-&gt;getMessage()));
+        }
+    }
+
+    /**
+     * @url DELETE /:dep_uid
+     *
+     * @param string $dep_uid {@min 1}{@max 32}
+     *
+     * @return array
+     *
+     */
+    public function doDelete($dep_uid)
+    {
+        try {
+            $oDepartment = new \ProcessMaker\BusinessModel\Department();
+            $oDepartment-&gt;deleteDepartment($dep_uid);
+        } catch (\Exception $e) {
+            throw (new RestException(Api::STAT_APP_EXCEPTION, $e-&gt;getMessage()));
+        }
+    }
+}
+
+</component></package><package name="Tests" type="" __ideNodeOpen="true"><print __ideNodeOpen="true"><RestEndPoint method="GET12" route="" headers="*prop.list()*" body="*prop.textarea()*" response="*prop.textarea()*"/><RestEndPoint method="GET" route="" headers="content-type: application/json" body="*prop.textarea()*" response="*prop.textarea()*"/></print></package></root>

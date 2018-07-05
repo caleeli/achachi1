@@ -1,0 +1,1 @@
+<form class="" action="<?=@$DATA['action']?>"><?php Router::resolveRoute('html/content.php', $DATA, $CONTENT)?></form>

@@ -1,0 +1,304 @@
+<?xml version="1.0" encoding="UTF-8"?><root><path path="C:\Users\processmaker\PhpStormProjects\phpPMIO" main="output/example/index.html" __ideNodeOpen="true"><package name="components" type="" __ideNodeOpen="true"><php __ideNodeOpen="true">//Load ProcessMaker $app
+require_once "C:\Users\processmaker\PhpStormProjects\processmaker-core\bootstrap\autoload.php";
+require_once "C:\Users\processmaker\PhpStormProjects\processmaker-core\bootstrap\app.php";
+
+$kernel = $app-&gt;make(Illuminate\Contracts\Http\Kernel::class);
+
+$mainResponse = $kernel-&gt;handle(
+    $mainRequest = Illuminate\Http\Request::capture()
+);
+
+class ApiGen
+{
+    const LANG = 'phpTemplate';
+    public static $api = [];
+
+    public static function build($name, $data = '', $extraArgs = '', $queryParams)
+    {
+        $routeCollection = app()-&gt;routes-&gt;getRoutes();
+
+        foreach ($routeCollection as $ii =&gt; $value) {
+            $action = $value-&gt;getAction();
+            $uri = $value-&gt;getUri();
+            $methods = $value-&gt;getMethods();
+            if (!empty($action['controller'])) {
+                $controllerPath = explode("\\", $action['controller']);
+                list($controller, $method) = explode("@", array_pop($controllerPath));
+                if (($name==='*' &amp;&amp; $methods[0]==='GET') || "$controller@$method" === $name) {
+                    if (!is_array($action['middleware'])) {
+                        $action['middleware'] = [$action['middleware']];
+                    }
+                    preg_match_all('/\{([^}]+)\}/', $uri, $arguments);
+                    foreach($arguments[1] as $ai=&gt;$arg) {
+                        $arguments[1][$ai]='$'.$arg;
+                    }
+                    foreach(explode(',', $extraArgs)  as $arg) {
+                        if (trim($arg) &amp;&amp; trim($arg)!='$this') { $arguments[1][]=trim($arg); }
+                    }
+                    ApiGen::$api[substr($controller, 0, -10)][$method] = call_user_func(
+                        [static::class, static::LANG],
+                        $method,
+                        implode(', ', $arguments[1]),
+                        $methods[0],
+                        $uri,
+                        $action['middleware'],
+                        $data,
+                        $queryParams
+                    );
+                }
+            }
+        }
+    }
+
+    public static function getJSCode()
+    {
+        $code = "\n";
+        foreach (ApiGen::$api as $c =&gt; $controller) {
+            $code .= "    $c: {\n";
+            foreach ($controller as $m =&gt; $method) {
+                $code .= "        $m: " . ApiGen::tab($method, "        ", false) . ",\n";
+            }
+            $code .= "    },\n";
+        }
+        return 'Object.assign(Api, {' . $code . '});';
+    }
+
+    public static function saveClasses($path, $namespace)
+    {
+        $baseCode = "";
+        foreach (ApiGen::$api as $c =&gt; $controller) {
+            ob_start();
+            ?&gt;
+namespace &lt;?= $namespace ?&gt;\Api;
+
+use ProcessMaker\PMIO\ApiPackage;
+
+class &lt;?= $c?&gt; extends ApiPackage
+{
+&lt;?php foreach ($controller as $m =&gt; $method) {
+    echo ApiGen::tab($method,"    "), "\n";
+} ?&gt;
+}
+&lt;?php
+            $code = "&lt;?php\n" . ob_get_contents();
+            ob_end_clean();
+            file_put_contents("$path/Api/$c.php", $code);
+            ////
+            $baseCode .= '
+
+/**
+ * @return Api\\' . $c. '
+ */
+public static function ' . lcfirst($c) . '()
+{
+    return static::singleton(Api\\' . $c. '::class);
+}';
+        }
+        return $baseCode;
+    }
+
+    public static function tab($code, $tab, $firstLine = true)
+    {
+        $lines = explode("\n", $code);
+        foreach ($lines as $i =&gt; &amp;$line) {
+            if (($i == 0 &amp;&amp; $firstLine) || ($i &gt; 0)) {
+                $line = $tab . $line;
+            }
+        }
+        return implode("\n", $lines);
+    }
+
+    private static function array2arrayD($array, $_key, $_value) {
+        $result = '[';
+        foreach($array as $key =&gt; $item) {
+            eval('$_='.$_key.';');
+            eval('$__='.$_value.';');
+            if($_!=='') {
+                $result.= var_export($_,true).'=&gt;'.$__.',';
+            }
+        }
+        $result.=']';
+        return $result;
+    }
+
+    protected static function phpTemplate($name, $arguments, $method, $uri, $middleware, $data, $queryParams)
+    {
+        $extra = [];
+        foreach ($middleware as $m) {
+            switch ($m) {
+                case 'oauth':
+                case 'auth:api':
+                case 'auth':
+                //case 'api':
+                    $extra[] = '    $settings[CURLOPT_HTTPHEADER][] = "Authorization: Bearer " . $this-&gt;api-&gt;getAccessToken();';
+                    break;
+            }
+        }
+        if (!empty(trim($data))) {
+            $extra[] = ApiGen::tab('$settings[CURLOPT_POSTFIELDS] = json_encode(' . $data . ');', "    ");
+        }
+        if (!empty(trim($queryParams))) {
+            $query = explode(',', $queryParams);
+            foreach($query as $q) {
+                $arguments.=($arguments?', ':'').$q.'=null';
+            }
+        } else {
+            $query = [];
+        }
+        return 'public function ' . $name . '(' . $arguments . ')
+{
+    $settings = $this-&gt;api-&gt;getSettings();
+    $settings[CURLOPT_CUSTOMREQUEST] = "' . $method . '";
+    $settings[CURLOPT_URL] = $this-&gt;api-&gt;getBaseUrl() . \'/\' ' . str_replace('. \'\'', '', '. ' . preg_replace('/\{([^}]+)\}/', '\' . \$$1 . \'', var_export($uri, true))) . ($query?'.$this-&gt;buildQuery('.ApiGen::array2arrayD($query, 'substr($item,1)', '$item').')':'') . ';
+' . implode("\n", $extra) . '
+    return $this-&gt;api-&gt;call($settings);
+}';
+    }
+
+    protected static function jsTemplate($name, $arguments, $method, $uri, $middleware, $data)
+    {
+        $extra = [];
+        foreach ($middleware as $m) {
+            switch ($m) {
+                case 'oauth':
+                case 'auth:api':
+                    $extra[] = '    settings.headers.Authorization  = "Bearer " + Api.$accessToken;';
+                    break;
+            }
+        }
+        if (!empty(trim($data))) {
+            $extra[] = ApiGen::tab('settings.data = JSON.stringify(' . $data . ");", "    ");
+        }
+        return 'function(' . $arguments . ') {
+    var settings = jQuery.extend({}, Api.$settings);
+    settings.method = ' . json_encode($method) . ';
+    settings.url = Api.$baseUrl + "/" ' . str_replace('+ ""', '', '+ ' . preg_replace('/\{([^}]+)\}/', '" + $1 + "', json_encode($uri))) . ';
+' . implode("\n", $extra) . '
+    return Api.$ajax(settings);
+}';
+    }
+    public static function getTransformerClass($model) {
+        if (class_exists($class = 'App\Models\Transformers\\'.$model.'Transformer')) return $class;
+        if (class_exists($class = 'App\Models\Transformers\\Process\\'.$model.'Transformer')) return $class;
+        $model = str_singular($model);
+        if (class_exists($class = 'App\Models\Transformers\\'.$model.'Transformer')) return $class;
+        if (class_exists($class = 'App\Models\Transformers\\Process\\'.$model.'Transformer')) return $class;
+        $model = str_plural($model);
+        if (class_exists($class = 'App\Models\Transformers\\'.$model.'Transformer')) return $class;
+        if (class_exists($class = 'App\Models\Transformers\\Process\\'.$model.'Transformer')) return $class;
+    }
+    public static function getModelClass($model) {
+        if (class_exists($class = 'App\Models\\'.$model.'')) return $class;
+        if (class_exists($class = 'App\Models\Process\\'.$model.'')) return $class;
+        $model = str_singular($model);
+        if (class_exists($class = 'App\Models\\'.$model.'')) return $class;
+        if (class_exists($class = 'App\Models\Process\\'.$model.'')) return $class;
+        $model = str_plural($model);
+        if (class_exists($class = 'App\Models\\'.$model.'')) return $class;
+        if (class_exists($class = 'App\Models\Process\\'.$model.'')) return $class;
+    }
+    public static function getFillableAssign($name, $extraAttributes='') {
+        $class = static::getTransformerClass($name);
+        $modelClass = static::getModelClass($name);
+        $transformer = new $class;
+        $model = new $modelClass;
+        $data = @$transformer-&gt;preTransform($model);
+        if(!empty($extraAttributes)) {
+            foreach(explode(',', $extraAttributes) as $attr) {
+                $data[substr($attr,1)]=$attr;
+            }
+        }
+        $assign = "[\n";
+        foreach ($data as $key=&gt;$value) {
+            if ($key!='id' &amp;&amp; !is_object($value)) {
+                $assign.= '    "'.$key.'" =&gt; $'.$key.",\n";
+            }
+        }
+        $assign.= "]";
+        return $assign;
+    }
+    public static function getJsonType($model) {
+        $class = static::getTransformerClass($model);
+        return $class::JSON_OBJ_TYPE;
+    }
+}
+
+class AutoGen {
+    public function __get($name) {
+        if($name==str_singular($name)) {
+            return "";
+        } else {
+            return new AutoGen;
+        }
+    }
+    public function __toString() {
+        return "";
+    }
+    public function __call($name, $params) {
+        return new AutoGen;
+    }
+}
+
+</php><component name="apiCall" transparent="" precode="" __ideNodeOpen="true">#{
+    $__code = node::content($_);
+    preg_match_all('/\$\w+/', $__code, $__extraArgs);
+    ApiGen::build($name, $__code, implode(",", $__extraArgs[0]), @$query);
+}</component><component name="api" transparent="" precode="" __ideNodeOpen="true"><file name="@{$path}/PMIO.php" preprocess="">&lt;?php
+namespace @{$namespace};
+
+class PMIO extends ApiBase
+{
+    protected static $self;
+    protected static $instances = [];
+
+    protected static function singleton($class)
+    {
+        if (!isset(static::$instances[$class])) {
+            static::$instances[$class] = new $class(static::getInstance());
+        }
+        return static::$instances[$class];
+    }
+
+    /**
+     * @return PMIO
+     */
+    public static function getInstance()
+    {
+        if (!isset(static::$self)) {
+            static::$self = new static;
+        }
+        return static::$self;
+    }
+    @{ApiGen::tab(ApiGen::saveClasses($path, $namespace), "    ", false)}
+}
+</file><php __ideNodeOpen="true">passthru('php C:\Users\processmaker\PhpStormProjects\phpPMIO\tests\test.php');</php></component><component name="jsonApi" transparent="" precode="" __ideNodeOpen="true"><apiCall name="@{$name}Controller@index" extraArgs="" __ideNodeOpen="true" query="$include,$fields,$page,$sort,$filter"/><apiCall name="@{$name}Controller@show" extraArgs="" __ideNodeOpen="false" query="$include,$fields"/><apiCall name="@{$name}Controller@store" extraArgs="" __ideNodeOpen="true">[
+    "data" =&gt; [
+        "type" =&gt; "@{ApiGen::getJsonType(empty($model)?$name:$model)}",
+        "attributes" =&gt; @{ApiGen::tab('$this-&gt;cleanData('.ApiGen::getFillableAssign(empty($model)?$name:$model, @$extraAttributes).')', "        ", false)}
+    ]
+]</apiCall><apiCall name="@{$name}Controller@update" extraArgs="" __ideNodeOpen="true">[
+    "data" =&gt; [
+        "type" =&gt; "@{ApiGen::getJsonType(empty($model)?$name:$model)}",
+        "id" =&gt; $id,
+        "attributes" =&gt; @{ApiGen::tab('$this-&gt;cleanData('.ApiGen::getFillableAssign(empty($model)?$name:$model, @$extraAttributes).')', "        ", false)}
+    ]
+]</apiCall><apiCall name="@{$name}Controller@destroy" extraArgs="" __ideNodeOpen="false"/></component></package><package name="implementation" type="" __ideNodeOpen="true"><api __ideNodeOpen="true" path="src/ProcessMaker/PMIO" namespace="ProcessMaker\PMIO"><apiCall name="*" extraArgs="" __ideNodeOpen="false"/><apiCall name="ProcessImportController@store" extraArgs="$bpmn" __ideNodeOpen="true">[
+    "data" =&gt; [
+        "attributes" =&gt; [
+            "bpmn" =&gt; $bpmn
+        ]
+    ]
+]</apiCall><apiCall name="AccessTokenController@issueToken" extraArgs="$username,$password" __ideNodeOpen="false">[
+     "grant_type" =&gt; "password",
+     "username" =&gt; $username,
+     "password" =&gt; $password,
+     "client_id" =&gt; $clientId,
+     "client_secret" =&gt; $clientSecret,
+     "scope" =&gt; "*"
+]</apiCall><jsonApi name="Calendars"/><jsonApi name="DataModel" __ideNodeOpen="true"/><jsonApi name="Departments" __ideNodeOpen="true"/><jsonApi name="Dynaforms" __ideNodeOpen="true"/><jsonApi name="EmailServer" __ideNodeOpen="true"/><jsonApi name="Events" __ideNodeOpen="true"/><jsonApi name="Flows" __ideNodeOpen="true"/><jsonApi name="Gateway" __ideNodeOpen="true"/><jsonApi name="Groups" __ideNodeOpen="true"/><jsonApi name="InputDocument" __ideNodeOpen="true"/><jsonApi name="InputOutput" __ideNodeOpen="true"/><jsonApi name="Instance" __ideNodeOpen="true"/><jsonApi name="Message" __ideNodeOpen="true"/><jsonApi name="MessageVariable" __ideNodeOpen="true"/><jsonApi name="OutputDocuments" __ideNodeOpen="true"/><jsonApi name="ProcessCategory" __ideNodeOpen="true"/><jsonApi name="Process" __ideNodeOpen="true"/><jsonApi name="TaskConnector" __ideNodeOpen="true"/><jsonApi name="Task" __ideNodeOpen="true"/><jsonApi name="TaskInstance" __ideNodeOpen="false" extraAttributes="$content"/><jsonApi name="TaskInstanceInstance" __ideNodeOpen="true" model="TaskInstance"/><jsonApi name="Users" __ideNodeOpen="true"/><apiCall name="EventsController@trigger" __ideNodeOpen="true">[
+    "data" =&gt; [
+        "attributes" =&gt; [
+            "content" =&gt; json_encode($data)
+        ]
+    ]
+]</apiCall></api></package></path></root>

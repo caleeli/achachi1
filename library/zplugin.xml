@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root><def name="zplugin"><!--#editor.plugin
+/**
+ * zdraw3
+ */
+Z.console("Loaded zdraw3.");
+window.zdraw3={};
+zdraw3=window.zdraw3;
+zdraw3.join=function(glue,arr){var res=[];for(var ak in arr){var a=arr[ak];if(a[1]!=null && a[1]!="")res.push(a[1]);}return res.join(glue)};
+zdraw3.content=function(arr,glue){if(!glue)glue="";return zdraw3.join(glue,arr)};
+zdraw3.evalString=function(__str,__values){
+    var node={
+        join:zdraw3.join,
+        content:zdraw3.content
+    }
+    __str=__str.split("node::join").join("node.join");
+    __str=__str.split("node::content").join("node.content");
+    __str=__str.split("isset(").join("('undefined'!=typeof ");
+    try{
+        __str=__str.replace(/@\{([^\}]+)\}/g,function(m0,m1){with(__values){return eval(m1)}});
+        __str=__str.replace(/\$\{([^\}]+)\}/g,function(m0,m1){with(__values){return JSON.stringify(eval(m1))}});
+        __str=__str.replace(/#\{([^\}]+)\}/g,function(m0,m1){with(__values){return eval("(function(){"+m1+"})()")}});
+    }catch(e){
+        if(console && console.debug) {
+            console.debug("Error Evaluating:");
+            console.debug(e);
+            console.debug(__str);
+            console.debug(__values);
+        }
+        else {Z.console(e);Z.console(__str);}
+    }
+    return __str;
+}
+zdraw3.evalNode=function(node,values, noSkipComponents){
+    // Skip component definitions (component, draw3.component)
+    if(!noSkipComponents) if(node.nodeName=="component" || node.nodeName=="draw3.component") return;
+    if(node.attributes) for(var i=0,l=node.attributes.length;i<l;i++){
+        node.attributes[i].nodeValue=zdraw3.evalString(node.attributes[i].nodeValue,values);
+    }
+    if(node.nodeValue){
+        node.nodeValue=zdraw3.evalString(node.nodeValue,values);
+    }
+    if(node.childNodes) for(var i=0,l=node.childNodes.length;i<l;i++){
+        zdraw3.evalNode(node.childNodes[i],values);
+    }
+}
+zdraw3.make=function(node){
+    try{
+        var res=zdraw3.join("",zdraw3.node(node));
+        if(window.execScript) window.execScript(res);
+        else return window.eval(res);
+    }catch(e){
+        console.debug(["Error making: ", res,e]);
+    }
+}
+zdraw3.node=function(node){
+//Z.console("doing: "+node.nodeName);
+    if(typeof(zdraw3[node.nodeName])!="undefined"){
+        return zdraw3[node.nodeName](node);
+    } else {
+        return [];
+    }
+}
+zdraw3["#text"]=function(node){return [["#text",node.nodeValue]]};
+zdraw3.component=zdraw3["draw3.component"]=function(base){
+    //Z.console("Created component: "+base.getAttribute("name"));
+    structure_node_component_add(base);
+    zdraw3[base.getAttribute("name")]=function(node){
+        var n=base.cloneNode(true);
+        var values={"$_":[],"$e":node,"$_e":node},ch;
+        if(node.attributes)for(var i=0,l=node.attributes.length;i<l;i++) values["$"+node.attributes[i].nodeName]=node.attributes[i].nodeValue;
+        if(node.childNodes)for(var i=0,l=node.childNodes.length;i<l;i++) ch=zdraw3.node(node.childNodes[i]),values["$_"]=ch?values["$_"].concat(ch):values["$_"];
+        zdraw3.evalNode(n,values,true);
+        var res=[];
+        for(var i=0,l=n.childNodes.length;i<l;i++){
+            res=res.concat(zdraw3.node(n.childNodes[i]));
+        }
+        return res;
+    }
+    return [];
+}
+zdraw3.library=function(n){
+    var res=[];
+    for(var i=0,l=n.childNodes.length;i<l;i++){
+        res=res.concat(zdraw3.node(n.childNodes[i]));
+    }
+    return res;
+}
+zdraw3.draw3=function(n){
+    var res=[];
+    for(var i=0,l=n.childNodes.length;i<l;i++){
+        res=res.concat(zdraw3.node(n.childNodes[i]));
+    }
+    return "["+zdraw3.join(",",res)+"]";
+}
+
+
+/**
+ * zplugin
+ */
+Z.console("Loaded zplugin.");
+window.zplugin={
+    create:function(base){
+        var div;
+        installPlugin({
+            name:base.getAttribute("name"),
+            nodesEditor:base.getAttribute("nodesEditor").split(","),
+            create:function(){
+                var c = base.getElementsByTagName("zplugin.components")[0];
+                if(c)zdraw3.draw3(c);
+                var b = base.getElementsByTagName("zplugin.base")[0];
+                div = document.createElement("div");
+                div.style.position="relative";
+                div.style.width="100%";
+                div.style.height="100%";
+                try{
+                    if(b) {
+                        var __code=zdraw3.draw3(b);
+                        draw3(div,eval(__code));
+                    }
+                } catch(e) {
+                    if(Z.console)Z.console(__code);
+                    throw e;
+                }
+                return div;
+            },
+            launch:function(node){
+                var titleBar = $("#default").parents("table:first").find("th:first div:first")[0];
+                titleBar.innerHTML='Content';
+                var main = base.getElementsByTagName("zplugin.launch")[0];
+                var canvas = div;
+                try{
+                    if(main) {
+                        var __code=main.textContent;
+                        eval(__code);
+                    }
+                } catch(e) {
+                    if(Z.console)Z.console(__code);
+                    throw e;
+                }
+                window.$zplugin=node;
+                try{
+                    if(!main) {
+                        var __code=zdraw3.draw3(node);
+                        draw3(canvas, eval() );
+                    }
+                } catch(e) {
+                    if(Z.console)Z.console(__code);
+                    throw e;
+                }
+                window.$zplugin=null;
+                changeEditor(base.getAttribute("name"));
+            }
+        });
+    }
+}
+
+/**
+ * Toolbar
+ */
+if(toolbar.load){
+    toolbar.add(
+        [
+            {"name":" ",tab:"Z-Plugin"},
+            [
+                {"name":"zplugin","action":function(){
+                    appendChildTag("zplugin",{},[
+                        "#comment",{},"#editor.plugin\n\nzplugin.create($this.parentNode);\ncomponentsIndex[$this.parentNode.nodeName].editor=zcomponent.launch;",
+                        "zplugin.components",{},[],
+                        "zplugin.base",{},[],
+                        "zplugin.launch",{},"\n//Z.emptyNode(canvas.firstChild);"
+                    ]);
+                },"image":"images/32/default.gif"},
+            ]
+        ], true);
+}
+--><function name="run">/**
+ * Parameters:
+ * @{$name}
+ * @{$nodesEditor}
+ */
+
+return $this-&gt;encodeEmpty();</function></def></root>

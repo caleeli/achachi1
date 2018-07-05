@@ -1,0 +1,860 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root><definitions __ideNodeOpen="true"><php __ideNodeOpen="true">
+if(!class_exists("zparser")) {
+  class zparser {
+    /**
+     * Parse a criteria expresion like:
+     *  field1 &gt; dbfunction($phpvariable); field2 = @phpfunction($phpvariable); field3 = @phpfn(phpconstant)
+     * convertion:
+     *  $select-&gt;where('field1 &gt; dbfunction(?)',$phpvariable);
+     *  $select-&gt;where('field2 = ?',phpfunction($phpvariable));
+     *  $select-&gt;where('field3 = ?',phpfn(phpconstant));
+     */
+    public static function criteria($criteria,$select='$select'){
+      $res=array();
+      if(isset($criteria)) {
+        $token = token_get_all('&lt;?php '.$criteria.';');
+        $vars=array();
+        $exp="";
+        for($i=1,$l=count($token);$i&lt;$l;$i++){
+          $t=$token[$i];
+          if(is_string($t) &amp;&amp; $t!=";" &amp;&amp; $t!="@") $exp.=$t;
+          elseif($t==="@" || (is_array($t) &amp;&amp; $t[0]==T_VARIABLE)){
+            $exp.="%s";
+            $cont=$t=="@"?array(array(307,309)):array();
+            if($t=="@")$i++;
+            $lasti=$i;
+            for($j=$i;$j&lt;$l;$j++){
+              if(is_string($token[$j])) {$e=$token[$j];$k=0;} else {$e=$token[$j][1];$k=$token[$j][0];}
+              if(trim($e)=="") {}
+              elseif(@$e=="-&gt;") $cont[]=array(307,309);
+              elseif(@$e=="[") $cont[]=array("]");
+              elseif(@$e=="(") $cont[]=array(")");
+              elseif(count($cont)==0) break;
+              elseif(count($cont)&gt;0){
+                foreach($cont as $kco =&gt; $co){
+                  foreach($co as $coi){
+                    if($coi===$e || ($coi==$k &amp;&amp; !is_string($coi))){
+                      $lasti=$j;
+                      unset($cont[$kco]);
+                    }
+                  }
+                }
+              }
+            }
+            $var="";
+            for($j=$i;$j&lt;=$lasti;$j++) $var.=is_string($token[$j])?$token[$j]:$token[$j][1];
+            $vars[]=$var;
+            //print("&lt;b&gt;");var_dump($var);print("&lt;/b&gt;");
+            $i=$lasti;
+          } elseif(is_array($t)) {
+            $exp.=$t[1];
+          }
+          elseif($t==";") {
+            if(trim($exp)) {
+              $exp=var_export($exp,true);
+              if($vars){
+                $xvars=$vars;
+                foreach($xvars as &amp;$xvar) $xvar=var_export("'.{$select}-&gt;getAdapter()-&gt;quote($xvar).'",true);
+                $xvars[0]='"?"';
+                eval('$exp=sprintf($exp,'.implode(',',$xvars).');');
+                $res[]="{$select}-&gt;where($exp,$vars[0]);\n";
+              } else {
+                $res[]="{$select}-&gt;where($exp);\n";
+              }
+            }
+            $vars=array();
+            $exp="";
+          }
+        }
+      }
+      return $res;
+    }
+    public static function parse($str,$separator=';'){
+      $res='';
+      if(isset($str)) {
+        $tks=array();
+        $token = token_get_all('&lt;?php '.$str.$separator);
+        $cont0=array();
+        $tk=array();
+        for($i=1,$l=count($token);$i&lt;$l;$i++){
+          $t=$token[$i];
+          if(is_string($token[$i])) {$e=$token[$i];$k=0;} else {$e=$token[$i][1];$k=$token[$i][0];}
+          //Verifica () [] y {} en la expresion de base de datos
+          if($e=="(")$cont0[]=array(")");
+          if($e=="[")$cont0[]=array("]");
+          if($e=="{")$cont0[]=array("}");
+          if(count($cont0)&gt;0){
+            foreach($cont0 as $kco =&gt; $co){
+              foreach($co as $coi){
+                if($coi===$e || ($coi==$k &amp;&amp; !is_string($coi))){
+                  unset($cont0[$kco]);
+                }
+              }
+            }
+          }
+          if(is_string($t) &amp;&amp; $t!=$separator &amp;&amp; $t!="@") $tk[]=array(0,$t);
+          elseif($t==="@" || (is_array($t) &amp;&amp; $t[0]==T_VARIABLE)){
+            $cont=$t=="@"?array(array(307,309)):array();
+            if($t=="@")$i++;
+            $lasti=$i;
+            for($j=$i;$j&lt;$l;$j++){
+              if(is_string($token[$j])) {$e=$token[$j];$k=0;} else {$e=$token[$j][1];$k=$token[$j][0];}
+              //Verifica -&gt; () [] y {} en la expresion php
+              if(trim($e)=="") {}
+              elseif(@$e=="-&gt;") $cont[]=array(307,309);
+              elseif(@$e=="[") $cont[]=array("]");
+              elseif(@$e=="(") $cont[]=array(")");
+              elseif(@$e=="{") $cont[]=array("}");
+              elseif(count($cont)==0) break;
+              elseif(count($cont)&gt;0){
+                foreach($cont as $kco =&gt; $co){
+                  foreach($co as $coi){
+                    if($coi===$e || ($coi==$k &amp;&amp; !is_string($coi))){
+                      $lasti=$j;
+                      unset($cont[$kco]);
+                    }
+                  }
+                }
+              }
+            }
+            $var="";
+            for($j=$i;$j&lt;=$lasti;$j++) $var.=is_string($token[$j])?$token[$j]:$token[$j][1];
+            $tk[]=array(1,$var);
+            $i=$lasti;
+          } elseif(is_array($t)) {
+            $tk[]=array(0,$t[1]);
+          }
+          elseif($t==$separator &amp;&amp; (count($cont0)==0)) { //valid separator
+            if(count($tk)) $tks[]=$tk;
+            $tk=array();
+          }
+          else { //invalid separador
+            $tk[]=array(0,$t);
+          }
+        }
+      }
+      return $tks;
+    }
+    protected static function quote($xvar,$select='$select'){
+      return "{$select}-&gt;getAdapter()-&gt;quote($xvar)";
+    }
+    protected static function quoteIdentifier($xvar,$select='$select'){
+      return "{$select}-&gt;getAdapter()-&gt;quoteIdentifier($xvar)";
+    }
+    /**
+     * Parse from
+     */
+    public static function from($columns,$select='$select'){
+      $tks = zparser::parse($columns,',');
+      $cols=array();
+      foreach($tks as $tk){
+        $res='';$exp='';
+        foreach($tk as $i=&gt;$t){
+          if($t[0]==1){
+            //php
+            $res.="'.".zparser::quoteIdentifier($t[1],$select).".'";
+          } elseif(strtoupper($t[1])=="AS") {
+            $exp = $res;
+            $res='';
+          } else {
+            //sql
+            $res.=substr(var_export($t[1],true),1,-1);
+          }
+        }
+        if($exp){
+          //alias
+          $cols[]="array('".trim($res)."'=&gt;'".trim($exp)."')";
+        } else {
+          $cols[]="'$res'";
+        }
+      }
+      $res=array();
+      foreach($cols as $t){
+        $t=str_replace(array("''.",".''"),"",$t);
+        $res[]="{$select}-&gt;from($t);";
+      }
+      return $res;
+    }
+    /**
+     * Parse Columns
+     */
+    public static function columns($columns,$select='$select'){
+      $tks = zparser::parse($columns,',');
+      $cols=array();
+      foreach($tks as $tk){
+        $res='';$exp='';
+        $quoter="quote";
+        foreach($tk as $i=&gt;$t){
+          if($t[0]==1){
+            //php
+            $res.="'.".zparser::$quoter($t[1],$select).".'";
+          } elseif(strtoupper($t[1])=="AS") {
+            $exp = $res;
+            $res='';
+            $quoter="quoteIdentifier";
+          } else {
+            //sql
+            $res.=substr(var_export($t[1],true),1,-1);
+          }
+        }
+        if($exp){
+          //alias and expression: new Zend_Db_Expr('p.cost * 1.08') === '(p.cost * 1.08)'
+          $cols[]="array(".str_replace(array("''.",".''"),"","'".trim($res)."'")."=&gt;'(".trim($exp).")')";
+        } else {
+          $cols[]="'$res'";
+        }
+      }
+      $res=array();
+      foreach($cols as $c){
+        $t=str_replace(array("''.",".''"),"",$c);
+        $res[]="{$select}-&gt;columns($c);";
+      }
+      return $res;
+    }
+  }
+}
+</php><bcomponent name="application"><!--#editor.plugin
+  if(toolbar.load){
+    /**
+     * This adds ExtJs buttons to the toolbar.
+     **/
+    toolbar.add(
+    [
+      {"name":" ",tab:"Zend MVC"},
+      [
+        {"name":"connection","action":function(){appendChildTag("connection");},"image":"images/32/connection.png"},
+        {"name":"table","action":function(){appendChildTag("table");},"image":"images/32/table.png"},
+        {"name":"query","action":function(){appendChildTag("query");},"image":"images/32/table.png"},
+        {"name":"rawquery","action":function(){appendChildTag("rawquery");},"image":"images/32/table.png"},
+        {"name":"select row","action":function(){appendChildTag("select_row");},"image":"images/32/select_row.jpg"},
+        {"name":"select all table","action":function(){appendChildTag("select_table");},"image":"images/32/select_table.jpg"},
+        {"name":"insert row","action":function(){appendChildTag("insert_row");},"image":"images/32/select_row.jpg"},
+        {"name":"delete row","action":function(){appendChildTag("delete_row");},"image":"images/32/delete_row.jpg"},
+        {"name":"update row","action":function(){appendChildTag("update_row");},"image":"images/32/select_row.jpg"}
+      ],
+      [
+        {"name":"controller","action":function(){appendChildTag("controller");},"image":"images/32/controller.gif"},
+        {"name":"action","action":function(){appendChildTag("action");},"image":"images/32/action.gif"},
+        {"name":"phtml","action":function(){appendChildTag("phtml");},"image":"images/32/view.gif"},
+        /*{"name":"view(ext)","action":function(){appendChildTag("view");},"image":"images/32/view.gif","help":"View that includes headers to load Exj JS script files."}*/
+      ]
+    ], true);
+  }-->
+<property name="template"><![CDATA[]]></property>
+<before><![CDATA[
+    chdir(ACH_PATH);
+    createDir(ACH_OUTPUT_PATH.'/'.$e->getAttribute("name"));
+    copyDir(ACH_PATH."/structure/zend", ACH_OUTPUT_PATH.'/'.$e->getAttribute("name"));
+    chdir(ACH_OUTPUT_PATH.'/'.$e->getAttribute("name"));
+    /*@{$main}*/
+    global $PARAMS;
+    if(isset($PARAMS["run"]) && $PARAMS["run"])if($e->getAttribute("main"))print("<script>window.location.href=(".json_encode(ACH_URI_BASE.'/'.$e->getAttribute("name").'/html/index.php/'.$e->getAttribute("main")).")</script>");
+]]></before>
+<after><![CDATA[]]></after>
+</bcomponent>
+<bcomponent name="action">
+<property name="template"><![CDATA[  /**
+   * @{@$descripcion}
+   */
+  public function @{$name}Action()
+  {
+    #{
+      if(isset($loadParams) && ($loadParams=="true"))
+        return 'foreach($'.'this->getRequest()->getParams() as $_ => $__) if(substr($_,0,1)!="_") $$_=$__;';
+      if(isset($loadParams) && ($loadParams!="") && ($loadParams!="false") && ($loadParams!="true")):
+        $_loadParams = "";
+        foreach(explode(",",$loadParams) as $_p):
+          $_loadParams.=$_p.'=$this->getRequest()->getParam("'.substr(trim($_p),1).'"); ';
+        endforeach;
+        return $_loadParams;
+      endif;
+    }
+    @{(isset($noRender) && ($noRender=="true"))?'$'.'this->_helper->viewRenderer->setNoRender();':''}@{@node::join("\n",$_)}
+  }
+]]></property>
+<before><![CDATA[]]></before>
+<after><![CDATA[
+  //@{$noRender}
+  print("<a href='".ACH_URI_BASE."/".$e->parentNode->parentNode->getAttribute("name")."/html/index.php/".$e->parentNode->getAttribute("name")."/".$e->getAttribute("name")."'>".ACH_URI_BASE."/".$e->parentNode->parentNode->getAttribute("name")."/html/index.php/".$e->parentNode->getAttribute("name")."/".$e->getAttribute("name")."</a>\n");
+  return $this->encode($template);
+]]></after>
+</bcomponent>
+<bcomponent name="call">
+<property name="template"><![CDATA[  /**
+   * @{@$descripcion}
+   * @author @{@$author}
+   */
+  public function @{$name}Action()
+  {
+    foreach($this->getRequest()->getParams() as $_ => $__) if(substr($_,0,1)!="_") $$_=$__;
+    $this->_helper->viewRenderer->setNoRender();
+    $response=new json_response();
+    $response->success=true;
+    @{@node::join("\n",$_)}
+    print($response->toJSONString());
+  }
+]]></property>
+<before><![CDATA[]]></before>
+<after><![CDATA[  return $this->encode($template); ]]></after>
+</bcomponent>
+<bcomponent name="controller">
+<property name="template"><![CDATA[<?php
+/** Zend_Controller_Action */
+require_once 'Zend/Controller/Action.php';
+require_once 'Zend/Loader.php';
+/**
+ * @{@$descripcion}
+ * @author @{@$author}
+ */
+class @{UpperCamelCase($name)}Controller extends Zend_Controller_Action
+{
+@{@node::join("\n",$_nodes['method'])}
+@{@node::join("\n",$_nodes['action'])}
+@{@node::join("\n",$_nodes['rule'])}
+@{@node::join("\n",$_nodes['call'])}
+}
+]]></property>
+<before><![CDATA[]]></before>
+<after><![CDATA[  
+createFile("controllers/".UpperCamelCase($e->getAttribute("name"))."Controller.php",$template);
+]]></after>
+</bcomponent>
+
+<bcomponent name="connection">
+<property name="template"><![CDATA[<?php
+require_once("Zend/Db.php");
+require_once("Zend/Db/Table.php");
+$db = Zend_Db::factory("@{$driver/*Mysqli|Oracle|Db2|PDO_MYSQL|PDO_PGSQL|PDO_OCI|PDO_MSSQL|PDO_SQLITE|PDO_IBM*/}", #{
+  $_atts = array();
+  foreach($_e->attributes as $_a)
+    if($_a->nodeName!="name")
+    if($_a->nodeName!="driver")
+    if($_a->nodeValue!="")
+      $_atts[$_a->nodeName] = $_a->nodeValue;
+  return var_export($_atts, true);
+});
+Zend_Db_Table_Abstract::setDefaultAdapter($db);
+]]></property>
+<before><![CDATA[]]></before>
+<after><![CDATA[  createFile("model/".($e->getAttribute("name")?$e->getAttribute("name"):"connection.php"),$template);
+]]></after>
+</bcomponent>
+<bcomponent name="table">
+<property name="template"><![CDATA[<?php
+require_once(#{
+$_connection=node::findParent("connection");
+return var_export(isset($_connection)?
+  (($_a=$_connection->getAttribute("name"))?$_a:"connection.php"):"connection.php", true);
+});
+class @{$name} extends Zend_Db_Table_Abstract
+{
+    protected $_name = '@{isset($table)?$table:$name}';#{
+      if(isset($primaryKey) && $primaryKey!="")
+        if(strpos($primaryKey,",")!==false) 
+          return "\n    protected $\_primary = ".var_export(explode(",",$primaryKey),true).";";
+        else
+          return "\n    protected \$_primary = ".var_export($primaryKey,true).";";
+    }
+    protected $_dependentTables = ${isset($dependentTables)&&($dependentTables!="")?explode(",",$dependentTables):null};
+    protected $_referenceMap    = array(
+    @{@node::join("\n",$_nodes["table_reference"])}
+    );
+}
+]]></property>
+<before><![CDATA[  $_nodes["#parent"]=$e->parentNode->getAttribute("name");
+]]></before>
+<after><![CDATA[  createFile("model/".$e->getAttribute("name").".php",$template);
+]]></after>
+</bcomponent>
+
+<bcomponent name="table_reference">
+<property name="template"><![CDATA[  ${$name} => array(
+      'columns'           => ${explode(",",$columns)},
+      'refTableClass'     => ${$refTableClass},
+      'refColumns'        => ${explode(",",$refColumns)}
+  ),
+]]></property>
+<before><![CDATA[]]></before>
+<after><![CDATA[  return $this->encode($template);
+]]></after>
+</bcomponent>
+<bcomponent name="select_row">
+<property name="template"><![CDATA[        try {
+          require_once("../model/@{$model}.php");
+          $table=new @{$model}();
+          $select=$table->select();
+          @{implode("\n          ",$_where)}
+          @{isset($var)?$var:('$'.'row')}=$table->fetchRow($select);
+          @{@node::join("\n          ",$_)}
+        } catch (Exception $e) {
+          exit("{success:false,errors:[{msg:".json_encode($e->getMessage())."}]}");
+        }
+]]></property>
+<before><![CDATA[
+/*@{$criteria}*/
+$criteria=$e->getAttribute("criteria");
+$values["_where"]=zparser::criteria($criteria);
+]]></before>
+<after><![CDATA[  return $this->encode($template);
+]]></after>
+</bcomponent>
+
+<bcomponent name="select_table">
+<property name="template"><![CDATA[        try {
+          require_once("../model/@{$model}.php");
+          $_table=new @{current(explode(".",$model))}();
+          $select=$_table->select();
+          @$_limit = @{isset($limit)&&($limit!="")?('"'.$limit.'"'):"null"};
+          @$_offset = @{isset($offset)&&($offset!="")?('"'.$offset.'"'):"null"};
+          @$_order = @{isset($order)&&($order!="")?('"'.$order.'"'):"null"};
+          $select->limit($_limit,$_offset);
+          if(isset($_order) && (trim($_order)!="")) $select->order($_order);
+          $select->from($_table);
+          @{isset($columns)&&($columns!="")?implode("\n          ",$columns):''}
+          @{implode("\n          ",$_where)}
+          @{isset($var)?$var:('$'.'rows')} = $_table->fetchAll($select);
+          @{@node::join("\n          ",$_)}
+        } catch (Exception $e) {
+          exit("{success:false,errors:[{msg:".json_encode($e->getMessage())."}]}");
+        }
+]]></property>
+<before><![CDATA[
+/*@{$criteria}*/
+$criteria=$e->getAttribute("criteria");
+$values["_where"]=zparser::criteria($criteria);
+/*Procesa las columnas*/
+if(isset($values["columns"])&&($values["columns"])){
+  $values["columns"]=zparser::columns($values["columns"]);
+}
+]]></before>
+<after><![CDATA[
+  return $this->encode($template);
+]]></after>
+</bcomponent>
+<bcomponent name="insert_row">
+<property name="template"><![CDATA[        try {
+          require_once("../model/@{$model}.php");
+          $table=new @{$model}();
+          @{isset($var/*$values*/)?$var:'$values'}=array();
+          @{implode("\n          ",$values)}
+          @{@node::join("\n          ",$_)}
+          $table->insert(@{isset($var/*$values*/)?$var:'$values'});
+        } catch (Exception $e) {
+          exit("{success:false,errors:[{msg:".json_encode($e->getMessage())."}]}");
+        }
+]]></property>
+<before><![CDATA[
+if(!isset($values["data"])||!$values["data"])$values["data"]='$data';
+$var=$e->getAttribute("var");
+if(!$var) $var='$values';
+$data=$e->getAttribute("values");
+$data=explode(";",$data);
+$dataSet=array();
+foreach($data as $c) {
+  list($field,$value)=explode("=",$c);
+  if(($field!="")&&($value!=""))
+    $dataSet[]=$var.'["'.$field.'"]='.$value.';';
+}
+/* agrega una variable al template */
+$values["values"]=$dataSet;
+]]></before>
+<after><![CDATA[  return $this->encode($template);
+]]></after>
+</bcomponent>
+<bcomponent name="update_row">
+<property name="template"><![CDATA[        try {
+          require_once("../model/@{$model}.php");
+          $table=new @{$model}();
+          $select=$table->select();
+          @{implode("\n          ",$_where)}
+          @{isset($var/*$row*/)?$var:('$'.'row')}=$table->fetchRow($select);
+          @{implode("\n          ",$values)}
+          @{@node::join("\n          ",$_)}
+          @{isset($var)?$var:('$'.'row')}->save();
+        } catch (Exception $e) {
+          exit("{success:false,errors:[{msg:".json_encode($e->getMessage())."}]}");
+        }
+]]></property>
+<before><![CDATA[
+/*@{$criteria}*/
+  $criteria=$e->getAttribute("criteria");
+  $criteria=explode(";",$criteria);
+  $where=array();
+  foreach($criteria as $c) if($c && strpos($c,"=")>0){
+    list($field,$var)=explode("=",$c);
+    if(($field!="")&&($var!=""))
+      $where[]='$select->where("'.$field.'=?",'.$var.');';
+  }
+/* agrega una variable al template */
+  $values["_where"]=$where;
+/*Prepare the DATA SET*/
+  if(!isset($values["var"])||!$values["var"])$var='$row'; else $var=$values["var"];
+  $data=$e->getAttribute("values");
+  $data=explode(";",$data);
+  $dataSet=array();
+  foreach($data as $c) {
+    list($field,$val)=explode("=",$c);
+    if(($field!="")&&($val!=""))
+      $dataSet[]=$var.'->'.$field.'='.$val.';';
+  }
+  $values["values"]=$dataSet;]]></before>
+<after><![CDATA[  return $this->encode($template);
+]]></after>
+</bcomponent><bcomponent name="delete_row" __ideNodeOpen="true">
+<property name="template"><![CDATA[        try {
+          require_once("../model/@{$model}.php");
+          $table=new @{$model}();
+          $select=$table->select();
+          @{implode("\n          ",$_where)}
+          @{isset($var/*$row*/)?$var:('$'.'row')}=$table->fetchRow($select);
+          @{@node::join("\n          ",$_)}
+          @{isset($var)?$var:('$'.'row')}->delete();
+        } catch (Exception $e) {
+          exit("{success:false,errors:[{msg:".json_encode($e->getMessage())."}]}");
+        }
+]]></property>
+<before><![CDATA[
+/*@{$criteria}*/
+  $criteria=$e->getAttribute("criteria");
+  $criteria=explode(";",$criteria);
+  $where=array();
+  foreach($criteria as $c) if($c && strpos($c,"=")>0){
+    list($field,$var)=explode("=",$c);
+    if(($field!="")&&($var!=""))
+      $where[]='$select->where("'.$field.'=?",'.$var.');';
+  }
+/* agrega una variable al template */
+  $values["_where"]=$where;
+]]></before>
+<after><![CDATA[  return $this->encode($template);
+]]></after>
+</bcomponent>
+<bcomponent name="method">
+<property name="template"><![CDATA[  /**
+   * @{@$descripcion}
+   * @author @{@$author}
+   */
+  public function @{$name}(@{@$params})
+  {
+    @{node::join("",$_)}
+  }
+]]></property>
+<before><![CDATA[]]></before>
+<after><![CDATA[  return $this->encode($template);
+]]></after>
+</bcomponent>
+<bcomponent name="publicResource"><!--#editor.plugin
+  componentsIndex["resource"].editor=function(node){
+    var ar=file.split("\\").join("/").split("/");
+    ar.pop();
+    var f=ar.join("/")+"/"+node.getAttribute("path");
+    changeEditor("resourceViewer").childNodes[0].src="fileIO.php?i="+encodeURIComponent(f);
+    return currentNode;
+  };
+
+  componentsIndex["resource"].saver=function(node){
+    return currentNode;
+  };
+  var div=document.createElement("div");
+  draw3(div,[
+    "img",{},[]
+  ]);
+  installEditor("resourceViewer",div);
+-->
+<property name="template"><![CDATA[]]></property>
+<before><![CDATA[]]></before>
+<after><![CDATA[$curDir=getcwd();
+chdir(PROJECT_PATH);
+  $path=$e->getAttribute("path");
+  $file=basename($path);
+  $content=file_get_contents($path);
+chdir($curDir);
+  //folder in html that will contain the resource; or the controller name.
+  $folder = $e->getAttribute("folder") ? 
+  	$e->getAttribute("folder") :
+  	$e->parentNode->parentNode->getAttribute("name");
+  createFile( "html/".$folder."/".$file, $content );
+]]></after>
+</bcomponent>
+
+<bcomponent name="phtml"><property name="template">#{
+createFile("views/scripts/".$_e-&gt;parentNode-&gt;getAttribute("name")."/".$name.".phtml",node::join("",$_));
+}</property></bcomponent>
+<bcomponent name="script"><property name="template">#{
+createFile("html/".$name.".js",node::join("",$_));
+}</property></bcomponent>
+
+<bcomponent name="phpfile">
+  <property name="template">@{@node::join("\n",$_)}</property>
+  <before/>
+  <after><![CDATA[  createFile("library/".$e->getAttribute("name"),$template);]]></after>
+</bcomponent>
+
+<bcomponent name="rule">
+<property name="template"><![CDATA[  /**
+   * @{@$descripcion}
+   * @author @{@$author}
+   */
+  public function @{isset($name)?$name:"exit"}Action()
+  {
+    foreach($this->getRequest()->getParams() as $_ => $__) if(substr($_,0,1)!="_") $$_=$__;
+    $this->_helper->viewRenderer->setNoRender();
+    $destination=@{@var_export("$destination",true)};
+    $response=new StdClass();$response->success=true;@{@node::join("\n",$_)}
+    $json_response=json_encode($response);
+    $json_response=substr($json_response,0,-1).
+      ",afterAction:function(){window.location.href=".json_encode("../".$destination).";}" . "}";
+    if(isset($__ajax))
+    {
+      print($json_response);
+    }
+    else 
+    {
+      if($response->success)
+      {
+        list($act,$ctl)=explode("/",$destination);
+        $this->_helper->redirector($act,$ctl);
+      }
+      else
+      {
+        $s=$this->getRequest()->getServer("HTTP_REFERER");
+        $this->getResponse()->setRedirect($s);
+        return false;
+      }
+    }
+  }
+]]></property>
+<before><![CDATA[]]></before>
+<after><![CDATA[  return $this->encode($template);
+]]></after>
+</bcomponent>
+
+<bcomponent name="css">
+<property name="template"><![CDATA[@{node::join("\n",$_)}
+]]></property>
+<before><![CDATA[]]></before>
+<after><![CDATA[  createFile( "html/".$e->parentNode->parentNode->getAttribute("name")."/".$e->getAttribute("name").".css",$template);
+  return $this->encode('  <link rel="stylesheet" type="text/css" href="'.htmlentities( '../../'.$e->parentNode->parentNode->getAttribute("name")."/".$e->getAttribute("name").".css", ENT_QUOTES, 'utf-8' ).'" />');
+]]></after>
+</bcomponent>
+<def name="zend.index.php"><property name="template">&lt;?php
+ini_set("display_errors","on");
+@include_once("../bootstrap.php");
+@include_once("config.php");
+require_once("Zend/Controller/Front.php");
+require_once("../library/json.php");
+require_once("../library/json_response.php");
+require_once('Zend/Session.php');
+Zend_Session::start();
+
+$frontController = Zend_Controller_Front::getInstance();
+$frontController-&gt;throwExceptions(true)
+  -&gt;setControllerDirectory("../controllers")
+  -&gt;returnResponse(true);
+@{node::join("",$_)}
+
+try {
+  $response = $frontController-&gt;dispatch();
+  $response-&gt;sendResponse();
+} catch (Exception $e) {
+  echo $e-&gt;getMessage();
+}
+
+</property><function name="run">$_r = node::run();
+$values["_"] = $_r;
+$values["_e"] = $e;
+$values["_nodes"] = $this-&gt;groupNodes($_r);
+$template=$this-&gt;doTemplate($this-&gt;template,$values);
+file_put_contents("html/index.php",$template);
+return $this-&gt;encodeEmpty();
+
+</function></def><def name="zend.plugin"><property name="template">&lt;?php
+class @{$name} extends Zend_Controller_Plugin_Abstract
+{
+@{node::join("",$_)}
+}
+
+</property><property name="register">require_once("../library/@{$name}.php");
+$frontController-&gt;throwExceptions(true)-&gt;registerPlugin(new @{$name}());
+
+
+</property><function name="run">$_r = node::run();
+$values["_"] = $_r;
+$values["_e"] = $e;
+$values["_nodes"] = $this-&gt;groupNodes($_r);
+$template=$this-&gt;doTemplate($this-&gt;template,$values);
+$register=$this-&gt;doTemplate($this-&gt;register,$values);
+file_put_contents("library/".$values["name"].".php",$template);
+return $this-&gt;encode($register);
+
+</function><component name="zend.plugin.preDispatch" transparent="">  public function preDispatch(Zend_Controller_Request_Abstract $request)
+  {
+    @{node::join("",$_)}
+  }
+</component></def><def name="zend.auth"><property name="template">&lt;?php
+global @{$zend_auth_adapther/*$zend_auth_adapther*/},$db;
+  require_once("Zend/Auth/Adapter/DbTable.php");
+  require_once("../model/connection.php");
+  @{$zend_auth_adapther} = new Zend_Auth_Adapter_DbTable(
+    $db,
+    ${$table},
+    ${$username},
+    ${$password},
+    ${@$passwordTreatment/*md5(?)*/}
+  );
+</property><property name="register">
+  global @{$zend_auth/*$zend_auth*/},@{$zend_auth_adapther/*$zend_auth_adapther*/};
+  require_once("../library/auth_adapter.php");
+  require_once("Zend/Auth.php");
+  @{$zend_auth_adapther}-&gt;setIdentity($@{$username/*username*/});
+  @{$zend_auth_adapther}-&gt;setCredential($@{$password/*password*/});
+  @{$zend_auth} = Zend_Auth::getInstance();
+  @{$zend_auth}_result = $zend_auth-&gt;authenticate(@{$zend_auth_adapther});
+</property><function name="run">$_r = node::run();
+$values["_"] = $_r;
+$values["_e"] = $e;
+$values["_nodes"] = $this-&gt;groupNodes($_r);
+$template=$this-&gt;doTemplate($this-&gt;template,$values);
+$register=$this-&gt;doTemplate($this-&gt;register,$values);
+file_put_contents("library/auth_adapter.php",$template);
+return $this-&gt;encode($register);
+
+</function></def><def name="zend.acl.config"><property name="template">&lt;?php
+  require_once("Zend/Acl.php");
+  require_once("Zend/Acl/Role.php");
+  require_once("Zend/Acl/Resource.php");
+  $acl = new Zend_Acl();
+@{node::join("",$_)}</property><property name="register">  require_once("../library/acl.php");
+</property><function name="run">$_r = node::run();
+$values["_"] = $_r;
+$values["_e"] = $e;
+$values["_nodes"] = $this-&gt;groupNodes($_r);
+$template=$this-&gt;doTemplate($this-&gt;template,$values);
+file_put_contents("library/acl.php",$template);
+$register=$this-&gt;doTemplate($this-&gt;register,$values);
+return $this-&gt;encode($register);
+</function></def><def name="zend.acl.isAllowed"><property name="register">
+  global $acl;
+  if($acl-&gt;isAllowed(@{$user_rol/*$_SESSION['user']*/},@{$resource/*"resource"*/})){
+@{node::join("",$_)}
+  }
+</property><function name="run">$_r = node::run();
+$values["_"] = $_r;
+$values["_e"] = $e;
+$values["_nodes"] = $this-&gt;groupNodes($_r);
+$register=$this-&gt;doTemplate($this-&gt;register,$values);
+return $this-&gt;encode($register);
+
+</function></def><component name="dbbuilder" transparent="" __ideNodeOpen="true">#{
+  $_curdir=getcwd();
+  chdir("model");
+  require("connection.php");
+  $db = Zend_Db_Table_Abstract::getDefaultAdapter();
+  foreach(explode(";\n",node::content($_)) as $_sql): if(trim($_sql)):
+    $db-&gt;query($_sql);
+  endif;
+  endforeach;
+  chdir($_curdir);
+}</component><component name="query" transparent="" __ideNodeOpen="true"><!--#editor.plugin
+
+componentsIndex["query"].image="images/16/table.gif";--><file name="model/@{$name}.php" preprocess="" __ideNodeOpen="true">&lt;?php
+require_once(#{
+$_connection=node::findParent("connection");
+return var_export(isset($_connection)?
+  (($_a=$_connection-&gt;getAttribute("name"))?$_a:"connection.php"):"connection.php", true);
+});
+class @{$name} {
+
+  protected $select;
+
+  public function __construct($adapter=null){
+
+    // Create the Zend_Db_Select object
+    if(!isset($adapter)) $adapter=Zend_Db_Table_Abstract::getDefaultAdapter();
+    $this-&gt;select = $adapter-&gt;select();
+
+    // Add a FROM clause
+    @{implode("\n",zparser::from($from,'$this-&gt;select'))}
+
+    // Add COLUMNS
+    @{implode("\n",zparser::columns($columns,'$this-&gt;select'))}
+    
+    // Add a WHERE clause
+    @{implode("\n",zparser::criteria($criteria,'$this-&gt;select'))}
+    
+  }
+  public function select(){
+    return $this-&gt;select;
+  }
+  public function fetchRow() {
+    $db = Zend_Db_Table_Abstract::getDefaultAdapter();
+    $stmt = $db-&gt;query($this-&gt;select);
+    return $stmt-&gt;fetch();
+  }
+}</file></component><component name="select" transparent="" __ideNodeOpen="true">
+        try {
+          require_once("../model/@{$model}.php");
+          $model=new @{current(explode(".",$model))}();
+          if($model instanceof Zend_Db_Table_Abstract){
+            $select=$model-&gt;select();
+            $select-&gt;from($model);
+          } else {
+            $select=$model-&gt;select();
+          }
+          @$_limit = @{isset($limit)&amp;&amp;($limit!="")?('"'.$limit.'"'):"null"};
+          @$_offset = @{isset($offset)&amp;&amp;($offset!="")?('"'.$offset.'"'):"null"};
+          @$_order = @{isset($order)&amp;&amp;($order!="")?('"'.$order.'"'):"null"};
+          $select-&gt;limit($_limit,$_offset);
+          if(isset($_order) &amp;&amp; (trim($_order)!="")) $select-&gt;order($_order);
+          @{isset($columns)&amp;&amp;($columns!="")?('$select-&gt;reset(Zend_Db_Select::COLUMNS);'.implode("\n          ",zparser::columns($columns))):''}
+          @{isset($criteria)&amp;&amp;($criteria!="")?implode("\n          ",zparser::criteria($criteria)):""}
+          if($model instanceof Zend_Db_Table_Abstract){
+            @{isset($var/*$rows*/)?$var:('$'.'rows')} = $model-&gt;fetchAll($select);
+          } else {
+            $stmt = $select-&gt;getAdapter()-&gt;query($select);
+            @{isset($var)?$var:('$'.'rows')} = $stmt-&gt;fetchAll();
+          }
+          @{@node::join("\n          ",$_)}
+        } catch (Exception $e) {
+          exit("{success:false,errors:[{msg:".json_encode($e-&gt;getMessage())."}]}");
+        }
+</component><component name="rawquery" transparent="" __ideNodeOpen="true"><!--#editor.plugin
+
+componentsIndex["rawquery"].image="images/16/table.gif";--><file name="model/@{$name}.php" preprocess="" __ideNodeOpen="true">&lt;?php
+require_once(#{
+$_connection=node::findParent("connection");
+return var_export(isset($_connection)?
+  (($_a=$_connection-&gt;getAttribute("name"))?$_a:"connection.php"):"connection.php", true);
+});
+require_once("Zend/Db/Table/Row.php");
+
+class @{$name} {
+
+  protected $select;
+
+  public function __construct($adapter=null){
+
+    // Create the Zend_Db_Select object
+    if(!isset($adapter)) $adapter=Zend_Db_Table_Abstract::getDefaultAdapter();
+    $this-&gt;adapter = $adapter;
+  }
+  public function fetchRow() {
+    $stmt = $this-&gt;adapter-&gt;query(${$query});
+    $row = new Zend_Db_Table_Row();
+    $row-&gt;setFromArray($stmt-&gt;fetch());
+    return $row;
+  }
+  public function fetchAll() {
+    $stmt = $this-&gt;adapter-&gt;query(${$query});
+    $rows = array();
+    while(true){
+      $data = $stmt-&gt;fetch();
+      if(!data) break;
+      $row = new Zend_Db_Table_Row();
+      $row-&gt;setFromArray($data);
+      $rows[]=$row;
+    }
+    return $rows;
+  }
+}</file></component></definitions></root>

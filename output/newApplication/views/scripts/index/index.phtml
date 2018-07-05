@@ -1,0 +1,108 @@
+<html>
+    <head>
+        <link rel="stylesheet" type="text/css" href="/ext/resources/css/ext-all.css" />
+        <script type="text/javascript" src="/ext/adapter/ext/ext-base.js"></script><script type="text/javascript" src="/ext/ext-all.js"></script>
+        <script>
+            Ext.QuickTips.init();
+            function extLoad(sClass, base, _construct)
+            {
+                var obj;
+                eval("obj=new " + sClass + "(base);");
+                if (_construct)
+                    eval(_construct);
+                return obj;
+            }
+            function main()
+            {
+                extLoad("Ext.Viewport", {"layout": "border", "items": [extLoad("Ext.Panel", {"region": "center", "title": "Hello World", "frame": true, "items": [
+                                Ext.create("Ext.grid.Panel", {
+                                    "width": "100%",
+                                    "height": 300,
+                                    "stateful": true,
+                                    "stateId": "stateGrid",
+                                    "store": store = Ext.create('Ext.data.Store', {
+                                        pageSize: 6,
+                                        fields: [
+                                            {name: 'record'},
+                                            {name: 'field'},
+                                            {name: 'previousValue'},
+                                            {name: 'currentValue'},
+                                            {name: 'previousValueType'},
+                                            {name: 'currentValueType'},
+                                            {name: 'task'},
+                                            {name: 'updateDate'},
+                                            {name: 'user'}
+                                        ],
+                                        groupField: 'record',
+                                        remoteSort: true,
+                                        proxy: {
+                                            // load using script tags for cross domain, if the data in on the same domain as
+                                            // this page, an HttpProxy would be better
+                                            type: 'jsonp',
+                                            url: 'http://localhost:8083/sysworkflow/en/neoclassic/cases/ajaxListener?action=changeLogTab&idHistory=23134954556f0727c3fde11063016937_18295723156f2b9b26366e4040053045_16304814956f0729495da25001454322',
+                                            reader: {
+                                                root: 'data',
+                                                totalProperty: 'totalCount'
+                                            },
+                                            // sends single sort as multi parameter
+                                            simpleSortMode: true
+                                        },
+                                        sorters: [{
+                                                property: 'lastpost',
+                                                direction: 'DESC'
+                                            }]
+                                    })
+                                    , "columns": [
+                                        {
+                                            text: 'Field',
+                                            width: 120,
+                                            sortable: false,
+                                            dataIndex: 'field'
+                                        },
+                                        {
+                                            text: 'Previous Value',
+                                            flex: 1,
+                                            sortable: false,
+                                            dataIndex: 'previousValue',
+                                            renderer: function (value, p, record) {
+                                                return Ext.String.format(
+                                                    '{0} <button disabled="disabled">{1}</button>',
+                                                    value,
+                                                    record.data.previousValueType
+                                                    );
+                                            }
+                                        },
+                                        {
+                                            text: 'Current Value',
+                                            flex: 1,
+                                            sortable: false,
+                                            dataIndex: 'currentValue',
+                                            renderer: function (value, p, record) {
+                                                return Ext.String.format(
+                                                    '{0} <button disabled="disabled">{1}</button>',
+                                                    value,
+                                                    record.data.currentValueType
+                                                    );
+                                            }
+                                        }
+                                    ], "features": [
+                                        Ext.create('Ext.grid.feature.Grouping', {
+                                            groupHeaderTpl: '{name}'
+                                        })
+                                    ], "bbar": Ext.create('Ext.PagingToolbar', {
+                                        store: store,
+                                        displayInfo: true,
+                                        displayMsg: '{0} - {1}',
+                                        emptyMsg: "No topics to display",
+                                    })
+                                }, null)
+                            ]}, null)
+                    ], "renderTo": Ext.getBody()}, null);
+            }
+            Ext.onReady(function () {
+                main();
+            });
+        </script>
+    </head>
+    <body></body>
+</html>

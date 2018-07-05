@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root><component name="jquery" transparent=""><unpack target="@{$target}" source="@{ACH_LIBRARY_PATH.&quot;/jquery.tar.gz&quot;}"/></component></root>

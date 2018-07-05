@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?><root><path path="output/phptest" main="output/phptest/index.php"><file name="index.php" preprocess="">&lt;?php
+ini_set("display_errors", "on");
+error_reporting(E_ALL);
+//Es mejor no tener __construct
+class Dv_Viewer {
+  function render($method){
+    $file = 'view/' . strtolower(get_class($this-&gt;controller)) . '/' . $method . '.php';
+    include($file);
+  }
+}
+//$variable == const en velocidad
+//para usar const se debe utilizar static:: q esta disponible desde 5.3+
+//==&gt; se utiliza $variable en lugar de const
+class Dv_Controller {
+  //const viewClass='Dv_Viewer';
+  public $viewClass='Dv_Viewer';
+  public $view;
+  function __construct(){
+//    $class = static::viewClass;
+    $class = $this-&gt;viewClass;
+    $this-&gt;view = new $class();
+    $this-&gt;view-&gt;controller = $this;
+  }
+  function callMethod($method){
+    $methodName = $method . 'Action';
+    $this-&gt;$methodName();
+    $this-&gt;view-&gt;render($method);
+  }
+  //Es mas rapido instanciar en el __construct(), se lo deja para ver q tal luego...
+  function __get($name){
+    $class = $name . "Class";
+    $class = $this-&gt;class;
+    $this-&gt;$name = new $class($this);
+    $this-&gt;$name-&gt;controller = $this;
+    return $this-&gt;$name;
+  }
+}
+
+class Def {
+}
+
+class AbcController extends Dv_Controller {
+  //const viewClass='Dv_Viewer2';
+  public $viewClass='Dv_Viewer';
+  public $def;
+  function __construct(){
+    parent::__construct();
+    $this-&gt;def = new Def();
+  }
+  function IndexAction(){
+    $this-&gt;view-&gt;abc=123;
+  }
+}
+
+$t1 = microtime(true);
+for($i=0;$i&lt;1000;$i++){
+$a = new AbcController();
+$a-&gt;callMethod('index');
+}
+$t2 = microtime(true);
+echo "&lt;br /&gt;";
+var_dump(($t2-$t1)*1000);</file><file name="view/abc/index.php" preprocess="">TempletaAbc</file></path></root>

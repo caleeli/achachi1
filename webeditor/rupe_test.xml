@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root><path path="output/example" main="output/example/index.html" __ideNodeOpen="true"><php __ideNodeOpen="true">$line='####&lt;16-may-2013 15H19\' BOT&gt; &lt;Info&gt; &lt;Common&gt; &lt;appwillkayasi2.sigma.gob.bo&gt; &lt;msWKY1&gt; &lt;Timer-37&gt; &lt;&lt;anonymous&gt;&gt; &lt;&gt; &lt;11d1def534ea1be0:265fbdb:13ea953f625:-8000-00000000001fda47&gt; &lt;1368731995482&gt; &lt;BEA-000628&gt; &lt;Created "1" resources for pool "tesDS", out of which "1" are available and "0" are unavailable.&gt; ';
+$regexp='/^####&lt;([^&gt;]+)&gt; &lt;([^&gt;]+)&gt; &lt;([^&gt;]+)&gt; &lt;([^&gt;]+)&gt; &lt;([^&gt;]+)&gt; &lt;(?:\[([^\]]+)\] )?(ExecuteThread\: \'(\d+)\' for queue: \'([^\']+)\'|[^&gt;]+)&gt; &lt;&lt;([^&gt;]+)&gt;&gt; &lt;([^&gt;]*)&gt; &lt;([^&gt;]+)&gt; &lt;([^&gt;]+)&gt; &lt;([^&gt;]+)&gt; &lt;(.*)$/';
+var_dump(preg_match($regexp,$line,$ma),$ma);
+</php></path></root>

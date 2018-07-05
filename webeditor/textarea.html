@@ -1,0 +1,125 @@
+<div id="s" style="position:absolute;background-color:lightyellow;"></div>
+<textarea id="1" rows=25 cols=80></textarea>
+<script>
+var autoStart,autoEnd,autoComplete,autoComplete1,autoType=1,autoSel,autoIndex=0,autoWait=false;
+document.getElementById("1").onclick=document.getElementById("1").onkeyup=function( event )
+{
+  autoWait=true;
+  event=window.event?window.event:event;
+  var sel=getInputSelection(this);
+  autoSel=sel;
+  var w1=this.value.substr(0,sel.start);
+  var w2=this.value.substr(sel.start);
+  var ww1=w1.match(/\w+$/);
+  var ww2=w2.match(/^\w*(?:\s*\([^()]*\))?/);
+  autoStart=sel.start-(ww1?ww1[0].length:0);
+  autoEnd=sel.start+(ww2?ww2[0].length:0);
+  var w1=ww1?ww1[0]:"";
+  var w=ww1?((ww1?ww1[0]:"")+(ww2?ww2[0]:"")):"";
+  autoComplete="";
+  document.getElementById("s").innerHTML="";
+  if(w){
+    autoType=1;
+    var ws=this.value.match(/\w+(?:\s*\([^()]*\))?/g);
+    if(ws){
+      var idxm=0;
+      for(var i=0,l=ws.length;i<l;i++){
+        if((ws[i].substr(0,w1.length)==w1)&&(w!=ws[i])){
+          autoComplete=ws[i];
+          document.getElementById("s").innerHTML=ws[i];
+          idxm++;if(idxm>=autoIndex)break;
+        }
+      }
+      if(!(idxm>=autoIndex)) autoIndex=0; else autoIndex++;
+    }
+  }else{
+    if(sel.start==sel.end){ /*Just one line*/
+      autoType=2;
+      var line=w1.match(/.*$/);
+      autoEnd=autoStart;
+      autoComplete=Array( (2-(line[0].length % 2))+1 ).join(" ");
+    }else{
+      autoType=3;
+      var txt=this.value.substr(sel.start,sel.end-sel.start);
+      var lines=txt.split("\n");
+      var lines1=[];
+      for(var i=0,l=lines.length-1;i<l;i++){
+        var sp0=lines[i].match(/\s*/)[0].length;sp=sp0<2?0:(sp0-2);
+        lines1[i]=Array(sp+1).join(" ")+lines[i].substr(sp0);
+        lines[i]="  "+lines[i];
+      }
+      lines1[lines.length-1]=lines[lines.length-1];
+      autoStart=sel.start;
+      autoEnd=sel.end;
+      autoComplete=lines.join("\n");
+      autoComplete1=lines1.join("\n");
+    }
+  }
+  autoWait=false;
+}
+document.getElementById("1").onkeydown=function( event ){
+  event=window.event?window.event:event;
+  var key=event.keyCode?event.keyCode:event.which;
+  if(key==9){
+    if(autoWait) return;
+    if(autoComplete){
+      var replace=((event.shiftKey && autoType==3)?autoComplete1:autoComplete);
+      this.value=this.value.substr(0,autoStart)+replace+this.value.substr(autoEnd);
+      if(autoType==3)
+        setSelectionRange(this,autoStart,autoStart+replace.length);
+      else if(autoType==2)
+        setSelectionRange(this,autoStart+autoComplete.length,autoStart+autoComplete.length);
+      else
+        setSelectionRange(this,autoSel.start,autoStart+autoComplete.length);
+    }
+    return false;
+  }
+}
+function getInputSelection(el) {
+  var start = 0, end = 0, normalizedValue, range,
+  textInputRange, len, endRange;
+  if (typeof el.selectionStart == "number" && typeof el.selectionEnd == "number") {
+    start = el.selectionStart;
+    end = el.selectionEnd;
+  } else {
+    range = document.selection.createRange();
+    if (range && range.parentElement() == el) {
+      len = el.value.length;
+      normalizedValue = el.value.replace(/\r\n/g, "\n");
+      textInputRange = el.createTextRange();
+      textInputRange.moveToBookmark(range.getBookmark());
+      endRange = el.createTextRange();
+      endRange.collapse(false);
+      if (textInputRange.compareEndPoints("StartToEnd", endRange) > -1) {
+        start = end = len;
+      } else {
+        start = -textInputRange.moveStart("character", -len);
+        start += normalizedValue.slice(0, start).split("\n").length - 1;
+        if (textInputRange.compareEndPoints("EndToEnd", endRange) > -1) {
+          end = len;
+        } else {
+          end = -textInputRange.moveEnd("character", -len);
+          end += normalizedValue.slice(0, end).split("\n").length - 1;
+        }
+      }
+    }
+  }
+  return {
+start: start,
+end: end
+  };
+}
+function setSelectionRange(input,selectionStart, selectionEnd) {
+      if (input.createTextRange) {
+      var range = input.createTextRange();
+      range.collapse(true);
+      range.moveEnd('character', selectionEnd);
+      range.moveStart('character', selectionStart);
+      range.select();
+      }
+      else if (input.setSelectionRange) {
+      input.focus();
+      input.setSelectionRange(selectionStart, selectionEnd);
+      }
+    }
+</script>

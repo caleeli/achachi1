@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?><root __ideNodeOpen="true"><php __ideNodeOpen="true">$period='(?:\d\d\d\d)?\s*(?:-\s*\d\d\d\d)?';
+$period='(?:\d{4,4}(?:\s*-\s*\d{4,4})?)?';
+$copy='(?:Copyright|\xA9)';
+$name='((?:[a-z\.,]+[ ]*)+)';
+//$name='((?:[a-z]+[^\n]*)+)+';
+
+/*echo '/',implode("|", [
+  $period.'\s*'.$copy.  '\s*'.$name,
+  $period.'\s*'.$name.  '\s*'.$copy,
+//    $copy.'\s*'.$period.'\s*'.$name,
+//    $copy.'\s*'.$name.  '\s*'.$period,
+//    $name.'\s*'.$copy.  '\s*'.$period,
+//    $name.'\s*'.$period.'\s*'.$copy,
+]),'/ig';
+*/
+
+echo '/',implode('\s*', [
+  $period,$copy,$period,$name,$period
+]),'/ig';
+echo "&lt;br /&gt;&lt;br /&gt;";
+echo '/',implode('\s*', [
+  $period,$name,$period,$copy,$period
+]),'/ig';
+</php></root>

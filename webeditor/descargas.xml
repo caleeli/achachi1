@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root><path path="../descargas" main="/descargas/index.php"><file name="index.php" preprocess="">&lt;html&gt;
+&lt;head&gt;
+&lt;meta content="text/html; charset=utf-8" http-equiv="Content-Type"&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;?php
+foreach(glob('G:\seleccion\*.*') as $f){
+  echo "&lt;br /&gt;&lt;a target=\"_blank\" href=\"download.php?f=".htmlentities(urlencode(base64_encode($f)),ENT_QUOTES,'utf-8')."\"&gt;$f&lt;/a&gt;";
+}
+
+?&gt;
+&lt;/body&gt;
+&lt;/html&gt;</file><file name="download.php" preprocess="">&lt;?php
+$f = base64_decode($_GET["f"]);
+$title = basename($f);
+$fsize = filesize($f);
+
+header("Content-type: " . mime_content_type($f));
+header("Content-Disposition: attachment; filename=\"{$title}\"");
+header("Content-Transfer-Encoding: binary");
+header("Content-Length: " . $fsize);
+readfile($f);
+</file></path></root>

@@ -1,0 +1,84 @@
+<script src="draw3.js"></script>
+<script src="bind3.js"></script>
+<div id="test">
+Color:
+<div id="test_" bind3="[{style:{color:color}},color]"></div>
+</div>
+<div id="test2"> 
+Array:
+<div  repeat3="array">
+  <span bind3="[{},text]"></span>
+</div>
+</div>
+
+<div id="knockout" class="col-md-3">
+    <div class="row">
+        <div class="col-md-7">
+            <h3>Knockout</h3>
+        </div>
+        <div class="col-md-5 text-right time" id="run-knockout" bind3="[{onclick: run}]">Run</div>
+    </div>
+    <div repeat3="data">
+        <div class="row">
+            <div class="col-md-12 test-data">
+                <span bind3="[{},label]"></span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+var vm={
+  color:"red"
+};
+var vm2={
+  array:[
+    {text:'hola '},
+    {text:'mundo'}
+  ]
+};
+var t1=new Date().getTime();
+bind3(vm, document.getElementById("test"));
+bind3(vm2, document.getElementById("test2"));
+var t2=new Date().getTime();
+for(var i=0,l=1000;i<l;i++){
+  vm.color="green-"+i;
+}
+var t3=new Date().getTime();
+function _buildData(count) {
+                count = count || 1000;
+
+                var adjectives = ["pretty", "large", "big", "small", "tall", "short", "long", "handsome", "plain", "quaint", "clean", "elegant", "easy", "angry", "crazy", "helpful", "mushy", "odd", "unsightly", "adorable", "important", "inexpensive", "cheap", "expensive", "fancy"];
+                var colours = ["red", "yellow", "blue", "green", "pink", "brown", "purple", "brown", "white", "black", "orange"];
+                var nouns = ["table", "chair", "house", "bbq", "desk", "car", "pony", "cookie", "sandwich", "burger", "pizza", "mouse", "keyboard"];
+                var data = [];
+                for (var i = 0; i < count; i++)
+                    data.push({id: i+1, label: adjectives[_random(adjectives.length)] + " " + colours[_random(colours.length)] + " " + nouns[_random(nouns.length)] });
+                return data;
+            }
+function _random(max) {
+                return Math.round(Math.random()*1000)%max;
+            }
+var ae;
+bind3(ae={
+    selected: null,
+    data: _buildData(),
+
+    select: function(item) {
+        this.selected=item.id;
+    },
+
+    run: function() {
+        var data = _buildData(),
+        date = new Date();
+
+        this.selected=null;
+        this.data=data;
+        console.log((new Date() - date) + " ms");
+    }
+}, document.getElementById("knockout"));
+
+var t4=new Date().getTime();
+console.log(t2-t1,t3-t1,t4-t3);
+
+</script>

@@ -1,0 +1,1066 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root __ideNodeOpen="true"><include src="$library/jquery.xml"/><include src="$library/zend.xml"/><component name="jscompressor" __ideNodeOpen="true">#{
+  $_java = getenv("JAVA_PATH") . DIRECTORY_SEPARATOR . "bin" . DIRECTORY_SEPARATOR . "java";
+  $_compiler = escapeshellarg(ACH_LIBRARY_PATH . DIRECTORY_SEPARATOR . "compiler.jar");
+
+  $_source = ACH_PATH . DIRECTORY_SEPARATOR . "output" . DIRECTORY_SEPARATOR . "source.js";
+  file_put_contents($_source, node::content($_) );
+  $_source = escapeshellarg($_source);
+  $_java = escapeshellarg($_java);
+  
+  print("$_java -jar $_compiler --js $_source 2&gt;&amp;1");
+  exec("$_java -jar $_compiler --js $_source 2&gt;&amp;1", $_output);
+
+  //return str_replace("\x7d","\x7d\n",implode("",$_output));
+  return implode("",$_output);
+}</component><application main="index/index" __ideNodeOpen="true" name="reminder"><jqueryX target="html/" __ideNodeOpen="false"/><package name="" type="" __ideNodeOpen="false"><php __ideNodeOpen="false">
+/*
+:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+::
+::  GIFEncoder Version 2.0 by László Zsidi, http://gifs.hu
+::
+::  This class is a rewritten 'GifMerge.class.php' version.
+::
+::  Modification:
+::   - Simplified and easy code,
+::   - Ultra fast encoding,
+::   - Built-in errors,
+::   - Stable working
+::
+::
+::  Updated at 2007. 02. 13. '00.05.AM'
+::
+::
+::
+::  Try on-line GIFBuilder Form demo based on GIFEncoder.
+::
+::  http://gifs.hu/phpclasses/demos/GifBuilder/
+::
+:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+*/
+
+Class GIFEncoder {
+  var $GIF = "GIF89a";    /* GIF header 6 bytes  */
+  var $VER = "GIFEncoder V2.05";  /* Encoder version    */
+
+  var $BUF = Array ( );
+  var $LOP =  0;
+  var $DIS =  2;
+  var $COL = -1;
+  var $IMG = -1;
+
+  var $ERR = Array (
+    'ERR00'=&gt;"Does not supported function for only one image!",
+    'ERR01'=&gt;"Source is not a GIF image!",
+    'ERR02'=&gt;"Unintelligible flag ",
+    'ERR03'=&gt;"Does not make animation from animated GIF source",
+  );
+
+  /*
+  :::::::::::::::::::::::::::::::::::::::::::::::::::
+  ::
+  ::  GIFEncoder...
+  ::
+  */
+  function GIFEncoder  (
+              $GIF_src, $GIF_dly, $GIF_lop, $GIF_dis,
+              $GIF_red, $GIF_grn, $GIF_blu, $GIF_mod
+            ) {
+    if ( ! is_array ( $GIF_src ) &amp;&amp; ! is_array ( $GIF_tim ) ) {
+      printf  ( "%s: %s", $this-&gt;VER, $this-&gt;ERR [ 'ERR00' ] );
+      exit  ( 0 );
+    }
+    $this-&gt;LOP = ( $GIF_lop &gt; -1 ) ? $GIF_lop : 0;
+    $this-&gt;DIS = ( $GIF_dis &gt; -1 ) ? ( ( $GIF_dis &lt; 3 ) ? $GIF_dis : 3 ) : 2;
+    $this-&gt;COL = ( $GIF_red &gt; -1 &amp;&amp; $GIF_grn &gt; -1 &amp;&amp; $GIF_blu &gt; -1 ) ?
+            ( $GIF_red | ( $GIF_grn &lt;&lt; 8 ) | ( $GIF_blu &lt;&lt; 16 ) ) : -1;
+
+    for ( $i = 0; $i &lt; count ( $GIF_src ); $i++ ) {
+      if ( strToLower ( $GIF_mod ) == "url" ) {
+        $this-&gt;BUF [ ] = fread ( fopen ( $GIF_src [ $i ], "rb" ), filesize ( $GIF_src [ $i ] ) );
+      }
+      else if ( strToLower ( $GIF_mod ) == "bin" ) {
+        $this-&gt;BUF [ ] = $GIF_src [ $i ];
+      }
+      else {
+        printf  ( "%s: %s ( %s )!", $this-&gt;VER, $this-&gt;ERR [ 'ERR02' ], $GIF_mod );
+        exit  ( 0 );
+      }
+      if ( substr ( $this-&gt;BUF [ $i ], 0, 6 ) != "GIF87a" &amp;&amp; substr ( $this-&gt;BUF [ $i ], 0, 6 ) != "GIF89a" ) {
+        printf  ( "%s: %d %s", $this-&gt;VER, $i, $this-&gt;ERR [ 'ERR01' ] );
+        exit  ( 0 );
+      }
+      for ( $j = ( 13 + 3 * ( 2 &lt;&lt; ( ord ( $this-&gt;BUF [ $i ] { 10 } ) &amp; 0x07 ) ) ), $k = TRUE; $k; $j++ ) {
+        switch ( $this-&gt;BUF [ $i ] { $j } ) {
+          case "!":
+            if ( ( substr ( $this-&gt;BUF [ $i ], ( $j + 3 ), 8 ) ) == "NETSCAPE" ) {
+              printf  ( "%s: %s ( %s source )!", $this-&gt;VER, $this-&gt;ERR [ 'ERR03' ], ( $i + 1 ) );
+              exit  ( 0 );
+            }
+            break;
+          case ";":
+            $k = FALSE;
+            break;
+        }
+      }
+    }
+    GIFEncoder::GIFAddHeader ( );
+    for ( $i = 0; $i &lt; count ( $this-&gt;BUF ); $i++ ) {
+      GIFEncoder::GIFAddFrames ( $i, $GIF_dly [ $i ] );
+    }
+    GIFEncoder::GIFAddFooter ( );
+  }
+  /*
+  :::::::::::::::::::::::::::::::::::::::::::::::::::
+  ::
+  ::  GIFAddHeader...
+  ::
+  */
+  function GIFAddHeader ( ) {
+    $cmap = 0;
+
+    if ( ord ( $this-&gt;BUF [ 0 ] { 10 } ) &amp; 0x80 ) {
+      $cmap = 3 * ( 2 &lt;&lt; ( ord ( $this-&gt;BUF [ 0 ] { 10 } ) &amp; 0x07 ) );
+
+      $this-&gt;GIF .= substr ( $this-&gt;BUF [ 0 ], 6, 7    );
+      $this-&gt;GIF .= substr ( $this-&gt;BUF [ 0 ], 13, $cmap  );
+      $this-&gt;GIF .= "!\377\13NETSCAPE2.0\3\1" . GIFEncoder::GIFWord ( $this-&gt;LOP ) . "\0";
+    }
+  }
+  /*
+  :::::::::::::::::::::::::::::::::::::::::::::::::::
+  ::
+  ::  GIFAddFrames...
+  ::
+  */
+  function GIFAddFrames ( $i, $d ) {
+
+    $Locals_str = 13 + 3 * ( 2 &lt;&lt; ( ord ( $this-&gt;BUF [ $i ] { 10 } ) &amp; 0x07 ) );
+
+    $Locals_end = strlen ( $this-&gt;BUF [ $i ] ) - $Locals_str - 1;
+    $Locals_tmp = substr ( $this-&gt;BUF [ $i ], $Locals_str, $Locals_end );
+
+    $Global_len = 2 &lt;&lt; ( ord ( $this-&gt;BUF [ 0  ] { 10 } ) &amp; 0x07 );
+    $Locals_len = 2 &lt;&lt; ( ord ( $this-&gt;BUF [ $i ] { 10 } ) &amp; 0x07 );
+
+    $Global_rgb = substr ( $this-&gt;BUF [ 0  ], 13,
+              3 * ( 2 &lt;&lt; ( ord ( $this-&gt;BUF [ 0  ] { 10 } ) &amp; 0x07 ) ) );
+    $Locals_rgb = substr ( $this-&gt;BUF [ $i ], 13,
+              3 * ( 2 &lt;&lt; ( ord ( $this-&gt;BUF [ $i ] { 10 } ) &amp; 0x07 ) ) );
+
+    $Locals_ext = "!\xF9\x04" . chr ( ( $this-&gt;DIS &lt;&lt; 2 ) + 0 ) .
+            chr ( ( $d &gt;&gt; 0 ) &amp; 0xFF ) . chr ( ( $d &gt;&gt; 8 ) &amp; 0xFF ) . "\x0\x0";
+
+    if ( $this-&gt;COL &gt; -1 &amp;&amp; ord ( $this-&gt;BUF [ $i ] { 10 } ) &amp; 0x80 ) {
+      for ( $j = 0; $j &lt; ( 2 &lt;&lt; ( ord ( $this-&gt;BUF [ $i ] { 10 } ) &amp; 0x07 ) ); $j++ ) {
+        if  (
+            ord ( $Locals_rgb { 3 * $j + 0 } ) == ( ( $this-&gt;COL &gt;&gt; 16 ) &amp; 0xFF ) &amp;&amp;
+            ord ( $Locals_rgb { 3 * $j + 1 } ) == ( ( $this-&gt;COL &gt;&gt;  8 ) &amp; 0xFF ) &amp;&amp;
+            ord ( $Locals_rgb { 3 * $j + 2 } ) == ( ( $this-&gt;COL &gt;&gt;  0 ) &amp; 0xFF )
+          ) {
+          $Locals_ext = "!\xF9\x04" . chr ( ( $this-&gt;DIS &lt;&lt; 2 ) + 1 ) .
+                  chr ( ( $d &gt;&gt; 0 ) &amp; 0xFF ) . chr ( ( $d &gt;&gt; 8 ) &amp; 0xFF ) . chr ( $j ) . "\x0";
+          break;
+        }
+      }
+    }
+    switch ( $Locals_tmp { 0 } ) {
+      case "!":
+        $Locals_img = substr ( $Locals_tmp, 8, 10 );
+        $Locals_tmp = substr ( $Locals_tmp, 18, strlen ( $Locals_tmp ) - 18 );
+        break;
+      case ",":
+        $Locals_img = substr ( $Locals_tmp, 0, 10 );
+        $Locals_tmp = substr ( $Locals_tmp, 10, strlen ( $Locals_tmp ) - 10 );
+        break;
+    }
+    if ( ord ( $this-&gt;BUF [ $i ] { 10 } ) &amp; 0x80 &amp;&amp; $this-&gt;IMG &gt; -1 ) {
+      if ( $Global_len == $Locals_len ) {
+        if ( GIFEncoder::GIFBlockCompare ( $Global_rgb, $Locals_rgb, $Global_len ) ) {
+          $this-&gt;GIF .= ( $Locals_ext . $Locals_img . $Locals_tmp );
+        }
+        else {
+          $byte  = ord ( $Locals_img { 9 } );
+          $byte |= 0x80;
+          $byte &amp;= 0xF8;
+          $byte |= ( ord ( $this-&gt;BUF [ 0 ] { 10 } ) &amp; 0x07 );
+          $Locals_img { 9 } = chr ( $byte );
+          $this-&gt;GIF .= ( $Locals_ext . $Locals_img . $Locals_rgb . $Locals_tmp );
+        }
+      }
+      else {
+        $byte  = ord ( $Locals_img { 9 } );
+        $byte |= 0x80;
+        $byte &amp;= 0xF8;
+        $byte |= ( ord ( $this-&gt;BUF [ $i ] { 10 } ) &amp; 0x07 );
+        $Locals_img { 9 } = chr ( $byte );
+        $this-&gt;GIF .= ( $Locals_ext . $Locals_img . $Locals_rgb . $Locals_tmp );
+      }
+    }
+    else {
+      $this-&gt;GIF .= ( $Locals_ext . $Locals_img . $Locals_tmp );
+    }
+    $this-&gt;IMG  = 1;
+  }
+  /*
+  :::::::::::::::::::::::::::::::::::::::::::::::::::
+  ::
+  ::  GIFAddFooter...
+  ::
+  */
+  function GIFAddFooter ( ) {
+    $this-&gt;GIF .= ";";
+  }
+  /*
+  :::::::::::::::::::::::::::::::::::::::::::::::::::
+  ::
+  ::  GIFBlockCompare...
+  ::
+  */
+  function GIFBlockCompare ( $GlobalBlock, $LocalBlock, $Len ) {
+
+    for ( $i = 0; $i &lt; $Len; $i++ ) {
+      if  (
+          $GlobalBlock { 3 * $i + 0 } != $LocalBlock { 3 * $i + 0 } ||
+          $GlobalBlock { 3 * $i + 1 } != $LocalBlock { 3 * $i + 1 } ||
+          $GlobalBlock { 3 * $i + 2 } != $LocalBlock { 3 * $i + 2 }
+        ) {
+          return ( 0 );
+      }
+    }
+
+    return ( 1 );
+  }
+  /*
+  :::::::::::::::::::::::::::::::::::::::::::::::::::
+  ::
+  ::  GIFWord...
+  ::
+  */
+  function GIFWord ( $int ) {
+
+    return ( chr ( $int &amp; 0xFF ) . chr ( ( $int &gt;&gt; 8 ) &amp; 0xFF ) );
+  }
+  /*
+  :::::::::::::::::::::::::::::::::::::::::::::::::::
+  ::
+  ::  GetAnimation...
+  ::
+  */
+  function GetAnimation ( ) {
+    return ( $this-&gt;GIF );
+  }
+}
+</php><component name="hoja" transparent="" __ideNodeOpen="true">#{
+/*****************/
+$hojaH=364;
+$lienzoH=600-90;
+
+for($_i=0;$_i&lt;=15;$_i++):
+  $_image = @imagecreate(600, $lienzoH);
+
+  $h=300;
+  $pi=atan(1)*4;
+  $pi2=atan(1)*2;
+  $aLuz=$pi2;
+//  $aOut=$pi2*1.05;
+  $aOut=$pi2 * (1+0.1*cos($pi2*$_i*$_i/15/15));
+  
+  $x0=300-20*$_i;
+//  $r=sin($_i/16*$pi)*40;
+  $r=sin($_i/16*$pi)*40;
+  if($r&lt;0) $r=0;
+  
+  $blanco = imagecolorallocate($_image, 255, 255, 255);
+  $negro = imagecolorallocate($_image, 0, 0, 0);
+  $degrade = array();
+  for($_j=0;$_j&lt;100;$_j++):
+    $_co=127+ceil(128/100*$_j);
+    $degrade[$_j]=imagecolorallocate($_image, $_co, $_co, $_co);
+  endfor;
+  imagecolortransparent($_image, $negro);
+  
+  imagefill($_image, 0, 0, $negro);
+  
+  $X0=($x0+$pi2*$r);
+  $X1=$X0+$aOut*$r;
+  print"xpos.push(".(ceil($x0+$r)).");\n";
+  for($x=0;$x&lt;300;$x++):
+    if($x&gt;=$X0):
+      if($x&gt;=$X1):
+        $angle = $aOut;
+        $x3D=$x0+$r*cos($aOut)-sin($aOut)*($x-$X1);
+        $y3D=$r+$r*sin($aOut)+cos($aOut)*($x-$X1);
+      else:
+        $angle = ($x-$X0)/$r;
+        $x3D=$x0+$r*cos($angle);
+        $y3D=$r+$r*sin($angle);
+      endif;
+      if($y3D&lt;0)$y3D=0;
+      $z3D=$h/($h-$y3D);
+      $_jco = round(cos($angle-$aLuz)*99);
+      if($_jco&lt;0)$_jco=0;
+//  print (($angle-$aLuz)/$pi*180)."\n";
+      if($_jco&gt;=count($degrade))$_jco=count($degrade)-1;
+      $_co = $degrade[$_jco];
+      $x3D+=300;
+      imageline($_image, $x3D, ($lienzoH-$hojaH*$z3D)/2, $x3D, ($lienzoH+$hojaH*$z3D)/2, $_co);
+    endif;
+  endfor;
+  ob_start();imagegif($_image);$_img=ob_get_contents();ob_end_clean();
+  imagegif($_image, "html/images/hoja".$_i.".gif");
+  imagedestroy($_image);
+  $frames[]=$_img;
+  $framed[]=10;
+endfor;
+  
+//imagepng($_image, "hoja.png");
+
+/******************/
+
+
+/*
+    GIFEncoder constructor:
+        =======================
+
+    image_stream = new GIFEncoder  (
+              URL or Binary data  'Sources'
+              int          'Delay times'
+              int          'Animation loops'
+              int          'Disposal'
+              int          'Transparent red, green, blue colors'
+              int          'Source type'
+            );
+*/
+$gif = new GIFEncoder  (
+              $frames,
+              $framed,
+              0,
+              2,
+              0, 0, 0,
+              "bin"
+    );
+/*
+    Possibles outputs:
+    ==================
+
+        Output as GIF for browsers :
+          - Header ( 'Content-type:image/gif' );
+        Output as GIF for browsers with filename:
+          - Header ( 'Content-disposition:Attachment;filename=myanimation.gif');
+        Output as file to store into a specified file:
+          - FWrite ( FOpen ( "myanimation.gif", "wb" ), $gif-&gt;GetAnimation ( ) );
+*/
+//Header ( 'Content-type:image/gif' );
+//echo  $gif-&gt;GetAnimation ( );
+FWrite ( FOpen ( "hoja.gif", "wb" ), $gif-&gt;GetAnimation ( ) );
+
+return "";
+}</component></package><hoja hojaH="" lienzoH="" h="" pi="" pi2="" aLuz="" aOut="" x0="" r="" blanco="" negro="" degrade="" X0="" X1="" x="" angle="" x3D="" y3D="" z3D="" frames="" framed="" gif="" height="" width="" start="" end="" A="1" B="0" name=""/><resource path="libroTapa.jpg" folder="html/images" __ideNodeOpen="false"/><resource path="tapa2011.jpg" folder="html/images"/><resource path="book.png" folder="html/images"/><resource path="esq.png" folder="html/images"/><resource path="mail.gif" folder="html/images"/><resource path="check.png" folder="html/images"/><resource path="dialog-delete.gif" folder="html/images"/><resource path="wood_bg.jpg" folder="html/images"/><component name="bookfn" transparent="" __ideNodeOpen="true">
+function @{$name} {
+@{node::content($_)}
+}</component><file name="library/book.class.php" preprocess="" __ideNodeOpen="true">&lt;?php
+class book{
+  function login($user, $password) {
+    $_SESSION["user"] = $user;
+    return 'book.logged=true;book.open();';
+  }
+  function loginPage($b){
+    ob_start();
+    ?&gt;&lt;div class="rem_body" style="position:relative;left:50px;top:150px;height:80px;"&gt;&lt;div id="loginmsg" style="color:red;"&gt;&amp;nbsp;&lt;/div&gt;&lt;span class="rem_fieldLabel"&gt;User:&lt;/span&gt;&lt;input id="user"/&gt;&lt;br /&gt;&lt;br /&gt;&lt;span class="rem_fieldLabel"&gt;Password:&lt;/span&gt;&lt;input id="password" type="password"/&gt;&lt;br /&gt;&lt;br /&gt;
+    &lt;div style="text-align:right;"&gt;&lt;a class="button" href="javascript:void(0)" onclick="book.login($('#user')[0].value, $('#password')[0].value)"&gt;&lt;img src="../../images/check.png"/&gt;&lt;/a&gt;&lt;/div&gt;&lt;/div&gt;&lt;?php
+    $cont = ob_get_contents();
+    ob_end_clean();
+    return 'buffer.buffer['.$b.'].innerHTML=' . json_encode($cont) . ';';
+  }
+  function getPage($i,$b){
+    if($i==-1) return self::loginPage($b);
+    $date=strtotime("2012-01-01 +".$i."day");
+    $dia = Date("d",$date);
+    $mes = Date("M",$date);
+    $diaSemana = Date("l",$date);
+    $anio = Date("Y",$date);
+    $date0=Date("Y-m-d 00:00:00",$date);
+    $date1=Date("Y-m-d 23:59:59",$date);
+    $user = $_SESSION["user"];
+    ob_start();
+    ?&gt;
+    &lt;span class="h1"&gt;&lt;?=$dia ?&gt;&lt;/span&gt;&lt;span class="h2"&gt;&lt;?=$mes ?&gt;&lt;br /&gt;&lt;?=$diaSemana ?&gt;&lt;/span&gt;&lt;span class="h3"&gt; &amp;nbsp; &lt;?=$anio ?&gt;&lt;/span&gt;
+    &lt;hr /&gt;
+    &lt;?php
+<select_table model="reminder" limit="" offset="" order="" columns="" var="$rows" criteria="rem_from=$user;date&gt;=$date0;date&lt;=$date1" __ideNodeOpen="true">print '&lt;div class="page_rem"&gt;';
+foreach($rows as $row){
+  print '&lt;div class="rem"&gt;&lt;span class="rem_fieldLabel"&gt;To:&lt;/span&gt;&lt;span class="rem_to"&gt;'.$row-&gt;TO.'&lt;/span&gt;&lt;br /&gt;&lt;span class="rem_fieldLabel"&gt;Subject:&lt;/span&gt;&lt;span class="rem_subject" &gt;'.$row-&gt;SUBJECT.'&lt;/span&gt;&lt;br /&gt;&lt;span class="rem_fieldLabel"&gt;Time:&lt;/span&gt;&lt;span class="rem_subject" &gt;'.$row-&gt;TIME.'&lt;/span&gt;&lt;br /&gt;&lt;span class="rem_body2"&gt;'.$row-&gt;BODY.'&lt;/span&gt;&lt;/div&gt;';
+}
+print '&lt;/div&gt;';
+</select_table>
+    $cont=ob_get_contents();
+    ob_end_clean();
+    return 'buffer.buffer['.$b.'].innerHTML=' . json_encode($cont) . ';'.
+           'buffer.date['.$b.']='.json_encode(Date("Y-m-d",$date)).';';
+  }
+  function getTabs(){
+    $res=array();
+    for($mes=1;$mes&lt;=12;$mes++){
+      $date=strtotime("2011-".substr("0".$mes,-2,2)."-01");
+      $page=Date("z",$date)+0;
+      $mesL=Date("M",$date);
+      $res[]=array("i"=&gt;($mes-1),"L"=&gt;$mesL,"p"=&gt;$page);
+    }
+    return $res;
+  }
+
+<bookfn name="getNextReminders()" __ideNodeOpen="true">
+$today = mktime(0, 0, 0, /*date("n")*/1, 1/*date("j")*/, date("Y"));
+<select_table model="reminder" limit="5" offset="" order="SEND_ON ASC" columns="" var="$rows" criteria="SEND_ON&gt;=$today" __ideNodeOpen="true">
+foreach($rows as $row) {
+  $res .= "&lt;li&gt;".$row-&gt;DATE." ".$row-&gt;TIME." ".$row-&gt;SUBJECT."&lt;/li&gt;";
+}
+return $res;</select_table></bookfn>
+}
+</file><controller name="index" descripcion="" author="" __ideNodeOpen="true"><action name="index" noRender="false" descripcion="" loadParams="" __ideNodeOpen="true"/><phtml name="index">&lt;html style="background-image:url(../../images/wood_bg.jpg)"&gt;
+&lt;head&gt;
+&lt;link href="../../book.css" type="text/css" rel="stylesheet" /&gt;
+&lt;link href="../../jquery/css/ui-lightness/jquery-ui-1.8.13.custom.css" type="text/css" rel="stylesheet" /&gt;
+&lt;script type="text/javascript" src="../../jquery/js/jquery-1.5.1.min.js"&gt;&lt;/script&gt;
+&lt;script type="text/javascript" src="../../jquery/js/jquery-ui-1.8.13.custom.min.js"&gt;&lt;/script&gt;
+&lt;link rel="stylesheet" type="text/css" href="../../jquery.ptTimeSelect.css" media="screen" /&gt;
+&lt;script type="text/javascript" language="JavaScript" src="../../jquery.ptTimeSelect.js"&gt;&lt;/script&gt;
+&lt;script type="text/javascript" language="JavaScript" src="../../reminders.js"&gt;&lt;/script&gt;
+&lt;/head&gt;
+&lt;body onload="window.book=new a(document.body);"&gt;
+&lt;/body&gt;
+&lt;/html&gt;</phtml><action name="page" __ideNodeOpen="true" noRender="true">
+require_once("../library/book.class.php");
+
+print book::getPage($_GET["i"], $_GET["b"]);
+</action><action name="control" __ideNodeOpen="true" noRender="true">
+require_once("../library/book.class.php");
+ob_start();
+?&gt;
+&lt;div class="ctl_label"&gt;&lt;button type="button" onclick="window.remindEmail()"&gt;&lt;img src="../../images/mail.gif"/&gt;&lt;/button&gt;Create an Email-reminder&lt;/div&gt;
+&lt;div id="datepicker" style="font-size:10px"&gt;&lt;/div&gt;
+&lt;div class="ctl_label"&gt;&lt;button type="button" onclick="window.remindTemplate()"&gt;&lt;img src="../../images/rm_template.png"/&gt;&lt;/button&gt;Template&lt;/div&gt;
+&lt;div class="templateWindow" style="display:none;"&gt;&lt;/div&gt;
+&lt;ul id="nextreminders" style="display:none;"&gt;&lt;?php print book::getNextReminders() ?&gt;&lt;/ul&gt;
+&lt;?php
+$cont=ob_get_contents();
+ob_end_clean();
+?&gt;
+window.remindEmail=function(){
+  var page=book.insert('&lt;div class="rem"&gt;&lt;span class="rem_fieldLabel"&gt;To:&lt;/span&gt;&lt;input class="rem_to" name="to" value="to@email.com"/&gt;&lt;br /&gt;&lt;span class="rem_fieldLabel"&gt;Subject:&lt;/span&gt;&lt;input class="rem_subject" name="subject"/&gt;&lt;br /&gt;&lt;span class="rem_fieldLabel"&gt;Time:&lt;/span&gt;&lt;input class="rem_subject inputTime" name="time"/&gt;&lt;br /&gt;&lt;textarea class="rem_body" name="body"&gt;&lt;/textarea&gt;&lt;span style="display:inline-block"&gt;&lt;a class="button" href="#" onclick="cancela_reg(this.parentNode)"&gt;&lt;img src="../../images/dialog-delete.gif"/&gt;&lt;/a&gt;&lt;br /&gt;&lt;a class="button" href="#" onclick="registrar(this.parentNode.parentNode)"&gt;&lt;img src="../../images/check.png"/&gt;&lt;/a&gt;&lt;/span&gt;&lt;/div&gt;');
+  $(page).find("[name=to]").select();
+  $('.inputTime').ptTimeSelect();
+}
+window.remindTemplate=function(){
+  $('.templateWindow').show();
+  var page=book.insert('&lt;div class="rem template00001"&gt;&lt;span class="rem_fieldLabel"&gt;To:&lt;/span&gt;&lt;input class="rem_to" name="to" value="to@email.com"/&gt;&lt;br /&gt;&lt;span class="rem_fieldLabel"&gt;Subject:&lt;/span&gt;&lt;input class="rem_subject" name="subject"/&gt;&lt;br /&gt;&lt;span class="rem_fieldLabel"&gt;Time:&lt;/span&gt;&lt;input class="rem_subject inputTime" name="time"/&gt;&lt;br /&gt;&lt;textarea class="rem_body" name="body" onchange="refreshTemplate(this.value)"&gt;&lt;/textarea&gt;&lt;span style="display:inline-block"&gt;&lt;a class="button" href="#" onclick=""&gt;&lt;img src="../../images/rm_preview.png"/&gt;&lt;/a&gt;&lt;br /&gt;&lt;a class="button" href="#" onclick="cancela_reg(this.parentNode);$(\'.templateWindow\').hide();"&gt;&lt;img src="../../images/dialog-delete.gif"/&gt;&lt;/a&gt;&lt;br /&gt;&lt;a class="button" href="#" onclick="registrar(this.parentNode.parentNode,\'carnaval\');$(\'.templateWindow\').hide();"&gt;&lt;img src="../../images/check.png"/&gt;&lt;/a&gt;&lt;/span&gt;&lt;/div&gt;');
+  $(page).find("[name=to]").select();
+  $('.inputTime').ptTimeSelect();
+}
+window.refreshTemplate=function(body){
+  $.ajax({
+    url:"template",
+    "type":"GET",
+    data:{"body":body},
+    dataType:"text",
+    success:function(res){
+      $(".templateWindow").html(res);
+    }
+  })
+}
+window.registrar=function(pa,tpl){
+  var to=$(pa).find("[name=to]")[0].value;
+  var subject=$(pa).find("[name=subject]")[0].value;
+  var body=$(pa).find("[name=body]")[0].value;
+  var time=$(pa).find("[name=time]")[0].value;
+  if(!tpl)tpl="";
+  enviar("remind",{to:to,subject:subject,body:body,date:buffer.getDate(paginaActual),time:time,template:tpl});
+}
+window.cancela_reg=function(){
+  buffer.loadPage(paginaActual);
+}
+window.datepicker={
+  onSelect:function(){
+    var $sel = $("#datepicker").datepicker("getDate");
+    var $first = new Date($sel.getFullYear(),0,1);
+    irA(Math.ceil(($sel - $first) / 86400000));
+  },
+  onChangePage:function(){
+    var $sel = $("#datepicker").datepicker("getDate");
+    var $first = new Date(2012,0,1);
+    var $doy = Math.ceil(($sel - $first) / 86400000);
+    if(paginaActual!=$doy) {
+      $sel.setDate($sel.getDate() + (paginaActual-$doy) );
+      $("#datepicker").datepicker("setDate", $sel );
+    }
+  }
+}
+$(".control").html(&lt;?php print json_encode($cont) ?&gt;);
+$("#datepicker").datepicker({inline:true,onSelect:function(){window.datepicker.onSelect()}});
+datepicker.onChangePage();
+$("#nextreminders").selectable();
+&lt;?php</action><action name="tabs" __ideNodeOpen="true" noRender="true">
+require_once("../library/book.class.php");
+
+print "var tabs=" . json_encode(book::getTabs()). ";";
+
+?&gt;
+for(var i=0,l=tabs.length;i&lt;l;i++){
+  book.addTab(tabs[i].i,tabs[i].L,tabs[i].p);
+}
+&lt;?php</action><action name="remind" __ideNodeOpen="true" noRender="true" loadParams="true">
+//ini_set("display_errors","on");
+//error_reporting(E_ALL);
+
+$user = $_SESSION["user"];
+
+list($Y,$m,$d) = explode("-",$date);
+preg_match('/(\d+):(\d+) (\w+)/', $time, $ma);
+list($tm,$H,$i,$ampm) = $ma;
+
+if($H=="12") {if($ampm=="AM") $H=0;}
+else {if($ampm=="PM") $H=$H+12;}
+$H = $H % 24;
+
+$send_on = mktime($H, $i, 0, $m, $d, $Y);
+
+<insert_row model="reminder" var="$values" values="to=$to;subject=$subject;body=$body;date=$date;rem_from=$user;time=$time;sent=0;send_on=$send_on;template=$template" __ideNodeOpen="false"/>?&gt;
+buffer.loadPage(paginaActual);
+&lt;?php</action><action name="login" __ideNodeOpen="true" noRender="true" loadParams="$user,$password"><select_row model="usuario" var="$rowReminder" criteria="usr_login=$user" __ideNodeOpen="true">
+if($row){
+  require_once("../library/book.class.php");
+  
+  print book::login($row-&gt;usr_login, $password);
+ 
+} else {
+  print '$("#user")[0].value="";$("#password")[0].value="";$("#loginmsg").html("Failed login.");$("#user")[0].focus();';
+
+}</select_row><select_row model="wp_est_users" var="$row" criteria="user_login=$user" __ideNodeOpen="true">
+if($row){
+  $hash = $row-&gt;user_pass;
+  require_once( '../../wp-includes/class-phpass.php');
+  $wp_hasher = new PasswordHash(8, TRUE);
+  $check = $wp_hasher-&gt;CheckPassword($password, $hash);
+  if($check ) {
+    if(!$rowReminder){
+      $t= new usuario();
+      $t-&gt;insert(array(
+        "usr_login"=&gt;$row-&gt;user_login,
+        "usr_password"=&gt;md5($password),
+        "usr_email"=&gt;$row-&gt;user_email
+      ));
+    }
+    require_once("../library/book.class.php");
+    print book::login($row-&gt;user_login, $password);
+    return;
+  }  
+} else {
+//  print '$("#user")[0].value="";$("#password")[0].value="";$("#loginmsg").html("Failed login.");$("#user")[0].focus();';
+
+}</select_row><select_row model="usuario" var="$row" criteria="usr_login=$user;usr_password=md5($password)" __ideNodeOpen="true">
+if($row){
+  require_once("../library/book.class.php");
+  
+  print book::login($row-&gt;usr_login, $password);
+ 
+} else {
+  print '$("#user")[0].value="";$("#password")[0].value="";$("#loginmsg").html("Failed login.");$("#user")[0].focus();';
+
+}</select_row></action><action name="template" noRender="false" descripcion="" loadParams="$body" __ideNodeOpen="true">
+$body = htmlentities($body, ENT_NOQUOTES, 'utf-8');
+$body = str_replace("\n\r", "\n", $body);
+$lines = explode("\n", $body);
+$nextLines = $lines;
+unset($nextLines[0]);
+$nextLines = implode("&lt;br /&gt;",$nextLines);
+$body = implode("&lt;br /&gt;",$lines);
+
+$this-&gt;view-&gt;firstLine=$lines[0];
+$this-&gt;view-&gt;nextLines=$nextLines;
+</action><phtml name="template" __ideNodeOpen="true">&lt;table style="width:400px"&gt;&lt;tbody&gt;
+&lt;tr&gt;&lt;td width="240px"&gt;&lt;img src="http://www.remindersbook.com/reminder/html/images/rm_carnaval001.jpg" width="240"/&gt;&lt;/td&gt;
+&lt;td&gt;&lt;p style="font-size:21pt;color:#301D4A;font-family:'Lucida Casual', 'Comic Sans MS', cursive, sans-serif;"&gt;&lt;?php print $this-&gt;firstLine ?&gt;&lt;/p&gt;&lt;br /&gt;&lt;br /&gt;
+&lt;p style="font-size:14pt;color:#263321;font-family:'Lucida Casual', 'Comic Sans MS', cursive, sans-serif;"&gt;&lt;?php print $this-&gt;nextLines ?&gt;&lt;/p&gt;&lt;/td&gt;&lt;/tr&gt;
+&lt;/tbody&gt;&lt;/table&gt;
+&lt;img src="http://www.remindersbook.com/reminder/html/images/rm_footer.png"&gt;</phtml></controller><controller name="remind" descripcion="" author="" __ideNodeOpen="true"><action name="cron" noRender="true" descripcion="" loadParams="false" __ideNodeOpen="true">
+//text
+
+$timestamp = time();
+
+print $timestamp;
+
+<select_table model="reminder" limit="" offset="" order="" columns="" var="$rows" criteria="SENT=0;SEND_ON&lt;=$timestamp" __ideNodeOpen="true">
+REQUIRE_ONCE("Zend/Mail/Transport/Smtp.php");
+REQUIRE_ONCE("Zend/Mail.php");
+
+//$password = substr(md5("remindersbook"),0,16);
+  $config = array('ssl' =&gt; 'tls', 'port' =&gt; 587, 'auth' =&gt; 'login', 'username' =&gt; 'reminderbook@hotmail.com', 'password' =&gt; '24cb9a886cef7774');
+  $tr = new Zend_Mail_Transport_Smtp('smtp.live.com', $config);
+/*  $config = array('ssl' =&gt; 'tls', 'port' =&gt; 587, 'auth' =&gt; 'login', 'username' =&gt; 'remindersbook@gmail.com', 'password' =&gt; '24cb9a886cef7774');
+  $tr = new Zend_Mail_Transport_Smtp('smtp.gmail.com', $config);*/
+  
+  Zend_Mail::setDefaultTransport($tr);
+
+foreach($rows as $row ){
+try{
+  $to = $row-&gt;TO;
+  $from = $row-&gt;REM_FROM;
+  $message = $row-&gt;BODY;
+
+var_dump($from, $to, $message);
+  
+  $mail = new Zend_Mail();
+  
+  $fromName=explode("@",$fromName);
+  $fromName=$fromName[0];
+  var_dump( $fromName );
+  
+  $mail-&gt;setFrom("reminderbook@hotmail.com", $from );
+  $mail-&gt;addTo($to, $to);
+  $mail-&gt;setSubject($row-&gt;SUBJECT?$row-&gt;SUBJECT:"Reminder");
+if($row-&gt;TEMPLATE) {
+$body = htmlentities($message, ENT_NOQUOTES, 'utf-8');
+$body = str_replace("\n\r", "\n", $body);
+$lines = explode("\n", $body);
+$nextLines = $lines;
+unset($nextLines[0]);
+$nextLines = implode("&lt;br /&gt;",$nextLines);
+$body = implode("&lt;br /&gt;",$lines);
+
+$firstLine=$lines[0];
+$nextLines=$nextLines;
+
+  ob_start();
+  ?&gt;
+&lt;table style="width:400px"&gt;&lt;tbody&gt;
+&lt;tr&gt;&lt;td width="240px"&gt;&lt;img src="http://www.remindersbook.com/reminder/html/images/rm_carnaval001.jpg" width="240"/&gt;&lt;/td&gt;
+&lt;td&gt;&lt;p style="font-size:21pt;color:#301D4A;font-family:'Lucida Casual', 'Comic Sans MS', cursive, sans-serif;"&gt;&lt;?php print $firstLine ?&gt;&lt;/p&gt;&lt;br /&gt;&lt;br /&gt;
+&lt;p style="font-size:14pt;color:#263321;font-family:'Lucida Casual', 'Comic Sans MS', cursive, sans-serif;"&gt;&lt;?php print $nextLines ?&gt;&lt;/p&gt;&lt;/td&gt;&lt;/tr&gt;
+&lt;/tbody&gt;&lt;/table&gt;
+&lt;img src="http://www.remindersbook.com/reminder/html/images/rm_footer.png"&gt;
+&lt;?php
+  $htmlMessage = ob_get_contents();
+  ob_end_clean();
+} else {
+  $htmlMessage = '&lt;div style="width:350px;border:1px solid #99BBE8;border-radius:4px;-webkit-border-radius:4px;-moz-border-radius:4px;"&gt;
+&lt;div style="color:#15428B;font-family:tahoma,arial,verdana,sans-serif;font-size:11px;font-weight:bold;padding:2px 4px;background-color:#BAD0EE;border-bottom:1px solid #99BBE8;"&gt;Reminder&lt;/div&gt;
+&lt;div style="font-family:tahoma,arial,verdana,sans-serif;font-size:11px;padding:4px;background-color:#DFE8F6;"&gt;'.htmlentities($message, ENT_NOQUOTES, 'utf-8').'&lt;/div&gt;
+&lt;div style="font-family:tahoma,arial,verdana,sans-serif;font-size:11px;padding:4px;background-color:#DFE8F6;"&gt;&lt;br /&gt;Visit us at: &lt;a href="http://legado.boliviaincuba.net/"&gt;legado.boliviaincuba.net&lt;/a&gt;&lt;/div&gt;
+&lt;div style="font-family:tahoma,arial,verdana,sans-serif;font-size:11px;padding:4px;background-color:#DFE8F6;"&gt;or at Facebook: &lt;a href="http://www.facebook.com/pages/Reminders-Book/161988810566105?sk=app_278343152208414"&gt;Reminders-Book&lt;/a&gt;&lt;/div&gt;
+&lt;/div&gt;';
+}
+  $mail-&gt;setBodyHtml($htmlMessage);
+  //$mail-&gt;setBodyText($message);
+  $mail-&gt;send();
+  
+  $row-&gt;SENT=1;
+  $row-&gt;save();
+} catch(Exception $e){
+  //throw $e;
+  var_dump($e-&gt;getMessage());
+}
+}
+
+</select_table></action><action name="install" noRender="true" descripcion="" loadParams="" __ideNodeOpen="true">
+require_once("../model/connection.php");
+$db =  Zend_Db_Table_Abstract::getDefaultAdapter();
+
+/*** ALTER TABLE `reminder` ADD `TEMPLATE` VARCHAR( 16 ) NOT NULL  ***/
+//$db-&gt;query('ALTER TABLE `reminder` ADD `TEMPLATE` VARCHAR( 16 ) NOT NULL');
+
+$q="show tables";
+if(isset($q)){
+  $stmt = $db-&gt;query($q);
+  $maxrows=15;
+  $continue=true;
+  for($i=0;$i&lt;$maxrows;$i++){
+    $row = $stmt-&gt;fetch();
+    if($row)$result[]=$row; else {$continue=false;break;}
+  }
+  var_dump($result);
+}
+
+$password = 'reminder.123';
+$hash = '$P$BrBd1mn5nvmOw6pUG6BWeELMxOSntj/';
+require_once( '../../wp-includes/class-phpass.php');
+$wp_hasher = new PasswordHash(8, TRUE);
+$check = $wp_hasher-&gt;CheckPassword($password, $hash);
+var_dump($check );
+</action></controller><connection driver="Mysqli" host="localhost" username="llankay_reminder" password="reminder" dbname="llankay_reminder" __ideNodeOpen="true"><table name="reminder" table="reminder" primaryKey="" dependentTables=""/><table name="usuario" table="usuario" primaryKey="" dependentTables="" __ideNodeOpen="false"/></connection><file name="html/book.css" preprocess="" __ideNodeOpen="true">.contenido{
+  padding-left:20px;
+  padding-top:20px;
+}
+.page{
+  height: 324px;
+  width: 280px;
+}
+.page_rem{
+  height: 254px;
+  width: 280px;
+  overflow:auto;
+}
+.h1{
+  font-size: 40px;
+  margin: 0px;
+  display:inline-block;
+}
+.h2{
+  font-size: 12px;
+  display:inline-block;
+}
+.h3{
+  font-size: 14px;
+  display:inline-block;
+  font-weight:bold;
+}
+hr{
+  margin: 0px;
+}
+.tab{
+  background-color:white;
+  border-top:1px solid #888888;
+  border-bottom:1px solid #888888;
+  border-right:1px solid #888888;
+  width:32px;
+  overflow:hidden;
+  cursor:pointer;
+}
+.control{
+}
+pre{
+  display:inline-block;
+  margin:2px;
+}
+.rem{
+  font-family: serif;
+  font-size: 12px;
+  color:black;
+}
+.rem_to{
+  font-family: serif;
+  font-size: 12px;
+  color:blue;
+  border-top:none;
+  border-left:none;
+  border-right:none;
+  border-bottom:1px dashed black;
+  width:200px;
+}
+.rem_subject{
+  font-family: serif;
+  font-size: 12px;
+  color:black;
+  font-weight: bold;
+  border-top:none;
+  border-left:none;
+  border-right:none;
+  border-bottom:1px dashed black;
+  width:200px;
+}
+.rem_fieldLabel{
+  display:inline-block;
+  width:60px;
+  text-align:right;
+}
+.rem_body{
+  font-family: serif;
+  font-size: 12px;
+  color:black;
+  width:228px;
+  height:60px;
+}
+.rem_body2{
+  font-family: serif;
+  font-size: 12px;
+  color:black;
+  width:228px;
+  white-space:pre;
+}
+img{
+  border:none;
+}
+.ctl_label{
+  color: black;
+  font-family: cursive;
+  font-size: 12px;
+  font-weight: bold;
+}
+.templateWindow{
+  width:280px;
+  height:180px;
+  border:3px solid black;
+  background-color:white;
+  overflow:auto;
+}</file><resource path="jquery.ptTimeSelect.css" folder="html"/><resource path="jquery.ptTimeSelect.js" folder="html"/><file name="html/reminders.js" preprocess="jscompressor" __ideNodeOpen="true">Date.prototype.getDOY = function() {
+  var onejan = new Date(this.getFullYear(),0,1);
+  return Math.ceil((this - onejan) / 86400000);
+}
+for(var i=0,l=15;i&lt;=l;i++){
+  var pic1= new Image(100,25); 
+  pic1.src="hoja"+i+".gif"; 
+}
+function a(DEST){
+  var x0=350-300,y0=100-60;
+  var Wt=355;  //tapa
+  var Hf=510;
+  var H0=394;
+  var H1=364;
+  var W0=690/2;
+  var W1=600/2;
+  var div=document.createElement("div");
+  var xpos=[];
+  xpos.push(300);
+  xpos.push(288);
+  xpos.push(276);
+  xpos.push(263);
+  xpos.push(249);
+  xpos.push(234);
+  xpos.push(217);
+  xpos.push(200);
+  xpos.push(180);
+  xpos.push(160);
+  xpos.push(137);
+  xpos.push(114);
+  xpos.push(89);
+  xpos.push(63);
+  xpos.push(36);
+  xpos.push(0);
+  div.style.position="absolute";
+  div.style.left=x0+"px";
+  div.style.top=y0+"px";
+  var i=0;
+  div.innerHTML=
+    '&lt;map name="FPMap0"&gt;'
+    +'&lt;area coords="'+(W0-128)+', '+(0)+', '+(W0)+', '+(H0)+'" shape="rect" href="javascript:atras()"&gt;'
+    +'&lt;area coords="'+(W0+W1-56)+', '+(0)+', '+(W0+W1+4)+', '+(H0)+'" shape="rect" href="javascript:adelante()"&gt;'
+    +'&lt;/map&gt;'
+    +'&lt;img onclick="book.open();" style="position:absolute;left:'+(W0-Wt)+'px;top:'+((H1-H0)/2)+'px" src="../../images/tapa2011.jpg"/&gt;'
+    +'&lt;img usemap="#FPMap0" style="position:absolute;left:-'+W0+'px;top:'+((H1-H0)/2)+'px" src="../../images/book.png"/&gt;'
+    +'&lt;div style="position:absolute;display:none;overflow:hidden;left:'+(xpos[i])+'px;width:'+(W1-xpos[i])+'px;height:'+H1+'px"&gt;&lt;div class="contenido" style="position:absolute;width:'+(W1)+'px;height:'+H1+'px"&gt;&lt;/div&gt;&lt;/div&gt;'
+    +'&lt;div style="position:absolute;overflow:hidden;left:0px;width:'+xpos[i]+'px;height:'+H1+'px"&gt;&lt;div class="contenido"  style="position:absolute;left:0px;width:'+(W1)+'px;height:'+H1+'px"&gt;&lt;/div&gt;&lt;/div&gt;'
+    +'&lt;img style="position:absolute;display:none;left:-'+W1+'px;top:'+((H1-Hf)/2)+'px" src="../../images/hoja'+i+'.gif"/&gt;'
+    +'&lt;img style="position:absolute;cursor:pointer;left:'+(W1-32)+'px;top:'+(H1-39)+'px" src="../../images/esq.png" seve="0" onmousemove="if(this.getAttribute(\'seve\')!=\'1\') {$(this).fadeTo(300, 1);this.setAttribute(\'seve\',1);}" onmouseout="$(this).fadeTo(0, 0.3);this.setAttribute(\'seve\',0);" onclick="adelante()"/&gt;'
+    +'&lt;div class="control" style="position:absolute;display:none;left:'+(W0+8)+'px;width:220px;height:'+H0+'px"&gt;&lt;/div&gt;';
+  DEST.appendChild(div);
+  var tapa=div.childNodes[1];
+  var fondo=div.childNodes[2];
+  var hoja2=div.childNodes[3];
+  var hoja1=div.childNodes[4];
+  var flip=div.childNodes[5];
+  var corner=div.childNodes[6];
+  var control=div.childNodes[7];
+  var inter;
+  this.getInter=function(){return inter};
+  this.hoja1=hoja1;
+  this.hoja2=hoja2;
+  var me=this;
+  corner.style.display="none";
+  $(corner).fadeTo(0, 0.3);
+  this.close=function(){
+    tapa.style.display="block";
+    fondo.style.display="none";
+    hoja2.style.display="none";
+    hoja1.style.display="none";
+    flip.style.display="none";
+    corner.style.display="none";
+    $(".tab").hide();
+  }
+  this.logged=false;
+  this.loginPage=function(){
+    this.normal();
+    paginaActual=-1;
+    this.logged=false;
+    book.loadPage(hoja1,buffer.getPage(paginaActual));
+  }
+  this.login=function(user,password){
+    $.ajax({
+      url:"login",
+      type:"GET",
+      dataType:'text',
+      data:{user:user,password:password,"t":new Date().getTime()},
+      success:function(r){
+        eval(r);
+      }
+    });
+  }
+  this.open=function(){
+    if(!this.logged) return this.loginPage();
+    this.normal();
+    paginaActual=0;
+    book.loadPage(hoja1,buffer.getPage(paginaActual));
+    book.loadTabs();
+    book.loadControl();
+    $(".tab").show();
+    $(".control").show();
+  }
+  this.normal=function(){
+    tapa.style.display="none";
+    fondo.style.display="block";
+    hoja2.style.display="none";
+    hoja1.style.display="block";
+    hoja1.style.width=W1+"px";
+    flip.style.display="none";
+    corner.style.display="block";
+  }
+  this.loadPage=function(page,cont){
+    if(typeof(cont)=="string") page.firstChild.innerHTML=cont;
+    else {$(page.firstChild).empty();if(cont)page.firstChild.appendChild(cont)}
+  }
+  this.flipFw=function(cont){
+    clearInterval(inter);
+    hoja2.style.display="none";
+    me.loadPage(hoja2,cont);
+    var j=0;
+    inter=setInterval(function(){
+        if(j&gt;=15){
+          clearInterval(inter);
+          me.loadPage(hoja1,cont);
+          me.normal();
+          return;
+        }
+        j=j+2;
+        if(j&gt;15)j=15;
+        me.flipSet(j);
+      },
+    50);
+  }
+  this.flipBk=function(cont){
+    clearInterval(inter);
+    hoja2.style.display="block";
+    hoja2.style.left="0px";
+    hoja2.style.width=W1+"px";
+    me.loadPage(hoja2,hoja1.firstChild.firstChild);
+    hoja1.style.display="none";
+    me.loadPage(hoja1,cont);
+    var j=15;
+    inter=setInterval(function(){
+        if(j&lt;=0){
+          clearInterval(inter);
+          me.normal();
+          return;
+        }
+        j=j-2;
+        if(j&lt;0)j=0;
+        me.flipSet(j);
+      },
+    50);
+  }
+  this.flipSet=function(i){
+    if(i&gt;15) {hoja1.style.display="none";flip.style.display="none";return;}
+    if(i==0) hoja2.style.display="none";
+    corner.style.display="none";
+    hoja2.style.display="block";
+    hoja2.style.left=xpos[i]+'px';
+    hoja2.firstChild.style.left=(-xpos[i])+'px';
+    hoja2.style.width=(W1-xpos[i])+'px';
+    hoja1.style.width=xpos[i]+'px';
+    hoja1.style.display="block";
+    flip.src="../../images/hoja"+i+".gif";
+    flip.style.display="block";
+  }
+  this.tabs=[];
+  this.addTab=function(i,cont,page){
+    var tab=document.createElement("div");
+    tab.style.position="absolute";
+    tab.style.left=(W1+8)+"px";
+    tab.style.top=(24*i+4)+"px";
+    tab.innerHTML=cont;
+    tab.className="tab";
+    createIndex(tab,page);
+    this.tabs[i]={"L":tab,"p":page};
+    div.appendChild(tab);
+  }
+  this.loadTabs=function(){
+    $.ajax({
+      url:"tabs",
+      type:"GET",
+      dataType:'text',
+      data:{"t":new Date().getTime()},
+      success:function(r){
+        eval(r);
+      }
+    });
+  }
+  this.loadControl=function(){
+    $.ajax({
+      url:"control",
+      type:"GET",
+      dataType:'text',
+      data:{"t":new Date().getTime()},
+      success:function(r){
+        eval(r);
+      }
+    });
+  }
+  this.insert=function(html){
+    var page=buffer.getPage(paginaActual);
+    $(page).find(".page_rem")[0].innerHTML+=html;
+    return page;
+  }
+  this.close();
+}
+var buffer={
+  buffer:[],
+  date:[],
+  loadPage:function(i){
+    i=i+10;
+    if(!buffer.buffer[i]) {
+      buffer.buffer[i]=document.createElement("div");
+      buffer.buffer[i].className="page";
+    }
+    $.ajax({
+      url:"page",
+      type:"GET",
+      dataType:'text',
+      data:{"i":(i-10),"b":i,"t":new Date().getTime()},
+      success:function(r){
+        eval(r);
+      }
+    });
+  },
+  getPage:function(i){
+    i=i+10;
+    if(!this.buffer[i]) this.loadPage(i-10);
+    return this.buffer[i];
+  },
+  getDate:function(i){
+    i=i+10;
+    return this.date[i];
+  }
+}
+function createIndex(tab,page){
+  tab.onclick=function(){
+    if(page&gt;paginaActual)adelante(page);
+    if(page&lt;paginaActual)atras(page);
+  }
+}
+var paginaActual=0;
+function atras(page){
+  if(typeof(page)!="undefined")paginaActual=page; 
+  else {if(paginaActual&gt;0) paginaActual--; else {book.close();return;}}
+  book.flipBk(buffer.getPage(paginaActual));
+  if(datepicker)datepicker.onChangePage(paginaActual);
+}
+function adelante(page){
+  if(typeof(page)!="undefined") paginaActual=page; 
+  else paginaActual++;
+  book.flipFw(buffer.getPage(paginaActual));
+  if(datepicker)datepicker.onChangePage(paginaActual);
+}
+function irA(page){
+  if(paginaActual&lt;page) adelante(page);
+  if(paginaActual&gt;page) atras(page);
+}
+function enviar(url,data,dest){
+  data.t=new Date().getTime();
+  $.ajax({
+    url:url,
+    type:"GET",
+    dataType:'text',
+    data:data,
+    success:function(r){
+      eval(r);
+    }
+  });
+}</file><connection driver="Mysqli" host="localhost" username="root" password="root" dbname="reminder" __ideNodeOpen="true"><table name="reminder" table="reminder" primaryKey="" dependentTables=""/><table name="usuario" table="usuario" primaryKey="" dependentTables="" __ideNodeOpen="false"/><table name="wp_est_users" table="wp_est_users" primaryKey="" dependentTables="" __ideNodeOpen="false"/></connection><resource path="rm_template.png" folder="html/images"/><resource path="rm_preview.png" folder="html/images"/><resource path="rm_footer.png" folder="html/images"/><resource path="rm_carnaval001.jpg" folder="html/images"/></application></root>

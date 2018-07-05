@@ -1,0 +1,700 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root><path path="output/warii" main="output/warii/createmap.php" __ideNodeOpen="true"><component name="building" transparent="" precode="" __ideNodeOpen="true">&lt;button name="@{$name}" title="@{str_replace(';',"\n",$title)}" type="button" data-cost="player.money&gt;=@{$cost}" 
+    data-selector="@{@htmlentities($selector, ENT_QUOTES, 'utf-8')}" 
+    data-onbuy="buy(@{$cost});@{htmlentities($onbuy, ENT_QUOTES, 'utf-8')}" 
+    data-image="@{$icon}" clone-name="@{@$clone}" 
+    data-ontime="@{htmlentities(@node::content($_nodes['ontime']), ENT_QUOTES, 'utf-8')}" &gt;&lt;img src="@{$icon}"&gt;@{empty($label)?$name:$label} (Cost:@{$cost})&lt;/button&gt;
+</component><component name="selector" transparent="" precode="" __ideNodeOpen="true">&lt;button title="@{str_replace(';',"\n",$title)}" type="button" data-cost="player.money&gt;=@{$cost}" 
+    data-selector="@{htmlentities($selector, ENT_QUOTES, 'utf-8')}" 
+    data-onbuy="buy(@{$cost});@{htmlentities($onbuy, ENT_QUOTES, 'utf-8')}" 
+    data-image="@{$icon}" data-type="selector"
+    data-ontime="@{htmlentities(node::content($_), ENT_QUOTES, 'utf-8')}" &gt;&lt;img src="@{$icon}"&gt;@{$name} (Cost:@{$cost})&lt;/button&gt;
+</component><component name="tab" transparent="" precode="" __ideNodeOpen="true">&lt;div id="@{$name}"&gt;
+@{node::content($_)}
+&lt;/div&gt;</component><component name="ontime" transparent="" precode="" __ideNodeOpen="true">@{node::content($_)}</component><component name="clone_ontime" transparent="" precode="" __ideNodeOpen="true">@{node::content($_)}</component><file name="createmap.php" preprocess="" __ideNodeOpen="true">&lt;?php
+/**
+ * @$cR=color Range
+ */
+define("R",0);
+define("G",1);
+define("B",2);
+define("MAXDIFF2", 10*10);
+function colorIs($cR, $r,$g,$b){
+  $tr=($r-$cR[0][R])/($cR[1][R]-$cR[0][R]);
+  if($tr&lt;=1 &amp;&amp; $tr&gt;=0){
+    $t=$tr;
+    $r1=$cR[0][R]+$t*($cR[1][R]-$cR[0][R]);
+    $g1=$cR[0][G]+$t*($cR[1][G]-$cR[0][G]);
+    $b1=$cR[0][B]+$t*($cR[1][B]-$cR[0][B]);
+    $err=(($r-$r1)*($r-$r1)+($g-$g1)*($g-$g1)+($b-$b1)*($b-$b1))/3;
+    if($err&lt;=MAXDIFF2) return true;
+  }
+  $tg=($r-$cR[0][G])/($cR[1][G]-$cR[0][G]);
+  if($tg&lt;=1 &amp;&amp; $tg&gt;=0){
+    $t=$tg;
+    $r1=$cR[0][R]+$t*($cR[1][R]-$cR[0][R]);
+    $g1=$cR[0][G]+$t*($cR[1][G]-$cR[0][G]);
+    $b1=$cR[0][B]+$t*($cR[1][B]-$cR[0][B]);
+    $err=(($r-$r1)*($r-$r1)+($g-$g1)*($g-$g1)+($b-$b1)*($b-$b1))/3;
+    if($err&lt;=MAXDIFF2) return true;
+  }
+  $tb=($r-$cR[0][B])/($cR[1][B]-$cR[0][B]);
+  if($tb&lt;=1 &amp;&amp; $tb&gt;=0){
+    $t=$tb;
+    $r1=$cR[0][R]+$t*($cR[1][R]-$cR[0][R]);
+    $g1=$cR[0][G]+$t*($cR[1][G]-$cR[0][G]);
+    $b1=$cR[0][B]+$t*($cR[1][B]-$cR[0][B]);
+    $err=(($r-$r1)*($r-$r1)+($g-$g1)*($g-$g1)+($b-$b1)*($b-$b1))/3;
+    if($err&lt;=MAXDIFF2) return true;
+  }
+  return false;
+}
+
+function drawMap($file){
+  $water=array(array(10,10,50),array(48,199,210));
+  $im = imagecreatefromjpeg($file);
+  list($w,$h)=getimagesize($file);
+  echo "&lt;div class='map'&gt;";
+  $square=16;$q=4;
+  $cols=0;
+  for($y=0;$y&lt;$h;$y+=$square){
+    for($x=0;$x&lt;$w;$x+=$square){
+      $cnt=0;$v=0;
+      for($yi=0;$yi&lt;$square &amp;&amp; $y+$yi&lt;$h;$yi+=$q){
+        for($xi=0;$xi&lt;$square &amp;&amp; $x+$xi&lt;$w;$xi+=$q){
+          $rgb = imagecolorat($im, $x+$xi, $y+$yi);
+          $r = ($rgb &gt;&gt; 16) &amp; 0xFF;
+          $g = ($rgb &gt;&gt; 8) &amp; 0xFF;
+          $b = $rgb &amp; 0xFF;
+          colorIs($water, $r,$g,$b)?$v++:0;
+          $cnt++;
+        }
+      }
+      $p=$v/$cnt;
+      if($y==0) $cols++;
+      echo ($p&gt;=0.5)? "&lt;i class='water'&gt;&lt;/i&gt;" : "&lt;i class='earth'&gt;&lt;/i&gt;";
+    }
+    echo "&lt;br/&gt;";
+  }
+  echo "&lt;/div&gt;";
+  ?&gt;
+&lt;script&gt;
+  var $targets=$("#window i");
+  function select(target,sizeX,sizeY){
+    var res=[];
+    var i=$targets.index(target);
+    var l=$targets.length;
+    for(var x=0;x&lt;=sizeX;x++){
+      for(var y=0;y&lt;=sizeY;y++){
+        var j=i+x+y*&lt;?=$cols?&gt;;
+        if(j&gt;=0 &amp;&amp; j&lt;=l &amp;&amp; res.indexOf($targets[j])==-1 ){res.push($targets[j])}
+        var j=i-x+y*&lt;?=$cols?&gt;;
+        if(j&gt;=0 &amp;&amp; j&lt;=l &amp;&amp; res.indexOf($targets[j])==-1 ){res.push($targets[j])}
+        var j=i+x-y*&lt;?=$cols?&gt;;
+        if(j&gt;=0 &amp;&amp; j&lt;=l &amp;&amp; res.indexOf($targets[j])==-1 ){res.push($targets[j])}
+        var j=i-x-y*&lt;?=$cols?&gt;;
+        if(j&gt;=0 &amp;&amp; j&lt;=l &amp;&amp; res.indexOf($targets[j])==-1 ){res.push($targets[j])}
+      }
+    }
+    return $(res);
+  }
+  function getXY(target){
+    if(target.nodeName!="I") target=getI(target);
+    var i=$targets.index(target);
+    return {x:i%&lt;?=$cols?&gt;,y:Math.floor(i/&lt;?=$cols?&gt;),i:target};
+  }
+  function moveXY(img,x,y){
+    var j=x+y*&lt;?=$cols?&gt;;
+    $(img).css("left", x*&lt;?=$square?&gt;+'px');
+    $(img).css("top", y*&lt;?=$square?&gt;+'px');
+    $(img).attr("data-i",j);
+  }
+  function getObjectsAt(x,y){
+    var i=x+y*&lt;?=$cols?&gt;;
+    return $("#window i[data-i="+i+"]");
+  }
+  function resolve(x, y){
+    var res=[];
+    getObjectsAt(x,y).each(function(){
+      var exists=false;
+      for(var i in res){
+        if((res[i].getAttribute("player")==this.getAttribute("player"))
+            &amp;&amp; (res[i].getAttribute("src")==this.getAttribute("src"))){
+          res[i].setAttribute("army", res[i].getAttribute("army")*1 + this.getAttribute("army")*1 );
+          exists=true;
+          this.parentNode.removeChild(this);
+        }
+      }
+      if(!exists){
+        res.push(this);
+      }
+    });
+  }
+  function letsBattle(x,y){
+    
+  }
+&lt;/script&gt;
+&lt;style&gt;
+.water{
+  display:inline-block;
+  height:&lt;?=$square?&gt;;
+  width:&lt;?=$square?&gt;;
+  background-color:rgba(50,80,180,1);
+  overflow:hidden;
+}
+.earth{
+  display:inline-block;
+  height:&lt;?=$square?&gt;;
+  width:&lt;?=$square?&gt;;
+  overflow:hidden;
+  /*border-radius:2px;*/
+  background-color:rgba(128,128,128,1);
+}
+.map{
+  background-image:url(&lt;?=$file?&gt;);
+  width:&lt;?=$w?&gt;px;
+  height:&lt;?=$h?&gt;px;
+  white-space:pre;
+}
+&lt;/style&gt;
+  &lt;?php
+}
+?&gt;
+&lt;style&gt;
+#window i{
+  visibility:hidden;
+  position:relative;
+  opacity:0.5;
+}
+#window i:hover{
+  opacity:0.8;
+}
+/*normal*/
+#window.onplace{
+}
+/*onearth*/
+#window.onearth i.earth{
+  visibility:visible;
+}
+/*onwater*/
+#window.onwater i.water{
+  visibility:visible;
+}
+
+html,body{
+  overflow:hidden;
+  width:100%;
+  height:100%;
+  margin:0px;
+  padding:0px;
+}
+#window{
+  width:100%;
+  height:100%;
+  overflow:auto;
+  position:relative;
+}
+#window img{
+  position:absolute;
+  margin-top:-8px;
+}
+#money{
+  position:absolute;
+  left:0px;
+  top:0px;
+  border:1px solid white;
+  border-radius:2px;
+  color black;
+  background-color:rgba(128,128,128,0.7);
+}
+#options{
+  position:absolute;
+  left:0px;
+  bottom:0px;
+  width:30%;
+  height:30%;
+  overflow:hidden;
+}
+#options div{
+  display:none;
+  border:2px solid white;
+  background-color:rgb(100,100,100);
+  height:90%;
+}
+#options a{
+  height:10%;
+  overflow:hidden;
+  border:1px solid white;
+  border-radius:12px 12px 0px 0px;
+  padding:4px;
+  color black;
+  background-color:rgba(200,200,200,0.7);
+  cursor:pointer;
+  display:inline-block;
+}
+#options a.selected{
+  background-color:rgba(200,200,200,1);
+}
+.blink {
+  animation: blink 1s steps(5, start) infinite;
+  -webkit-animation: blink 1s steps(5, start) infinite;
+}
+@keyframes blink {
+  to {
+    opacity:0;
+  }
+}
+@-webkit-keyframes blink {
+  to {
+    opacity:0;
+  }
+}
+&lt;/style&gt;
+&lt;script src="jquery.js"&gt;&lt;/script&gt;
+&lt;div id="window" class=" "&gt;
+&lt;?php
+$file="earthtruecolor_nasa_big.jpg";
+drawMap($file);
+?&gt;
+&lt;/div&gt;
+&lt;div id="money"&gt;&lt;/div&gt;
+&lt;div id="options"&gt;
+&lt;a src="#buildings"&gt;Buildings&lt;/a&gt;
+&lt;a src="#moves"&gt;Moves&lt;/a&gt;
+&lt;a src="#units"&gt;Units&lt;/a&gt;
+<tab name="buildings"><building cost="100" onbuy="player.treasury.push(this);$(this).attr('treasury',0);var $t=select(target,1,1).filter(&quot;.earth&quot;);$t.setOwner(&quot;p1&quot;, false);" icon="city.gif" name="City" __ideNodeOpen="true" title="Cost: 100;Gain:+2;Treasury:Up to 200" selector="select(target,1,1).filter(&quot;[player=&quot;+player.id+&quot;]&quot;).length&gt;0"><ontime>var $this=$(this);
+var treasury=$this.attr('treasury')*1;
+/*every(1, function(){*/
+  if(treasury&lt;200){
+    treasury+=2;
+    player.money+=2;
+    $this.attr('treasury',treasury);
+  }
+/*});*/
+</ontime></building><building cost="200" onbuy="player.army+=1;$(this).attr('army',1);$(this).attr('training',0);$(this).attr('desertion',0);var $t=select(target,1,1).filter(&quot;.earth&quot;);$t.setOwner(&quot;p1&quot;, false);" icon="army.gif" name="Army" __ideNodeOpen="true" title="Cost:200;Maintenance:-2xarmy/20;Army:Up to 20" selector="select(target,1,1).filter(&quot;[player=&quot;+player.id+&quot;]&quot;).length&gt;=5" clone="soldier"><ontime>var $this=$(this);
+var army=$this.attr('army')*1;
+every(2, function(){
+  if(army&lt;20){
+    var tr=$this.attr('training')*1;
+    if(player.money&gt;MINMONEY){
+      buy(1);
+      tr++;
+      $this.attr('training',tr);
+    }
+    if(tr&gt;=10){
+      player.army+=1;
+      tr-=10;
+      $this.attr('training',tr);
+      army=army+1;
+      $this.attr('army',army);
+    }
+  }
+});
+var ds=$this.attr('desertion');
+if(army&gt;0){
+  every(21-army, function(){
+    if(player.money&gt;MINMONEY){
+      buy(2);
+    } else {
+      ds++;
+      if(ds&gt;=10){
+        ds-=10;
+        army--;
+        player.army--;
+        $this.attr('army',army);
+      }
+      $this.attr('desertion',ds);
+    }
+  });
+}
+</ontime></building><building cost="800" onbuy="player.army+=10;$(this).attr('army',1);$(this).attr('training',0);$(this).attr('desertion',0);var $t=select(target,1,1).filter(&quot;.earth&quot;);$t.setOwner(&quot;p1&quot;, false);" icon="factory.gif" name="Tank Factory" __ideNodeOpen="true" title="Cost:800;Maintenance:-5xarmy/8;Army:Up to 8 tanks(+80)" selector="select(target,1,1).filter(&quot;[player=&quot;+player.id+&quot;]&quot;).length&gt;=5" clone="tank"><ontime>var MAXUNITS=8;
+var TRAININGCOST=4, TRAININGTIME=15, MAINTENANCE=4;
+var $this=$(this);
+var army=$this.attr('army')*1;
+every(2, function(){
+  if(army&lt;MAXUNITS){
+    var tr=$this.attr('training')*1;
+    if(player.money&gt;MINMONEY){
+      buy(TRAININGCOST);
+      tr++;
+      $this.attr('training',tr);
+    }
+    if(tr&gt;=TRAININGTIME){
+      player.army+=10;
+      tr-=TRAININGTIME;
+      $this.attr('training',tr);
+      army=army+1;
+      $this.attr('army',army);
+    }
+  }
+});
+var ds=$this.attr('desertion');
+if(army&gt;0){
+  every(MAXUNITS+1-army, function(){
+    if(player.money&gt;MINMONEY){
+      buy(MAINTENANCE);
+    } else {
+      ds++;
+      if(ds&gt;=10){
+        ds-=10;
+        army--;
+        player.army-=10;
+        $this.attr('army',army);
+      }
+      $this.attr('desertion',ds);
+    }
+  });
+}
+</ontime></building></tab><tab name="moves" __ideNodeOpen="true"><building title="Start Position" cost="0" onbuy="var $t=select(target,0,0).filter(&quot;.earth&quot;);$t.setOwner(&quot;p1&quot;, false);player.money=100;this.setAttribute(&quot;army&quot;, 2);player.army+=2;" icon="flag_red.gif" name="Start Position" __ideNodeOpen="false" clone="soldier"/><selector title="Start Position" cost="0" onbuy="this.source=source;this.target=target;this.a=getXY(getI(source));this.b=getXY(getI(target));this.clone=moveArmy(source);" icon="cursor_hand.png" name="Move Troops" __ideNodeOpen="true" selector="source.nodeName==&quot;IMG&quot; &amp;&amp; source.getAttribute(&quot;army&quot;)*1&gt;1 &amp;&amp; getI(source).getAttribute(&quot;player&quot;)==&quot;p1&quot;"><ontime>every(5,function(){
+  var p=getXY(this.clone);
+  var dx=this.b.x-this.a.x;
+  var dy=this.b.y-this.a.y;
+  var finish=dx==0 &amp;&amp; dy==0;
+  if(!finish){
+    if(Math.abs(dx)&gt;Math.abs(dy)){
+      if(dx&gt;0)p.x++; else p.x--;
+      moveXY(this.clone,p.x,Math.round(this.a.y+dy*(p.x-this.a.x)/dx));
+      if(p.x==this.b.x){
+        finish=true;
+      }
+    } else {
+      if(dy&gt;0)p.y++; else p.y--;
+      moveXY(this.clone,Math.round(this.a.x+dx*(p.y-this.a.y)/dy),p.y);
+      if(p.y==this.b.y){
+        finish=true;
+      }
+    }
+  }
+  /*check if conclict exists*/
+  var me=this;
+  var doBattle=false;
+  getObjectsAt(p.x,p.y).each(function(){
+    if(this.getAttribute("player") &amp;&amp; this.getAttribute("player")!=player.id){
+      doBattle=true;
+      return false;
+    }
+  });
+  if(doBattle){
+    letsBattle(p.x, p.y);
+    moveStack.splice(moveStack.indexOf(this),1);
+    finish=false;
+  }
+  /*do end of move*/
+  if(finish){
+    moveStack.splice(moveStack.indexOf(this),1);
+    var p=getXY(this.clone);
+    var $t=select(p.i,1,1).filter(".earth");
+    $t.setOwner("p1", false);
+    resolve(p.x, p.y);
+  }
+});</ontime></selector></tab><tab name="units" __ideNodeOpen="true"><building title="Soldiers" cost="0" selector="" onbuy="var $t=select(target,0,0).filter(&quot;.earth&quot;);$t.setOwner(&quot;p1&quot;, false);" icon="soldier.gif" name="soldier" __ideNodeOpen="true" clone="soldier"><ontime __ideNodeOpen="true">var $this=$(this);
+var army=$this.attr('army')*1;
+var ds=$this.attr('desertion');
+ds=ds?ds:0;
+if(army&gt;0){
+  every(10, function(){
+    if(player.money&gt;(MINMONEY+army*1)){
+      buy(army*1);
+      $this.removeClass('blink');
+    } else {
+      ds++;
+      if(ds&gt;=10){
+        ds-=10;
+        army--;
+        player.army--;
+        $this.attr('army',army);
+      }
+      $this.attr('desertion',ds);
+      $this.addClass('blink');
+    }
+  });
+} else {
+  removeObject(this);
+}
+</ontime></building></tab>&lt;/div&gt;
+&lt;div id="movements"&gt;
+
+&lt;/div&gt;
+&lt;script&gt;
+
+  $("#options a").click(function(){
+    $("#options a").removeClass("selected");
+    $(this).addClass("selected");
+    $("#options div").hide();
+    $($(this).attr("src")).show();
+    return false;
+  });
+  $("#options a:first").trigger("click");
+  var MINMONEY=150;
+  var player={
+    id:"p1",
+    money:0,
+    army:0,
+    treasury:[],
+    resources:[]
+  };
+  var actionStack=[];
+  var moveStack=[];
+  function buy(cost){
+    /*var cost0=cost;
+    var player_money0=player.money;
+    var total=50,totald=[];
+    for(var i in player.treasury){
+      var tre=player.treasury[i].getAttribute("treasury")*1;
+      total+=tre;totald.push(tre);
+    }
+    var total0=total+":"+totald.join(",");*/
+
+    player.money-=cost;
+    var array=[];
+    for(var i in player.treasury){
+      array.push(player.treasury[i]);
+    }
+    for (var i = array.length - 1; i &gt; 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var temp = array[i];
+      array[i] = array[j];
+      array[j] = temp;
+    }
+    for(var i in array){
+      var tre=array[i].getAttribute("treasury")*1;
+      if(tre&gt;=cost){
+        tre-=cost;cost=0;
+      } else {
+        cost-=tre;tre=0;
+      }
+      array[i].setAttribute("treasury", tre);
+    }
+    if(cost&gt;0 &amp;&amp; player.treasury.length&gt;0) {
+      player.treasury[0].setAttribute("treasury", player.treasury[0].getAttribute("treasury")*1-cost);
+    }
+    /*var total=50,totald=[];
+    for(var i in player.treasury){
+      var tre=player.treasury[i].getAttribute("treasury")*1;
+      total+=tre;totald.push(tre);
+    }
+    if(total!=player.money){
+      console.log([total0, player_money0, total+":"+totald.join(","), player.money, cost, cost0]);
+    }*/
+  }
+  function consume(resource, cost){
+    player[resource]-=cost;
+    var array=[];
+    for(var i in player.resources[resource]){
+      array.push(player.resources[resource][i]);
+    }
+    for (var i = array.length - 1; i &gt; 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var temp = array[i];
+      array[i] = array[j];
+      array[j] = temp;
+    }
+    for(var i in array){
+      var tre=array[i].getAttribute(resource)*1;
+      if(tre&gt;=cost){
+        tre-=cost;cost=0;
+      } else {
+        cost-=tre;tre=0;
+      }
+      array[i].setAttribute(resource, tre);
+    }
+    if(cost&gt;0 &amp;&amp; player.resources[resource].length&gt;0) {
+      player.resources[resource][0].setAttribute(resource, player.resources[resource][0].getAttribute(resource)*1-cost);
+    }
+  }
+  function registerResource(player, resource, img, initial){
+    if(!initial) initial=0;
+    img.setAttribute(resource, initial);
+    if(typeof player[resource]=='undefined') player[resource]=0;
+    player[resource]+=initial;
+    if(typeof player.resources[resource]=='undefined') player.resources[resource]=[];
+    player.resources[resource].push(img);
+  }
+  var IsRunningOnTime=false;
+  function ontime(){
+    if(IsRunningOnTime) return;
+    var fn;
+    while(fn=actionStack.pop()){
+      fn();
+    }
+    IsRunningOnTime=true;
+    $("#window img[data-ontime]").each(function(){
+      //this.title="";
+      //this.title=this.outerHTML;
+      var t=this.getAttribute("time")*1+1;
+      this.setAttribute("time",t);
+      var me=this;
+      function every(T,fn){
+        if(t % T==0){
+          fn.apply(me);
+        }
+      }
+      eval(this.getAttribute("data-ontime"));
+    });
+    for(var i in moveStack){
+      moveStack[i].move();
+    }
+    onrefresh();
+    IsRunningOnTime=false;
+  }
+  function onrefresh(){
+    $("#money").html("Money:"+(player.money)+" Army:"+(player.army));
+    $("#options button").each(function(){
+      this.disabled=eval(this.getAttribute("data-cost"))?false:true;
+    });
+    $("#window img").each(function(){
+      this.title="";
+      this.title=this.outerHTML;
+    });
+  }
+  onrefresh();
+  setInterval(ontime, 100);
+  $("#options button").click(function(){
+    var img=this.getAttribute("data-image");
+    switch(this.getAttribute("data-type")){
+      case "selector":
+        var button=this;
+        selectTarget(img, "onearth", function(source){
+          selectTarget(img, "onearth", function(target){
+            var valid=eval(button.getAttribute("data-cost"));
+            if(!valid) message("Can not perform the movement");
+            valid=valid &amp;&amp; eval(button.getAttribute("data-selector")?button.getAttribute("data-selector"):'true');
+            if(!valid) message("Invalid movement");
+            if(valid){
+              var move={};//document.createElement("b");
+              actionStack.push((function(me, source, target){return function(){
+                me.time=1;
+                function every(T,fn){
+                  if(me.time % T==0){
+                    fn.apply(me);
+                  }
+                }
+                $([me]).each(function(){
+                  eval(button.getAttribute("data-onbuy"));
+                });
+                me.move=function(){
+                  me.time++;
+                  eval(button.getAttribute("data-ontime"));
+                }  
+                moveStack.push(me);
+              };})(move, source, target));
+            } else {
+            }
+          });
+        });
+        break;
+      default:
+        insertImage(img, "onearth", this);
+    }
+  });
+  function selectTarget(img, cssClass, fn){
+    $("#window").attr("class", "onplace "+cssClass);
+    $("#window")[0].style.cursor='url('+img+') 8 8,crosshair';
+    $("#window").unbind();
+    $("#window").click(function(event){
+      $("#window").attr("class", "");
+      $("#window").css("cursor", "auto");
+      fn(event.target);
+    });
+  }
+  function insertImage(img, cssClass, button){
+    $("#window").attr("class", "onplace "+cssClass);
+    $("#window")[0].style.cursor='url('+img+') 8 16,crosshair';
+    $("#window").unbind();
+    $("#window").click(function(event){
+      $("#window").attr("class", "");
+      $("#window").css("cursor", "auto");
+      if(event.target.nodeName=="I"){
+        insertObject(event.target, button, player);
+        onrefresh();
+      }
+    });
+  }
+  function insertObject(target, button, player){
+        var img=button.getAttribute("data-image");
+        var left=target.offsetLeft;
+        var top=target.offsetTop;
+        var $i=$("&lt;img name='"+button.getAttribute("name")+"' src='"+img+"' style='left:"+left+"px;top:"+top+"px;'&gt;");
+        $i.attr('data-ontime', button.getAttribute("data-ontime") );
+        for(var i in button.attributes)if(typeof button.attributes[i].nodeName=="string"){
+          var a=button.attributes[i];
+          if(a.nodeName.substr(0,6)=="clone-"){
+            $i.attr(a.nodeName, a.value);
+          }
+        }
+        $i.each(function(){
+          $(this).attr('player', player.id );
+          var valid=eval(button.getAttribute("data-cost"));
+          if(!valid) message("Need more resources");
+          valid=valid &amp;&amp; eval(button.getAttribute("data-selector")?button.getAttribute("data-selector"):'true');
+          if(!valid) message("Can not place this here");
+          if(valid){
+            actionStack.push((function(me, target){return function(){
+              $("#window").append(me);
+              me.setAttribute("data-i",$targets.index(target));
+              var t=1;
+              me.setAttribute("time",t);
+              function every(T,fn){
+                if(t % T==0){
+                  fn.apply(me);
+                }
+              }
+              $([me]).each(function(){
+                eval(button.getAttribute("data-onbuy"));
+              });
+            };})(this, target));
+          } else {
+          }
+        });
+        return $i[0];
+  }
+  function removeObject(img){
+    $(img).remove();
+  }
+  $.fn.setOwner=function(playerId,force){
+    this.each(function(){
+      var $t=$(this);
+      if($t.attr("player")==undefined || force){
+        $t.attr("player", playerId);
+        $t.css("background-color", "rgba(255,0,0,0.5)");
+        $t.css("visibility", "visible");
+      }
+    });
+  }
+  function message(msg){
+    console.log(msg);
+  }
+  function getI(img_or_i){
+    if(img_or_i.nodeName=="I"){
+      return img_or_i;
+    } else {
+      return $targets[img_or_i.getAttribute("data-i")*1];
+    }
+  }
+  function moveArmy(source){
+    var cloneName=source.getAttribute("clone-name")?source.getAttribute("clone-name"):source.getAttribute("name");
+    var clone=insertObject(getI(source), $("button[name='"+cloneName+"']")[0], player);
+    clone.setAttribute("player", source.getAttribute("player"));
+    clone.setAttribute("data-i", source.getAttribute("data-i"));
+    clone.setAttribute("army", source.getAttribute("army")*1-1);
+    source.setAttribute("army", 1);
+    return clone;
+  }
+&lt;/script&gt;
+&lt;/div&gt;</file><php __ideNodeOpen="true">require "src/GifCreator/AnimGif.php";
+$anim = new GifCreator\AnimGif();
+$anim -&gt; create("flag_red/", array(50))
+      -&gt; save("flag_red.gif");
+$anim = new GifCreator\AnimGif();
+$anim -&gt; create("factory/", array(50))
+      -&gt; save("factory.gif");
+$anim = new GifCreator\AnimGif();
+$anim -&gt; create("city/", array(100))
+      -&gt; save("city.gif");
+$anim = new GifCreator\AnimGif();
+$anim -&gt; create("army/", array(100))
+      -&gt; save("army.gif");
+$anim = new GifCreator\AnimGif();
+$anim -&gt; create("soldier/", array(2000))
+      -&gt; save("soldier.gif");
+</php></path></root>

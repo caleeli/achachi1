@@ -1,0 +1,148 @@
+<?xml version="1.0"?>
+<root>
+  <application name="pruebax" main="lista/lista">
+    <include src="connection.xml" />
+
+    <php>
+      class q_form
+      {
+        static function getClass($class)
+        {
+          switch($class)
+          {
+            case "text": return "Ext.form.TextField";
+            default: return "Ext.form.TextField";
+          }
+        }
+        static function getInput($class)
+        {
+          switch($class)
+          {
+            case "text": return "text";
+            default: return $class;
+          }
+        }
+      }
+    </php>
+    <component name="q_form">
+        <view name="@{$name}">
+          <document name="@{$name}">
+            <layout layout="border">
+              <extjs class="Ext.Panel" region="center" frame="true">
+                <extjs class="Ext.form.FormPanel" frame="true" title="@{$title}" url="@{$url}" height="@{$height}" width="@{$width}" standardSubmit="true" >
+                <foreach values="${$nodes['field']}">
+                  <extjs class="@{q_form::getClass($class)}" fieldLabel="@{$label}" name="@{$name}" inputType="@{q_form::getInput($class)}"/>
+                </foreach>
+                  <extjs class="Ext.form.TextField" fieldLabel="Contraseña" name="password" inputType="password"/>
+                  <faces name="buttons">
+                    <extjs class="Ext.Button" text="Ingresar" type="submit">
+                      <event name="handler">function(a,b){this.ownerCt.ownerCt.getForm().submit();}</event>
+                    </extjs>
+                  </faces>
+                </extjs>
+              </extjs>
+            </layout>
+          </document>
+        </view>
+    </component>
+    <component name="frm_login">
+      <!--
+        COMPONENTE: frm_login
+        Crea un formulario de inicio de sessión.
+        PARAMETROS:
+          name: nombre del controlador
+          table: tabla de usuarios
+          login: campo login de usuario en la tabla. ej. USR_NAME
+          password: campo password con MD5 de la tabla. ej. USR_PASSWORD
+      -->
+      <table name="@{$name}_logintable" table="@{$table}"/>
+      <controller name="@{$name}">
+        <action name="@{$name}" />
+        <rule name="verify" destination="@{$dest}" >
+          <select_row model="@{$name}_logintable" criteria="@{$login}=$login;@{$password}=md5($password)">
+            $response->success=isset($row);
+          </select_row>
+        </rule>
+        <view name="@{$name}">
+          <document name="@{$name}">
+            <layout layout="border">
+              <extjs class="Ext.Panel" region="center" frame="true">
+                <extjs class="Ext.form.FormPanel" frame="true" title="Acceso" url="verify" id="frm_login" height="300" width="300" standardSubmit="true" >
+                  <extjs class="Ext.form.TextField" fieldLabel="Usuario" name="login"/>
+                  <extjs class="Ext.form.TextField" fieldLabel="Contraseña" name="password" inputType="password"/>
+                  <faces name="buttons">
+                    <extjs class="Ext.Button" text="Ingresar" type="submit">
+                      <event name="handler">function(a,b){this.ownerCt.ownerCt.getForm().submit();}</event>
+                    </extjs>
+                  </faces>
+                </extjs>
+              </extjs>
+            </layout>
+          </document>
+        </view>
+      </controller>
+    </component>
+    <frm_login name="login" table="usuario" login="USR_NAME" password="USR_PASSWORD" dest="lista/lista"/>
+    <package name="model">
+    <table name="usuario" table="usuario"/>
+    <controller name="lista">
+
+      <action name="datos" noRender="true">
+        <select_table model="usuario" order="$sort $dir" limit="$limit" offset="$start" >
+          print(json_encode(
+          array(
+            "data" => $rows->toArray()
+          )
+        ));</select_table>
+      </action>
+
+      <action name="lista" ></action>
+      
+      <view name="lista">
+        <document name="list">
+          <layout layout="border">
+            <extjs id="grid1" class="Ext.grid.GridPanel" region="center" title="Usuario" height="400" _onload="base.store.load({params:{start:0, limit:25}});">
+  
+              <attribute name="store">
+                <extjs class="Ext.data.JsonStore" url="datos" root="data" remoteSort="true">
+                  <event name="fields">["USR_ID","USR_NAME","USR_PASSWORD"]</event>
+                </extjs>
+              </attribute>
+              
+              <attribute name="sm">
+                <extjs class="Ext.grid.RowSelectionModel" singleSelect="true">
+                </extjs>
+              </attribute>
+  
+              <faces name="columns">
+                <extjs class="Ext.grid.Column" header="Id" width="40" dataIndex="USR_ID" sortable="true"/>
+                <extjs class="Ext.grid.Column" header="Nombre" width="200" dataIndex="USR_NAME" sortable="true"/>
+                <extjs class="Ext.grid.Column" header="Password" width="200" dataIndex="USR_PASSWORD" sortable="true"/>
+              </faces>
+            </extjs>
+          </layout>
+        </document>
+      </view>
+    </controller>
+    </package>
+    <component name="logo">
+      <controller name="@{$name}">
+        <action name="login"></action>
+        <view name="login">
+          <document name="login">
+            <layout layout="border">
+              <extjs class="Ext.TabPanel" region="center">
+                <extjs class="Ext.FormPanel" title="@{$name}">
+                  <extjs class="Ext.form.TextField" fieldLabel="Usuario" />
+                </extjs>
+                <extjs class="Ext.FormPanel" title="Tab2">
+                </extjs>
+              </extjs>
+            </layout>
+          </document>
+        </view>
+      </controller>
+    </component>
+
+  </application>
+</root>

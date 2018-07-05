@@ -1,0 +1,3 @@
+var res={"pregunta":"Despues del diluvio \u00bfPorqu\u00e9 la gente construyo una torre?","respuestas":["Para ser felices y adorar","Para adorar a Jesus","Para la adoracion de dioses falsos","Edificar una ciudad y una torre cuya c\u00faspide llegue al cielo","Ninguno"],"correcta":"3","imagen":"img\/Tower_of_Babel_2_S.jpg"};
+dibujaPregunta($pregunta,$respuestas,$imagen,res);
+

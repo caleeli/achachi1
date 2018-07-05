@@ -1,0 +1,420 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root><include src="$library/zend.xml"/><application name="mypdf" main="index/index"><controller name="index" descripcion="" author=""><action name="index" noRender="false" descripcion="" loadParams=""/><phtml name="index">:O
+&lt;?php
+ini_set("display_errors","on");
+
+require_once("Zend/Pdf.php");
+
+$fileName = "capitulo0.pdf";
+//$fileName="LEY-20190_05-JUN-2007.pdf";
+//$fileName="sample.pdf";
+
+
+
+try {
+    $pdf2 = Zend_Pdf::load($fileName);
+} catch (Exception $e)
+{
+    //echo $e-&gt;getMessage();
+//var_dump($e);
+}
+
+
+function pdf2string($sourcefile) {
+
+    $fp = fopen($sourcefile, 'rb');
+    $content = fread($fp, filesize($sourcefile));
+    fclose($fp);
+
+    $searchstart = 'stream';
+    $searchend = 'endstream';
+    $pdfText = '';
+    $pos = 0;
+    $pos2 = 0;
+    $startpos = 0;
+
+    while ($pos !== false &amp;&amp; $pos2 !== false) {
+
+        $pos = strpos($content, $searchstart, $startpos);
+        $pos2 = strpos($content, $searchend, $startpos + 1);
+
+        if ($pos !== false &amp;&amp; $pos2 !== false){
+
+            if ($content[$pos] == 0x0d &amp;&amp; $content[$pos + 1] == 0x0a) {
+                $pos += 2;
+            } else if ($content[$pos] == 0x0a) {
+                $pos++;
+            }
+
+            if ($content[$pos2 - 2] == 0x0d &amp;&amp; $content[$pos2 - 1] == 0x0a) {
+                $pos2 -= 2;
+            } else if ($content[$pos2 - 1] == 0x0a) {
+                $pos2--;
+            }
+
+            $textsection = substr(
+                $content,
+                $pos + strlen($searchstart) + 2,
+                $pos2 - $pos - strlen($searchstart) - 1
+            );
+            $data = @gzuncompress($textsection);
+            $pdfText .= pdfExtractText($data);
+            $startpos = $pos2 + strlen($searchend) - 1;
+
+        }
+    }
+
+    // I tried to do without success: preg_replace('`\\\\([0-9]{3})`', chr(octdec('$1')), $pdfText);
+    preg_match_all('`\\\\([0-9]{3})`', $pdfText, $found_octal_values);
+    foreach($found_octal_values as $key =&gt; $array_of_value)
+    {
+        foreach($array_of_value as $value)
+        {
+            $pdfText = str_replace($value, chr(octdec(substr($value, 1))), $pdfText);
+        }
+    }
+    return preg_replace('/(\s)+/', ' ', $pdfText);
+}
+
+function pdfExtractText($psData){
+
+    if (!is_string($psData)) {
+        return '';
+    }
+
+    $text = '';
+
+    // Handle brackets in the text stream that could be mistaken for
+    // the end of a text field. I'm sure you can do this as part of the
+    // regular expression, but my skills aren't good enough yet.
+    $psData = str_replace('\)', '##ENDBRACKET##', $psData);
+    $psData = str_replace('\]', '##ENDSBRACKET##', $psData);
+
+    preg_match_all(
+        '/(T[wdcm*])[\s]*(\[([^\]]*)\]|\(([^\)]*)\))[\s]*Tj/si',
+        $psData,
+        $matches
+    );
+    for ($i = 0; $i &lt; sizeof($matches[0]); $i++) {
+        if ($matches[3][$i] != '') {
+            // Run another match over the contents.
+            preg_match_all('/\(([^)]*)\)/si', $matches[3][$i], $subMatches);
+            foreach ($subMatches[1] as $subMatch) {
+                $text .= $subMatch;
+            }
+        } else if ($matches[4][$i] != '') {
+            $text .= ($matches[1][$i] == 'Tc' ? ' ' : '') . $matches[4][$i];
+        }
+    }
+
+    // Translate special characters and put back brackets.
+    $trans = array(
+        '\351'                =&gt; '&amp;eacute;',
+        '\''                =&gt; '\'',
+        '...'                =&gt; '…',
+        '\205'                =&gt; '…',
+        '\221'                =&gt; chr(145),
+        '\222'                =&gt; chr(146),
+        '\223'                =&gt; chr(147),
+        '\224'                =&gt; chr(148),
+        '\226'                =&gt; '-',
+        '\267'                =&gt; '•',
+        '\('                =&gt; '(',
+        '\['                =&gt; '[',
+        '##ENDBRACKET##'    =&gt; ')',
+        '##ENDSBRACKET##'    =&gt; ']',
+        chr(133)            =&gt; '-',
+        chr(141)            =&gt; chr(147),
+        chr(142)            =&gt; chr(148),
+        chr(143)            =&gt; chr(145),
+        chr(144)            =&gt; chr(146),
+    );
+    $text = strtr($text, $trans);
+    return $text;
+}
+
+function decodeAsciiHex($input) {
+    $output = "";
+
+    $isOdd = true;
+    $isComment = false;
+
+    for($i = 0, $codeHigh = -1; $i &lt; strlen($input) &amp;&amp; $input[$i] != '&gt;'; $i++) {
+        $c = $input[$i];
+
+        if($isComment) {
+            if ($c == '\r' || $c == '\n')
+                $isComment = false;
+            continue;
+        }
+
+        switch($c) {
+            case '\0': case '\t': case '\r': case '\f': case '\n': case ' ': break;
+            case '%': 
+                $isComment = true;
+            break;
+
+            default:
+                $code = hexdec($c);
+                if($code === 0 &amp;&amp; $c != '0')
+                    return "";
+
+                if($isOdd)
+                    $codeHigh = $code;
+                else
+                    $output .= chr($codeHigh * 16 + $code);
+
+                $isOdd = !$isOdd;
+            break;
+        }
+    }
+
+    if($input[$i] != '&gt;')
+        return "";
+
+    if($isOdd)
+        $output .= chr($codeHigh * 16);
+
+    return $output;
+}
+function decodeAscii85($input) {
+    $output = "";
+
+    $isComment = false;
+    $ords = array();
+    
+    for($i = 0, $state = 0; $i &lt; strlen($input) &amp;&amp; $input[$i] != '~'; $i++) {
+        $c = $input[$i];
+
+        if($isComment) {
+            if ($c == '\r' || $c == '\n')
+                $isComment = false;
+            continue;
+        }
+
+        if ($c == '\0' || $c == '\t' || $c == '\r' || $c == '\f' || $c == '\n' || $c == ' ')
+            continue;
+        if ($c == '%') {
+            $isComment = true;
+            continue;
+        }
+        if ($c == 'z' &amp;&amp; $state === 0) {
+            $output .= str_repeat(chr(0), 4);
+            continue;
+        }
+        if ($c &lt; '!' || $c &gt; 'u')
+            return "";
+
+        $code = ord($input[$i]) &amp; 0xff;
+        $ords[$state++] = $code - ord('!');
+
+        if ($state == 5) {
+            $state = 0;
+            for ($sum = 0, $j = 0; $j &lt; 5; $j++)
+                $sum = $sum * 85 + $ords[$j];
+            for ($j = 3; $j &gt;= 0; $j--)
+                $output .= chr($sum &gt;&gt; ($j * 8));
+        }
+    }
+    if ($state === 1)
+        return "";
+    elseif ($state &gt; 1) {
+        for ($i = 0, $sum = 0; $i &lt; $state; $i++)
+            $sum += ($ords[$i] + ($i == $state - 1)) * pow(85, 4 - $i);
+        for ($i = 0; $i &lt; $state - 1; $i++)
+            $ouput .= chr($sum &gt;&gt; ((3 - $i) * 8));
+    }
+
+    return $output;
+}
+function decodeFlate($input) {
+    return @gzuncompress($input);
+}
+
+function getObjectOptions($object) {
+    $options = array();
+    if (preg_match("#&lt;&lt;(.*)&gt;&gt;#ismU", $object, $options)) {
+        $options = explode("/", $options[1]);
+        @array_shift($options);
+
+        $o = array();
+        for ($j = 0; $j &lt; @count($options); $j++) {
+            $options[$j] = preg_replace("#\s+#", " ", trim($options[$j]));
+            if (strpos($options[$j], " ") !== false) {
+                $parts = explode(" ", $options[$j]);
+                $o[$parts[0]] = $parts[1];
+            } else
+                $o[$options[$j]] = true;
+        }
+        $options = $o;
+        unset($o);
+    }
+
+    return $options;
+}
+function getDecodedStream($stream, $options) {
+    $data = "";
+    if (empty($options["Filter"]))
+        $data = $stream;
+    else {
+        $length = !empty($options["Length"]) ? $options["Length"] : strlen($stream);
+        $_stream = substr($stream, 0, $length);
+
+        foreach ($options as $key =&gt; $value) {
+            if ($key == "ASCIIHexDecode")
+                $_stream = decodeAsciiHex($_stream);
+            if ($key == "ASCII85Decode")
+                $_stream = decodeAscii85($_stream);
+            if ($key == "FlateDecode")
+                $_stream = decodeFlate($_stream);
+        }
+        $data = $_stream;
+    }
+    return $data;
+}
+function getDirtyTexts(&amp;$texts, $textContainers) {
+    for ($j = 0; $j &lt; count($textContainers); $j++) {
+        if (preg_match_all("#\[(.*)\]\s*TJ#ismU", $textContainers[$j], $parts))
+            $texts = array_merge($texts, @$parts[1]);
+        elseif(preg_match_all("#Td\s*(\(.*\))\s*Tj#ismU", $textContainers[$j], $parts))
+            $texts = array_merge($texts, @$parts[1]);
+    }
+}
+function getCharTransformations(&amp;$transformations, $stream) {
+    preg_match_all("#([0-9]+)\s+beginbfchar(.*)endbfchar#ismU", $stream, $chars, PREG_SET_ORDER);
+    preg_match_all("#([0-9]+)\s+beginbfrange(.*)endbfrange#ismU", $stream, $ranges, PREG_SET_ORDER);
+
+    for ($j = 0; $j &lt; count($chars); $j++) {
+        $count = $chars[$j][1];
+        $current = explode("\n", trim($chars[$j][2]));
+        for ($k = 0; $k &lt; $count &amp;&amp; $k &lt; count($current); $k++) {
+            if (preg_match("#&lt;([0-9a-f]{2,4})&gt;\s+&lt;([0-9a-f]{4,512})&gt;#is", trim($current[$k]), $map))
+                $transformations[str_pad($map[1], 4, "0")] = $map[2];
+        }
+    }
+    for ($j = 0; $j &lt; count($ranges); $j++) {
+        $count = $ranges[$j][1];
+        $current = explode("\n", trim($ranges[$j][2]));
+        for ($k = 0; $k &lt; $count &amp;&amp; $k &lt; count($current); $k++) {
+            if (preg_match("#&lt;([0-9a-f]{4})&gt;\s+&lt;([0-9a-f]{4})&gt;\s+&lt;([0-9a-f]{4})&gt;#is", trim($current[$k]), $map)) {
+                $from = hexdec($map[1]);
+                $to = hexdec($map[2]);
+                $_from = hexdec($map[3]);
+
+                for ($m = $from, $n = 0; $m &lt;= $to; $m++, $n++)
+                    $transformations[sprintf("%04X", $m)] = sprintf("%04X", $_from + $n);
+            } elseif (preg_match("#&lt;([0-9a-f]{4})&gt;\s+&lt;([0-9a-f]{4})&gt;\s+\[(.*)\]#ismU", trim($current[$k]), $map)) {
+                $from = hexdec($map[1]);
+                $to = hexdec($map[2]);
+                $parts = preg_split("#\s+#", trim($map[3]));
+                
+                for ($m = $from, $n = 0; $m &lt;= $to &amp;&amp; $n &lt; count($parts); $m++, $n++)
+                    $transformations[sprintf("%04X", $m)] = sprintf("%04X", hexdec($parts[$n]));
+            }
+        }
+    }
+}
+function getTextUsingTransformations($texts, $transformations) {
+    $document = "";
+    for ($i = 0; $i &lt; count($texts); $i++) {
+        $isHex = false;
+        $isPlain = false;
+
+        $hex = "";
+        $plain = "";
+        for ($j = 0; $j &lt; strlen($texts[$i]); $j++) {
+            $c = $texts[$i][$j];
+            switch($c) {
+                case "&lt;":
+                    $hex = "";
+                    $isHex = true;
+                break;
+                case "&gt;":
+                    $hexs = str_split($hex, 4);
+                    for ($k = 0; $k &lt; count($hexs); $k++) {
+                        $chex = str_pad($hexs[$k], 4, "0");
+                        if (isset($transformations[$chex]))
+                            $chex = $transformations[$chex];
+                        $document .= html_entity_decode("&amp;#x".$chex.";");
+                    }
+                    $isHex = false;
+                break;
+                case "(":
+                    $plain = "";
+                    $isPlain = true;
+                break;
+                case ")":
+                    $document .= $plain;
+                    $isPlain = false;
+                break;
+                case "\\":
+                    $c2 = $texts[$i][$j + 1];
+                    if (in_array($c2, array("\\", "(", ")"))) $plain .= $c2;
+                    elseif ($c2 == "n") $plain .= '\n';
+                    elseif ($c2 == "r") $plain .= '\r';
+                    elseif ($c2 == "t") $plain .= '\t';
+                    elseif ($c2 == "b") $plain .= '\b';
+                    elseif ($c2 == "f") $plain .= '\f';
+                    elseif ($c2 &gt;= '0' &amp;&amp; $c2 &lt;= '9') {
+                        $oct = preg_replace("#[^0-9]#", "", substr($texts[$i], $j + 1, 3));
+                        $j += strlen($oct) - 1;
+                        $plain .= html_entity_decode("&amp;#".octdec($oct).";");
+                    }
+                    $j++;
+                break;
+
+                default:
+                    if ($isHex)
+                        $hex .= $c;
+                    if ($isPlain)
+                        $plain .= $c;
+                break;
+            }
+        }
+        $document .= "\n";
+    }
+
+    return $document;
+}
+
+function pdf2text($filename) {
+    $infile = @file_get_contents($filename, FILE_BINARY);
+    if (empty($infile))
+        return "";
+
+    $transformations = array();
+    $texts = array();
+
+    preg_match_all("#obj(.*)endobj#ismU", $infile, $objects);
+    $objects = @$objects[1];
+
+    for ($i = 0; $i &lt; count($objects); $i++) {
+        $currentObject = $objects[$i];
+
+        if (preg_match("#stream(.*)endstream#ismU", $currentObject, $stream)) {
+            $stream = ltrim($stream[1]);
+
+            $options = getObjectOptions($currentObject);
+            if (!(empty($options["Length1"]) &amp;&amp; empty($options["Type"]) &amp;&amp; empty($options["Subtype"])))
+                continue;
+
+            $data = getDecodedStream($stream, $options); 
+            if (strlen($data)) {
+                if (preg_match_all("#BT(.*)ET#ismU", $data, $textContainers)) {
+                    $textContainers = @$textContainers[1];
+                    getDirtyTexts($texts, $textContainers);
+                } else
+                    getCharTransformations($transformations, $data);
+            }
+        }
+    }
+
+    return getTextUsingTransformations($texts, $transformations);
+}
+
+
+//echo utf8_encode(pdf2string($fileName));
+echo utf8_encode(pdf2text($fileName));
+
+
+?&gt;.</phtml></controller></application></root>

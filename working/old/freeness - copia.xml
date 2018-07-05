@@ -1,0 +1,444 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root __ideNodeOpen="true"><include src="$library/zend.xml"/><include src="$library/extjslib2.xml" __ideNodeOpen="true"/><package name="components" type="" __ideNodeOpen="true"><include src="$library/zplugin.xml"/><file name="webeditor/googleimage.php" preprocess="" __ideNodeOpen="false">&lt;?php
+if(isset($_GET["img"])){
+  header( "Content-type: " . mime_content_type($_GET["img"]));
+  readfile($_GET["img"]);
+  die;
+}
+$base = dirname($_GET["file"]);
+$path = $_GET["path"];
+if(!(substr($path,0,1)=="/" || substr($path,1,1)==":")) $path=$base."/".$path;
+if(!file_exists($path)) mkdir($path, 0777, true);
+if(isset($_GET["download"])){
+  chdir($path);
+  $name = basename($_GET["url"]);
+  file_put_contents($name, req($_GET["url"]));
+  die;
+}
+?&gt;
+&lt;html&gt;
+&lt;head&gt;
+&lt;script src="jquery/js/jquery-1.5.1.min.js"&gt;&lt;/script&gt;
+&lt;style&gt;
+img{
+  border:3px double black;
+  margin:1;
+}
+img:hover{
+  border:3px solid black;
+  margin:1;
+}
+tr:hover{
+  background-color:lightyellow;
+}
+td:{
+  background-color:transparent;
+}
+.selected{
+  background-color:lightblue;
+}
+&lt;/style&gt;
+&lt;script&gt;
+var name;
+function selectImg(img){
+  $.ajax({
+    url:"googleimage.php",
+    type:"GET",
+    dataType:'text',
+    data:{
+      "url":img.src,
+      "download":"true",
+      "file":window.parent.file,
+      "path":window.parent.currentNode.getAttribute('path'),
+      "folder":window.parent.currentNode.getAttribute('folder'),
+      "t":(new Date().getTime())
+    },
+    success:function(e){
+      eval(e);
+    }
+  });
+}
+&lt;/script&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;?php
+function req($url) {
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_HEADER, 0);
+    curl_setopt($ch, CURLOPT_VERBOSE, 0);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_USERAGENT, "Mozilla/4.0 (compatible;)");
+    curl_setopt($ch, CURLOPT_URL, $url);
+//    curl_setopt($ch, CURLOPT_PROXY, "http://192.168.72.36");
+//    curl_setopt($ch, CURLOPT_PROXYPORT, 8080);
+    $response = curl_exec($ch);
+    return $response;
+}
+
+function domreq($url){
+    $response = req($url);
+    $dom = new DomDocument();
+    $dom-&gt;loadHTML($response);
+    return $dom;
+}
+
+function searchImage($q,$w,$h,$start=0){
+  
+  $q=urlencode("imagesize:{$w}x{$h} $q");
+  
+  $url="http://www.google.com/search?q=".$q."&amp;tbm=isch&amp;start=$start";  //&amp;hl=es&amp;cr=&amp;safe=images&amp;tbs=isz:ex,iszw:32,iszh:32
+  $doc = domreq($url);
+  $imgs = $doc-&gt;getElementsByTagName("img");
+  foreach($imgs as $img) if(substr($img-&gt;getAttribute("src"),0,5)=="http:"){
+    print("&lt;span style='display:inline-block'&gt;");
+    print '&lt;img title="'.$img-&gt;getAttribute("src").'" src="'.$img-&gt;getAttribute("src").'" width="'.$w.'" height="'.$h.'" onclick="selectImg(this)"/&gt;&lt;br /&gt;';
+    $u = $img-&gt;parentNode-&gt;getAttribute("href");
+    parse_str($u,$p);
+    print '&lt;img title="'.htmlentities($p["/imgres?imgurl"]).'" src="'.htmlentities($p["/imgres?imgurl"]).'" width="'.$w.'" height="'.$h.'" onclick="selectImg(this)"/&gt;';
+    print("&lt;/span&gt;");
+  }
+}
+
+$name = isset($_GET["name"])?$_GET["name"]:"";
+$img = isset($_GET["img"])?$_GET["img"]:"";
+$size = isset($_GET["size"])?$_GET["size"]:"16x16";
+?&gt;
+&lt;?php
+foreach(glob($path."/*") as $f){
+?&gt;
+&lt;span style="display:inline-block;text-align:center;"&gt;
+&lt;img src="?img=&lt;?php print htmlentities(urlencode(realpath($f))); ?&gt;" /&gt;&lt;br/&gt;
+&lt;?php print basename($f); ?&gt;
+&lt;/span&gt;
+&lt;?php
+}
+?&gt;
+&lt;form method="GET"&gt;
+  Search: &lt;input id="q" name="q" value="&lt;?=@htmlentities($_GET["q"]) ?&gt;"/&gt;Size:&lt;input name="size" value="&lt;?=@htmlentities($size) ?&gt;" /&gt;&lt;br /&gt;
+  &lt;input id="name" name="name" type="hidden"/&gt;
+  &lt;input id="file" name="file" type="hidden" value="&lt;?php print $_GET['file']; ?&gt;"/&gt;
+  &lt;input id="path" name="path" type="hidden" value="&lt;?php print $_GET['path']; ?&gt;"/&gt;
+  &lt;button type="submit"&gt;Buscar&lt;/button&gt;
+&lt;/form&gt;
+&lt;?php
+if(isset($_GET["q"])){
+  if($name){
+    ?&gt;
+    &lt;script&gt;var value=$("#q")[0].value;$("#&lt;?=str_replace(".",'\\\\.',$name)?&gt;")[0].onclick();$("#q")[0].value=value;&lt;/script&gt;
+    &lt;?php
+  }
+  $size=explode("x",$size);
+  searchImage( $_GET["q"], $size[0], $size[1] ,0);
+  searchImage( $_GET["q"], $size[0], $size[1] ,20);
+}
+?&gt;
+&lt;/body&gt;
+&lt;/html&gt;</file><component name="images" transparent="" __ideNodeOpen="false">#{
+var_dump($path, $folder);
+  $path=str_replace("\\", "/", $path);
+  $folder=str_replace("\\", "/", $folder);
+  if(substr($path,-1,1)=="/")$path=substr($path,0,-1);
+  if(substr($folder,-1,1)=="/")$folder=substr($folder,0,-1);
+
+  $_sourceBase = PROJECT_PATH;
+  if(!(substr($path,0,1)=="/" || substr($path,1,1)==":")) $path=$_sourceBase."/".$path;
+  if(!file_exists($path)) mkdir($path, 0777, true);
+
+  $_destBase=getcwd();
+  if(!(substr($folder,0,1)=="/" || substr($folder,1,1)==":")) $folder=$_destBase."/".$folder;
+  if(!file_exists($folder)) mkdir($folder, 0777, true);
+
+var_dump($path, $folder);
+  foreach(glob($path."/*") as $_f):
+    $_d=$folder."/".basename($_f);
+    copy($_f,$_d);
+  endforeach;
+
+}</component><zplugin name="images" nodesEditor="images" __ideNodeOpen="false"><!--#editor.plugin
+
+zplugin.create($this.parentNode);
+componentsIndex[$this.parentNode.nodeName].editor=zcomponent.launch;--><zplugin.components __ideNodeOpen="true"/><zplugin.base __ideNodeOpen="true">"iframe",{src:"/achachi/webeditor/googleimage.php",style:"border:none;width:100%;height:100%"},[]</zplugin.base><zplugin.launch>
+canvas.firstChild.src="/achachi/webeditor/googleimage.php?file="+file+"&amp;path="+currentNode.getAttribute("path");</zplugin.launch></zplugin><component name="ext.page" transparent="" __ideNodeOpen="false"><controller name="@{$name}" descripcion="" author=""><if condition="#{ if(!isset($_nodes['action'])) return true; foreach($_e-&gt;getElementsByTagName(&quot;action&quot;) as $_naction) if($_naction-&gt;getAttribute(&quot;name&quot;)==&quot;index&quot;) return false; return true; }"><action name="index" noRender="" descripcion="" loadParams="" this=""/></if><file name="views/scripts/@{$name}/index.phtml" preprocess="" __ideNodeOpen="true">&lt;html&gt;
+&lt;head&gt;
+  #{
+    if(!isset($style)) $style="";
+    if(strpos($style, "ext-all")===false) $style.=";/ext/resources/css/ext-all.css";
+    $_res="";
+    foreach(explode(";",$style) as $_l)
+      if(trim($_l)) $_res.='&lt;link rel="stylesheet" type="text/css" href="'.$_l.'" /&gt;';
+    return $_res;
+  }
+  #{
+    if(!isset($script)) $script="";
+    if(strpos($script, "ext-base")===false) $script.=";/ext/adapter/ext/ext-base.js";
+    if(strpos($script, "ext-all")===false) $script.=";/ext/ext-all.js";
+    $__r="";
+    foreach(explode(";",$script) as $__lib)
+      if(trim($__lib)) $__r.='&lt;script type="text/javascript" src="'.$__lib.'"&gt;&lt;/script&gt;';
+    return $__r;
+  }
+  &lt;script&gt;
+    Ext.QuickTips.init();
+    function extLoad(sClass,base,_construct)
+    {
+      var obj;
+      eval("obj=new "+sClass+"(base);");
+      if(_construct)eval(_construct);
+      return obj;
+    }
+    function main()
+    {
+      @{@node::join("\n      ",$_nodes['extdocument'])};
+      if(freeness &amp;&amp; freeness.onload) freeness.onload();
+    }
+    Ext.onReady(function(){ main(); });
+  &lt;/script&gt;
+&lt;/head&gt;
+&lt;body&gt;#{
+  $_nodes2=array();
+  foreach($_ as $_n):
+    if($_n[0]=="#text")$_nodes2[]=$_n;
+  endforeach;
+  return node::content($_nodes2);
+}&lt;/body&gt;
+&lt;/html&gt;</file><clone value="${isset($_nodes['action'])?$_nodes['action']:array()}"/></controller></component></package><application name="desktop" main="index/index" __ideNodeOpen="true"><component name="insert" transparent="true" __ideNodeOpen="false">#{
+  $_u=strpos($_[1][1], "#");
+  $_[1][1] = substr($_[1][1], $_u+1);
+  return ext::toExpression(node::content($_));
+}</component><component name="menu" transparent="" __ideNodeOpen="false"><insert __ideNodeOpen="true">&lt;?php
+global $app;
+require_once("../library/freeness/application.php");
+
+$resA=array();
+$user=json_decode('{"user":"admin","secret":"admin"}');
+foreach(glob("../applications/*") as $f){
+  $applicationName = basename($f, ".php");
+  include($f);
+
+  ob_start();
+
+?&gt;<ext class="Ext.Panel" frame="false" __extid="18" layout="border" __ideNodeOpen="true" width="100" height="64" border="0"><ext class="Ext.Button" text="&lt;?php print $applicationName ?&gt;" __extid="19" region="center" __ideNodeOpen="true" icon="&lt;?php print $app-&gt;icon ?&gt;" scale="large" iconAlign="top"><ext.attribute name="handler">function(a,b){
+  var $w;
+  &lt;?php print $app-&gt;createStarter($user); ?&gt;;
+  menu.close();
+}</ext.attribute></ext></ext>&lt;?php
+
+  $res = ob_get_contents();
+  ob_end_clean();
+  $resA[]=$res;
+}
+
+print implode(",", $resA)
+?&gt;</insert></component><controller name="index" __ideNodeOpen="false" script="/ext/ext-all.js;../../script/freeness.js"><action name="index" noRender="false" descripcion="" loadParams="" __ideNodeOpen="true"><ext.fragment language="php" outputType="print" variable="$this-&gt;view-&gt;apps"/></action><phtml name="index" __ideNodeOpen="false"><ext.document __ideNodeOpen="true"><ext layout="border" __extid="0" __ideNodeOpen="true" class="Ext.Viewport"><ext class="Ext.Panel" __extid="1" region="north" frame="false" height="40" __ideNodeOpen="true" border="0" padding="0" layout="border"><ext class="Ext.Panel" frame="false" width="646" __extid="2" region="west" border="0" bodyStyle="background-color:#DFE9F6;" __ideNodeOpen="true"/><ext class="Ext.Panel" region="center" frame="false" __extid="3" id="desktopStatusSpace" padding="0" __ideNodeOpen="true" border="0" bodyStyle="background-color:#DFE9F6;"/></ext><ext class="Ext.Panel" region="center" frame="true" __extid="4" id="desktop" padding="0" __ideNodeOpen="true"/><ext __extid="5" x="0" y="0" draggable="false" resizable="false" closable="false" __ideNodeOpen="true" minHeight="40" layout="border" border="0" height="40" id="applicationMenu" class="Ext.Window" autoShow="true"><ext class="Ext.Panel" region="center" frame="true" __extid="6" padding="0" border="0" __ideNodeOpen="true"><ext.attribute name="layout" __ideNodeOpen="false">{"type":"table","columns":"3"}</ext.attribute><ext class="Ext.Button" text="Aplicaciones" __extid="7" icon="../../images/application_view_tile.png" height="28" colspan="3" __ideNodeOpen="true" width="300"><ext.attribute name="handler">function(a,b){
+  if(this.ownerCt.ownerCt.getHeight()==40){
+    this.ownerCt.ownerCt.setHeight(40+3*60);
+  } else {
+    this.ownerCt.ownerCt.setHeight(40);
+  }
+}</ext.attribute></ext><menu __ideNodeOpen="true"/></ext><ext.attribute name="listeners">{deactivate:function(){menu.close()}}</ext.attribute></ext></ext></ext.document></phtml></controller><images path="freenessImages" folder="html/images"/><file name="library/freeness/application.php" preprocess="" __ideNodeOpen="false">&lt;?php
+
+interface freeness_interface_applicationIF {
+  function login($user, $secret);
+}
+class freeness {
+  public static function factory($class){
+    return freeness_application::singleton($class);
+  }
+}
+
+abstract class freeness_application {
+  public $key = "";
+  private static $instance;
+  private function __construct()
+  {
+  }
+  public function singleton($className)
+  {
+    if (!isset(self::$instance)) {
+      self::$instance = new $className;
+    }
+    return self::$instance;
+  }
+  function createLink($user){
+    $d = freeness_interface_request::encodeData(
+      array("class"=&gt;get_class($this),"function"=&gt;"login","params"=&gt;array(
+        $user-&gt;user,
+        $user-&gt;secret
+      ))
+    , $this-&gt;key);
+    return $this-&gt;url . "?d=" . urlencode($d);
+  }
+  function createStarter($user){
+    $url=$this-&gt;createLink($user);
+    $title=json_encode($this-&gt;title);
+    $icon=json_encode($this-&gt;iconSmall);
+    return &lt;&lt;&lt;EOF
+freeness.appManager.run(function(){
+  var W;
+  W=freeness.desktop.createWindow({
+		width       : 300,
+		height      : 200,
+		maximizable : true,
+                minimizable : true,
+                title       : $title,
+                icon        : $icon,
+                html        : '&lt;iframe src="$url" style="border;none;width:100%;height:100%;position:relative;top:-64px;"&gt;&lt;/iframe&gt;'
+	});
+  return W;
+});
+EOF;
+  }
+  function remoteCall(){
+    if(isset($_GET["d"])){
+      $data = freeness_interface_request::decodeData($_GET["d"], $this-&gt;key);
+      if(isset($data-&gt;class) &amp;&amp; isset($data-&gt;function)){
+        $class = $data-&gt;class;
+        call_user_func_array(array(freeness::factory($class), $data-&gt;function), $data-&gt;params);
+      }
+    }
+  }
+  abstract function login($user, $secret);
+}
+
+class freeness_interface_request{
+  function encodeData($data,$key){
+    $dataEncrypted = base64_encode( mcrypt_encrypt  ( MCRYPT_3DES, $key, json_encode($data) , MCRYPT_MODE_CFB ));
+    return $dataEncrypted;
+  }
+  function decodeData( $dataEncrypted, $key ){
+    $data = mcrypt_decrypt( MCRYPT_3DES, $key, base64_decode( $dataEncrypted ), MCRYPT_MODE_CFB );
+    return json_decode($data);
+  }
+}
+
+if (!function_exists('get_called_class')){
+  function get_called_class(){
+    $bt = debug_backtrace();
+    $lines = file($bt[1]['file']);
+    preg_match('/([a-zA-Z0-9\_]+)::'.$bt[1]['function'].'/', $lines[$bt[1]['line']-1], $matches);
+    return $matches[1];
+  }
+}
+</file><file name="applications/ProcessMaker.php" preprocess="" __ideNodeOpen="false">&lt;?php
+
+class freeness_ProcessMaker extends freeness_application {
+  public $key="pm";
+  public $title="ProcessMaker";
+  public $url = "http://127.0.0.2/sysworkflow/en/green/freeness/freeness";
+  public $icon = "../../images/processmaker.gif";
+  public $iconSmall = "../../images/processmaker16.gif";
+  function login($user, $secret){
+    print '&lt;script src="http://localhost/jquery/js/jquery-1.5.1.min.js"&gt;&lt;/script&gt;';
+    print '&lt;script&gt;$.ajax({
+      url:"../login/authentication.php",
+      type:"POST",
+      data:{"form[USR_USERNAME]":"admin","form[USR_PASSWORD]":"admin"},
+      success:function(d){
+        window.location.href="../processes/main";
+      }
+    })&lt;/script&gt;';
+  }
+}
+
+global $app;
+$app = freeness::factory("freeness_ProcessMaker");
+</file><file name="html/script/freeness.js" preprocess="" __ideNodeOpen="false">var menu={
+  close:function(){
+    Ext.ComponentMgr.get("applicationMenu").setHeight(40);
+  }
+}
+
+var F$ = freeness={
+  get:function(g){return Ext.ComponentMgr.get(g);},
+  onloadFn:[],
+  onload:function(fn){
+    for(var i=0,l=this.onloadFn.length;i&lt;l;i++) this.onloadFn[i]();
+  },
+  onReady:function(fn){
+    this.onloadFn.push(fn);
+  },
+  desktop:{
+    createWindow:function(cnf){
+      var W,B;
+      Ext.ComponentMgr.get("desktop").add(W=new Ext.Window(cnf));
+      W.show();
+      F$.get("tasks").add(B=new Ext.Button({icon:cnf.icon,/*text:W.header.title,*/handler:function(){if(W.minimized) freeness.desktop.restoreWindow(W); else freeness.desktop.minimizeWindow(W);}}));
+      W.on({minimize:freeness.desktop.minimizeWindow,destroy:freeness.desktop.onWindowClose(B.getId())});
+      return W;
+    },
+    onWindowClose:function(id){
+      return function(){Ext.ComponentMgr.get(id).destroy();};
+    },
+    minimizeWindow: function(win) {
+        win.minimized = true;
+        win.hide();
+    },
+    restoreWindow: function (win) {
+        if (win.isVisible()) {
+            win.restore();
+            win.toFront();
+        } else {
+            win.show();
+        }
+        win.minimized = false;
+        return win;
+    }
+  },
+  appManager:{
+    run:function(fn){
+      W=fn();
+    }
+  },
+  toolbar:{
+    panel:function(cnf){var o=new Ext.Window({x:cnf.x,y:0,draggable:false,resizable:false,closable:false,minHeight:40,layout:"border",height:40,items:[new Ext.Panel({region:"center",frame:true,padding:0,border:0,layout:{type:"table",columns:cnf.columns},items:cnf.items})]});o.show();return o;}
+  },
+  form:{
+    text:function(cnf){return new Ext.form.TextField(cnf)},
+    label:function(cnf){return new Ext.form.Label(cnf)},
+    button:function(cnf){return new Ext.Button(cnf)}
+  },
+  create:function(arr,dest){
+    if(!dest) dest=[];
+    for(var i=0,l=arr.length;i&lt;l;i++) {
+      var $class=arr[i],$att={};
+      if(this.getType(arr[i+1])=="object") $att=arr[++i];
+      if(this.getType(arr[i+1])=="array") {
+        $att["items"]=freeness.create(arr[++i]);
+      }
+      if($class.substr(0,4)=="Ext.") dest.push(eval("new "+$class+"($att)"));
+      else dest.push(eval("freeness."+$class+"($att)"));
+    }
+    return dest;
+  },
+  getType:function(o){
+    var $class = Object.prototype.toString.call(o).split(" ")[1].split("]")[0];
+    return $class=="Array"?"array":typeof(o);
+  }
+}
+//------------------------
+freeness.onReady(function() {
+  Ext.ComponentMgr.get("desktopStatusSpace").add($w=new Ext.Window({
+		width       : 300,
+		height      : 200,
+                draggable   : false,
+                resizable   : false,
+		closable    : false,
+		minHeight   : 40,
+                maximized   : true,
+                layout      : "border",
+                items       : freeness.create(["Ext.Panel",{region:"center",layout:"border",border:0},["Ext.Panel",{region:"center",id:"tasks",frame:true,border:0,padding:0}]])
+	}));
+  $w.show();
+
+  freeness.create([
+    "toolbar.panel",{x:312,columns:5},[
+      "Ext.Panel",{width:32,border:0},
+      "form.text",{width:250},
+      "Ext.Panel",{width:8,border:0},
+      "form.button",{icon:"../../images/search.gif"},
+      "Ext.Panel",{width:8,border:0}
+    ]
+  ]);
+});
+
+</file><controller name="desktop" descripcion="" author="" __ideNodeOpen="true"><phtml name="index" __ideNodeOpen="true"><ext.document style="" script="" name="index" __ideNodeOpen="true"><ext class="Ext.Viewport" layout="border" __ideNodeOpen="true"><ext class="Ext.Panel" region="north" frame="false"><ext.attribute name="tbar" type="array"><ext class="Ext.Toolbar" __ideNodeOpen="true"><ext class="Ext.Button" name="name" text="text" type="submit" __ideNodeOpen="true"/></ext></ext.attribute></ext><ext class="Ext.Panel" region="center" frame="true" __ideNodeOpen="true"/></ext></ext.document></phtml></controller></application></root>

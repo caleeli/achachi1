@@ -1,0 +1,1835 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root><path path="/home/david/selenium/grunt-devtools-master" main="" __ideNodeOpen="true"><package name="components" type="" __ideNodeOpen="true"><component name="project" transparent="" precode="" __ideNodeOpen="true"><file name="Gruntfile.js" preprocess="" __ideNodeOpen="true">/*
+ * @{$name}
+ * @{@$description}
+ *
+ */
+
+'use strict';
+
+module.exports = function (grunt) {
+
+  // Project configuration.
+  grunt.initConfig({
+    jshint: {
+      all: [
+        'Gruntfile.js',
+        'grunt-plugin/tasks/*.js',
+        '&lt;%= nodeunit.tests %&gt;'
+      ],
+      options: {
+        jshintrc: '.jshintrc'
+      }
+    },
+
+    // Before generating any new files, remove any previously-created files.
+    clean: ['tmp', 'extension/build'],
+
+    jst: {
+      chrome: {
+        files: {
+          "extension/build/build-chrome/tmp/templates.js": ["extension/src/templates/**/*.*"]
+        }
+      },
+      brackets: {
+        files: {
+          "extension/build/build-brackets/tmp/templates.js": ["extension/src/templates/**/*.*"]
+        }
+      }
+    },
+
+    concat: {
+      options: {
+        separator: ';'
+      },
+      chrome: {
+        src: [
+          'extension/src/js/vendor/*.js',
+          'extension/build/build-chrome/tmp/templates.js',
+          'extension/src-chrome/js/*.js',
+          'extension/src/js/*.js'
+
+        ],
+        dest: 'extension/build/build-chrome/@{$name}/js/devtools.js'
+      },
+      brackets: {
+        src: [
+          'extension/src/js/vendor/*.js',
+          'extension/build/build-brackets/tmp/templates.js',
+          'extension/src-brackets/js/*.js',
+          'extension/src/js/*.js'
+        ],
+        dest: 'extension/build/build-brackets/@{$name}/js/devtools.js'
+      }
+    },
+
+    copy: {
+      chrome: {
+        files: [
+          { expand: true, cwd: 'extension/src/',
+            src: ['*', 'css/**', 'img/**', '!less', '!templates'],
+            dest: 'extension/build/build-chrome/@{$name}'},
+          { expand: true, cwd: 'extension/src-chrome/',
+            src: ['*'],
+            dest: 'extension/build/build-chrome/@{$name}'}
+        ]
+      },
+      brackets: {
+        files: [
+          { expand: true, cwd: 'extension/src/',
+            src: ['*', 'css/**', 'img/**', 'js/vendor/**', '!less', '!templates'],
+            dest: 'extension/build/build-brackets/@{$name}' },
+          { expand: true, cwd: 'extension/src-brackets/',
+            src: ['*', 'node/**', 'img/**', 'js/lib/**', '!less', 'templates/**'],
+            dest: 'extension/build/build-brackets/@{$name}' }
+        ]
+      }
+    },
+
+    less: {
+      chrome: {
+        files: {
+          "extension/build/build-chrome/@{$name}/css/devtools.css": "extension/src/less/devtools.less"
+        }
+      },
+      brackets: {
+        files: {
+          "extension/build/build-brackets/@{$name}/css/devtools.css": "extension/src/less/devtools.less",
+          "extension/build/build-brackets/@{$name}/css/devtools-brackets.css": "extension/src-brackets/less/@{$name}-brackets-skin.less",
+          "extension/build/build-brackets/@{$name}/css/@{$name}-brackets-ui.css": "extension/src-brackets/less/@{$name}-brackets-ui.less"
+        }
+      }
+    },
+
+    watch: {
+      extension: {
+        options: {
+          atBegin: true
+        },
+        files: [
+          'extension/src/**/*',
+          'extension/src-chrome/**/*',
+          'extension/src-brackets/**/*'
+        ],
+        tasks: ['build']
+      }
+    }
+  });
+
+  // These plugins provide necessary tasks.
+  grunt.loadNpmTasks('grunt-contrib-jshint');
+  grunt.loadNpmTasks('grunt-contrib-copy');
+  grunt.loadNpmTasks('grunt-contrib-clean');
+  grunt.loadNpmTasks('grunt-contrib-watch');
+  grunt.loadNpmTasks('grunt-contrib-less');
+  grunt.loadNpmTasks('grunt-contrib-concat');
+  grunt.loadNpmTasks('grunt-contrib-jst');
+  grunt.loadNpmTasks('@{$name}');
+
+  grunt.registerTask('dev', ['watch']);
+
+  grunt.registerTask('default', ['clean', 'build']);
+
+  grunt.registerTask('build:chrome', [
+    'copy:chrome',
+    'jst:chrome',
+    'concat:chrome',
+    'less:chrome'
+  ]);
+
+  grunt.registerTask('build:brackets', [
+    'copy:brackets',
+    'jst:brackets',
+    'concat:brackets',
+    'less:brackets'
+  ]);
+
+  // build all extensions
+  grunt.registerTask('build', ['build:chrome', 'build:brackets']);
+};
+</file><file name="package.json" preprocess="" __ideNodeOpen="true">{
+  "name": "@{$name}-project",
+  "version": "@{$version/*0.0.1*/}",
+  "private": true,
+  "homepage": "@{$homepage}",
+  "author": {
+    "name": "dcallizaya",
+    "email": "david.callizaya@coderoad.com",
+    "url": "https://www.facebook.com/david.callizaya.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/caleeli/@{$name}.git"
+  },
+  "bugs": {
+    "url": "https://github.com/caleeli/@{$name}/issues"
+  },
+  "main": "Gruntfile.js",
+  "engines": {
+    "node": "~0.8.0"
+  },
+  "devDependencies": {
+    "grunt": "~0.4.1",
+    "grunt-contrib-watch": "~0.5.0",
+    "grunt-contrib-copy": "~0.4.0",
+    "grunt-contrib-jshint": "~0.1.1",
+    "grunt-contrib-clean": "~0.4.0",
+    "grunt-contrib-nodeunit": "~0.1.2",
+    "grunt-contrib-less": "~0.5.0",
+    "grunt-contrib-jst": "~0.5.0",
+    "@{$name}": "~@{$version}",
+    "grunt-contrib-concat": "~0.1.3"
+  }
+}
+</file><file name="README.md" preprocess="" __ideNodeOpen="true">@{$name} @{$version}
+</file><file name="extension/src/panel.html" preprocess="" __ideNodeOpen="true"><panel/></file><file name="extension/src/templates/background-task-list.html" preprocess="" __ideNodeOpen="true">&lt;% _.each(tasks, function(task) { %&gt;
+&lt;li&gt;
+  &lt;button class='bgTask' value='&lt;%= task.name %&gt;'&gt;&lt;%= task.name %&gt;&lt;/button&gt;
+  &lt;button title='Kill Task' class='b b-kill' data-pid='&lt;%= task.pid %&gt;'&gt;X&lt;/button&gt;
+&lt;/li&gt;&lt;% }); %&gt;
+</file><file name="extension/src/templates/panel-tpl.html" preprocess="" __ideNodeOpen="true">&lt;header id='projects'&gt;
+  &lt;h2&gt;Projects&lt;/h2&gt;
+  &lt;div id='placeProjects'&gt;&lt;/div&gt;
+&lt;/header&gt;
+&lt;div id='tools'&gt;
+  &lt;section id='tasks'&gt;
+    &lt;div id='backgroundTasks'&gt;
+      &lt;header&gt;&lt;h2&gt;Background Tasks&lt;/h2&gt;&lt;/header&gt;
+      &lt;ul id='placeBackgroundTasks'&gt;&lt;/ul&gt;
+    &lt;/div&gt;
+
+    &lt;header&gt;&lt;h2&gt;Alias Tasks&lt;/h2&gt;&lt;/header&gt;
+    &lt;ul id='placeAliasTasks'&gt;&lt;/ul&gt;
+
+    &lt;header&gt;&lt;h2&gt;Tasks&lt;/h2&gt;&lt;/header&gt;
+    &lt;ul id='placeTasks'&gt;&lt;/ul&gt;
+  &lt;/section&gt;
+  &lt;section id='output'&gt;
+    &lt;aside id='updateWarning'&gt;
+      &lt;p&gt;
+        The version of &lt;code&gt;@{$name}&lt;/code&gt; is out of date.
+        Please update the node module or update this extension, the versions should match.
+      &lt;/p&gt;
+    &lt;/aside&gt;
+    &lt;header&gt;
+      &lt;h2&gt;Output&lt;/h2&gt;
+    &lt;/header&gt;
+    &lt;div id='placeOutput'&gt;&lt;/div&gt;
+  &lt;/section&gt;
+&lt;/div&gt;
+&lt;progress id='running'&gt;&lt;/progress&gt;
+</file><file name="extension/src/templates/task-list.html" preprocess="" __ideNodeOpen="true">&lt;% _.each(buttons, function(task) { %&gt;
+&lt;li&gt;
+  &lt;button class='task' value='&lt;%= task.name %&gt;'&gt;&lt;%= task.name %&gt;&lt;/button&gt;
+  &lt;button title='Set --verbose' class='b b-second b-flag b-verbose' value='-v'&gt;V&lt;/button&gt;
+  &lt;button title='Set --force' class='b b-first b-flag b-force' value='-f'&gt;F&lt;/button&gt;
+
+  &lt;button title='Add to Background Tasks' class='b b-second b-bg'&gt;B&lt;/button&gt;
+  &lt;button title='Kill Task' class='b b-first b-kill'&gt;X&lt;/button&gt;
+&lt;/li&gt;
+&lt;% }); %&gt;
+</file><file name="extension/src/less/devtools.less" preprocess="" __ideNodeOpen="true">* {
+  -webkit-box-sizing: border-box;
+}
+
+html, body, #panel {
+  height: 100%;
+  width: 100%;
+}
+
+body {
+  margin: 0;
+  position: fixed;
+  font-family: Lucida Grande, sans-serif;
+}
+
+ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+
+h2, label {
+  text-transform: uppercase;
+  position: relative;
+  height: 18px;
+  font-size: 11px;
+  padding: 10px;
+  white-space: nowrap;
+  margin-top: 1px;
+  color: rgb(92, 110, 129);
+  font-weight: bold;
+  text-shadow: rgba(255, 255, 255, 0.75) 0 1px 0;
+}
+
+#backgroundTasks, #killTask {
+  display: none;
+}
+#backgroundTasks.show, #updateWarning.show {
+  display: block;
+}
+
+#backgroundTasks h2 {
+  color: green;
+}
+
+#projects {
+  background: -webkit-gradient(linear, left top, left bottom, from(rgb(236, 236, 236)), to(rgb(217, 217, 217)));
+  border-bottom: 1px solid rgb(163, 163, 163);
+}
+
+#tools {
+  height: 100%;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-flow: row nowrap;
+  -webkit-flex-direction: row;
+  -webkit-flex-wrap: nowrap;
+  -webkit-justify-content: center;
+  -webkit-align-content: center;
+  -webkit-align-items: stretch;
+}
+
+#tasks {
+  height: 100%;
+  width: 25%;
+  min-width: 150px;
+  background-color: rgb(214, 221, 229);
+  border-right: 1px solid rgb(64%, 64%, 64%);
+  -webkit-flex: 1 1 auto;
+  button {
+    display: block;
+    font-weight: bold;
+    padding: 5px;
+    padding-left: 20px;
+    background: none;
+    border: none;
+    width: 100%;
+    cursor: pointer;
+    text-align: left;
+    &amp;:hover {
+      background: rgba(56, 121, 217, 0.1);
+      color: rgb(92, 110, 129);
+    }
+  }
+  li {
+    position: relative;
+    .b {
+      text-align: center;
+      display: none;
+      position: absolute;
+      background: rgba(92, 110, 129, 0.1);
+      right: 15px;
+      padding: 2px 4px;
+      top: 3px;
+      font-size: 10px;
+      width: auto;
+      border-radius: 15px;
+      border: 1px solid rgba(92, 110, 129, 0.1);
+      height: auto;
+      font-family: Arial, monospace;
+      color: white;
+
+      &amp;:hover {
+        color: white;
+      }
+
+      &amp;.b-kill {
+        opacity: 0.7;
+        background: rgba(92, 110, 129, 0.9);
+      }
+      &amp;.b-second {
+        right: 40px;
+      }
+      &amp;.b.b-bg {
+        background: green;
+      }
+      &amp;.b-flag {
+        opacity: 0.2;
+        display: none;
+        &amp;:hover {
+          opacity: 0.6;
+        }
+        &amp;.b-on {
+          opacity: 1;
+          display: block;
+        }
+      }
+      &amp;.b-verbose:hover {
+        background: orange;
+      }
+      &amp;.b-force:hover {
+        background: #ff3d00;
+      }
+      &amp;.b-verbose.b-on {
+        background: orange;
+      }
+      &amp;.b-force.b-on {
+        background: #ff3d00;
+      }
+    }
+    &amp;:hover .b.b-flag  {
+      display: block;
+    }
+  }
+}
+
+.running #tasks li:hover .b.b-flag {
+  display: none;
+}
+
+pre {
+  font-size: 11px;
+  margin: 1px 0 1px 0;
+  color: rgb(92, 110, 129);
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  word-break: break-all;
+}
+
+button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+}
+
+#projects {
+  min-height: 25px;
+  h2 {
+    display: inline;
+  }
+  button {
+    border: 1px solid rgba(163, 163, 163, 0);
+    &amp;.active {
+      background: rgba(255,255,255, 0.5);
+      border: 1px solid rgb(163, 163, 163);
+      color: rgb(46, 46, 46);
+    }
+    &amp;:hover {
+      background: rgba(255,255,255, 0.1);
+      border: 1px solid rgb(163, 163, 163);
+      color: rgb(46, 46, 46);
+    }
+  }
+}
+
+#placeOutput {
+  padding: 0 0 40px 10px;
+}
+
+#placeTasks {
+  margin-bottom: 50px;
+}
+
+#placeProjects {
+  display: inline;
+}
+
+#tasks li .b.b-kill:hover {
+  background-color: red;
+  border-color: red;
+  opacity: 1;
+}
+
+#notice p {
+  color: rgb(92, 110, 129);
+  font-size: 25px;
+  padding: 20px;
+  text-align: center;
+}
+
+#output, #tasks {
+  overflow: auto;
+}
+
+#output {
+  width: 75%;
+  -webkit-flex: 3 1 auto;
+}
+
+.offline {
+  #panel {
+    display: none;
+  }
+}
+
+#notice small {
+  color: rgba(92, 110, 129, 0.5);
+}
+
+.offline #notice {
+  display: block;
+}
+
+.online #notice{
+  display: none;
+}
+
+#running {
+  display: none;
+  width: 100%;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+}
+
+.running {
+  #tasks .task:hover {
+    cursor: not-allowed;
+  }
+
+  #tasks .active-task .b {
+    display: block;
+  }
+
+  #tasks .task {
+    opacity: 0.3;
+  }
+
+  #tasks .active-task{
+    opacity: 1;
+  }
+
+  #running {
+    display: block;
+  }
+}
+
+#backgroundTasks li .b {
+  display: block;
+}
+
+#updateWarning {
+  display: none;
+  position: relative;
+  border: 1px solid rgb(64%, 64%, 64%);
+  border-top: none;
+  border-right: none;
+  background: -webkit-linear-gradient(top, #FFF8BA 0%, #F1DA36 100%);
+  font-size: 10px;
+  p {
+    padding: 5px;
+    margin: 0;
+  }
+}
+
+@media all and (max-width: 250px) {
+  #output {
+    display: none;
+  }
+  #tasks {
+    width: 100%;
+  }
+}
+
+
+/**
+ * Default theme.
+ * TODO: theme support in options;
+ */
+.theme-timestamp {
+  color: silver;
+}
+
+.theme-inverse {
+  background-color: black;
+  color: white;
+}
+
+.theme-white {
+  color: white;
+}
+
+.theme-grey {
+  color: grey;
+}
+
+.theme-black {
+  color: grey;
+}
+
+.theme-blue {
+  color: blue;
+}
+
+.theme-cyan {
+  color: #00c7ff;
+}
+
+.theme-green {
+  color: green;
+}
+
+.theme-magenta {
+  color: magenta;
+}
+
+.theme-red {
+  color: red;
+}
+
+.theme-yellow {
+  color: #ffb600;
+}</file><file name="extension/src/js/devtools.js" preprocess="" __ideNodeOpen="true">'use strict';
+
+const MAX_CONNECTIONS = 5;
+const CONNECTION_PORT = 61749;
+
+// Extension version, comes from runtime
+var extVersion = manifest.version;
+
+// @{$name} project setting
+var projects = [],
+  currentProject;
+
+// Port settings
+var startPort = CONNECTION_PORT,
+  currentPort = startPort,
+  maxPort = currentPort + MAX_CONNECTIONS;
+
+// Templates
+var projectListTpl = JST['extension/src/templates/project-list.html'],
+  taskListTpl = JST['extension/src/templates/task-list.html'],
+  bgTasksTpl = JST['extension/src/templates/background-task-list.html'],
+  panelTpl = JST['extension/src/templates/panel-tpl.html'];
+
+// Setup main view
+var $body = $('body'),
+  $panel = $('#panel');
+$panel.html(panelTpl({}));
+
+// UI Selectors
+var $output = $("#placeOutput"),
+  $outputWrap = $('#output'),
+  $tasks = $('#tasks'),
+  $bgSection = $('#backgroundTasks'),
+  $bgTasks = $('#placeBackgroundTasks'),
+  $regularTasks = $('#placeTasks'),
+  $aliasTasks = $('#placeAliasTasks'),
+  $projects = $('#placeProjects'),
+  $warning = $('#updateWarning');
+
+/**
+ * Console color styles
+ * TODO: move this later
+ */
+var modStyles = {
+// "name": [beginCode, endCode, htmlTag]
+  'bold': [1, 22, "b"],
+  'italic': [2, 23, "i"],
+  'underline': [4, 24, "u"],
+  'inverse': [7, 27, "span"],
+  'strikethrough': [9, 29, "del"]
+};
+
+var colorStyles = {
+// "name": beginCode (endCode is always "39" and htmlTag is "span")
+  'white': 37,
+  'grey': 90,
+  'black': 30,
+  'blue': 34,
+  'cyan': 36,
+  'green': 32,
+  'magenta': 35,
+  'red': 31,
+  'yellow': 33
+};
+
+var regExps = null;
+
+function beginTag(tag, cls) {
+  return '&lt;' + tag + ' class="' + cls + '"&gt;';
+}
+
+function endTag(tag) {
+  return '&lt;/' + tag + '&gt;';
+}
+
+function themeClass(name) {
+  return 'theme-' + name;
+}
+
+function cliRegExp(num) {
+  return new RegExp('\x1B\\[' + num + 'm', "g");
+}
+
+/**
+ * Create regular expression from styles definition
+ */
+function getRegExps(modStyles, colorStyles) {
+  if (!_.isNull(regExps)) return regExps;
+
+  var i = 1, name;
+  regExps = [
+    [cliRegExp(39), endTag("span")]
+  ];
+  for (name in modStyles) {
+    regExps[i++] = [
+      cliRegExp(modStyles[name][0]),
+      beginTag(modStyles[name][2], themeClass(name))
+    ];
+    regExps[i++] = [
+      cliRegExp(modStyles[name][1]),
+      endTag(modStyles[name][2])
+    ];
+  }
+  for (name in colorStyles) {
+    regExps[i++] = [
+      cliRegExp(colorStyles[name]),
+      beginTag("span", themeClass(name))
+    ];
+  }
+
+  return regExps;
+}
+
+/**
+ + * Colorize a message.
+ + */
+function colorize(msg) {
+  var regExps = getRegExps(modStyles, colorStyles);
+  var result = msg;
+  for (var r in regExps) {
+    result = result.replace(regExps[r][0], regExps[r][1]);
+  }
+  return result;
+}
+
+/**
+ * Connect to a devtools socket
+ */
+function connect() {
+  // find a project where the port is currentPort
+  var exists = _.find(projects, function (project) {
+    return project.port === currentPort;
+  });
+
+  // if no project on that port
+  if (!exists) {
+    var socketAddr = 'ws://localhost:' + currentPort;
+
+    var socket = new WebSocket(socketAddr, 'echo-protocol');
+    socket.onopen = handleSocketOpen;
+    socket.onmessage = handleSocketMessage;
+    socket.onclose = handleSocketClose;
+    socket.onerror = handleSocketError;
+  }
+
+  if (maxPort === currentPort) {
+    currentPort = startPort;
+  }
+  currentPort++;
+  setTimeout(connect, 1000);
+}
+
+/**
+ * Handle socket open event
+ */
+function handleSocketOpen(e) {
+  $body.removeClass('offline').addClass('online');
+  this.send('handleSocketOpen');
+}
+
+/**
+ * Handle socket message for an event
+ */
+function handleSocketMessage(event) {
+  var data = event.data,
+    action = false;
+
+  // try to parse the message as JSON from the socket
+  try {
+    data = JSON.parse(event.data);
+    // set that this a JSON action
+    action = true;
+  } catch (e) {
+  }
+
+  // if we got a specific action
+  if (action &amp;&amp; data) {
+    if (data.project) {
+      // connecting a new project
+      // add this new project
+      projects.push({
+        name: data.project,
+        port: parseInt(data.port),
+        // this socket from handleSocketMessage
+        socket: this,
+        taskListAlias: data.alias,
+        taskListGeneric: data.tasks,
+        tasks: [],
+        running: false,
+        devtoolsVersion: data.devtoolsVersion
+      });
+
+      // add new project button
+      updateProjectList();
+
+      // set to current to latest, if not running
+      setProject(projects.length - 1);
+    }
+    // process done
+    else if (data.action === 'done') {
+      currentProject.tasks = _.reject(currentProject.tasks, function (task) {
+        return task.pid === data.pid;
+      });
+      updateTaskList();
+      currentProject.running = false;
+      enableActivity();
+    }
+    // process started
+    else if (data.action === 'start') {
+      currentProject.currentTask = {name: data.name, pid: data.pid, output: []};
+      currentProject.tasks.push(currentProject.currentTask);
+      updateTaskList();
+    }
+  }
+  // just regular stdout from a task
+  else {
+    // TODO: this can be done with an action
+    if (data &amp;&amp; data.indexOf('Running Task:') === 0) {
+      $output.html('');
+    } else if (data.length &gt; 1) {
+      if (currentProject.tasks.length &gt; 0) {
+        var msg = data.split("|"),
+          pid = msg[0],
+          timestamp = new Date().toString().split(' ')[4],
+          output = '';
+
+        if (msg[1].length &gt; 1) {
+          output = '&lt;pre&gt;&lt;span class="theme-timestamp"&gt;' + timestamp + '&lt;/span&gt; - ' + colorize(_.escape(msg[1])) + '&lt;/pre&gt;';
+        }
+        // find a task with a process id of the message
+        var pidTask = _.find(currentProject.tasks, function (task) {
+          return task.pid === parseInt(pid);
+        });
+
+        // if we found a task with a pid
+        if (pidTask) {
+          pidTask.output.push(output);
+        }
+
+        // append output to the current view if the process id matches
+        if (currentProject.currentTask &amp;&amp; parseInt(pid) === currentProject.currentTask.pid) {
+          $output.append(output);
+          $outputWrap.scrollTop($output.height());
+        }
+
+      }
+    }
+  }
+}
+
+/**
+ * Handle a socket close
+ * @param e event
+ */
+function handleSocketClose(e) {
+  // port that was just closed
+  var closedPort = parseInt(e.currentTarget.URL.split(':')[2].replace(/\D/g, ''));
+  // remove this project
+  var newProjects = _.reject(projects, function (el) {
+    return el.port === closedPort;
+  });
+
+  // if disconnected a real socket
+  if (newProjects &amp;&amp; newProjects.length !== projects.length) {
+    // if we disconnected the active project and it was running
+    if (closedPort === currentProject.port &amp;&amp; currentProject.running) {
+      currentProject.running = false;
+      enableActivity();
+    }
+
+    projects = newProjects;
+    updateProjectList();
+    setProject(projects.length - 1);
+  } else {
+    projects = newProjects;
+  }
+  // if nothing left
+  if (projects.length === 0) {
+    $body.removeClass('online').addClass('offline');
+  }
+}
+
+/**
+ * Handle socket error
+ */
+function handleSocketError() {
+  // TODO: update this
+  console.log('Something went really wrong, please report this...');
+}
+
+function updateProjectList() {
+  // update project list
+  $projects.html(projectListTpl(projects));
+}
+
+function updateTaskList() {
+  // set the tasks templates
+  $aliasTasks.html(taskListTpl({buttons: currentProject.taskListAlias}));
+  $regularTasks.html(taskListTpl({buttons: currentProject.taskListGeneric}));
+
+  // if running a task at this moment
+  // we need this condition because we might come back to this project
+  // and we need to show that the task is running
+  if (currentProject.currentTask) {
+    // find the task in the list with the current task name
+    $('.task[value="' + currentProject.currentTask.name + '"]')
+      // set the task kill button pid
+      .siblings('.b-kill').data('pid', currentProject.currentTask.pid).end()
+      // set that this is an active task
+      .parent().addClass('active-task');
+  }
+
+  // check the list of background tasks
+  var bgTasks = currentProject.tasks;
+  // if running a task
+  if (currentProject.currentTask) {
+    // exclude the task that is running right now from all task
+    // so we get a true background taks list
+    bgTasks = _.reject(currentProject.tasks, function (task) {
+      return task.pid === currentProject.currentTask.pid;
+    });
+  }
+
+  // if there are background tasks
+  if (bgTasks.length &gt; 0) {
+    // show the background task header
+    $bgSection.addClass('show');
+    // populate the background task list
+    $bgTasks.html(bgTasksTpl({tasks: bgTasks}));
+  }
+  // else no tasks in the background
+  else {
+    // hides the background task header
+    $bgSection.removeClass('show');
+  }
+
+  // if the project is running, we need to set the running stage
+  if (currentProject.running) {
+    $('#tasks .task, #projects .task').prop('disabled', true);
+  }
+}
+
+function setProject(idx) {
+  // if not running, change the active project. Otherwise it stays the same
+  // TODO: bug here, need to check if the task is running
+  // get project by index
+  currentProject = projects[idx];
+  // update project tab style
+  var buttons = $projects.find('button');
+
+  buttons.removeClass('active');
+  $(buttons.get(idx)).addClass('active');
+  // check version
+  if (currentProject &amp;&amp; (currentProject.devtoolsVersion == null || currentProject.devtoolsVersion.replace(/-/g, '.') !== extVersion)) {
+    $warning.addClass('show');
+  } else {
+    $warning.removeClass('show');
+  }
+
+  // clear output
+  if (currentProject &amp;&amp; currentProject.currentTask) {
+    $output.html(currentProject.currentTask.output);
+  } else {
+    $output.html('');
+  }
+  // update task lists for this project
+  if (currentProject) {
+    updateTaskList();
+  }
+  enableActivity();
+}
+
+/**
+ * Connect!
+ */
+connect();
+
+/**
+ * Button Events
+ */
+
+
+// execute task
+$tasks.on('click', '.task', function () {
+  var cmd = $(this).val();
+
+  currentProject.running = true;
+  $tasks.find('.b-on').each(function () {
+    cmd += ' ' + $(this).val();
+  });
+  currentProject.socket.send(cmd);
+  disableActivity();
+});
+
+// execute task
+$tasks.on('click', '.bgTask', function () {
+  var pid = $(this).siblings('.b-kill').data('pid');
+  currentProject.currentTask = _.find(currentProject.tasks, function (task) {
+    return task.pid === pid;
+  });
+  if (currentProject.currentTask) {
+    $output.html(currentProject.currentTask.output);
+  }
+  currentProject.currentTask = null;
+  updateTaskList();
+  currentProject.running = false;
+  enableActivity();
+});
+
+// switch projects
+$projects.on('click', 'button', function () {
+  var idx = $(this).val();
+  setProject(idx);
+  currentProject.running ? disableActivity() : enableActivity();
+});
+
+// send task to background
+$tasks.on('click', '.b-bg', function () {
+  if (currentProject.currentTask) {
+    currentProject.currentTask = null;
+    $output.html('');
+    updateTaskList();
+    currentProject.running = false;
+    enableActivity();
+  }
+});
+
+// set flags
+$tasks.on('click', '.b-flag', function () {
+  var bData = $(this);
+  bData.hasClass('b-on') ? bData.removeClass('b-on') : bData.addClass('b-on');
+});
+
+// kill current task
+$tasks.on('click', '.b-kill', function () {
+  var btn = $(this),
+  // get pid info from current task
+    taskInfo = currentProject.currentTask;
+
+  // if there's a pid, use it instead
+  if (btn.data('pid')) {
+    taskInfo = {name: btn.siblings('.task').val(), pid: btn.data('pid')};
+    // update the tasks list for the current project, leaving only those that
+    // do not match the pid of the button
+    currentProject.tasks = _.reject(currentProject.tasks, function (task) {
+      return task.pid === btn.data('pid');
+    });
+
+    // TODO: validate this? validate that the process was killed ?
+    // TODO BUG: fix flow of killing tasks.
+    updateTaskList();
+  }
+
+  currentProject.socket.send(JSON.stringify({
+    action: 'killTask',
+    task: taskInfo
+  }));
+});
+
+function disableActivity() {
+  $body.addClass('running');
+  $('#tasks .task').prop('disabled', true);
+}
+
+function enableActivity() {
+  $body.removeClass('running');
+  $('#tasks .task').prop('disabled', false);
+}
+</file><file name="extension/src-brackets/js/runtime.js" preprocess="" __ideNodeOpen="true">const BRACKETS_VERSION = "@{$version}";
+
+var manifest = typeof(chrome) != "undefined" ? chrome.runtime.getManifest() : {version: BRACKETS_VERSION};
+document.getElementById('toolsVersion').innerHTML = 'v' + manifest.version;
+</file><file name="extension/src-brackets/js/runtime.js" preprocess="" __ideNodeOpen="true">const BRACKETS_VERSION = "@{$version}";
+
+var manifest = typeof(chrome) != "undefined" ? chrome.runtime.getManifest() : {version: BRACKETS_VERSION};
+document.getElementById('toolsVersion').innerHTML = 'v' + manifest.version;
+</file><file name="extension/src-brackets/js/lib/brackets-devtools.js" preprocess="" __ideNodeOpen="true">'use strict';
+
+define(function (require, exports, module) {
+  var exports = {};
+
+  // Helper function that chains a series of promise-returning
+  // functions together via their done callbacks.
+  var chain = function () {
+    var functions = Array.prototype.slice.call(arguments, 0);
+    if (functions.length &gt; 0) {
+      var firstFunction = functions.shift();
+      var firstPromise = firstFunction.call();
+      firstPromise.done(function () {
+        chain.apply(null, functions);
+      });
+    }
+  };
+
+  exports.chain = chain;
+
+  return exports;
+});
+</file><file name="extension/src-brackets/less/@{$name}-brackets-skin.less" preprocess="" __ideNodeOpen="true">/*
+
+Styles to modify @{$name} to fit the Brackets UI styles.
+
+*/
+
+body {
+  font-family: 'SourceSansPro', Helvetica, Arial, "Meiryo UI", "ＭＳ Ｐゴシック", "MS PGothic", sans-serif;
+  border-top: 1px solid white;
+}
+
+
+#tasks {
+  background: #f8f8f8;
+}
+
+#projects {
+  background: -webkit-gradient(linear, left top, left bottom, from(rgb(255, 255, 255)), to(rgb(248, 248, 248)));
+}
+</file><file name="extension/src-brackets/less/@{$name}-brackets-ui.less" preprocess="" __ideNodeOpen="true">/*
+
+Styles for the external Brackets UI.
+Used for the extension icon and extension integration.
+
+*/
+
+#grunt-preview-icon {
+    background: url(../img/grunt-logo.svg);
+    background-repeat: no-repeat;
+    background-position: left top;
+    background-size: 100%;
+    display: inline-block;
+    position: relative;
+    width: 18px;
+    height: 16px;
+    padding-right: 8px;
+    opacity: .5;
+}
+
+#grunt-preview-icon.active {
+    background: url(../img/grunt-logo.svg);
+    background-size: 100%;
+}
+
+#grunt-preview-icon:hover {
+  opacity: .75;
+}
+
+.grunt-devtools-file {
+  position: relative;
+}
+
+.grunt-devtools-run {
+  position: absolute;
+  left: -8px;
+  top: 7px;
+  width: 8px;
+  height: 8px;
+  border-radius: 15px;
+  background: #E48731;
+}
+.grunt-devtools-run.running {
+  opacity: 0.3;
+}
+
+#panel-grunt-devtools {
+  position: relative;
+}
+
+#panel-grunt-devtools-panel-control {
+  position: absolute;
+  right: 0;
+  top: 0;
+  font-family: monospace;
+  font-size: 25px;
+  color: grey;
+  background: none;
+  width: 30px;
+  padding-top: 5px;
+  height: 25px;
+}</file><file name="extension/src-brackets/node/GruntDomain.js" preprocess="" __ideNodeOpen="true">(function () {
+  "use strict";
+
+  var spawn = require('child_process').spawn,
+    fs = require('fs');
+
+  var currentProcess = null;
+
+  // TODO: move this
+  function shellEscape(str) {
+    return str.replace(/(["\s'$`\\])/g, '\\$1');
+  }
+
+  function stopDevtoolsHandler() {
+    killWorkers();
+  }
+
+  function startDevtoolsHandler(path, gruntfile) {
+    if (currentProcess) {
+      killWorkers();
+      return { pid: null };
+    } else {
+
+      // change into project directory
+      process.chdir(path);
+
+      // TODO: Windows support here, check paths
+      var gruntFilePath = path + gruntfile,
+        spawnCmd = '/usr/local/bin/node';
+
+      if (fs.existsSync(gruntFilePath)) {
+
+        var cmd = [
+          '/usr/local/bin/grunt',
+          '--gruntfile',
+          gruntFilePath,
+          '--base',
+          process.cwd(),
+          'devtools',
+          '--env',
+          'brackets'
+        ];
+
+        currentProcess = spawn(spawnCmd, cmd);
+        currentProcess.stdout.on('data', function (data) {
+          if (data) {
+            //console.log(data.toString());
+          }
+        });
+        return { pid: currentProcess.pid };
+      } else {
+        return { pid: null };
+      }
+    }
+  }
+
+  function init(DomainManager) {
+    if (!DomainManager.hasDomain("grunt")) {
+      DomainManager.registerDomain("grunt", {major: 0, minor: 1});
+    }
+    // startDevtools command
+    DomainManager.registerCommand(
+      "grunt", // domain
+      "startDevtools", // command
+      startDevtoolsHandler, // handler
+      false, // sync
+      "Starts @{$name}", // description
+      // params
+      [
+        {
+          name: "path",
+          type: "string",
+          description: "full path to the project"
+        },
+        {
+          name: "grunt",
+          type: "string",
+          description: "Gruntfile"
+        }
+      ],
+      // returns
+      [
+        {name: "grunt",
+          type: "{pid: currentProcess.pid}",
+          description: "Process id"}
+      ]
+    );
+
+    // startDevtools command
+    DomainManager.registerCommand(
+      "grunt", // domain
+      "stopDevtools", // command
+      stopDevtoolsHandler, // handler
+      false, // sync
+      "Stops @{$name}", // description
+      // params
+      [],
+      // returns
+      []
+    );
+  }
+
+  /**
+   * Clean up child processes
+   */
+  var killWorkers = function (key) {
+    if (currentProcess) {
+      currentProcess.kill();
+    }
+
+    currentProcess = null;
+  };
+
+  process.on("uncaughtException", killWorkers);
+  process.on("SIGINT", killWorkers);
+  process.on("SIGTERM", killWorkers);
+
+  exports.init = init;
+
+}());
+</file><file name="extension/src-chrome/manifest.json" preprocess="" __ideNodeOpen="true">{
+  "name": "@{$title}",
+  "version": "@{$version}",
+  "description": "@{@$description}",
+  "icons": {
+    "16": "img/icon16.png",
+    "48": "img/icon48.png",
+    "128": "img/icon128.png"
+  },
+  "devtools_page": "devtools-chrome.html",
+  "manifest_version": 2,
+  "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'",
+  "minimum_chrome_version": "25.0.1364.97"
+}
+</file><file name="extension/src-chrome/devtools-chrome.js" preprocess="" __ideNodeOpen="true">var panels = chrome.devtools.panels;
+
+// @{$name} panel
+var gruntPanel = panels.create(
+  "@{$title}",
+  "img/iconDev.png",
+  "panel.html"
+);
+alert(1);
+console.log("HOLA CHE!!!");</file><file name="extension/src-chrome/devtools-chrome.html" preprocess="" __ideNodeOpen="true">&lt;html&gt;
+&lt;body&gt;
+&lt;script src="devtools-chrome.js"&gt;&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</file><file name="extension/src-chrome/js/runtime.js" preprocess="" __ideNodeOpen="true">var manifest = chrome.runtime.getManifest();
+document.getElementById('toolsVersion').innerHTML = 'v' + manifest.version;
+</file><file name="grunt-plugin/README.md" preprocess="" __ideNodeOpen="true"># @{$name}
+</file><file name="grunt-plugin/package.json" preprocess="" __ideNodeOpen="true">{
+  "name": "@{$name}",
+  "description": "@{$description}",
+  "version": "@{$version}",
+  "homepage": "https://github.com/caleeli/@{$name}",
+  "author": {
+    "name": "dcallizaya",
+    "email": "david.callizaya@coderoad.com",
+    "url": "https://www.facebook.com/david.callizaya.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/caleeli/@{$name}.git"
+  },
+  "bugs": {
+    "url": "https://github.com/caleeli/@{$name}/issues"
+  },
+  "bin": {
+    "@{$name}": "bin/@{$name}"
+  },
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://github.com/caleeli/@{$name}/blob/master/LICENSE-MIT"
+    }
+  ],
+  "main": "Gruntfile.js",
+  "engines": {
+    "node": "&gt;= 0.8.0"
+  },
+  "scripts": {
+    "test": "grunt test"
+  },
+  "peerDependencies": {
+    "grunt": "~0.4.1"
+  },
+  "keywords": [
+    "@{$name}",
+    "devtools"
+  ],
+  "dependencies": {
+    "websocket": "~1.0.8",
+    "portscanner": "~0.1.3",
+    "shelljs": "~0.2.5"
+  },
+  "devDependencies": {
+    "grunt-contrib-clean": "~0.5.0",
+    "grunt-contrib-watch": "~0.5.0"
+  }
+}
+</file><file name="grunt-plugin/Gruntfile.js" preprocess="" __ideNodeOpen="true">'use strict';
+
+module.exports = function(grunt) {
+
+  grunt.initConfig({
+    clean: {
+      build: {
+        src: ["tmp"]
+      }
+    },
+    watch: {
+      gruntfile: {
+          files: 'Gruntfile.js',
+          tasks: ['clean']
+      },
+      all: {
+          files: '*',
+          tasks: ['clean']
+      }
+    }
+  });
+
+  // Actually load this plugin's task(s).
+  grunt.loadTasks('tasks');
+  // Just for TESTING!
+  grunt.loadNpmTasks('grunt-contrib-clean');
+  grunt.loadNpmTasks('grunt-contrib-watch');
+
+  grunt.registerTask('default', ['devtools']);
+};
+</file><file name="grunt-plugin/tasks/devtools.js" preprocess="" __ideNodeOpen="true">'use strict';
+
+module.exports = function (grunt) {
+
+  grunt.registerTask('devtools', 'Runs a server for devtools', function () {
+    // run forever until the user kills the task
+    this.async();
+
+    var WebSocketServer = require('websocket').server,
+      fs = require("fs"),
+      spawn = require("child_process").spawn,
+      exec = require("child_process").exec,
+      http = require('http'),
+      portscanner = require('portscanner');
+
+    // collects all process workers
+    var workers = [];
+    var pkg = require('../package.json'),
+      version = pkg.version;
+
+    // set path split character
+    var splitChar = '/';
+    // on Windows we need a different path split
+    if (process.platform === 'win32') splitChar = '\\';
+
+    // split the project path
+    var projectPath = process.cwd().split(splitChar);
+    // get the project name from the last piece in the path
+    var projectName = projectPath[projectPath.length - 1];
+    // get alias tasks from the Gruntfile
+    // TODO: update this
+    var allTasks = [];
+
+    if (grunt.option('core') &amp;&amp; grunt.option('alias')) {
+      allTasks.core = JSON.parse(grunt.option('core'));
+      allTasks.alias = JSON.parse(grunt.option('alias'));
+    } else {
+      allTasks = require('../lib/local').init(grunt).getTasks();
+    }
+
+    var aliasTasks = allTasks.alias;
+    var basicTasks = allTasks.core;
+    var allTasks = allTasks.core.concat(allTasks.alias);
+
+    var server = http.createServer(function (request, response) {
+      response.writeHead(404);
+      response.end();
+    });
+
+    // TODO: update this
+    // set start port
+    var projectPort = 61750;
+    // use portscanner to find a suitable port for this project
+    portscanner.findAPortNotInUse(projectPort, projectPort + 4, 'localhost', function (error, port) {
+      projectPort = port;
+      // if we found a good port
+      if (projectPort) {
+        // start the server on that port
+        server.listen(port, function () {
+          grunt.log.ok("@{$title} Devtools v" + version + " is ready! Proceed to the Chrome extension.");
+        });
+      } else {
+        grunt.fail.warn("You're running too many Grunt Devtools, please close one.");
+      }
+    });
+
+    var wsServer = new WebSocketServer({
+      httpServer: server,
+      autoAcceptConnections: false
+    });
+
+    wsServer.on('request', function (request) {
+      var key = request.key;
+      var connection = request.accept('echo-protocol', request.origin);
+      connection.on('message', function (message) {
+        if (message.type === 'utf8') {
+          var msg = message.utf8Data;
+
+          try {
+            msg = JSON.parse(message.utf8Data);
+          } catch (e) {
+          }
+          if (msg.action) {
+            if (msg.action === 'killTask') {
+              workers.forEach(function (worker) {
+                if (worker.pid === msg.task.pid) {
+                  connection.send(worker.pid + '|' + 'Task Killed: ' + msg.task.name);
+                  // TODO: update this
+                  // TODO: Also need to clean up tmp directory here.
+                  if (process.platform === 'win32') {
+                    exec('taskkill /pid ' + worker.pid + ' /T /F');
+                  } else {
+                    worker.kill();
+                  }
+                  connection.sendUTF(JSON.stringify({ action: 'done', pid: worker.pid }));
+                  workers = grunt.util._.reject(workers, function (w) {
+                    return w.pid === worker.pid
+                  });
+                }
+              });
+            }
+          } else {
+            // get the command from the request
+            var cmd = msg.split(' ');
+            // default spawn command
+            var spawnCmd = 'grunt';
+            // task name we want to run
+            var taskName = cmd[0];
+
+            if (process.env &amp;&amp; process.env.PWD) {
+              // TODO: this might break win32
+              process.chdir(process.env.PWD);
+            }
+
+            // if Windows  need to change a few things
+            if (process.platform === 'win32') {
+              // add cmd to spawn properly
+              spawnCmd = 'grunt.cmd';
+            }
+
+            // if running in Adobe Brackets env
+            if (grunt.option('env') === 'brackets') {
+              // need a full node path
+              spawnCmd = '/usr/local/bin/node';
+              // add grunt to our list
+              cmd.unshift('/usr/local/bin/grunt');
+            }
+
+            if (taskName === 'handleSocketOpen') {
+              // build a list of core tasks with targets
+              var basicWithTargets = [];
+              // for every core tasks
+              basicTasks.forEach(function(task) {
+                // push the core task into the list
+                basicWithTargets.push(task);
+                // if this task has targets
+                if (task.targets) {
+                  task.targets.forEach(function (target) {
+                    // create a new mini task that has a name of the core task plus target name
+                    basicWithTargets.push({ name: task.name + ':' + target });
+                  });
+                }
+              });
+
+              // send a list of tasks and the project info to the connection
+              connection.sendUTF(JSON.stringify({
+                tasks: basicWithTargets,
+                alias: aliasTasks,
+                project: projectName,
+                port: projectPort,
+                devtoolsVersion: version
+              }));
+            }
+            else if (grunt.util._.where(allTasks, { 'name': taskName.split(':')[0] })) {
+              var watcher = spawn(spawnCmd, cmd);
+              watcher.key = key;
+              workers.push(watcher);
+              connection.sendUTF(JSON.stringify({
+                action: 'start',
+                name: cmd[0],
+                pid: watcher.pid
+              }));
+              // TODO: fix bug here with running task return
+              connection.send('Running Task: ' + taskName);
+              grunt.log.ok('Running Task: ' + taskName);
+              watcher.stdout.on('data', function (data) {
+                if (data) {
+                  connection.send(watcher.pid + '|' + data.toString());
+                }
+              });
+              watcher.stdout.on('end', function (data) {
+                if (data) {
+                  connection.send(watcher.pid + '|' + data.toString());
+                }
+                connection.sendUTF(JSON.stringify({ action: 'done', pid: watcher.pid }));
+              });
+              watcher.stderr.on('data', function (data) {
+                if (data) {
+                  connection.send(watcher.pid + '|' + data.toString());
+                }
+              });
+              watcher.on('exit', function (code) {
+                if (code !== 0) {
+                  connection.send(watcher.pid + '|' + 'Process Exited with code: ' + code);
+                }
+                // TODO BUG: need to clean up 'workers' here
+              });
+            }
+          }
+        }
+      });
+
+      // when this session ends stop all workers
+      connection.on('close', function () {
+        killWorkers({type: 'connection'});
+      });
+    });
+
+    /**
+     * Clean up child processes
+     */
+    var killWorkers = function (opts) {
+      var opts = opts ? opts : {};
+
+      workers.forEach(function (worker) {
+        if (process.platform === 'win32') {
+          exec('taskkill /pid ' + worker.pid + ' /T /F');
+        } else {
+          try {
+            process.kill(worker.pid);
+          } catch (e) {
+            //console.log(e);
+          }
+        }
+      });
+
+      // if we are killing workers not from the connection close
+      // TODO: this might break things
+      if (opts.type !== 'connection') {
+        process.exit();
+      }
+    };
+
+    process.on("uncaughtException", killWorkers);
+    process.on("SIGINT", killWorkers);
+    process.on("SIGTERM", killWorkers);
+
+  });
+};
+</file><file name="grunt-plugin/tasks/_config.js" preprocess="" __ideNodeOpen="true">'use strict';
+
+module.exports = function (grunt) {
+
+  grunt.registerTask('_devtools_config', 'Prints out grunt config', function () {
+    process.stdout.write(JSON.stringify(grunt.config.getRaw()));
+    process.stdout.write('\n');
+    process.stdout.write(JSON.stringify(grunt.task._tasks));
+  });
+};
+</file><file name="grunt-plugin/lib/grunt-devtools.js" preprocess="" __ideNodeOpen="true">module.exports = function () {
+
+  var shell = require('shelljs');
+  var spawn = require('child_process').spawn;
+  // path to the custom devtools task
+  var devtoolsTask = __dirname + '/../tasks';
+  if (process.platform === 'win32') {
+    devtoolsTask = __dirname + '\\..\\tasks';
+  }
+
+  // command to load the custom devtools task and run the _devtools_config task
+  var cmd = 'grunt -no-color -tasks ' + devtoolsTask + ' _devtools_config';
+
+  // run the command to get the task list  
+  var result = shell.exec(cmd, { silent: true });
+
+  var idx = null;
+  var response = result.output.toString().split('\n');
+  // find the index offset of config objects
+  response.forEach(function (block, i) {
+    if (typeof block === 'string' &amp;&amp; block.indexOf('Running') === 0) {
+      idx = i;
+    }
+    if (typeof block === 'string' &amp;&amp; block.indexOf('Fatal error') === 0) {
+      console.log(block);
+    }
+  });
+
+  // if no index, then stop
+  if (idx == null) {
+    console.log('Failed to find your Gruntfile or \'grunt\' node module. \nAre you running \'@{$name}\' in a directory with a Gruntfile?');
+    return;
+  }
+
+  // gets Grunt raw config
+  var gruntRaw = response[idx + 1];
+  // gets Grunt task config
+  var gruntTasks = response[idx + 2];
+
+  var configRaw = null;
+  var configTasks = null;
+
+  // try to parse grunt raw and task config
+  try {
+    configRaw = JSON.parse(gruntRaw);
+    configTasks = JSON.parse(gruntTasks);
+  } catch (e) {
+    console.log(e);
+  }
+
+  if (configRaw === null || configTasks === null) {
+    console.log('Failed to parse your Gruntfile. Please report this issue...');
+    return;
+  }
+
+  // collect tasks
+  var coreTasks = [];
+  var aliasTasks = [];
+
+  Object.keys(configTasks).forEach(function (name) {
+    var task = configTasks[name];
+
+    // exclude certain tasks
+    if (task.name !== '_devtools_config' &amp;&amp; task.name !== 'devtools') {
+
+      // if this task has info and starts with 'Alias for'
+      if (task.info &amp;&amp; task.info.indexOf('Alias for') === 0) {
+        delete task.meta;
+        delete task.info;
+
+        // add to Alias task list
+        aliasTasks.push(task);
+      }
+      // else regular task
+      else {
+        task.targets = [];
+
+        for (var prop in configRaw[name]) {
+          // exclude options target
+          if (prop !== 'options') {
+            var target = configRaw[name][prop];
+
+            // collect object properties
+            if (typeof target === 'object' &amp;&amp; !(target instanceof Array)) {
+              task.targets.push(prop);
+            }
+          }
+        }
+
+        if (task.targets.length === 0) {
+          delete task.targets;
+        }
+
+        delete task.meta;
+        delete task.info;
+        // add to Core task list
+        coreTasks.push(task);
+      }
+
+    }
+  });
+
+  var spawnArgs = [
+    // add devtools plugin tasks to project's Grunt
+    '--tasks',
+    devtoolsTask,
+    'devtools',
+    // no color output for this task
+    '-no-color',
+    // load core tasks from the array
+    '--core',
+    JSON.stringify(coreTasks),
+    // load alias tasks from the array
+    '--alias',
+    JSON.stringify(aliasTasks)
+  ];
+  var spawnCmd = (process.platform === 'win32') ? 'grunt.cmd' : 'grunt';
+  var devtools = spawn(spawnCmd, spawnArgs);
+
+  devtools.stdout.pipe(process.stdout);
+  devtools.stderr.pipe(process.stderr);
+
+  function killWorkers() {
+    process.kill(devtools.pid);
+    process.exit();
+  }
+
+  process.on("uncaughtException", killWorkers);
+  process.on("SIGINT", killWorkers);
+  process.on("SIGTERM", killWorkers);
+
+
+};
+</file><file name="grunt-plugin/lib/local.js" preprocess="" __ideNodeOpen="true">'use strict';
+
+exports.init = function (grunt) {
+  var exports = {};
+
+  /**
+   * Returns arrays of core and alias tasks
+   * @returns {{core: Array, alias: Array}}
+   */
+  exports.getTasks = function () {
+
+    // gets Grunt raw config
+    var configRaw = grunt.config.getRaw();
+    // gets Grunt task config
+    var configTasks = grunt.task._tasks;
+
+    // collect tasks
+    var coreTasks = [];
+    var aliasTasks = [];
+
+    Object.keys(configTasks).forEach(function (name) {
+      var task = configTasks[name];
+
+      // exclude certain tasks
+      if (task.name !== '_devtools_config' &amp;&amp; task.name !== 'devtools') {
+
+        // if this task has info and starts with 'Alias for'
+        if (task.info &amp;&amp; task.info.indexOf('Alias for') === 0) {
+          // add to Alias task list
+          aliasTasks.push(task);
+        }
+        // else regular task
+        else {
+          // if its a multitask we want to collect the targets
+          if (task.multi) {
+            task.targets = [];
+
+            for (var prop in configRaw[name]) {
+              // exclude options target
+              if (prop !== 'options') {
+                var target = configRaw[name][prop];
+
+                // collect object properties
+                if (typeof target === 'object' &amp;&amp; !(target instanceof Array)) {
+                  task.targets.push(prop);
+                }
+              }
+            }
+
+          }
+          // add to Core task list
+          coreTasks.push(task);
+        }
+
+      }
+    });
+
+    return {
+      core: coreTasks,
+      alias: aliasTasks
+    };
+
+  };
+
+  return exports;
+};
+</file><file name="grunt-plugin/bin/grunt-devtools" preprocess="" __ideNodeOpen="true">#!/usr/bin/env node
+require('../lib/@{$name}')();
+</file></component><component name="panel" transparent="" precode="" __ideNodeOpen="true">&lt;!doctype html&gt;
+&lt;html&gt;
+  &lt;head&gt;
+    &lt;link rel='stylesheet' href='css/devtools.css'&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+  &lt;section id='panel'&gt;&lt;/section&gt;
+  &lt;section id='notice'&gt;&lt;/section&gt;
+
+  &lt;script src='js/devtools.js'&gt;&lt;/script&gt;
+  &lt;/body&gt;
+&lt;/html&gt;
+</component></package><package name="instance" type="" __ideNodeOpen="true"><project name="cr24-devtools" description="CR24 Recording tool brings the posibility of record actions and saves forms" version="0.0.1" homepage="http://www.google.com" title="CR24 Recording tool" defaultText="No projects detected"/></package></path></root>

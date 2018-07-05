@@ -1,0 +1,319 @@
+<?xml version="1.0" encoding="UTF-8"?><root __ideNodeOpen="true"><package name="components" type="" __ideNodeOpen="true"><component name="page" transparent="" precode="" __ideNodeOpen="true">&lt;html&gt;
+    &lt;head&gt;
+        &lt;meta http-equiv="Content-Type" content="text/html; charset=UTF-8"&gt;
+        &lt;meta charset="UTF-8"&gt;
+        &lt;!-- link rel="stylesheet" href="@{$base}../css/bootstrap.min.css"&gt;
+        &lt;link rel="stylesheet" href="@{$base}../css/bootstrap-theme.min.css" --&gt;
+        &lt;link rel="stylesheet" href="@{$base}../css/bootstrap-notify.css"&gt;
+        &lt;link rel="stylesheet" href="@{$base}../css/formValidation.css"/&gt;
+
+        &lt;script src="@{$base}../js/jquery.min.js"&gt;&lt;/script&gt;
+        &lt;!-- script src="@{$base}../js/bootstrap.min.js"&gt;&lt;/script --&gt;
+
+&lt;!-- Latest compiled and minified CSS --&gt;
+&lt;link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous"&gt;
+
+&lt;!-- Optional theme --&gt;
+&lt;link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous"&gt;
+
+&lt;!-- Latest compiled and minified JavaScript --&gt;
+&lt;script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"&gt;&lt;/script&gt;
+
+        &lt;script src="@{$base}../js/bootstrap-notify.js"&gt;&lt;/script&gt;
+        &lt;script type="text/javascript" src="@{$base}../js/formValidation.js"&gt;&lt;/script&gt;
+
+    &lt;/head&gt;
+    &lt;body&gt;
+&lt;div class="container"&gt;
+@{node::content($_)}
+&lt;/div&gt;
+    &lt;/body&gt;
+&lt;/html&gt;</component><component name="form" transparent="" precode="" __ideNodeOpen="true">&lt;form&gt;
+@{node::content($_)}
+&lt;/form&gt;</component><component name="input" transparent="" precode="" __ideNodeOpen="true">  &lt;fieldset class="form-group"&gt;
+    &lt;label for="@{$name}" class=""&gt;@{$label}&lt;/label&gt;
+    &lt;input type="text" class="form-control" id="@{$name}" placeholder="@{$placeholder}"&gt;
+  &lt;/fieldset&gt;
+</component><component name="password" transparent="" precode="" __ideNodeOpen="true">  &lt;fieldset class="form-group"&gt;
+    &lt;label for="@{$name}"&gt;@{$label}&lt;/label&gt;
+    &lt;input type="password" class="form-control" id="@{$name}" placeholder="@{$placeholder}"&gt;
+  &lt;/fieldset&gt;
+</component><component name="email" transparent="" precode="" __ideNodeOpen="true">  &lt;fieldset class="form-group"&gt;
+    &lt;label for="@{$name}"&gt;@{$label}&lt;/label&gt;
+    &lt;input type="email" class="form-control" id="@{$name}" placeholder="@{$placeholder}"&gt;
+  &lt;/fieldset&gt;
+</component><component name="panel" transparent="" precode="" __ideNodeOpen="true">&lt;div class="panel panel-default"&gt;
+  &lt;div class="panel-heading"&gt;@{$title}&lt;/div&gt;
+  &lt;div class="panel-body"&gt;
+@{node::content($_)}
+  &lt;/div&gt;
+  &lt;div class="panel-footer" style="text-align:right"&gt;
+    &lt;button type="button" class="btn btn-default navbar-btn"&gt;Next&lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;</component><component name="steps" transparent="" precode="" __ideNodeOpen="true" engine="php">    &lt;style&gt;
+.stage-container {
+    padding: 15px 0px 4px;
+}
+
+.stage {
+    display: inline-block;
+    position: relative;
+    text-align: center;
+    min-height: 112px;
+}
+
+.stage:before,
+.stage:after {
+    position: absolute;
+    background-color: #eaeaea;
+    top: 50%;
+    margin-top: -33px;
+    width: 50%;
+    height: 5px;
+    border-top: 1px solid #d9d9d9;
+    border-bottom: 1px solid #d9d9d9;
+    content: '';
+}
+
+.stage:before { left: 0; }
+.stage:after  { right: 0; }
+
+.stage:first-child:before { display: none; }
+.stage:first-child + .stage + .stage + .stage:after { display: none; }
+
+/*	Current stage  */
+.stage.tmm-current .stage-header {
+    background-color: darkslategrey;
+    border: none;
+}
+
+.stage.tmm-current .stage-header.head-number {
+    color: #fff;
+    text-shadow: 1px 1px 0px rgba(0, 0, 0, .9);
+}
+
+.stage.tmm-current:after,
+.stage.tmm-current:before {
+    background-color: darkslategrey;
+    border: none;
+}
+/*	end Current stage  */
+
+/*	Success stage  */
+.stage.tmm-success .stage-header {
+    background-color: #92cf5c;
+    border: none;
+}
+
+.stage.tmm-success .stage-header.head-number {
+    color: #3c611b;
+    text-shadow: 1px 1px 0px rgba(173, 219, 114, 1);
+}
+
+.stage.tmm-success:after,
+.stage.tmm-success:before {
+    background-color: #92cf5c;
+    border: none;
+}
+
+.stage.tmm-success .stage-header:after {
+    position: absolute;
+    top: 51px;
+    left: -51px;
+    color: #696969;
+    font-family: 'fontello';
+    font-size: 16px;
+    color: #92cf5c;
+    content: '\e83b';
+    text-shadow: none;
+    font-weight: 100;
+}
+
+.stage.tmm-success .stage-header.head-number:after { top: 42px; }
+/*	end Succes stage  */
+
+.stage-header {
+    display: inline-block;
+    width: 50px;
+    height: 50px;
+    background-color: #eaeaea;
+    text-align: center;
+    font-size: 20px;
+    color: #a9a9a9;
+    border: 1px solid #d9d9d9;
+    position: relative;
+    z-index: 1;
+
+    -webkit-border-radius: 50%;
+    border-radius: 50%;
+}
+
+.stage-header.head-number {
+    color: #a9a9a9;
+    font-family: 'Arial', sans-serif;
+    font-weight: bold;
+    color: #a9a9a9;
+    font-family: 'Arial', sans-serif;
+    font-weight: bold;
+    line-height: 2.2em;
+    margin-bottom: 7px;
+}
+
+.stage-content {
+    width: 153px;
+    padding-left: 17px;
+    max-height: 52px;
+    margin: 0 auto;
+
+}
+
+.stage-title {
+    font: 400 15px 'calibriregular', sans-serif;
+    color: #464646;
+    padding-left: 0px;
+    text-align: left;
+    text-align: center;
+}
+
+.stage-info {
+    text-align: left;
+    color: #a8a8a8;
+    font-family: 'calibriregular', sans-serif;
+    font-size: 11px;
+    line-height: 1.4;
+    text-align: center;
+}
+
+
+/*	Stage  */
+.stage:before,
+.stage:after	{ background-color: #eaeaea; }  /*  Set color for STAGE LINE  */
+.stage-header	{ background-color: #eaeaea; }  /*	Set background color for STAGE HEADER  */
+.stage-title	{ color: #464646; }	/*	Set color for STAGE TITLE  */
+.stage-info	{ color: #a8a8a8;}	/*	Set color for STAGE INFO  */
+/*	end Stage  */
+
+/*	Current stage  */
+.stage.tmm-current .stage-header	{ background-color: darkslategrey; }	/*	Set background color for CURRENT STAGE  */
+.stage.tmm-current .stage-header.head-number   { color: #fff; }	/*	Set color for CURRENT STAGE TEXT  */
+.stage.tmm-current:after,
+.stage.tmm-current:before	{ background-color: darkslategrey; }	/*	Set background color for CURRENT STAGE LINE  */
+/*	end Current stage  */
+
+/*	Success stage  */
+.stage.tmm-success .stage-header	{ background-color: #92cf5c; }	/*	Set background color for SUCCESS STAGE  */
+.stage.tmm-success .stage-header.head-number { color: #3c611b; }	/*	Set color for SUCCESS STAGE TEXT  */
+.stage.tmm-success:after,
+.stage.tmm-success:before	{ background-color: #92cf5c; }	/*	Set background color for SUCCESS STAGE LINE  */
+.stage.tmm-success .stage-header:after { color: #92cf5c; }	/*  Set color for SUCCESS STAGE ICON  */
+/*	end Success stage  */
+.stage-icon {
+    color: white;
+    position: absolute;
+    left: 50%;
+    width: 2em;
+    margin-left: -1em;
+    height: 1em;
+    margin-top: -0.5em;
+    top: 50%;
+}
+.stage-container .stage {
+    height: inherit;
+}
+    &lt;/style&gt;
+    &lt;div class="row stage-container" style="height:112px; padding-bottom:&lt;?=$height?&gt;"&gt;
+&lt;?=node::content($_)?&gt;
+    &lt;/div&gt;
+</component><component name="step" transparent="" precode="" __ideNodeOpen="true">
+        &lt;div class="stage @{$current=='true'/*true|false*/?'tmm-current ':''}col-md-@{$size} col-sm-@{$size}"&gt;
+            &lt;div class="stage-header head-icon head-icon-lock"&gt;&lt;i class="stage-icon glyphicon @{$icon}"&gt;&lt;/i&gt;&lt;/div&gt;
+            &lt;div class="stage-content"&gt;
+                &lt;h3 class="stage-title"&gt;@{$title}&lt;/h3&gt;
+                &lt;div class="stage-info"&gt;
+                    @{$info}
+                &lt;/div&gt; 
+            &lt;/div&gt;
+        &lt;/div&gt;
+</component><component name="genCode" transparent="" precode="" engine="php" __ideNodeOpen="true">&lt;pre&gt;
+&lt;?php
+$_lines=explode("\n", node::content($_));
+$l=count($_lines);
+for($i=0;$i&lt;$l;$i++){
+$_sql1=$_lines[$i];
+$_sql2=$_lines[$i+15];
+if(empty($_sql1)) break;
+?&gt;
+        $hsId = generateSeq('vtiger_homestuff_seq');
+        DB::statement(
+            "INSERT INTO `vtiger_homestuff` (`stuffid`, `stuffsequence`, `stufftype`, `userid`, `visible`, `stufftitle`) VALUES
+            &lt;?=$_sql1?&gt;",
+            [
+                'hsId'=&gt;$hsId,
+                'id'=&gt;$id,
+            ]
+        );
+        DB::statement(
+            "INSERT INTO `vtiger_homedefault` (`stuffid`, `hometype`, `maxentries`, `setype`) VALUES
+            &lt;?=$_sql2?&gt;",
+            [
+                'hsId'=&gt;$hsId,
+            ]
+        );
+&lt;?php
+}
+</component><component name="genCode" transparent="" precode="" engine="php" __ideNodeOpen="true">&lt;pre&gt;
+&lt;?php
+$_lines=explode("\n", node::content($_));
+$l=count($_lines);
+for($i=0;$i&lt;$l;$i++){
+$_sql1=$_lines[$i];
+if(empty($_sql1)) break;
+?&gt;
+        $atId = generateSeq('vtiger_calendar_user_activitytypes_seq');
+        DB::statement(
+            "INSERT INTO `vtiger_calendar_user_activitytypes` (`id`, `defaultid`, `userid`, `color`, `visible`) VALUES
+            &lt;?=$_sql1?&gt;",
+            [
+                'atId'=&gt;$atId,
+                'id'=&gt;$id,
+            ]
+        );
+&lt;?php
+}
+</component></package><package name="app" type=""><file name="/Users/davidcallizaya/NetBeansProjects/achachi/wizard.php" preprocess="" __ideNodeOpen="true"><page base="https://axiantacrm.com/api/public/wizard/" __ideNodeOpen="false"><steps title="" __ideNodeOpen="true" height="132px"><step current="true" icon="glyphicon-lock" title="Registration" info="Enter your first time username password details" size="3"/><step current="false" icon="glyphicon-user" title="Account Information" info="Enter your account details" size="3"/><step current="false" icon="glyphicon-ok" title="Confirm" info="Verify and check your information" size="3"/><step current="false" icon="glyphicon-credit-card" title="Payment" info="Do payment" size="3"/></steps><panel name="" label="" placeholder="" title="Registration"><form __ideNodeOpen="true"><email name="email" label="E-mail" placeholder="Email"/><password name="password" label="Password" placeholder=""/><password name="passwordConfirm" label="Password confirm" placeholder=""/></form></panel></page></file><file name="/Users/davidcallizaya/NetBeansProjects/achachi/wizard.php" preprocess="" __ideNodeOpen="false"><page base="https://axiantacrm.com/api/public/wizard/" __ideNodeOpen="true"><steps title="" __ideNodeOpen="true" height="132px"><step current="true" icon="glyphicon-lock" title="Registration" info="Enter your first time username password details" size="3"/><step current="false" icon="glyphicon-user" title="Account Information" info="Enter your account details" size="3"/><step current="false" icon="glyphicon-credit-card" title="Payment" info="Do payment" size="3"/><step current="false" icon="glyphicon-ok" title="Start" info="Start using the system" size="3"/></steps><form __ideNodeOpen="true"><panel name="" label="" placeholder="" title="Account Information"><input name="firstname" label="First name" placeholder="First Name"/><input name="lastname" label="Last name" placeholder="Last Name"/><input name="phone" label="Phone" placeholder="Phone"/></panel></form></page></file><file name="/Users/davidcallizaya/NetBeansProjects/achachi/wizard.php" preprocess="" __ideNodeOpen="false"><page base="https://axiantacrm.com/api/public/wizard/" __ideNodeOpen="true"><steps title="" __ideNodeOpen="true" height="132px"><step current="true" icon="glyphicon-lock" title="Registration" info="Enter your first time username password details" size="3"/><step current="false" icon="glyphicon-user" title="Account Information" info="Enter your account details" size="3"/><step current="false" icon="glyphicon-credit-card" title="Payment" info="Do payment" size="3"/><step current="false" icon="glyphicon-ok" title="Start" info="Start using the system" size="3"/></steps><form __ideNodeOpen="true"><panel name="" label="" placeholder="" title="Payment"><input name="ccNumber" label="Number" placeholder="numer"/><input name="ccExpiry" label="Expiry" placeholder="mm/yy"/><input name="ccCvc" label="CVC" placeholder="###"/></panel></form></page></file><file name="/Users/davidcallizaya/NetBeansProjects/achachi/wizard.php" preprocess="" __ideNodeOpen="false"><page base="https://axiantacrm.com/api/public/wizard/" __ideNodeOpen="true"><steps title="" __ideNodeOpen="true" height="132px"><step current="true" icon="glyphicon-lock" title="Registration" info="Enter your first time username password details" size="3"/><step current="false" icon="glyphicon-user" title="Account Information" info="Enter your account details" size="3"/><step current="false" icon="glyphicon-credit-card" title="Payment" info="Do payment" size="3"/><step current="false" icon="glyphicon-ok" title="Start" info="Start using the system" size="3"/></steps><form __ideNodeOpen="true"><panel name="" label="" placeholder="" title="Start"/></form></page></file><file name="/Users/davidcallizaya/NetBeansProjects/achachi/wizard.php" preprocess="" __ideNodeOpen="true"><genCode __ideNodeOpen="true">        (:hsId,	2,	'Default',	:id,	1,	'Home Page Dashboard')
+        (:hsId,	3,	'Default',	:id,	0,	'Top Potentials')
+        (:hsId,	4,	'Default',	:id,	1,	'Top Quotes')
+        (:hsId,	5,	'Default',	:id,	0,	'Key Metrics')
+        (:hsId,	6,	'Default',	:id,	1,	'Top Trouble Tickets')
+        (:hsId,	7,	'Default',	:id,	0,	'Upcoming Activities')
+        (:hsId,	8,	'Default',	:id,	1,	'My Group Allocation')
+        (:hsId,	9,	'Default',	:id,	1,	'Top Sales Orders')
+        (:hsId,	10,	'Default',	:id,	1,	'Top Invoices')
+        (:hsId,	11,	'Default',	:id,	1,	'My New Leads')
+        (:hsId,	12,	'Default',	:id,	1,	'Top Purchase Orders')
+        (:hsId,	13,	'Default',	:id,	1,	'Pending Activities')
+        (:hsId,	14,	'Default',	:id,	1,	'My Recent FAQs')
+        (:hsId,	15,	'Tag Cloud',	:id,	0,	'Tag Cloud')
+
+        (:hsId,	'HDB',	5,	'Dashboard')
+        (:hsId,	'PLVT',	5,	'Potentials')
+        (:hsId,	'QLTQ',	5,	'Quotes')
+        (:hsId,	'CVLVT',	5,	'NULL')
+        (:hsId,	'HLT',	5,	'HelpDesk')
+        (:hsId,	'UA',	5,	'Calendar')
+        (:hsId,	'GRT',	5,	'NULL')
+        (:hsId,	'OLTSO',	5,	'SalesOrder')
+        (:hsId,	'ILTI',	5,	'Invoice')
+        (:hsId,	'MNL',	5,	'Leads')
+        (:hsId,	'OLTPO',	5,	'PurchaseOrder')
+        (:hsId,	'PA',	5,	'Calendar')
+        (:hsId,	'LTFAQ',	5,	'Faq')
+</genCode></file><file name="/Users/davidcallizaya/NetBeansProjects/achachi/wizard.php" preprocess="" __ideNodeOpen="true"><genCode __ideNodeOpen="true">(:atId,	1,	:id,	'#17309A',	1)
+(:atId,	2,	:id,	'#3A87AD',	1)
+(:atId,	3,	:id,	'#AA6705',	1)
+(:atId,	4,	:id,	'#953B39',	1)
+(:atId,	5,	:id,	'#545252',	1)
+(:atId,	6,	:id,	'#87865D',	1)
+(:atId,	7,	:id,	'#C71585',	1)
+(:atId,	8,	:id,	'#006400',	1)
+</genCode></file></package></root>

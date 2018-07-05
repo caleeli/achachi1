@@ -1,0 +1,396 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root><definitions version="1.0" name="extjs4biz"><component name="form" frame="true"><controller name="@{$name}"><action name="index"/><view name="index"><document name="newDocument"><window title="@{$title}" width="700"><extjs class="Ext.form.FormPanel" title="" frame="true" width=""><clone value="${$_}"/></extjs></window></document></view></controller></component><component name="attribute"><extjs class="Ext.form.Field" inputType="@{$type/*text|password|radio|hidden*/}" fieldLabel="@{$label}"/></component></definitions><definitions name="html4biz" disabled="false"><def name="html2zdv"><function name="run">$res = "";
+/*Create Table*/
+$t=array('$'=&gt;'$');
+$dom=new DomDocument();
+$dom-&gt;loadXML($e-&gt;nodeValue);
+$this-&gt;createTable($t,$dom-&gt;firstChild);
+$res=$this-&gt;zdv($t,$dom-&gt;firstChild);
+$res = array($t,$res);
+$res = json_encode($res);
+var_dump(htmlentities($res));
+return $this-&gt;encode($res);
+</function><function name="createTable" parameters="&amp;$table, $node">if(array_search($node-&gt;nodeName,$table)===false) {
+  $name=$node-&gt;nodeName;
+  $k=substr($name,0,1);$name=substr($name,1);
+  while(isset($table[$k])) {
+    $k.=substr($name,0,1);$name=substr($name,1);
+  }
+  $table[$k]=$node-&gt;nodeName;
+}
+if($node-&gt;hasAttributes()) {
+  foreach($node-&gt;attributes as $a){
+    if($a-&gt;name=="style")
+    {
+      $vars=explode(";",$a-&gt;value);
+      foreach($vars as $v) if (trim($v)!="")
+      {
+        $sv = explode(":",$v);
+        $name0 = "style.".preg_replace_callback('/\-(\w)/',array($this, "toJSAttribute"), $sv[0]);
+        $name=$name0;
+        $k=substr($name,0,1);$name=substr($name,1);
+        while(isset($table[$k])) {
+          $k.=substr($name,0,1);$name=substr($name,1);
+        }
+        $table[$k]=$name0;
+      }
+    }
+    elseif($a-&gt;nodeName=="class")
+    {
+      $name0="className";
+      $name=$name0;
+      $k=substr($name,0,1);$name=substr($name,1);
+      while(isset($table[$k])) {
+        $k.=substr($name,0,1);$name=substr($name,1);
+      }
+      $table[$k]=$name0;
+    }
+    else
+    {
+      $name0=$a-&gt;nodeName;
+      $name=$name0;
+      $k=substr($name,0,1);$name=substr($name,1);
+      while(isset($table[$k])) {
+        $k.=substr($name,0,1);$name=substr($name,1);
+      }
+      $table[$k]=$name0;
+    }
+  }
+}
+
+if($node-&gt;hasChildNodes()) {
+  foreach($node-&gt;childNodes as $ch){
+    $this-&gt;createTable($table,$ch);
+  }
+}
+
+</function><function name="zdv" parameters="$table, $node, $relative=&quot;&gt;&quot;">$k=array_search($node-&gt;nodeName, $table);
+$res="&lt;".$k;
+if($node-&gt;hasAttributes()) {
+  foreach($node-&gt;attributes as $a){
+    if($a-&gt;name=="style")
+    {
+      $vars=explode(";",$a-&gt;value);
+      foreach($vars as $v) if (trim($v)!="")
+      {
+        $sv = explode(":",$v);
+        $sv[0] = "style.".preg_replace_callback('/\-(\w)/',array($this, "toJSAttribute"), $sv[0]);
+        $sv[0] = array_search($sv[0],$table);
+        $res.= ":".$sv[0].":".str_replace(array(":","&lt;","|","&gt;"),array("::",":&lt;",":|",":&gt;"),$sv[1]);
+      }
+    }
+    elseif($a-&gt;nodeName=="class")
+    {
+      $k1 = array_search("className",$table);
+      $res.=":$k1:".str_replace(array(":","&lt;","|","&gt;"),array("::",":&lt;",":|",":&gt;"),$a-&gt;value);
+    }
+    else
+    {
+      $res.=":".array_search($a-&gt;nodeName,$table).":".str_replace(array(":","&lt;","|","&gt;"),array("::",":&lt;",":|",":&gt;"),$a-&gt;value);
+    }
+  }
+}
+if($node-&gt;hasChildNodes()){
+  foreach($node-&gt;childNodes as $ch){
+    $res.= $this-&gt;zdv($table,$ch);
+  }
+}
+if($node-&gt;nodeType!=1)$res.=':$:'.str_replace(array(":","&lt;","|","&gt;"),array("::",":&lt;",":|",":&gt;"),$node-&gt;nodeValue);
+$res.="&gt;";
+
+return $res;
+</function><function name="toJSAttribute" access="static" parameters="$matches">return strtoupper($ma[1]);
+
+</function></def><def name="html2json"><function name="run">$_r=node::run();
+$res = node::join("",$_r);
+$res = json_encode($res);
+/*if(!isset($values["htmlentities"])) $values["htmlentities"]="true";
+if(strcasecmp($values["htmlentities"],"false")!=0) */
+$res=$values['var']."=$res;\n";
+return $this-&gt;encode($res);
+</function></def><bcomponent name="view"><property name="template">&lt;html&gt;
+&lt;head&gt;
+  &lt;meta http-equiv="Content-Type" content="text/html; charset=utf-8" /&gt;
+  &lt;style&gt;
+        html, body {
+            font: normal 12px verdana;
+            margin: 0;
+            padding: 0;
+            border: 0 none;
+            overflow: hidden;
+            height: 100%;
+        }
+  &lt;/style&gt;
+@{@node::join("\n",$_nodes['css'])}
+&lt;/head&gt;
+&lt;body&gt;
+@{@node::join("\n",$_nodes['body'])}
+&lt;/body&gt;
+&lt;/html&gt;
+</property><after>createFile("views/scripts/".$e-&gt;parentNode-&gt;getAttribute("name")."/".$e-&gt;getAttribute("name").".phtml",$template);
+</after></bcomponent><bcomponent name="body"><after>return $this-&gt;encode(node::join("",$_r));
+</after></bcomponent><component name="form"><controller name="@{$name}"><action name="index"/><view name="index"><body>&lt;form action="../@{$taskManager}/index"&gt;
+&lt;table&gt;
+#{
+  $_res="";
+  foreach($_nodes["attribute"] as $_a)
+    $_res.=$_a[1];
+  return $_res;
+}
+&lt;/table&gt;
+&lt;input type="submit" value="guardar"/&gt;
+&lt;/form&gt;
+&lt;script&gt;<html2json var="ventana">&lt;div onclick="doIt();"&gt; AMERICO BESPUSIO &lt;/div&gt;
+&lt;script&gt;
+alert("HOLA MUNDO!!!");
+function doIt(){
+  alert("DONE!!!");
+}
+&lt;/script&gt;
+</html2json>var div = document.createElement("div");
+div.innerHTML=ventana;
+document.body.appendChild(div);
+&lt;/script&gt;
+</body></view></controller></component><component name="attribute">&lt;tr&gt;&lt;td&gt;@{$label}&lt;/td&gt;&lt;td&gt;&lt;input type="text" name="@{$name}" value="@{$name}"/&gt;&lt;/td&gt;&lt;/tr&gt;</component><component name="userTaskManager"><!--#editor.plugin
+if(!componentsIndex["userTaskManager"])componentsIndex["userTaskManager"]={};
+componentsIndex["userTaskManager"].editor=function(node){
+  window.loadingTaskflowEditor=true;
+  changeEditor("taskManager");
+  window.loadingTaskflowEditor=false;
+  return true;
+};
+
+componentsIndex["userTaskManager"].saver=function(node){
+  if(window.loadingTaskflowEditor) return false;
+  return true;
+};
+
+var sty=document.createElement("style");
+var tmSty =
+  ".taskManager{height:100%;overflow-y:scroll;} .taskManager button{border:1px inset lightBlue; border-radius:6px; -moz-border-radius:6px;}"+
+  ".tmTask{border:1px outset lightBlue; border-radius:6px; -moz-border-radius:6px; background-color:lightBlue;text-align:center;width:100%;height:4em;padding:1em 4px;}";
+try{
+  sty.innerHTML=tmSty;
+} catch (e) {
+  sty.setAttribute("type", "text/css"); 
+  sty.styleSheet.cssText=tmSty;
+}
+document.body.appendChild(sty);
+var div=document.createElement("div");
+div.className="taskManager";
+div.innerHTML='<table border="1px"><tbody><tr><th>Responsables/Formularios</th><th>Tareas</th><th>Salidas</th><tr><td></td><td><button type="button" onclick="taskManager.addTask();">Agregar Tarea</button></td><td></td></tbody></table>';
+installEditor("taskManager",div);
+
+window.taskManager={
+  div:div,
+  table:div.firstChild,
+  addTask:function(){
+   try{
+    var t=this.table.insertRow(this.table.rows.length-1);
+    var inp = t.insertCell(-1);
+    var tas = t.insertCell(-1);
+    var out = t.insertCell(-1);
+    var tbInp = inp.appendChild(document.createElement("table"));
+    var addForm = tbInp.insertRow(-1).insertCell(-1).appendChild(document.createElement("button"));
+    addForm.setAttribute("type","button");
+    addForm.appendChild(document.createTextNode("+ Formulario"));
+    addForm.onclick=function(){
+      tbInp.insertRow(tbInp.rows.lenght-1).insertCell(-1).appendChild(document.createElement("input")).value="user:form";
+    }
+    var i=tas.appendChild(document.createElement("input"));
+    i.className="tmTask";
+    i.value="Tarea "+(this.table.rows.length-2);
+   }catch(e){alert("Auxilio!!!");}
+  }
+}
+--><controller name="@{$name}"><action name="index" noRender="true">try {
+require_once("../library/proc_@{$name}.class.php");
+$procInstance = unserialize($_SESSION["processInstance"]);
+$procInstance-&gt;currentTaskInstance-&gt;savePreviousForm($_SESSION["user"],$this-&gt;getRequest()-&gt;getParams());
+$formName = $procInstance-&gt;currentTaskInstance-&gt;getNextFormName($_SESSION["user"]);
+if($formName) {
+  $procInstance-&gt;currentTaskInstance-&gt;formDone($_SESSION["user"], $formName);
+  $_SESSION["processInstance"]=serialize($procInstance);
+  $this-&gt;gotoPage($formName,"index");
+}
+$_SESSION["processInstance"]=serialize($procInstance);
+$this-&gt;gotoPage(${$name},"end");
+} catch (Exception $e) {
+print("&lt;pre style='border:1px outset red;background-color:LightPink;'&gt;".$e-&gt;getMessage()."&lt;/pre&gt;");
+}
+</action><action name="start" noRender="true">require_once("../library/proc_@{$name}.class.php");
+$proc = new proc_@{$name}();
+$procInstance = $proc-&gt;run();
+@{node::join("",$_nodes["userTask.start"])}
+/*$_SESSION["tasks"]=$currentTask["forms"][$_SESSION["user"]];*/
+$_SESSION["processInstance"]=serialize($procInstance);
+$this-&gt;gotoPage(${$name},"index");
+</action><method name="gotoPage" params="$controller, $action">header("Location: ../$controller/$action");
+exit();
+</method><action name="end" noRender="true">print("MISSION ALL OVER!!!");
+</action></controller><phpfile name="proc_@{$name}.class.php">&lt;?php
+#{
+  $_res="";
+  foreach($_nodes["task"] as $_t)
+    $_res.="require_once('".trim($_t[1]).".class.php');\n";
+  return $_res;
+}
+
+class proc_@{$name} {
+  public $tasks=array();
+  public function __construct() {
+#{
+  $_res="";
+  foreach($_nodes["task"] as $_t)
+    $_res.='    $this-&gt;tasks[]=new '.trim($_t[1]).'($this);'."\n";
+  return $_res;
+}
+  }
+  public function createInstance() {
+    return new procinstance_@{$name}($this);
+  }
+  public function run() {
+    $proc = $this-&gt;createInstance();
+    $proc-&gt;run();
+    return $proc;
+  }
+}
+
+class procinstance_@{$name} {
+  public $tasksDone=array();
+  public $currentTaskInstance;
+  public function __construct($processDefinition) {
+    $this-&gt;process = $processDefinition;
+  }
+  public function addTaskInstance($taskInstance) {
+    $tasksQueue[]=$taskInstance;
+  }
+  public function getNextTask() {
+    return @$this-&gt;process-&gt;tasks[count($this-&gt;tasksDone)];
+  }
+  public function run() {
+    $this-&gt;currentTaskInstance = $this-&gt;getNextTask()-&gt;createInstance();
+  }
+}
+
+</phpfile></component><component name="userTask.start" transparent="false">@{node::join("",$_)}
+</component><component name="task" transparent="false"><phpfile name="task_@{$name}.class.php">&lt;?php
+
+class task_@{$name} {
+  public $name=${$name};
+  public $condition = ${isset($condition)?$condition:'true'};
+  public $process;
+  public $forms = ${(array)json_decode($forms)};
+  public function __construct($process) {
+    $this-&gt;process = $process;
+  }
+  public function __destruct() {
+    unset($this-&gt;process);
+  }
+  public function run() {
+  }
+  public function createInstance() {
+    return new taskinstance_@{$name}($this);
+  }
+  public function isValid() {
+    return eval("return ".$this-&gt;condition.";");
+  }
+}
+
+class taskinstance_@{$name} {
+  public $formsDone=array();
+  public $task;
+  public function __construct($task) {
+    $this-&gt;task = $task;
+  }
+  public function __destruct() {
+    unset($this-&gt;task);
+  }
+  public function formDone($user,$formName) {
+    $this-&gt;formsDone[$user][]= $formName;
+  }
+  public function getNextFormName($user) {
+    foreach($this-&gt;task-&gt;forms[$user] as $f) if(!(isset($this-&gt;formsDone[$user]) and (array_search($f,$this-&gt;formsDone[$user])!==false) )){
+      return $f;
+    }
+    return null;
+  }
+  public function savePreviousForm($user,$params) {
+    if(isset($this-&gt;formsDone[$user]) and $pf=$this-&gt;formsDone[$user][count($this-&gt;formsDone[$user])-1]) {
+      $spf=strtolower("save$pf");
+      $methods = get_class_methods($this);
+      foreach($methods as &amp;$m) $m = strtolower($m);
+      if(array_search($spf, $methods)!==false) {
+        $this-&gt;$spf($user,$params);
+      }
+    }
+  }
+/* Microtask */
+@{@node::join("",$_)}
+}
+</phpfile>task_@{$name}
+</component><component name="cms.page"><controller name="@{$name}"><action name="@{isset($action)?$action:&quot;index&quot;}"/><view name="@{isset($action)?$action:&quot;index&quot;}"><body>&lt;html&gt;
+&lt;style&gt;
+body {
+  background-image:url(../../images/fondo.jpg);
+}
+.headerbar{
+  height:64px;
+}
+.menubar {
+  height:24px;
+  text-align:center;
+}
+.menubar a{
+/*background-color:WhiteSmoke;*/
+color:blue;
+/*filter:alpha(opacity=80);
+-moz-opacity:0.8;
+-khtml-opacity: 0.8;
+opacity: 0.8;*/
+padding:3px 16px;
+line-height:24px;
+}
+.menubar a:hover{
+background-image:url(../../images/cilindro.jpg);
+/*background-color:AliceBlue;*/
+color:blue;
+filter:alpha(opacity=80);
+-moz-opacity:0.8;
+-khtml-opacity: 0.8;
+opacity: 0.8;
+padding:3px 16px;
+line-height:24px;
+}
+.menubar div{
+height:24px;
+width:100%;
+/*background-color:AliceBlue;*/
+background-image:url(../../images/cilindro.jpg);
+position:absolute;
+filter:alpha(opacity=60);
+-moz-opacity:0.6;
+-khtml-opacity: 0.6;
+opacity: 0.6;
+z-index:-1;
+border-bottom:3px solid black;
+}
+&lt;/style&gt;
+&lt;body&gt;&lt;table cellpadding="0" cellspacing="0" width="100%" height="100%"&gt;
+&lt;tr valign="top"&gt;&lt;td colspan="2" class="headerbar"&gt;@{@node::join("",$_nodes["cms.header"])}&lt;/td&gt;&lt;/tr&gt;
+&lt;tr valign="top"&gt;&lt;td colspan="2" class="menubar"&gt;&lt;div&gt;&amp;nbsp;&lt;/div&gt;@{@node::join("",$_nodes["cms.menu"])}&lt;/td&gt;&lt;/tr&gt;
+&lt;tr valign="top"&gt;&lt;td&gt;@{@node::join("",$_nodes["cms.left"])}.&lt;/td&gt;&lt;td&gt;.@{@node::join("",$_nodes["cms.main"])}&lt;/td&gt;&lt;/tr&gt;
+&lt;/table&gt;&lt;/body&gt;
+&lt;/html&gt;
+</body></view></controller><resource path="F:\LLANKAY\fondo.jpg" folder="images"/><resource path="F:\LLANKAY\cilindro.jpg" folder="images"/></component><component name="cms.header">&lt;div style="background-color:@{$color};"&gt;&lt;img src="../../@{$folder."/".basename($logo)}" /&gt;
+&lt;input style="-mozborder-radius:6px; -moz-border-radius:6px;"/&gt;&lt;button&gt;search&lt;/button&gt;
+&lt;/div&gt;<resource path="@{$logo}" folder="@{$folder}"/></component><component name="cms.menu">&lt;a href="@{$href}"&gt;@{$name}&lt;/a&gt;
+</component></definitions><application name="newApplication" main=""><userTaskManager name="task"><userTask.start>$_SESSION["user"]="anonimo";
+
+</userTask.start><task name="login" condition="" forms="{&quot;anonimo&quot;:[&quot;main&quot;],&quot;admin&quot;:[&quot;second&quot;]}">function saveMain($user,$params) {
+  if(!($params["user"]=="admin" and $params["password"]=="admin")) {
+    throw new Exception("Usuario no valido.");
+  }
+  $_SESSION["user"]=$params["user"];
+}
+</task></userTaskManager><form title="Ingreso" name="main" taskManager="task"><attribute name="user" type="text" value="" readOnly="" label="Usuario" tooltip=""/><attribute type="password" label="Contraseña" name="password"/></form><form name="second" res="" _nodes="" _a="" taskManager="task"><attribute label="correo electronico" name="email"/></form><cms.page name="index"><cms.header color="white" logo="F:\LLANKAY\logo.gif" folder="images"/><cms.menu href="../index/index" name="HOME"/><cms.menu href="../aboutus/index" name="ABOUT US"/><cms.menu href="../products/index" name="PRODUCTS"/><cms.menu href="../contact/index" name="CONTACT US"/></cms.page><cms.page name="error" action="error"/><controller name="error"><action name="error" noRender="true">header("Location: ../index/index");</action></controller></application></root>

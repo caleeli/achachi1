@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root __ideNodeOpen="true"><component name="super" transparent="" __ideNodeOpen="true">Trigger("Force 2"){
+Conditions:
+	Command("Current Player", "Terran SCV", At least, @{$i});
+	Countdown Timer(Exactly, 0);
+
+Actions:
+	Set Resources("Current Player", Add, 8, ore);
+	Preserve Trigger();
+}
+
+//-----------------------------------------------------------------//
+</component><component name="superai" transparent="" __ideNodeOpen="true"><php __ideNodeOpen="true">$last=1;
+for($i=1;$i&lt;=$last;$i++):
+?&gt;
+
+Trigger("All players"){
+Conditions:
+	Score("Current Player", Custom, At least, 1);
+	Bring("Current Player", "Terran SCV", "Anywhere", &lt;?=$i=$last?"At least":"Exactly" ?&gt;, &lt;?=$i+4 ?&gt;);
+
+Actions:
+	Set Resources("Current Player", Add, &lt;?=$i+4?&gt;, ore);
+	Preserve Trigger();
+}
+
+//-----------------------------------------------------------------//
+
+
+Trigger("All players"){
+Conditions:
+	Score("Current Player", Custom, At least, 1);
+	Bring("Current Player", "Zerg Drone", "Anywhere", &lt;?=$i=$last?"At least":"Exactly" ?&gt;, &lt;?=$i+4 ?&gt;);
+
+Actions:
+	Set Resources("Current Player", Add, &lt;?=$i+4?&gt;, ore);
+	Preserve Trigger();
+}
+
+//-----------------------------------------------------------------//
+
+
+Trigger("All players"){
+Conditions:
+	Score("Current Player", Custom, At least, 1);
+	Bring("Current Player", "Protoss Probe", "Anywhere", &lt;?=$i=$last?"At least":"Exactly" ?&gt;, &lt;?=$i+4 ?&gt;);
+
+Actions:
+	Set Resources("Current Player", Add, &lt;?=$i+4?&gt;, ore);
+	Preserve Trigger();
+}
+
+//-----------------------------------------------------------------//
+&lt;?php
+endfor;
+$last=1;
+for($i=1;$i&lt;=$last;$i++):
+?&gt;
+
+Trigger("All players"){
+Conditions:
+	Score("Current Player", Custom, At least, 1);
+	Bring("Current Player", "Terran Refinery", "Anywhere", &lt;?=$i=$last?"At least":"Exactly" ?&gt;, &lt;?=$i ?&gt;);
+
+Actions:
+	Set Score("Current Player", Set To, 0, Custom);
+	Set Resources("Current Player", Add, &lt;?=$i*4 ?&gt;, gas);
+	Preserve Trigger();
+}
+
+//-----------------------------------------------------------------//
+
+Trigger("All players"){
+Conditions:
+	Score("Current Player", Custom, At least, 1);
+	Bring("Current Player", "Zerg Extractor", "Anywhere", &lt;?=$i=$last?"At least":"Exactly" ?&gt;, &lt;?=$i ?&gt;);
+
+Actions:
+	Set Score("Current Player", Set To, 0, Custom);
+	Set Resources("Current Player", Add, &lt;?=$i*4 ?&gt;, gas);
+	Preserve Trigger();
+}
+
+//-----------------------------------------------------------------//
+
+Trigger("All players"){
+Conditions:
+	Score("Current Player", Custom, At least, 1);
+	Bring("Current Player", "Protoss Assimilator", "Anywhere", &lt;?=$i=$last?"At least":"Exactly" ?&gt;, &lt;?=$i ?&gt;);
+
+Actions:
+	Set Score("Current Player", Set To, 0, Custom);
+	Set Resources("Current Player", Add, &lt;?=$i*4 ?&gt;, gas);
+	Preserve Trigger();
+}
+
+//-----------------------------------------------------------------//
+
+&lt;?php
+endfor;
+?&gt;
+
+Trigger("All players"){
+Conditions:
+	Score("Current Player", Custom, At least, 1);
+
+Actions:
+	Set Score("Current Player", Set To, 0, Custom);
+	Preserve Trigger();
+}
+
+//-----------------------------------------------------------------//
+
+</php></component><superai/></root>

@@ -1,0 +1,537 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions version="1.0" __ideNodeOpen="true"><def name="#text">
+  <function name="run">
+    return $this-&gt;encode($values["#"]);
+  </function>
+</def>
+<def name="definitions">
+  <function name="run">
+  	if(isset($values["disabled"]) and $values["disabled"]=="true") return $this-&gt;encodeEmpty();
+    return node::run();
+  </function>
+</def>
+<def name="property">
+  <function name="run">
+    if(!isset($values["access"]))$values["access"]="public";
+    $res = $values["access"].' $'.$values["name"]."=".var_export($values["#"],true).";";
+    return $this-&gt;encode($res);
+  </function>
+</def>
+<def name="#cdata-section">
+  <function name="run">
+    return $this-&gt;encode($values["#"]);
+  </function>
+</def>
+<def name="#cdata">
+  <function name="run">
+    return $this-&gt;encode($values["#"]);
+  </function>
+</def>
+<def name="#comment">
+  <function name="run">
+    return $this-&gt;encodeEmpty();
+  </function>
+</def>
+
+<def name="before">
+  <function name="run">
+    $_r = node::run();
+    return $this-&gt;encode(node::join("",$_r));
+  </function>
+</def>
+<def name="after">
+  <function name="run">
+    $_r = node::run();
+    return $this-&gt;encode(node::join("",$_r));
+  </function>
+</def>
+<def name="bcomponent">
+  <function name="run">
+    $_tag = $values["name"];
+    $_class = node::getClassName($_tag);
+    $_r = node::run();
+    $_nodes = $this-&gt;groupNodes($_r);
+    $_code = 'class '.$_class.' extends node { ';
+    $_code.= "\n".(isset($_nodes["property"])?node::join("\n",$_nodes["property"]):'');
+
+    $_code.= "\nfunction run() {";
+    $_code.= "\n".'$e=&amp;$this-&gt;node;$values=&amp;$this-&gt;values;';
+    $_code.= "\n".(isset($_nodes["before"])?node::join("",$_nodes["before"]):'');
+    $_code.= "\n".'$_r = node::run();';
+    $_code.= "\n".'$_nodes = $this-&gt;groupNodes($_r);';
+    $_code.= "\n".'$values["_"] = $_r;';
+    $_code.= "\n".'$values["_e"] = $e;';
+    $_code.= "\n".'$values["_nodes"] = $_nodes;';
+    $_code.= "\n".'$template=isset($this-&gt;template)?$this-&gt;doTemplate($this-&gt;template,$values):"";';
+    $_code.= "\n".(isset($_nodes["after"])?node::join("",$_nodes["after"]):'');
+    $_code.= "\n".'return $this-&gt;encodeEmpty();';
+    $_code.= "\n".'}';
+    $_code.= "\n".'}';
+    $_code=format_code($_code);
+    node::createTagClass($_tag,$_class,$_code);
+    return $this-&gt;encodeEmpty();
+  </function>
+  <function access="static" name="createBComponent" parameters="$_tag,$before,$template='',$after=''" empty="true">
+    $_class = node::getClassName($_tag);
+    $_code = 'class '.$_class.' extends node { ';
+    $_code.= "\n".'public $transparent=true;';
+    $_code.= "\n".'public $template='.var_export($template,true).';';
+    $_code.= "\n".'function run() {
+      //print("&lt;table border=1&gt;&lt;tr&gt;&lt;td&gt;&lt;pre&gt;");
+      $r=$this-&gt;run0();
+      //@var_dump("===".get_class($this)."====&gt;".previousCall(),array_keys($r));
+      //print("&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;");
+      return $r;
+      }
+    ';
+    $_code.= "\nfunction run0() {";
+    $_code.= "\n".'$e=&amp;$this-&gt;node;$values=&amp;$this-&gt;values;';
+    $_code.= "\n".@$before;
+    $_code.= "\n".'$_r = node::run();';
+    $_code.= "\n".'$_nodes = $this-&gt;groupNodes($_r);';
+    $_code.= "\n".'$values["_"] = $_r;';
+    $_code.= "\n".'$values["_e"] = $e;';
+    $_code.= "\n".'$values["_nodes"] = $_nodes;';
+    $_code.= "\n".'$template=isset($this-&gt;template)?$this-&gt;doTemplate($this-&gt;template,$values):"";';
+    $_code.= "\n".@$after;
+    $_code.= "\n".'return $this-&gt;encodeEmpty();';
+    $_code.= "\n".'}';
+    $_code.= "\n".'}';
+    $_code=format_code($_code);
+    node::createTagClass($_tag,$_class,$_code);
+  </function>
+</def>
+
+<def name="xmlcomponent">
+<function name="run"><![CDATA[
+  print("Building component (".$e->tagName.") ".@$e->getAttribute("name").":<br />");
+  if(!empty($this->precode)) {
+    foreach($values as $_ => $__) $$_ = $__;
+    eval($this->precode);
+		$values  = &$this ->values;
+  }
+  //print("<pre>");var_dump($values);print("</pre>");
+  $_r = node::run();
+  $_nodes = $this->groupNodes($_r);
+  $values["_e"] = $e;
+	$values["_"] = $_r;
+	$values["_e"] = $e;
+	$values["_nodes"] = $_nodes;
+	$values["_content"] = node::join("",$_r);
+	$values["_values"] = &$values;
+  global $baseNode;
+  //clone and import $baseNode[$e->tagName]
+  $e2=importNode($baseNode[$e->tagName],$e->ownerDocument);
+  $this->core->evalChildNodes($e2,$values);
+
+  $fors=$e2->getElementsByTagName("foreach");
+  while($fors->length > 0)
+  {
+    $ch=$fors->item(0);
+    $this->makeFromNode($ch);
+    $fors=$e2->getElementsByTagName("foreach");
+  }
+
+  $ifs=$e2->getElementsByTagName("if");
+  while($ifs->length > 0)
+  {
+    $ch=$ifs->item(0);
+    $this->makeFromNode($ch);
+    $ifs=$e2->getElementsByTagName("if");
+  }
+
+  $result=array();
+  foreach($e2->childNodes as $ch)
+  {
+    //Se clona $ch otra vez para insertarlo en el documento final si perder la referencia en $e2
+    $ch2=$ch->cloneNode(true);
+    $e->parentNode->insertBefore($ch2,$e);
+    $_a = node::factory($ch2);
+    $_r = $_a->run();
+    foreach($_r as $_r_) {
+    	if(!$this->transparent) $_r_[0]=$e->nodeName;
+    	$result[] = $_r_;
+    }
+    $e->parentNode->removeChild($ch2);
+  }
+  //var_dump(previousCall());
+  //var_dump($result);
+  return $result;
+]]></function>
+</def>
+<bcomponent name="component">
+<property name="template">/*@{$name}*/
+class @{$_class} extends node_xmlcomponent {
+  public $transparent=${$transparent};
+  public $precode=${@$precode};
+}</property>
+<before><![CDATA[
+  /*@{$name}*/
+  global $baseNode;
+  $baseNode[$e->getAttribute("name")]=$e;
+  $_tag = $e->getAttribute("name");
+  $_class = node::getClassName($_tag);
+  $values["_class"] = $_class;
+  if(!isset($values["transparent"])) $values["transparent"]=false;
+  if(strcasecmp($values["transparent"],"false")==0) $values["transparent"]=false;
+  $template  = $this->doTemplate($this->template, $values);
+  node::createTagClass($_tag,$_class,$template);
+  print("Se crea componente: ".$e->getAttribute("name")."<br />");
+  return $this->encodeEmpty();
+]]></before>
+<after><![CDATA[]]></after>
+</bcomponent>
+
+
+
+<bcomponent name="php">
+<property name="template"><![CDATA[@{@node::join("\n          ",$_)}
+]]></property>
+<before><![CDATA[]]></before>
+<after>eval($template);</after>
+</bcomponent>
+
+<def name="clone">
+  <function name="run">
+  	/*var_dump($values["value"]);*/
+    //print("clone========================".htmlentities(var_export($values["value"],1)));
+    eval( '$_values= ' . $values["value"] . ';' );
+    return $_values;
+  </function>
+</def>
+
+<bcomponent name="field">
+<property name="template"><![CDATA[]]></property>
+<before><![CDATA[
+  $_r = node::run();
+  $values["_"] = $_r;
+  $values["_nodes"] = $this->groupNodes($_r);
+  return $this->encode($values);
+]]></before>
+<after><![CDATA[]]></after>
+</bcomponent>
+
+<bcomponent name="foreach">
+<property name="template"><![CDATA[<?php
+]]></property>
+<before><![CDATA[  /**
+  /**
+   * Reemplaza el foreach por los componentes que contiene.
+   * Se lo utiliza junto con component.
+   * El contenido del bucle se asigma a través del atributo values (Expresion PHP)
+   * El contexto de variables para la expresion es la misma que para la instancia del componente.
+   * Se usa el componente "field" (que se convierte en array) para definir los valores que pueden ser usados por foreach. Ej.
+   * <component name="xComponent"><foreach values="${$_nodes['field']}"><table name="@{$name}" /></foreach></component>
+   * <xComponent ><field name="table1"/><field name="table2"/></xComponent>
+   *
+   * Se puede usuar ademas de field cualquier otro nodo que no este definido, ya que por defecto un nodo
+   * no definido se convierte en un array.
+   */
+  $vars=array();
+  @eval('$vars='.$e->getAttribute("values").';');
+  //var_dump($vars);
+  //krumo($vars);
+  $_first=true;
+  if(isset($vars) && !empty($vars))
+  foreach($vars as $k => $vfield)
+  {
+    $encoded = is_array($vfield) && count($vfield)==2;
+    if($encoded) $v=$vfield[1]; else $v=array();
+    $v["_first"]=$_first;
+    if($encoded) $v["_nodeName"]=$vfield[0]; else $v["_nodeName"]=$k;
+    if($encoded) $v["_value"]=$v; else $v["_value"]=$vfield;
+    $v["_nodeValue"]=$vfield;
+    $v["_e"]=$e;
+    $e2=$e->cloneNode(true);
+//var_dump($v);
+    $this->core->evalChildNodes($e2,$v);
+    
+    $fors=$e2->getElementsByTagName("foreach");
+    while($fors->length > 0)
+    {
+      $ch=$fors->item(0);
+      $this->makeFromNode($ch);
+      $fors=$e2->getElementsByTagName("foreach");
+    }
+
+    $ifs=$e2->getElementsByTagName("if");
+    while($ifs->length > 0)
+    {
+      $ch=$ifs->item(0);
+      $this->makeFromNode($ch);
+      $ifs=$e2->getElementsByTagName("if");
+    }
+
+    foreach($e2->childNodes as $ch)
+    {
+      //Se clona $ch otra vez para insertarlo en el documento final si perder la referencia en $e2
+      $ch2=$ch->cloneNode(true);
+      $e->parentNode->insertBefore($ch2,$e);
+    }
+    $_first=false;
+  }
+  $e->parentNode->removeChild($e);
+  return $this->encodeEmpty();
+]]></before>
+<after><![CDATA[]]></after>
+</bcomponent>
+
+<bcomponent name="include">
+<property name="template"><![CDATA[]]></property>
+<before><![CDATA[  /**
+   * Incluye un archivo XML externo @{$src}
+   */
+    $dom = new DomDocument();
+    $src=$e->getAttribute("src");
+    if(substr($src,0,9)=='$library/') $src = ACH_LIBRARY_PATH . "/" . substr($src,9);
+    else $src=PROJECT_PATH . "/" . $src;
+    $dom->load( $src );
+    foreach($dom->childNodes->item(0)->childNodes as $ch)
+    {
+      $ch2=importNode($ch,$e->ownerDocument);
+      $e->parentNode->insertBefore($ch2,$e);
+      $this->makeFromNode($ch2);
+    }
+  return $this->encodeEmpty();
+]]></before>
+<after><![CDATA[]]></after>
+</bcomponent>
+
+<bcomponent name="if">
+  <property name="template"/>
+  <before><![CDATA[
+  /** @{$condition}
+   */
+  $vars=array();
+  @eval('$_condition='.($e->getAttribute("condition")?$e->getAttribute("condition"):"false").';');
+  //VAR_DUMP($e->getAttribute("condition"));print('$_condition='.($e->getAttribute("condition")?$e->getAttribute("condition"):"false").';');
+  if(isset($_condition) && ($_condition))
+  {
+    foreach($e->childNodes as $ch)
+    {
+      $ch2=$ch->cloneNode(true);
+      $e->parentNode->insertBefore($ch2,$e);
+    }
+  }
+  $e->parentNode->removeChild($e);
+  return $this->encodeEmpty();
+  ]]></before>
+  <after><![CDATA[
+  ]]></after>
+</bcomponent>
+
+<bcomponent name="package">
+<property name="template"><![CDATA[<?php
+@{$name}@{$type}
+]]></property>
+<before><![CDATA[  foreach($e->childNodes as $ch)
+  {
+    $ch2=$ch->cloneNode(true);
+    $e->parentNode->insertBefore($ch2,$e);
+    $this->makeFromNode($ch2);
+  }
+  return $this->encodeEmpty();
+]]></before>
+<after><![CDATA[]]></after>
+</bcomponent>
+
+<bcomponent name="view">
+<property name="template"><![CDATA[<html>
+<head>
+  #{
+    if(!isset($stylesheet)||$stylesheet=="")$stylesheet="/ext/resources/css/ext-all.css";
+    $_res="";
+    foreach(explode(";",$stylesheet) as $_l)
+      $_res.='<link rel="stylesheet" type="text/css" href="'.$_l.'">';
+    return $_res;
+  }
+  #{
+    if(!isset($library) || $library=="")$library="/ext/adapter/ext/ext-base.js;/ext/ext-all.js";
+    $__r="";
+    foreach(explode(";",$library) as $__lib)
+      $__r.='<script type="text/javascript" src="'.$__lib.'"></script>';
+    return $__r;
+  }
+  <style>
+        html, body {
+            font: normal 12px verdana;
+            margin: 0;
+            padding: 0;
+            border: 0 none;
+            overflow: hidden;
+            height: 100%;
+        }
+  </style>
+@{@node::join("\n",$_nodes['css'])}
+  <script>
+    Ext.QuickTips.init();
+    function extLoad(sClass,base,_construct)
+    {
+      var obj;
+      eval("obj=new "+sClass+"(base);");
+      if(_construct)eval(_construct);
+      return obj;
+    }
+    function main()
+    {
+      @{@node::join("\n      ",$_nodes['extdocument'])};
+    }
+    Ext.onReady(function(){ main(); });
+  </script>
+</head>
+<body>
+</body>
+</html>
+]]></property>
+<before><![CDATA[  $_nodes["#parent"]=$e->parentNode->getAttribute("name");
+]]></before>
+<after><![CDATA[  createFile("views/scripts/".$e->parentNode->getAttribute("name")."/".$e->getAttribute("name").".phtml",$template);
+]]></after>
+</bcomponent>
+
+
+<!-- TODO after -->
+
+<bcomponent name="path">
+<property name="template"><![CDATA[]]></property>
+<before><![CDATA[$curDir = getcwd();
+$path = $e->getAttribute("path");
+if($path==null) $path = $e->getAttribute("name");
+if(!file_exists($path)) {
+  createDir($path);
+}
+chdir($path);
+/*@{$name}*/
+global $PARAMS;
+if(isset($PARAMS["run"]) && $PARAMS["run"])if($e->getAttribute("main"))print("<script>window.location.href=(".json_encode($e->getAttribute("main")).")</script>");
+]]></before>
+<after><![CDATA[chdir($curDir);
+]]></after>
+</bcomponent>
+
+
+<def name="file">
+  <property name="template">@{node::join("",$_)}</property>
+  <function name="run">
+    //@{$name}
+    $_r = node::run();
+    $values["_"] = $_r;
+    $template=$this-&gt;doTemplate($this-&gt;template,$values);
+    //@{$preprocess}
+    if(isset($values["preprocess"]) &amp;&amp; trim($values["preprocess"])!=""){
+      $np=$e-&gt;ownerDocument-&gt;createElement($values["preprocess"]);
+      $np-&gt;appendChild($e-&gt;ownerDocument-&gt;createTextNode($template));
+      $e-&gt;appendChild($np);
+      $nnp=node::factory($np);
+      $template=node::join("",$nnp-&gt;run());
+      $e-&gt;removeChild($np);
+      unset($np);
+      unset($nnp);
+    }
+    $cs = get_defined_constants(true);
+    if(isset($cs["user"])) $cs = $cs["user"];
+    $name = $values["name"];
+    foreach($cs as $c =&gt; $v) $name = preg_replace('/\$'.$c.'\b/', $v, $name);
+    createFile($name, $template);
+    return $this-&gt;encodeEmpty();
+  </function>
+</def>
+
+<bcomponent name="resource"><!--#editor.plugin
+  componentsIndex["resource"].editor=function(node){
+    var ar=file.split("\\").join("/").split("/");
+    ar.pop();
+    var f=ar.join("/")+"/"+node.getAttribute("path");
+    changeEditor("resourceViewer").childNodes[0].src="fileIO.php?i="+encodeURIComponent(f);
+    return currentNode;
+  };
+
+  componentsIndex["resource"].saver=function(node){
+    return currentNode;
+  };
+  var div=document.createElement("div");
+  draw3(div,[
+    "img",{},[]
+  ]);
+  installEditor("resourceViewer",div);
+-->
+<property name="template"><![CDATA[]]></property>
+<before><![CDATA[]]></before>
+<after><![CDATA[$curDir=getcwd();
+chdir(PROJECT_PATH);
+  $path=$e->getAttribute("path");
+  $file=basename($path);
+  $content=file_get_contents($path);
+chdir($curDir);
+  if($e->getAttribute("name")){
+    $file = str_replace('\\', '/', dirname($file) );
+    if(substr($file,-1,1)!="/") $file.= "/";
+    $file.= $e->getAttribute("name");
+  }
+  //folder that will contain the resource; or the controller name.
+  $folder = $e->getAttribute("folder") ? 
+  	$e->getAttribute("folder") :
+  	$e->parentNode->parentNode->getAttribute("name");
+  createFile( $folder."/".$file, $content );
+]]></after>
+</bcomponent>
+
+<def name="unpack"><function name="run">
+  require_once(ACH_COMMON_PATH."/archive.php");
+
+  //@{$source}
+  $source=$this-&gt;doTemplate($values["source"],$values);
+  //@{$target}
+  $target=$this-&gt;doTemplate($values["target"],$values);
+
+  $_deploy = new gzip_file($source);
+var_dump(realpath($target));
+  if(!file_exists($target)) :
+    print "Created directory: $target\n";
+    createDir($target);
+  endif;
+
+  $_deploy-&gt;set_options(array("overwrite"=&gt;1,"basedir"=&gt;$target));
+  $_deploy-&gt;extract_files();
+  if($_deploy-&gt;error) {
+    print_r($_deploy-&gt;error);
+  }
+
+  return $this-&gt;encodeEmpty();</function>
+</def>
+<def name="pack"><function name="run">
+  require_once(ACH_COMMON_PATH."/archive.php");
+
+  //@{$source}
+  $source=$this-&gt;doTemplate($values["source"],$values);
+  //@{$target}
+  $target=$this-&gt;doTemplate($values["target"],$values);
+
+  $_deploy = new gzip_file(basename( $target ));
+
+  $_deploy-&gt;set_options(array('basedir' =&gt; dirname($source), 'overwrite' =&gt; 1, 'level' =&gt; 9));
+
+  $_deploy-&gt;add_files(basename($source));
+
+  $_deploy-&gt;create_archive();
+
+  if($_deploy-&gt;error) {
+    print_r($_deploy-&gt;error);
+  }
+
+  rename(dirname($source)."/".basename( $target ), $target);
+
+  print("Created file: $target\n");
+
+  return $this-&gt;encodeEmpty();</function>
+</def>
+<def name="jqueryui">
+  <property name="template">@{node::join("",$_)}</property>
+  <function name="run">
+    //@{$name}
+    $_r = node::run();
+    $values["_"] = $_r;
+    $template=$this-&gt;doTemplate($this-&gt;template,$values);
+    return $this-&gt;encode($template);
+  </function>
+</def></definitions>

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root><path path="output/changeCode" main="output/changeCode/index.php" __ideNodeOpen="true"><file name="index.php" preprocess="">&lt;?php
+//php composer.phar require nikic/php-parser
+require 'vendor/autoload.php';
+ini_set('xdebug.max_nesting_level', 3000);
+$parser = new PhpParser\Parser(new PhpParser\Lexer);
+
+$file="/home/david/pm-propel/processmaker-dv/workflow/engine/classes/class.AppSolr.php";
+try {
+    $stmts = $parser-&gt;parse(file_get_contents($file));
+    analize($stmts);
+    // $stmts is an array of statement nodes
+} catch (PhpParser\Error $e) {
+    echo 'Parse Error: ', $e-&gt;getMessage();
+}
+function analize($arr){
+  foreach($arr as $a){
+    if($a instanceof PhpParser\Node\Expr\Include_ ){
+      
+    } elseif($a instanceof PhpParser\Node\Stmt\Class_ ) {
+      analize($a-&gt;stmts);
+    } elseif($a instanceof PhpParser\Node\Stmt\ClassMethod ) {
+      analize($a-&gt;stmts);
+    } elseif($a instanceof PhpParser\Node\Stmt\Return_ ) {
+
+    } elseif($a instanceof PhpParser\Node\Expr\StaticCall ) {
+      echo "{$a-&gt;class}::{$a-&gt;name}(";
+      $args=[];
+      foreach($a-&gt;args as $arg){
+        $v=$arg-&gt;value;
+        if($v instanceof PhpParser\Node\Expr\Variable){
+            $args[]=$v-&gt;getType().'$'.$v-&gt;name;
+        } elseif($v instanceof PhpParser\Node\Scalar\LNumber) {
+            $args[]=$v-&gt;value;
+        } elseif($v instanceof PhpParser\Node\Scalar\String_) {
+            $args[]=$v-&gt;value;
+        } else {
+            $args[]=$v-&gt;value;
+        }
+      }
+      echo implode(", ",$args),");\n";
+      var_dump($a-&gt;args);die;
+    } else {
+      var_dump(get_class($a),$a);
+    }
+  }
+}
+function doClass_(PhpParser\Node\Stmt\Class_ $a){
+      analize($a-&gt;stmts);
+}
+ </file><package name="components" type="" __ideNodeOpen="true"><component name="change" transparent="" precode="" __ideNodeOpen="false"/><component name="from" transparent="" precode=""/><component name="to" transparent="" precode="" __ideNodeOpen="false"/></package></path></root>

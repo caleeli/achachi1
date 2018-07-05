@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?><root __ideNodeOpen="true"><php __ideNodeOpen="true">
+class tools {
+    static $tpl;
+
+    public static function tpl($__tpl, $_, $_1=null, $_2=null){
+        ob_start();
+        eval('?&gt;'.$__tpl);
+        $__result = ob_get_contents();
+        ob_end_clean();
+        return $__result;
+    }
+
+    /**
+     * $component=$this, $node=$e
+     */
+    public static function hook($component, $node){
+        $content = $node-&gt;nodeValue;
+        eval('$values = '.$content.';');
+        foreach($values as $key=&gt;$value) {
+            $component-&gt;values[$key] = $value;
+        }
+    }
+    public static function snake_case($input){
+        return ltrim(strtolower(preg_replace('/[A-Z]/', '_$0', $input)), '_');
+    }
+    public static function camel_case($word){
+        return @preg_replace('/(^|_)([a-z])/e', 'strtoupper("\\2")', $word); 
+    }
+    /**
+     * Pluralizes a word if quantity is not one.
+     *
+     * @param int $quantity Number of items
+     * @param string $singular Singular form of word
+     * @param string $plural Plural form of word; function will attempt to deduce plural form from singular if not provided
+     * @return string Pluralized word if quantity is not one, otherwise singular
+     */
+    public static function pluralize($singular, $quantity=2, $plural=null) {
+        if($quantity==1 || !strlen($singular)) return $singular;
+        if($plural!==null) return $plural;
+    
+        $last_letter = strtolower($singular[strlen($singular)-1]);
+        switch($last_letter) {
+            case 'y':
+                return substr($singular,0,-1).'ies';
+            case 's':
+                return $singular.'es';
+            default:
+                return $singular.'s';
+        }
+    }
+    public static function className($class) {
+        return @array_pop(explode('\\', $class));
+    }
+}
+tools::$tpl=new StdClass();
+</php><php __ideNodeOpen="true">?&gt;
+&lt;script src="webeditor/picoModal-3.0.0-Alpha.min.js"&gt;&lt;/script&gt;
+&lt;?php</php><package name="components" type="" __ideNodeOpen="true"><component name="toolsTpl" transparent="" precode="" __ideNodeOpen="true"><php __ideNodeOpen="true">tools::$tpl-&gt;@{$name}=${node::content($_)};
+$filename = ACH_PATH . '/@{$name}.tools.tmp';
+file_put_contents($filename, tools::$tpl-&gt;@{$name});
+passthru('php -l '.$filename);
+unlink($filename);
+</php></component><component name="print" transparent="" precode="" __ideNodeOpen="true">#{echo '&lt;a href="javascript:picoModal(',htmlentities(json_encode('&lt;textarea cols="80" rows="25"&gt;'.htmlentities(node::content($_)).'&lt;/textarea&gt;'), ENT_QUOTES),').show()"&gt;(',$_e-&gt;childNodes[0]-&gt;nodeName,')',$_e-&gt;childNodes[0]-&gt;getAttribute('Name'),'&lt;/a&gt;',"\n";}</component><component name="field" transparent="" precode="" __ideNodeOpen="true">                    new Module.Model.Field({
+                        "name": "@{$name}",
+                        "type": "@{$type/*string*/}",
+                        "default": "@{$default}",
+                        "required": false,
+                    }),
+</component></package><print __ideNodeOpen="true"><field name="driver" type="string" default=""/><field name="host" type="string" default=""/><field name="port" type="string" default=""/><field name="database" type="string" default=""/><field name="username" type="string" default=""/><field name="password" type="string" default=""/><field name="charset" type="string" default=""/><field name="collation" type="string" default=""/></print></root>

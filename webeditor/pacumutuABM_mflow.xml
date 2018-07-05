@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root><path path="C:\Program Files (x86)\Zend\Apache2\htdocs\pacumutu\application\fuente" main="" __ideNodeOpen="true"><include src="pacumutu.xml"/><include src="$library/zplugin.xml"/><include src="$library/parser.xml"/><package name="definitions" type="" __ideNodeOpen="false"><parserDefinition __ideNodeOpen="true" name="fields"><definition version="1.0" __ideNodeOpen="true">name
+type;number|string</definition><phpParser __ideNodeOpen="true">function($field,$line){
+  return $line;
+}</phpParser></parserDefinition><parserDefinition __ideNodeOpen="true" name="columnsGrid"><definition version="1.0" __ideNodeOpen="true">text
+width
+align;left|right|center
+flex
+sorteable;1|0
+xtype
+groupHeader</definition><phpParser __ideNodeOpen="true">function($field,$line){
+  return $line;
+}</phpParser></parserDefinition><parserDefinition __ideNodeOpen="true" name="formFields"><definition version="1.0" __ideNodeOpen="true">name
+label
+type;textfield|datefield|textarea|object
+object
+hidden;1|0</definition><phpParser __ideNodeOpen="true">function($field,$line){
+  return $line;
+}</phpParser></parserDefinition></package><abm123 name="corresEntrada" title="Correspondencia - Bandeja Entrada" query="select * from corres_entrada" __ideNodeOpen="false" model="corresentrada" toolbar="Registrar Ingreso;Editar Registro;Eliminar Registro;Derivar a,control_interno.png,corresDerivar,400,250,Derivar a" idField="id"><fieldsGrid __ideNodeOpen="true">id
+codigo
+referencia
+remitente
+destinatario
+contenido
+adjuntos
+fecha_registro</fieldsGrid><columnsGrid __ideNodeOpen="true">#
+codigo
+referencia
+remitente
+destinatario
+contenido
+Fecha registro</columnsGrid><fieldsAdd __ideNodeOpen="true">codigo,Codigo,textfield;;;;
+referencia,Referencia,textfield;;;;
+remitente,Remitente,textfield;;;;
+destinatario,Destinatario,texfield;;;;
+contenido,Contenido,textarea;;;;</fieldsAdd><fieldsModify __ideNodeOpen="true">codigo,Codigo,textfield
+referencia,Referencia,textfield
+remitente,Remitente,textfield
+destinatario,Destinatario,textfield
+contenido,Contenido,textarea
+adjuntos,Adjuntos,textarea</fieldsModify><fieldsDelete __ideNodeOpen="true">codigo,Codigo,label
+referencia,Referencia,label
+remitente,Remitente,label
+destinatario,Destinatario,label
+contenido,Contenido,label</fieldsDelete><bindingCode __ideNodeOpen="true">
+function oninsert($zdata, $values){
+  return $values;
+}
+</bindingCode></abm123><abm123 name="corresDerivacion" title="Correspondencia - Bandeja Correspondencia" query="select * from corres_derivacion" __ideNodeOpen="false" model="corresderivacion" toolbar="Responder;;" idField="id"><fieldsGrid __ideNodeOpen="true">id
+codigo
+referencia
+remitente
+destinatario
+contenido
+adjuntos
+fecha_registro</fieldsGrid><columnsGrid __ideNodeOpen="true">#
+codigo
+referencia
+remitente
+destinatario
+contenido
+adjuntos
+Fecha registro</columnsGrid><fieldsAdd __ideNodeOpen="true">destinatario,Destinatario,object,comboUsuarios
+contenido,Contenido,textarea
+adjuntos,Adjuntos,textarea</fieldsAdd><fieldsModify __ideNodeOpen="true">codigo,Codigo,textfield
+referencia,Referencia,textfield
+remitente,Remitente,textfield
+destinatario,Destinatario(s),textarea
+contenido,Contenido,textarea
+adjuntos,Adjuntos,textarea</fieldsModify><fieldsDelete __ideNodeOpen="true">codigo,Codigo,label
+referencia,Referencia,label
+remitente,Remitente,label
+destinatario,Destinatario(s),label
+contenido,Contenido,label</fieldsDelete><bindingCode __ideNodeOpen="true">
+function oninsert($zdata, $values){
+  $values['referencia']=$_SESSION['corresEntradaGrid,1']-&gt;referencia;
+VAR_DUMP($values);
+  return $values;
+}
+</bindingCode></abm123><xcomponent name="ide_textpopup" __ideNodeOpen="false"><xjs __ideNodeOpen="true">(function(name,label,labelWidth,fieldDef){
+&lt;?php
+$popup;/*popup que cargara el fieldtext*/  
+?&gt;
+  var textpopup=Ext.create('Ext.form.TextField',{name:name,flex:3});
+  var cmp;
+  return cmp=Ext.create('Ext.form.CompositeField', {
+    labelWidth: labelWidth,
+    fieldLabel: label,
+    items:[
+      textpopup,
+      {
+        xtype:'button',flex:1,
+        handler:function(){
+          loadWindow(
+            cmp,
+            {fragment:&lt;?=json_encode($popup)?&gt;},
+            {
+              listeners:{
+                destroy:function(){
+                  
+                }
+              },
+              x:100+Math.random()*100,
+              y:Math.random()*10
+            },
+            {textpopup:textpopup}
+          );
+        }
+      },
+    ]
+  });
+})</xjs><xphp __ideNodeOpen="true">&lt;?='&lt;?php'?&gt;
+
+require_once("../library/ziterator.php");
+
+class &lt;?=$_name?&gt; extends zIterator {
+}
+</xphp></xcomponent><icomponent name="corresCodigoPopup" popup="corresEntradaAdd" component="ide_textpopup" __ideNodeOpen="false"/><abm name="auditoriaPOATitulos" title="Administracion de Titulos" query="select * from poa_titulos" __ideNodeOpen="true" model="poatitulos" toolbar="Nuevo;Modificar;Eliminar" idField="id"><fieldsGrid __ideNodeOpen="true">id
+titulo</fieldsGrid><columnsGrid __ideNodeOpen="true">#
+titulo</columnsGrid><fieldsAdd __ideNodeOpen="true">titulo,Título</fieldsAdd><fieldsModify __ideNodeOpen="true">titulo,Título</fieldsModify><fieldsDelete __ideNodeOpen="true">titulo,Título,label</fieldsDelete><bindingCode __ideNodeOpen="true"></bindingCode></abm><combo name="auditoriaPOATitulosCombo" adapter="connection" query="select * from poa_titulos" fields="id,titulo" width="155"/></path></root>

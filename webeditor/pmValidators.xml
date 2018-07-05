@@ -1,0 +1,334 @@
+<?xml version="1.0" encoding="UTF-8"?><root __ideNodeOpen="true"><php __ideNodeOpen="true">function getColumnByName($dom, $name){
+    foreach($dom-&gt;getElementsByTagName('column') as $col) {
+        if($col-&gt;getAttribute('name')===$name) {
+            return $col;
+        }
+    }
+}</php><component name="validators" transparent="" precode="" engine="php" __ideNodeOpen="true">&lt;?php
+$xml = '&lt;?xml version="1.0" encoding="utf-8"?&gt;
+' . node::content($_);
+$dom = new DomDocument();
+$dom-&gt;loadXml($xml);
+$errorCode=10100;
+foreach($dom-&gt;getElementsByTagName('column') as $col) {
+  if($col-&gt;getAttribute("type")==='VARCHAR') {
+    $title = ucfirst( str_replace('_',' ',substr($col-&gt;getAttribute('name'),4)) );
+/*    echo '    &lt;validator column="',$col-&gt;getAttribute('name'),'"&gt;
+      &lt;rule name="maxLength" message="',$title,' can be no larger than ${value} characters."/&gt;
+      &lt;rule name="minLength" value="2" message="',$title,' must be at least ${value} characters."/&gt;
+',
+($col-&gt;getAttribute('required')==='true'?'      &lt;rule name="required" message="'.$title.' is required." /&gt;
+':''),'    &lt;/validator&gt;
+';*/
+      echo '    /**
+     * Invalid ',$title,' value.
+     */
+    const BAD_',strtoupper($col-&gt;getAttribute('name')),' = ',++$errorCode,';
+';
+  }
+  if($col-&gt;getAttribute("type")==='DATE') {
+    $title = ucfirst( str_replace('_',' ',substr($col-&gt;getAttribute('name'),4)) );
+/*    echo '    &lt;validator column="',$col-&gt;getAttribute('name'),'"&gt;
+      &lt;rule name="class" class="\App\Validators\DateValidator" message="Invalid date value." /&gt;
+',
+($col-&gt;getAttribute('required')==='true'?'      &lt;rule name="required" message="'.$title.' is required." /&gt;
+':''),'    &lt;/validator&gt;
+';*/
+      echo '    /**
+     * Invalid ',$title,' value.
+     */
+    const BAD_',strtoupper($col-&gt;getAttribute('name')),' = ',++$errorCode,';
+';
+  }
+}
+</component><component name="validators2" transparent="" precode="" engine="php" __ideNodeOpen="true">&lt;?php
+$xml = '&lt;?xml version="1.0" encoding="utf-8"?&gt;
+' . node::content($_);
+$dom = new DomDocument();
+$dom-&gt;loadXml($xml);
+$customMessages = [];
+foreach($dom-&gt;getElementsByTagName('validator') as $col) {
+    $table = $col-&gt;parentNode;
+    $title = ucfirst( str_replace('_',' ',substr($col-&gt;getAttribute('column'),4)) );
+    $name = str_replace(' ', '', ucwords( str_replace('_',' ',substr($col-&gt;getAttribute('column'),0)) ) );
+    $column = getColumnByName($dom, $col-&gt;getAttribute('column'));
+    $validation = [];
+    $customMessages[]= "        '$name' =&gt; [\n";
+    foreach($col-&gt;getElementsByTagName('rule') as $rule) {
+        $customMessages[]= "            '" . $rule-&gt;getAttribute('name') . "' =&gt; " . var_export($rule-&gt;getAttribute('message'),true) .",\n";
+        switch($rule-&gt;getAttribute('name')) {
+            case 'required':
+                $validation[]='required';
+                break;
+            case 'validValues':
+                $validation[]='regex:/'.$rule-&gt;getAttribute('value').'/';
+                break;
+            case 'maxLength':
+                $validation[]='max:'.($rule-&gt;getAttribute('value')?$rule-&gt;getAttribute('value'):$column-&gt;getAttribute('size'));
+                break;
+            case 'minLength':
+                $validation[]='min:'.($rule-&gt;getAttribute('value'));
+                break;
+            case 'unique':
+                $validation[]='unique:'.$table-&gt;getAttribute('name').','.$column-&gt;getAttribute('name');
+                break;
+            case 'class':
+                switch($rule-&gt;getAttribute('class')){
+                    case '\App\Validators\EmailValidator':
+                        $validation[]='email';
+                        break;
+                    case '\App\Validators\DateValidator':
+                        $validation[]='date';
+                        break;
+                }
+                break;
+        }
+    }
+    $customMessages[]= "        ],\n";
+    echo "
+                '$name' =&gt; ",json_encode($validation),",";
+}
+echo "\n\n", implode('', $customMessages);
+</component><component name="print" transparent="" precode="" __ideNodeOpen="true">#{echo htmlentities(node::content($_));}</component><validators __ideNodeOpen="true">  &lt;table name="user" description="Users" idMethod="native"&gt;
+    &lt;behavior name="auto_add_pk" /&gt;
+    &lt;vendor type="mysql"&gt;
+      &lt;parameter name="Engine" value="InnoDB"/&gt;
+      &lt;parameter name="Charset" value="utf8"/&gt;
+      &lt;parameter name="Collate" value="utf8_unicode_ci" /&gt;
+    &lt;/vendor&gt;
+        
+    &lt;column name="usr_uid" type="VARCHAR" size="32" required="true" default=""/&gt;
+    &lt;column name="usr_username" type="VARCHAR" size="100" required="true" default=""/&gt;
+    &lt;column name="usr_password" type="VARCHAR" size="32" required="true" default=""/&gt;
+    &lt;column name="usr_firstname" type="VARCHAR" size="50" required="true" default=""/&gt;
+    &lt;column name="usr_lastname" type="VARCHAR" size="50" required="true" default=""/&gt;
+    &lt;column name="usr_email" type="VARCHAR" size="100" required="true" default=""/&gt;
+    &lt;column name="usr_due_date" type="DATE" required="true"/&gt;
+    &lt;column name="usr_status" type="ENUM" required="true" valueSet="ACTIVE, INACTIVE, VACATION" default="ACTIVE"/&gt;
+    &lt;column name="usr_country" type="VARCHAR" size="3" required="true" default=""/&gt;
+    &lt;column name="usr_city" type="VARCHAR" size="3" required="true" default=""/&gt;
+    &lt;column name="usr_location" type="VARCHAR" size="3" required="true" default=""/&gt;
+    &lt;column name="usr_address" type="VARCHAR" size="255" required="true" default=""/&gt;
+    &lt;column name="usr_phone" type="VARCHAR" size="24" required="true" default=""/&gt;
+    &lt;column name="usr_fax" type="VARCHAR" size="24" required="true" default=""/&gt;
+    &lt;column name="usr_cellular" type="VARCHAR" size="24" required="true" default=""/&gt;
+    &lt;column name="usr_zip_code" type="VARCHAR" size="16" required="true" default=""/&gt;
+    &lt;column name="department_id" type="INTEGER" required="false"/&gt;
+    &lt;column name="usr_position" type="VARCHAR" size="100" required="true" default=""/&gt;
+    &lt;column name="usr_resume" type="VARCHAR" size="100" required="true" default=""/&gt;
+    &lt;column name="usr_birthday" type="DATE" required="false"/&gt;
+    &lt;column name="role_id" type="INTEGER" required="false" /&gt;
+    &lt;column name="usr_reports_to" type="VARCHAR" size="32" default="" required="false"/&gt;
+    &lt;column name="usr_replaced_by" type="VARCHAR" size="32" default="" required="false"/&gt;
+    &lt;column name="usr_ux" type="VARCHAR" size="128" default="NORMAL" required="false"/&gt;
+    &lt;column name="usr_total_inbox" type="INTEGER" default="0" required="false"/&gt;
+    &lt;column name="usr_total_draft" type="INTEGER" default="0" required="false"/&gt;
+    &lt;column name="usr_total_cancelled" type="INTEGER" default="0" required="false"/&gt;
+    &lt;column name="usr_total_participated" type="INTEGER" default="0" required="false"/&gt;
+    &lt;column name="usr_total_paused" type="INTEGER" default="0" required="false"/&gt;
+    &lt;column name="usr_total_completed" type="INTEGER" default="0" required="false"/&gt;
+    &lt;column name="usr_total_unassigned" type="INTEGER" default="0" required="false"/&gt;
+    &lt;column name="usr_cost_by_hour" type="DECIMAL" size="7" required="false" default="0" scale="2"/&gt;
+    &lt;column name="usr_unit_cost" type="VARCHAR" size="50" required="false" default=""/&gt;
+    &lt;column name="usr_pmdrive_folder_uid" type="VARCHAR" size="32" default="" required="false"/&gt;
+    &lt;column name="usr_bookmark_start_cases" type="LONGVARCHAR" required="false"/&gt;
+    &lt;column name="usr_auth_type" type="VARCHAR" size="32" required="true" default="" /&gt;
+    &lt;column name="uid_auth_source" type="VARCHAR" size="32" required="true" default="" /&gt;
+    &lt;column name="usr_auth_user_dn" type="VARCHAR" size="255" required="true" default="" /&gt;
+    &lt;column name="usr_auth_supervisor_dn" type="VARCHAR" size="255" required="true" default="" /&gt;
+    &lt;column name="usr_time_zone" type="VARCHAR" size="100" default=""/&gt;
+    &lt;column name="usr_default_lang" type="VARCHAR" size="10" default=""/&gt;
+
+    &lt;behavior name="timestampable" /&gt;
+
+    &lt;validator column="usr_status"&gt;
+      &lt;rule name="validValues" value="ACTIVE|INACTIVE|VACATION|CLOSED" message="Please select a valid type."/&gt;
+      &lt;rule name="required" message="Type is required."/&gt;
+    &lt;/validator&gt;
+
+    &lt;index name="USR_UID_INDEX"&gt;
+      &lt;index-column name="usr_uid"/&gt;
+    &lt;/index&gt;
+    &lt;unique name="USR_UID_UNIQUE"&gt;
+      &lt;unique-column name="usr_uid"/&gt;
+    &lt;/unique&gt;
+    
+    &lt;foreign-key foreignTable="role" onDelete="none"&gt;
+      &lt;reference local="role_id" foreign="id" /&gt;
+    &lt;/foreign-key&gt;
+  &lt;/table&gt;
+</validators><print><validators2 __ideNodeOpen="true">  &lt;table name="user" description="Users" idMethod="native"&gt;
+    &lt;behavior name="auto_add_pk" /&gt;
+    &lt;vendor type="mysql"&gt;
+      &lt;parameter name="Engine" value="InnoDB"/&gt;
+      &lt;parameter name="Charset" value="utf8"/&gt;
+      &lt;parameter name="Collate" value="utf8_unicode_ci" /&gt;
+    &lt;/vendor&gt;
+        
+    &lt;column name="usr_uid" type="VARCHAR" size="32" required="true" default=""/&gt;
+    &lt;column name="usr_username" type="VARCHAR" size="100" required="true" default=""/&gt;
+    &lt;column name="usr_password" type="VARCHAR" size="32" required="true" default=""/&gt;
+    &lt;column name="usr_firstname" type="VARCHAR" size="50" required="true" default=""/&gt;
+    &lt;column name="usr_lastname" type="VARCHAR" size="50" required="true" default=""/&gt;
+    &lt;column name="usr_email" type="VARCHAR" size="100" required="true" default=""/&gt;
+    &lt;column name="usr_due_date" type="DATE" required="true"/&gt;
+    &lt;column name="usr_status" type="ENUM" required="true" valueSet="ACTIVE, INACTIVE, VACATION" default="ACTIVE"/&gt;
+    &lt;column name="usr_country" type="VARCHAR" size="3" required="true" default=""/&gt;
+    &lt;column name="usr_city" type="VARCHAR" size="3" required="true" default=""/&gt;
+    &lt;column name="usr_location" type="VARCHAR" size="3" required="true" default=""/&gt;
+    &lt;column name="usr_address" type="VARCHAR" size="255" required="true" default=""/&gt;
+    &lt;column name="usr_phone" type="VARCHAR" size="24" required="true" default=""/&gt;
+    &lt;column name="usr_fax" type="VARCHAR" size="24" required="true" default=""/&gt;
+    &lt;column name="usr_cellular" type="VARCHAR" size="24" required="true" default=""/&gt;
+    &lt;column name="usr_zip_code" type="VARCHAR" size="16" required="true" default=""/&gt;
+    &lt;column name="department_id" type="INTEGER" required="false"/&gt;
+    &lt;column name="usr_position" type="VARCHAR" size="100" required="true" default=""/&gt;
+    &lt;column name="usr_resume" type="VARCHAR" size="100" required="true" default=""/&gt;
+    &lt;column name="usr_birthday" type="DATE" required="false"/&gt;
+    &lt;column name="role_id" type="INTEGER" required="false" /&gt;
+    &lt;column name="usr_reports_to" type="VARCHAR" size="32" default="" required="false"/&gt;
+    &lt;column name="usr_replaced_by" type="VARCHAR" size="32" default="" required="false"/&gt;
+    &lt;column name="usr_ux" type="VARCHAR" size="128" default="NORMAL" required="false"/&gt;
+    &lt;column name="usr_total_inbox" type="INTEGER" default="0" required="false"/&gt;
+    &lt;column name="usr_total_draft" type="INTEGER" default="0" required="false"/&gt;
+    &lt;column name="usr_total_cancelled" type="INTEGER" default="0" required="false"/&gt;
+    &lt;column name="usr_total_participated" type="INTEGER" default="0" required="false"/&gt;
+    &lt;column name="usr_total_paused" type="INTEGER" default="0" required="false"/&gt;
+    &lt;column name="usr_total_completed" type="INTEGER" default="0" required="false"/&gt;
+    &lt;column name="usr_total_unassigned" type="INTEGER" default="0" required="false"/&gt;
+    &lt;column name="usr_cost_by_hour" type="DECIMAL" size="7" required="false" default="0" scale="2"/&gt;
+    &lt;column name="usr_unit_cost" type="VARCHAR" size="50" required="false" default=""/&gt;
+    &lt;column name="usr_pmdrive_folder_uid" type="VARCHAR" size="32" default="" required="false"/&gt;
+    &lt;column name="usr_bookmark_start_cases" type="LONGVARCHAR" required="false"/&gt;
+    &lt;column name="usr_auth_type" type="VARCHAR" size="32" required="true" default="" /&gt;
+    &lt;column name="uid_auth_source" type="VARCHAR" size="32" required="true" default="" /&gt;
+    &lt;column name="usr_auth_user_dn" type="VARCHAR" size="255" required="true" default="" /&gt;
+    &lt;column name="usr_auth_supervisor_dn" type="VARCHAR" size="255" required="true" default="" /&gt;
+    &lt;column name="usr_time_zone" type="VARCHAR" size="100" default=""/&gt;
+    &lt;column name="usr_default_lang" type="VARCHAR" size="10" default=""/&gt;
+
+    &lt;behavior name="timestampable" /&gt;
+
+    &lt;validator column="usr_status"&gt;
+      &lt;rule name="validValues" value="ACTIVE|INACTIVE|VACATION|CLOSED" message="Please select a valid type."/&gt;
+      &lt;rule name="required" message="Type is required."/&gt;
+    &lt;/validator&gt;
+    &lt;validator column="usr_username"&gt;
+      &lt;rule name="maxLength" message="Username can be no larger than ${value} characters."/&gt;
+      &lt;rule name="minLength" value="3" message="Username must be at least ${value} characters."/&gt;
+      &lt;rule name="required" message="Username is required." /&gt;
+      &lt;rule name="unique" message="Username already exists." /&gt;
+    &lt;/validator&gt;
+    &lt;validator column="usr_password"&gt;
+      &lt;rule name="maxLength" message="Password can be no larger than ${value} characters."/&gt;
+      &lt;rule name="minLength" value="32" message="Password must be at least ${value} characters."/&gt;
+      &lt;rule name="required" message="Password is required." /&gt;
+    &lt;/validator&gt;
+    &lt;validator column="usr_firstname"&gt;
+      &lt;rule name="maxLength" message="Firstname can be no larger than ${value} characters."/&gt;
+      &lt;rule name="minLength" value="2" message="Firstname must be at least ${value} characters."/&gt;
+      &lt;rule name="required" message="Firstname is required." /&gt;
+    &lt;/validator&gt;
+    &lt;validator column="usr_lastname"&gt;
+      &lt;rule name="maxLength" message="Lastname can be no larger than ${value} characters."/&gt;
+      &lt;rule name="minLength" value="2" message="Lastname must be at least ${value} characters."/&gt;
+      &lt;rule name="required" message="Lastname is required." /&gt;
+    &lt;/validator&gt;
+    &lt;validator column="usr_email"&gt;
+      &lt;rule name="class" class="\App\Validators\EmailValidator" message="Invalid e-mail address." /&gt;
+    &lt;/validator&gt;
+    &lt;validator column="usr_country"&gt;
+      &lt;rule name="required" message="Country is required." /&gt;
+    &lt;/validator&gt;
+    &lt;validator column="usr_city"&gt;
+      &lt;rule name="required" message="City is required." /&gt;
+    &lt;/validator&gt;
+    &lt;validator column="usr_location"&gt;
+      &lt;rule name="required" message="Location is required." /&gt;
+    &lt;/validator&gt;
+    &lt;validator column="usr_address"&gt;
+      &lt;rule name="maxLength" message="Address can be no larger than ${value} characters."/&gt;
+      &lt;rule name="required" message="Address is required." /&gt;
+    &lt;/validator&gt;
+    &lt;validator column="usr_phone"&gt;
+      &lt;rule name="maxLength" message="Phone can be no larger than ${value} characters."/&gt;
+      &lt;rule name="minLength" value="2" message="Phone must be at least ${value} characters."/&gt;
+      &lt;rule name="required" message="Phone is required." /&gt;
+    &lt;/validator&gt;
+    &lt;validator column="usr_fax"&gt;
+      &lt;rule name="maxLength" message="Fax can be no larger than ${value} characters."/&gt;
+      &lt;rule name="required" message="Fax is required." /&gt;
+    &lt;/validator&gt;
+    &lt;validator column="usr_cellular"&gt;
+      &lt;rule name="maxLength" message="Cellular can be no larger than ${value} characters."/&gt;
+      &lt;rule name="required" message="Cellular is required." /&gt;
+    &lt;/validator&gt;
+    &lt;validator column="usr_zip_code"&gt;
+      &lt;rule name="maxLength" message="Zip code can be no larger than ${value} characters."/&gt;
+      &lt;rule name="required" message="Zip code is required." /&gt;
+    &lt;/validator&gt;
+    &lt;validator column="usr_position"&gt;
+      &lt;rule name="maxLength" message="Position can be no larger than ${value} characters."/&gt;
+      &lt;rule name="required" message="Position is required." /&gt;
+    &lt;/validator&gt;
+    &lt;validator column="usr_resume"&gt;
+      &lt;rule name="maxLength" message="Resume can be no larger than ${value} characters."/&gt;
+      &lt;rule name="required" message="Resume is required." /&gt;
+    &lt;/validator&gt;
+    &lt;validator column="usr_reports_to"&gt;
+      &lt;rule name="maxLength" message="Reports to can be no larger than ${value} characters."/&gt;
+    &lt;/validator&gt;
+    &lt;validator column="usr_replaced_by"&gt;
+      &lt;rule name="maxLength" message="Replaced by can be no larger than ${value} characters."/&gt;
+    &lt;/validator&gt;
+    &lt;validator column="usr_ux"&gt;
+      &lt;rule name="maxLength" message="Ux can be no larger than ${value} characters."/&gt;
+    &lt;/validator&gt;
+    &lt;validator column="usr_unit_cost"&gt;
+      &lt;rule name="maxLength" message="Unit cost can be no larger than ${value} characters."/&gt;
+    &lt;/validator&gt;
+    &lt;validator column="usr_pmdrive_folder_uid"&gt;
+      &lt;rule name="maxLength" message="Pmdrive folder uid can be no larger than ${value} characters."/&gt;
+    &lt;/validator&gt;
+    &lt;validator column="usr_auth_type"&gt;
+      &lt;rule name="maxLength" message="Auth type can be no larger than ${value} characters."/&gt;
+      &lt;rule name="required" message="Auth type is required." /&gt;
+    &lt;/validator&gt;
+    &lt;validator column="uid_auth_source"&gt;
+      &lt;rule name="maxLength" message="Auth source can be no larger than ${value} characters."/&gt;
+      &lt;rule name="required" message="Auth source is required." /&gt;
+    &lt;/validator&gt;
+    &lt;validator column="usr_auth_user_dn"&gt;
+      &lt;rule name="maxLength" message="Auth user dn can be no larger than ${value} characters."/&gt;
+      &lt;rule name="required" message="Auth user dn is required." /&gt;
+    &lt;/validator&gt;
+    &lt;validator column="usr_auth_supervisor_dn"&gt;
+      &lt;rule name="maxLength" message="Auth supervisor dn can be no larger than ${value} characters."/&gt;
+      &lt;rule name="required" message="Auth supervisor dn is required." /&gt;
+    &lt;/validator&gt;
+    &lt;validator column="usr_time_zone"&gt;
+      &lt;rule name="maxLength" message="Time zone can be no larger than ${value} characters."/&gt;
+    &lt;/validator&gt;
+    &lt;validator column="usr_default_lang"&gt;
+      &lt;rule name="maxLength" message="Default lang can be no larger than ${value} characters."/&gt;
+    &lt;/validator&gt;
+    &lt;validator column="usr_due_date"&gt;
+      &lt;rule name="class" class="\App\Validators\DateValidator" message="Invalid date value." /&gt;
+      &lt;rule name="required" message="Due date is required." /&gt;
+    &lt;/validator&gt;
+    &lt;validator column="usr_birthday"&gt;
+      &lt;rule name="class" class="\App\Validators\DateValidator" message="Invalid date value." /&gt;
+    &lt;/validator&gt;
+            
+    &lt;index name="USR_UID_INDEX"&gt;
+      &lt;index-column name="usr_uid"/&gt;
+    &lt;/index&gt;
+    &lt;unique name="USR_UID_UNIQUE"&gt;
+      &lt;unique-column name="usr_uid"/&gt;
+    &lt;/unique&gt;
+    
+    &lt;foreign-key foreignTable="role" onDelete="none"&gt;
+      &lt;reference local="role_id" foreign="id" /&gt;
+    &lt;/foreign-key&gt;
+  &lt;/table&gt;
+</validators2></print></root>

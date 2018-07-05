@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root><include src="$library/zend.xml"/><include src="$library/extjs.xml"/><application name="mail" main="index/index"><package name="model" type=""><connection driver="pdo_mysql" host="localhost" username="root" password="" dbname="test" name="for mysql"/><connection driver="PDO_SQLITE" host="" username="" password="" dbname="../db/mail.sqlite" name="for sqlite" sqlite2="true"/><resource path="extjsdb/mail.sqlite" folder="db" name="mail.sqlite (Database)"/><table name="usuario" table="usuario" dependentTables=""/><table name="menu" table="menu" dependentTables=""/><table name="mensaje" table="mensaje" dependentTables=""/></package><package name="" type=""><zend.index.php><zend.acl.config>  $acl-&gt;addRole(new Zend_Acl_Role("administrador"));
+  $acl-&gt;addRole(new Zend_Acl_Role("usuario"));
+<select_table model="menu" limit="" offset="" order="" columns="" var="$rows" criteria="">foreach($rows as $row) {
+  $acl-&gt;add(new Zend_Acl_Resource($row-&gt;menu));
+}
+</select_table>  $acl-&gt;allow("usuario","bandeja");
+  $acl-&gt;allow("usuario","perfil");
+  $acl-&gt;allow("administrador","bandeja");
+  $acl-&gt;allow("administrador","inicio");
+  $acl-&gt;allow("administrador","perfil");
+  $acl-&gt;allow("administrador","mensaje");
+</zend.acl.config></zend.index.php><ext.page name="index"><extdocument><window title="" width="320" resizable="false" closable="false" __extid="0"><extjs class="Ext.form.FormPanel" frame="true" url="verify" standardSubmit="true" __extid="1"><extjs class="Ext.form.TextField" name="user" fieldLabel="Usuario" inputType="text" __extid="2"/><extjs class="Ext.form.TextField" name="password" fieldLabel="Contraseña" inputType="password" __extid="3"/><attribute name="buttons" isArray="true"><extjs class="Ext.Button" name="accept" text="Aceptar" type="submit" __extid="4"><event name="handler">function(a,b){this.ownerCt.ownerCt.getForm().submit();}</event></extjs></attribute></extjs></window></extdocument><action name="verify" descripcion="" loadParams="true" this="" noRender="true"><zend.auth table="usuario" username="user" password="password" passwordTreatment="" zend_auth="$zend_auth" zend_auth_adapther="$zend_auth_adapter"/>if($zend_auth_result-&gt;isValid()){
+  $row=$zend_auth_adapter-&gt;getResultRowObject(array("user","name","rol"));
+  $_SESSION["usuario"]=$row;
+  $_SESSION["user"]=$row-&gt;user;
+  header("Location: ../main/index");
+} else {
+  header("Location: index");
+}
+</action></ext.page><ext.page name="main"><extdocument><layout layout="border"><extjs class="Ext.tree.TreePanel" region="west" title="Menú de Opciones" width="200" dataUrl="menues"><attribute name="root"><extjs class="Ext.tree.AsyncTreeNode" id="root" text="" expanded="true"/></attribute><expression name="listeners">{click: function(node, event){
+    if(node.id=="Inicio") return Ext.ComponentMgr.get("panelCentral").setActiveTab(0);
+    var panel;
+    if(panel=Ext.ComponentMgr.get("p"+node.id)){
+      //Verifica si se cerro mal el panel
+      panel.show();
+      if(!panel.isVisible()) panel.destroy();
+    }
+    if(Ext.ComponentMgr.get("p"+node.id)) return Ext.ComponentMgr.get("panelCentral").setActiveTab("p"+node.id);
+        Ext.Ajax.request(
+        {
+            url:node.id.toLowerCase(),
+            params:{panel:node.id},
+            success:function(response, opts) {
+                //var content = Ext.decode(response.responseText);
+                var content = eval(response.responseText);
+                var nuevoPanel=new Ext.Panel({"id":"p"+node.id,"title":node.text,closable:true,items:content});
+                Ext.ComponentMgr.get("panelCentral").add(nuevoPanel).show();
+            }
+        });
+}}</expression></extjs><extjs class="Ext.TabPanel" region="center" title="title" activeTab="0" frame="true" id="panelCentral"><extjs class="Ext.Panel" title="Inicio" closable="false" id="pInicio"><attribute name="html" isString="true">&lt;P&gt;&lt;center&gt;&lt;b&gt;BIENVENIDO AL SISTEMA DE PRUEBA&lt;/b&gt;&lt;/center&gt;&lt;/P&gt;
+&lt;br /&gt;
+&lt;center&gt;&lt;img src="../../images/development.jpg" /&gt;&lt;/center&gt;
+&lt;p&gt;
+Para empezar autilizar este ejemplo, utilice las opciones disponibles a su izquierda.
+&lt;/p&gt;</attribute></extjs></extjs></layout></extdocument><action name="menues" descripcion="" loadParams="" this="" noRender="true"><select_table model="menu" limit="" offset="" order="orden asc" columns="" var="$rows" criteria="">global $acl;
+$tree=array();
+foreach($rows as $row){
+  if($acl-&gt;isAllowed($_SESSION["usuario"]-&gt;rol,$row-&gt;menu)) {
+    $tree[]=array('id'=&gt;$row-&gt;menu,'text'=&gt;$row-&gt;texto,'leaf'=&gt;true);
+  }
+}
+print(json_encode($tree));</select_table></action><action name="perfil" descripcion="" loadParams="" this="" noRender="true"><select_row model="usuario" var="$row" criteria="user=$_SESSION['user']"><ext.fragment outputType="print"><extdocument><extjs class="Ext.form.FormPanel" title="" frame="true" url="guardarperfil" standardSubmit="false"><extjs class="Ext.form.TextField" name="name" fieldLabel="Nombre" inputType="text" value="{$row-&gt;name}" width="300"/><attribute name="buttons" isArray="true" isString="false"><extjs class="Ext.Button" name="save" text="Guardar" type="submit"><event name="handler">function(a,b){this.ownerCt.ownerCt.getForm().submit();}</event></extjs></attribute></extjs></extdocument></ext.fragment></select_row></action><action name="guardarperfil" descripcion="" loadParams="true" this="" noRender="true"><select_row model="usuario" var="$row" criteria="user=$_SESSION['user']">$row-&gt;name=$name;
+$row-&gt;save();
+
+</select_row></action><action name="bandeja" descripcion="" loadParams="" this="" noRender="true"><ext.fragment><extdocument><ext.grid pageSize="12" dataSource="bandejaentrada"><ext.grid.column header="De" width="200" dataIndex="de" sortable="true"/><ext.grid.column header="Asunto" width="250" dataIndex="asunto" sortable="true"/><ext.grid.column header="Fecha Envio" width="100" dataIndex="fecha_envio" sortable="true"/></ext.grid></extdocument></ext.fragment></action><ext.gridDS name="bandejaentrada" model="mensaje" criteria="a=$_SESSION['user']" columns="concat((select name from usuario where usuario.user=mensaje.de),' [',de,']') de,a,asunto,fecha_envio"/><action name="mensaje" descripcion="" loadParams="" this="" noRender="true"><ext.fragment><extdocument><extjs class="Ext.form.FormPanel" region="center" title="Nueva mensaje" frame="true" url="mensajeenviar" standardSubmit="false"><extjs class="Ext.form.TextField" name="a" fieldLabel="A" inputType="text"/><extjs class="Ext.form.TextField" name="asunto" fieldLabel="Asunto" inputType="text" width="250"/><extjs class="Ext.form.TextArea" name="cuerpo" fieldLabel="Mensaje" width="350" height="300"/><attribute name="buttons" isArray="true" isString="false"><extjs class="Ext.Button" name="enviar" text="Enviar" type="submit"><event name="handler">function(a,b){this.ownerCt.ownerCt.getForm().submit();}</event></extjs></attribute></extjs></extdocument></ext.fragment></action><action name="mensajeenviar" loadParams="true" noRender="true"><insert_row model="mensaje" values="a=$a;de=$_SESSION['user'];asunto=$asunto;cuerpo=$cuerpo;fecha_envio=Date(&quot;Y-m-d&quot;)" var="$data"/></action></ext.page><resource path="llankay/development.jpg" folder="html/images"/><resource path="llankay/config.php" folder="html"/></package></application></root>

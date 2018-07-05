@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root><path path="output/alpha" main="output/alpha/index.php"><file name="index.php" preprocess="">&lt;?php
+set_time_limit(-1);
+$a = 'C:\Users\Public\Pictures\Lucas 1_1\imagen4.png';
+$b = 'C:\Users\Public\Pictures\Lucas 1_1\transparencia4.png';
+
+list($ancho, $alto) = getimagesize($a);
+$imgA = imagecreatefrompng($a);
+$imgB = imagecreatefrompng($b);
+imagesavealpha($imgA, true);
+imagealphablending($imgA, false);
+
+for($x=0;$x&lt;$ancho;$x++) {
+for($y=0;$y&lt;$alto;$y++) {
+
+$rgb = imagecolorat($imgA, $x, $y);
+$r = ($rgb &gt;&gt; 16) &amp; 0xFF;
+$g = ($rgb &gt;&gt; 8) &amp; 0xFF;
+$b = $rgb &amp; 0xFF;
+//$alpha1     = ($rgba &amp; 0x7F000000) &gt;&gt; 24;
+
+$rgb2 = imagecolorat($imgB, $x, $y);
+$r2 = ($rgb2 &gt;&gt; 16) &amp; 0xFF;
+$g2 = ($rgb2 &gt;&gt; 8) &amp; 0xFF;
+$b2 = $rgb2 &amp; 0xFF;
+
+$alpha = floor($b2/2);
+//var_dump($r2,$g2,$b2);die;
+//if($alpha1 &gt;75) $alpha = 127;
+//$alpha = 127 - (127-$alpha) * (127-$alpha1) ;
+
+//$alpha = 0;
+
+$co = imagecolorallocatealpha($imgA, $r, $g, $b, $alpha);
+
+//$co = ( $rgb &amp; 0x00FFFFFF ) | ($alpha &lt;&lt; 24);
+
+imagesetpixel($imgA, $x, $y, $co);
+
+}
+}
+
+imagepng($imgA , "$a.joined.png");
+</file></path></root>

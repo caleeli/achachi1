@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?><root><path path="output/gol" main="output/gol/mobile/index.html" __ideNodeOpen="true"><include src="$library/googleimages.xml"/><package name="cordoba" type="" __ideNodeOpen="true"><component name="runscript" transparent="" precode="" __ideNodeOpen="true"><php __ideNodeOpen="true">require_once(ACH_PATH.'/remotecmd.class.php');
+
+$cmd = @{var_export(node::content($_),true)};
+
+DV_RemoteCmd::call(str_replace("\n","\r\n",$cmd));
+</php></component><component name="cordova" transparent="" precode="" __ideNodeOpen="true"><runscript __ideNodeOpen="true">cd @{getcwd()}
+IF EXIST @{$path/*cordova*/} (
+  cd @{$path}
+  GOTO Construir
+)
+REM rmdir @{$path} /S /Q
+call @{$cordova_path} create @{$path} @{$domain_name/*com.example.hello*/} @{$name}
+cd @{$path}
+call @{$cordova_path} platform add android
+call @{$cordova_path} platforms ls
+:Construir
+xcopy "../@{$source/*mobile*/}" "www" /s /e
+call @{$cordova_path} build --release
+call @{$cordova_path} run android
+</runscript></component><images path="" folder=""/></package><file name="mobile/index.html" preprocess="">&lt;html&gt;
+&lt;body&gt;
+
+&lt;/body&gt;
+&lt;/html&gt;</file><cordova path="cordova" cordova_path="C:\Users\david\AppData\Roaming\npm\cordova.cmd" domain_name="com.caleeli.goleada" name="Goleada" source="mobile" node_path="C:\Program Files\nodejs\node.exe" __ideNodeOpen="true"/></path></root>

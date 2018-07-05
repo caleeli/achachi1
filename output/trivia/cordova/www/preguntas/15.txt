@@ -1,0 +1,3 @@
+var res={"pregunta":"\u00bfQu\u00e9 significa que la Biblia sea inspirada por Dios?","respuestas":["Quiere decir que es Dios hablando a trav\u00e9s de los hombres","Quiere decir que es el hombre hablando por Dios","Quiere decir que es Dios quien escribi\u00f3 la biblia"],"correcta":"0","imagen":"img\/Targum.jpg"};
+dibujaPregunta($pregunta,$respuestas,$imagen,res);
+

@@ -1,0 +1,7 @@
+    /**
+     * <?=$_->name?> relationship
+     */
+    public function <?=$_->name?>()
+    {
+        return $this-><?=$_->type?>('<?=$_->class?>');
+    }

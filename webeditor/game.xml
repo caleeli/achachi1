@@ -1,0 +1,853 @@
+<?xml version="1.0" encoding="UTF-8"?><root><include src="$library/zend.xml"/><package name="" type="" __ideNodeOpen="true"><component name="cuadra" transparent="" __ideNodeOpen="true">    array("Plain",@{$x},@{$y},@{$w},1),
+    array("Plain",@{$x},@{$y+1},1,@{$h-1}),
+    array("Grass",@{$x+1},@{$y+1},@{$w-2},${$h-2}),
+    array("Plain",@{$x+$w-1},@{$y+1},1,@{$h-1}),
+    array("Plain",@{$x+1},@{$y+$h-1},@{$w-1},1),
+</component><component name="txtmap" transparent="" __ideNodeOpen="true">$city=#{
+  $_res=array("su"=&gt;"","el"=&gt;"","ow"=&gt;array());
+  $_r = node::content($_);
+  $_ls = explode("\n",$_r);
+  $_t=array();
+  $_y=-1;
+  $_m=0;
+  foreach($_ls as $_l):
+    if($_l=="--"):
+      $_m++;
+    elseif($_m==2):
+      $_y++;
+      $_w=0;
+      for($_i=0;$_i&lt;strlen($_l);$_i++):
+        $_w++;
+        if($_l[$_i]!=$_l[$_i+1]):
+          if($_t[$_l[$_i]]):
+            $_res["su"].=$_w &gt; 1?
+              ("array('".$_t[$_l[$_i]][0]."',".($_i+1-$_w).",$_y,$_w,1),"):
+              ("array('".$_t[$_l[$_i]][0]."',$_i,$_y),");
+            if($_t[$_l[$_i]][1])$_res["el"].=$_w &gt; 1?
+              ("array('".$_t[$_l[$_i]][1]."',".($_i+1-$_w).",$_y,$_w,1),"):
+              ("array('".$_t[$_l[$_i]][1]."',$_i,$_y),");
+          endif;
+          $_w=0;
+        else:
+        endif;
+      endfor;
+    elseif($_m==1):
+      $_x=explode("|",$_l);
+      $_x[1]=explode(";",$_x[1]);
+      $_res["ow"][$_x[0]]=$_x[1];
+    elseif($_m==0):
+      $_x=explode("|",$_l);
+      $_x[1]=explode(",",$_x[1]);
+      $_t[$_x[0]]=$_x[1];
+    endif;
+  endforeach;
+  eval('$_res["su"]=array('.$_res["su"].');');
+  eval('$_res["el"]=array('.$_res["el"].');');
+  return var_export($_res,true);
+};
+</component></package><application name="game" main="game/index" __ideNodeOpen="true"><controller name="index" descripcion="" author="" __ideNodeOpen="false"><phtml name="index" __ideNodeOpen="true"><jqueryui name="filename"/></phtml><action name="newaction" noRender="false" descripcion="" loadParams=""/></controller><controller name="creator" descripcion="" author="" __ideNodeOpen="false"><action name="object" noRender="false" descripcion="" loadParams=""/><phtml name="object" __ideNodeOpen="true">&lt;?php
+//$file = '../models/casaBase.png';
+foreach(glob('../models/*.png') as $file):
+
+$img = imagecreatefrompng($file);
+$co = imagecolorat($img, 0, 0);
+imagealphablending($img, true);
+ImageColorTransparent($img, $co);
+
+for($x=0,$w=imagesx($img);$x&lt;$w;$x++) {
+  for($y=0,$h=imagesy($img);$y&lt;$h;$y++) {
+    if(imagecolorat($img, $x, $y)!=$co) {
+      $xmin=$x;break 2;
+    }
+  }
+}
+for($x=imagesx($img)-1;$x&gt;=0;$x--) {
+  for($y=0,$h=imagesy($img);$y&lt;$h;$y++) {
+    if(imagecolorat($img, $x, $y)!=$co) {
+      $xmax=$x;break 2;
+    }
+  }
+}
+for($y=0,$h=imagesy($img);$y&lt;$h;$y++) {
+  for($x=0,$w=imagesx($img);$x&lt;$w;$x++) {
+    if(imagecolorat($img, $x, $y)!=$co) {
+      $ymin=$y;break 2;
+    }
+  }
+}
+for($y=imagesy($img)-1;$y&gt;=0;$y--) {
+  for($x=0,$w=imagesx($img);$x&lt;$w;$x++) {
+    if(imagecolorat($img, $x, $y)!=$co) {
+      $ymax=$y;break 2;
+    }
+  }
+}
+
+$ymax = $ymax+6;
+
+$width = $xmax-$xmin+1;
+$height = $ymax-$ymin+1;
+$newwidth =  ceil($width/36)*36;
+$newheight =  ceil($height/36)*36;
+
+$ymin = $ymax - $newheight + 1;
+$xmin = $xmax - $width/2 - $newwidth/2 + 1;
+
+//$newwidth = $xmax-$xmin+1;
+//$newheight = $ymax-$ymin+1;
+
+$thumb = imagecreatetruecolor($newwidth, $newheight);
+//imagealphablending($thumb, false);
+//imagesavealpha($thumb, true);  
+
+
+imagecopyresampled($thumb, $img, 0, 0, $xmin, $ymin, $newwidth, $newheight, $newwidth, $newheight);
+ImageColorTransparent($thumb, imagecolorat($thumb, 0, 0));
+
+//header('Content-type: image/png');
+
+imagepng($thumb, 'images/'.basename($file));
+imagedestroy($thumb);
+imagedestroy($img);
+
+print 'images/'.basename($file).'&lt;br /&gt;';
+print '&lt;span style="display:inline-block;position:relative;"&gt;&lt;img src="../../images/'.basename($file).'" /&gt;&lt;div style="position:absolute;bottom:0px;height:42px;width:100%;z-index:-1;background-image:url(../../images/acera.png);"&gt;&lt;/div&gt;&lt;/span&gt;';
+
+endforeach;
+
+//imagepng($thumb);
+</phtml><action name="map" noRender="false" descripcion="" loadParams=""/><phtml name="map" __ideNodeOpen="true">&lt;!DOCTYPE Xhtml&gt;
+<jqueryui name="filename">&lt;html xmlns="http://www.w3.org/1999/xhtml"&gt;
+&lt;head&gt;
+&lt;meta http-equiv="Content-Type" content="text/html; charset=utf-8"/&gt;
+&lt;title&gt;&lt;?php print "New Page"; ?&gt;&lt;/title&gt;
+&lt;link type="text/css" href="/jquery/css/face/jquery-ui.custom.css" rel="stylesheet"/&gt;	
+&lt;script type="text/javascript" src="/jquery/js/jquery.min.js"&gt;&lt;/script&gt;
+&lt;script type="text/javascript" src="/jquery/js/jquery-ui.custom.min.js"&gt;&lt;/script&gt;
+&lt;script type="text/javascript" src="form.js"&gt;&lt;/script&gt;
+&lt;style&gt;.qE{
+  display:inline-block;
+  position:absolute;
+}
+html{
+  height:100%;
+}
+body{
+  padding:0px;
+  margin:0px;
+  font-size:12px;
+}
+.su{
+  display;inline-block;
+  position:absolute;
+  width:42px;
+  height:42px;
+}
+.n72x42{
+  display;inline-block;
+  position:absolute;
+  width:72px;
+  height:42px;
+}
+.n72x42 img{
+  position:absolute;
+  bottom:0px;
+}
+#map{
+  background-image:url(../../images/mapback.png);
+}
+&lt;/style&gt;
+&lt;script type="text/javascript" id="jsloader"&gt;
+&lt;!-- 
+var selected=null;
+var map=null;
+var index={body:[],map:[]};
+$(function(){
+map = $("&lt;div /&gt;");
+$("body").keypress(function(e){
+console.log(e.charCode);
+  if(selected){
+    if(e.charCode==116 || e.charCode==84){
+      selected.parentNode.appendChild(selected);
+    }
+  }
+  var p=$("#mcursor").position();
+  if(e.keyCode==39){$("#mcursor").css("left",p.left+42)}
+  if(e.keyCode==37){$("#mcursor").css("left",p.left-42)}
+  if(e.keyCode==38){$("#mcursor").css("top",p.top-42)}
+  if(e.keyCode==40){$("#mcursor").css("top",p.top+42)}
+  if(e.keyCode==113){
+    var $map = $("#map");
+    console.log(map.html());
+  }
+});
+$("#mcursor").draggable({grid:[42,42]});
+//#button1
+$(".cbutton,.button").button({});
+$(".cbutton").click(function(){
+  var c = $(this).attr("name");
+  var t = c.split(".")[0];
+  if(components[t] &amp;&amp; types[components[t].type]) {
+    $("#map").append(types[components[t].type].tpl.split("?").join(c));
+    map.append(types[components[t].type].tpl.split("?").join(c));
+    if(types[components[t].type].fn) types[components[t].type].fn($("#map")[0].lastChild);
+  } else {
+    $("#map").append("&lt;span class='n72x42'&gt;&lt;img src='../../images/"+c+"' /&gt;&lt;/span&gt;");
+    map.append("&lt;span class='n72x42'&gt;&lt;img src='../../images/"+c+"' /&gt;&lt;/span&gt;");
+  }
+  index.body.push($("#map")[0].lastChild);
+  index.map.push(map[0].lastChild);
+  var p=$("#mcursor").position();
+  var m=$("#map").position();
+  $($("#map")[0].lastChild).css("left", p.left-m.left);
+  $($("#map")[0].lastChild).css("top", p.top-m.top);
+  $(map[0].lastChild).css("left", p.left-m.left);
+  $(map[0].lastChild).css("top", p.top-m.top);
+  $($("#map")[0].lastChild).draggable({
+    grid:[14,14],
+    start:function(){
+      selected=this;
+    },
+    stop:function(){
+      var $this=$(this);
+      $this.attr("title",JSON.stringify($(this).position()));
+      selected=this;
+      var i=index.body.indexOf(this);
+      var p=$this.position();
+      $(index.map[i]).css("left", p.left);
+      $(index.map[i]).css("top", p.top);
+    }
+  });
+  $($("#map")[0].lastChild).click(function(){
+    selected = this;
+  });
+});
+//qend//
+});
+--&gt;
+&lt;/script&gt;
+&lt;/head&gt;
+&lt;body&gt;&lt;div class="qE button" jid="button1"&gt;
+ &lt;?php 
+//foreach(glob('../models/*.png') as $file) { 
+foreach(glob('images/*.png') as $file) { 
+?&gt;&lt;button class="cbutton" name="&lt;?php echo basename($file) ?&gt;"&gt;&lt;?php echo basename($file,'.png') ?&gt;&lt;/button&gt;
+&lt;?php 
+} 
+?&gt; 
+&lt;/div&gt;
+&lt;div style="position: absolute; overflow: auto; width: 800px; height: 400px; left: 0px; top: 40px;"&gt;&lt;div jid="" style="width: 800px; height: 400px; background-color: lightgreen; left: 0px; top: 0px;" id="map" class="qE div"&gt;&lt;?php 
+
+?&gt;&lt;/div&gt;&lt;div class="qE div" style="width: 42px; height: 42px; border: 1px dashed white; left: 0px; top: 0px;" jid="" id="mcursor"/&gt;&lt;/div&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</jqueryui></phtml><action name="formJs" noRender="false" descripcion="" loadParams="" __ideNodeOpen="false"/><phtml name="form-js" __ideNodeOpen="true">components={
+  "acera":{width:36,height:36,type:"S"},
+  "asfalto":{width:36,height:36,type:"S"},
+  "calle":{width:36,height:36,type:"S"},
+  "calleV":{width:36,height:36,type:"S"},
+  "pasto":{width:36,height:36,type:"S"}
+};
+types={
+  "S":{tpl:"&lt;span class='su' style='background-image:url(../../images/?);'/&gt;",
+        fn:function(e){
+          $(e).resizable({grid:[14,14]});
+          var i=index.body.indexOf(e);
+          var p=$(e).position();
+          $(index.map[i]).css("left", p.left);
+          $(index.map[i]).css("top", p.top);
+          $(index.map[i]).css("width", $(e).width());
+          $(index.map[i]).css("height", $(e).height());
+        }
+      }
+};</phtml><action name="save" noRender="true" descripcion="" loadParams="$filename,$map" __ideNodeOpen="true">
+file_put_contents($filename, $map);
+</action></controller><controller name="game" descripcion="" author="" __ideNodeOpen="true"><action name="index" noRender="false" descripcion="" loadParams=""/><phtml name="index" __ideNodeOpen="false"><jqueryui name="filename" __ideNodeOpen="true">&lt;html xmlns="http://www.w3.org/1999/xhtml"&gt;
+&lt;head&gt;
+&lt;meta http-equiv="Content-Type" content="text/html; charset=utf-8"/&gt;
+&lt;title&gt;&lt;?php print "New Page"; ?&gt;&lt;/title&gt;
+&lt;link type="text/css" href="/jquery/css/face/jquery-ui.custom.css" rel="stylesheet"/&gt;	
+&lt;link type="text/css" href="css" rel="stylesheet" /&gt;
+&lt;link href="../../css/jquery-bubble-popup-v3.css" rel="stylesheet" type="text/css" /&gt;
+&lt;script type="text/javascript" src="/jquery/js/jquery.min.js"&gt;&lt;/script&gt;
+&lt;script type="text/javascript" src="/jquery/js/jquery-ui.custom.min.js"&gt;&lt;/script&gt;
+&lt;script src="../../js/jquery-bubble-popup-v3.min.js" type="text/javascript"&gt;&lt;/script&gt;
+&lt;style&gt;.qE{
+  display:inline-block;
+  position:absolute;
+}
+html{
+  height:100%;
+}
+body{
+
+  padding:0px;
+  margin:0px;
+  font-size:12px;
+}&lt;/style&gt;
+&lt;script type="text/javascript" src="../../js/core.js"&gt;&lt;/script&gt;
+&lt;script type="text/javascript" id="jsloader"&gt;
+&lt;!--
+$(function(){
+  $("#map").map({});
+//qend//
+});
+--&gt;
+&lt;/script&gt;
+&lt;?php
+//TODO
+/*
+&lt;div jid="" style="width: 80px; height: 80px; background-color: lightgreen; left: 376px; top: 152px;" class="qE div"&gt;
+&lt;div id="progress"/&gt;
+&lt;script&gt;$(&lt;?php
+  $images = glob("images/*");
+  $img=array();
+  foreach($images as $i){
+    $img[]=basename($i);
+  }
+  echo json_encode($img);
+?&gt;).preloadImages();&lt;/script&gt;
+&lt;/div&gt;
+*/
+?&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;script type="text/javascript"&gt;
+&lt;!--
+/*
+Simple Image Trail script- By JavaScriptKit.com
+Visit http://www.javascriptkit.com for this script and more
+This notice must stay intact
+*/
+
+var trailimage=["../../cursor/bird1.gif", 32, 32] //image path, plus width and height
+var offsetfrommouse=[8,8] //image x,y offsets from cursor position in pixels. Enter 0,0 for no offset
+var displayduration=0 //duration in seconds image should remain visible. 0 for always.
+
+if (document.getElementById || document.all) {
+document.write('&lt;div id="trailimageid" style="position:absolute;z-index:5000;visibility:visible;left:0px;top:0px;width:1px;height:1px"&gt;&lt;img src="'+trailimage[0]+'" border="0" width="'+trailimage[1]+'px" height="'+trailimage[2]+'px"&gt;&lt;/div&gt;')
+}
+
+function gettrailobj(){
+if (document.getElementById)
+return document.getElementById("trailimageid").style
+else if (document.all)
+return document.all.trailimagid.style
+}
+
+function truebody(){
+return (!window.opera &amp;&amp; document.compatMode &amp;&amp; document.compatMode!="BackCompat")? document.documentElement : document.body
+}
+
+function hidetrail(){
+gettrailobj().visibility="hidden"
+document.onmousemove=""
+
+}
+
+function followmouse(e){
+var xcoord=offsetfrommouse[0]
+var ycoord=offsetfrommouse[1]
+if (typeof e != "undefined"){
+xcoord+=e.pageX
+ycoord+=e.pageY
+}
+else if (typeof window.event !="undefined"){
+xcoord+=truebody().scrollLeft+event.clientX
+ycoord+=truebody().scrollTop+event.clientY
+}
+var docwidth=(document.all? truebody().scrollLeft+truebody().clientWidth : pageXOffset+window.innerWidth-15)+32
+var docheight=document.all? Math.max(truebody().scrollHeight, truebody().clientHeight) : Math.max(document.body.offsetHeight, window.innerHeight)
+if (xcoord+trailimage[1]+3&gt;docwidth || ycoord+trailimage[2]&gt; docheight)
+gettrailobj().display="none"
+else 
+gettrailobj().display=""
+gettrailobj().left=xcoord+"px"
+gettrailobj().top=ycoord+"px"
+}
+
+document.onmousemove=followmouse
+
+if (displayduration&gt;0)
+setTimeout("hidetrail()", displayduration*1000)
+--&gt;
+&lt;/script&gt;
+&lt;div id="map" class="qE div" style="position: absolute; top: 0px; left: 0px;" jid=""/&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</jqueryui></phtml><action name="load" noRender="true" descripcion="" loadParams="" __ideNodeOpen="true">
+global $city;
+
+$_SESSION["x"]=0;
+$_SESSION["y"]=0;
+unset($_SESSION["owners"]);
+unset($_SESSION["el"]);
+require_once("../library/map.php");
+$_SESSION["owners"]=$city["ow"];
+$_SESSION["el"]=$city["el"];
+
+/*el Order By y*/
+for($i=0,$l=count($city["el"]);$i&lt;$l;$i++){
+  for($j=$i+1;$j&lt;$l;$j++){
+    if($city["el"][$i][2]&gt;$city["el"][$j][2]) {
+      $s = $city["el"][$i];
+      $city["el"][$i] = $city["el"][$j];
+      $city["el"][$j] = $s;
+    }
+  }
+}
+
+echo json_encode($city);
+</action><action name="css" noRender="false" descripcion="" loadParams="" __ideNodeOpen="true"/><phtml name="css" __ideNodeOpen="true">#map{
+  background-image:url(../../bground/floral1.jpg);
+  overflow:auto;
+  width:80%;
+  height:80%;
+}
+.su{
+  position:absolute;
+  display:inline-block;
+  width:101px;
+  height:171px;
+/*  background-position:0px -50px;*/
+  border:none;
+  margin:0px;
+  padding:0px;
+}
+.el{
+  position:absolute;
+  display:inline-block;
+  width:101px;
+  height:171px;
+  border:none;
+  margin:0px;
+  padding:0px;
+}
+.el pre{
+  margin:12px 8px;
+  font-size:10px;
+}
+h1{
+  font:inherit;
+  display:inline;
+  color:blue;
+}
+.pl{
+  position:absolute;
+  display:inline-block;
+  width:101px;
+  height:171px;
+  border:none;
+  margin:0px;
+  padding:0px;
+}
+.pl pre{
+  margin:12px 8px;
+  font-size:10px;
+}
+.acera{
+  background-image:url('../../images/Water Block.png');
+}
+&lt;?php
+  foreach(glob("images/*Block.png") as $block) {
+    $blockImg = '../../images/' . basename($block);
+    $blockName = basename($block, " Block.png");
+    print ".".$blockName."{background-image:url('".$blockImg."');}";
+  }
+  foreach(glob("images/*.png") as $block) {
+    $blockImg = '../../images/' . basename($block);
+    $blockName = basename($block, ".png");
+    $blockName = str_replace(" ", "", $blockName);
+    print ".".$blockName."{background-image:url('".$blockImg."');}";
+  }
+/*  foreach(glob("images/*Tall.png") as $block) {
+    $blockImg = '../../images/' . basename($block);
+    $blockName = basename($block, " Tall.png")."Tall";
+    print ".".$blockName."{background-image:url('".$blockImg."');}";
+  }*/
+?&gt;</phtml><action name="find" noRender="true" descripcion="" loadParams="$xd,$yd" __ideNodeOpen="true">
+
+require_once("../library/map.php");
+$o = new mapfinder();
+$res = $o-&gt;find($xd,$yd);
+if($res) {$_SESSION["x"]=$xd;$_SESSION["y"]=$yd;}
+echo json_encode($res);
+</action><action name="buy" noRender="true" descripcion="" loadParams="" __ideNodeOpen="true">
+
+$x=$_SESSION["x"];
+$y=$_SESSION["y"];
+$_SESSION["owners"]["p1"]["$x,$y"]="p1";
+//Remove el
+foreach($_SESSION["el"] as $i=&gt;$e){
+  list($cla,$id,$code)=explode("#",$e[0]);
+  if(($cla=="Letrero")&amp;&amp;($e[1]==$x)&amp;&amp;($e[2]==$y)){
+    unset($_SESSION["el"][$i]);
+    echo 'removeEl('.$x.','.$y.')';
+    break;
+  }
+}
+</action></controller><file name="html/js/core.js" preprocess="" __ideNodeOpen="true">/* Helper function, used below.*/
+/* Usage: ['img1.jpg','img2.jpg'].remove('img1.jpg');*/
+
+Array.prototype.remove = function(element) {
+  for (var i = 0; i &lt; this.length; i++) {
+    if (this[i] == element) { this.splice(i,1); }
+  }
+};
+
+// Usage: $(['img1.jpg','img2.jpg']).preloadImages(function(){ ... });
+// Callback function gets called after all images are preloaded
+$.fn.preloadImages = function(callback) {
+  checklist = this.toArray();
+  this.each(function() {
+    $('&lt;img&gt;').attr({ src: '../../images/'+this }).load(function() {
+      $("#progress").html(''+this.src);
+      checklist.remove($(this).attr('src'));
+      if (checklist.length == 0) { callback(); }
+    });
+  });
+};
+var bw=101,bw1=100+1,bh=171,bh1=80,bhz=40;
+$.fn.drawMap=function(map, baseCla, defaultZ){
+  //class#id,x,y,w,h,z,zh,txt
+  for (var i = 0, l = map.length; i &lt; l; i++) {
+    var cla = map[i][0].split("#");
+    var id=cla[1];
+    var code=cla[2];
+    cla=cla[0];
+    var x = map[i][1]*bw1;
+    var y = map[i][2]*bh1;
+    var w = map[i][3]?map[i][3]:1;
+    var h = map[i][4]?map[i][4]:1;
+    var z = (map[i][5]?map[i][5]:defaultZ)*bhz+50;
+    var zh = (map[i][6]?map[i][6]:1);
+    y = y - z;
+    for(var zi=zh-1;zi&gt;=0;zi--) for(var hi=0;hi&lt;h;hi++) {
+      dina(map,i,code);
+      this.append('&lt;span'+(id?(' id="'+id+'"'):'')+' class="'+baseCla+' '+cla+'" position="'+map[i][1]+'_'+map[i][2]+'" style="left:'+(x)+';top:'+(y+hi*bh1+zi*bhz)+';width:'+(bw1*w)+';z-index:'+(1000+(map[i][2]))+';" '+(window.TXT?('&gt;&lt;pre&gt;'+window.TXT+'&lt;/pre&gt;&lt;/span&gt;'):'/&gt;'));
+      dina2(map,i,code,this[0].lastChild);
+    }
+  }
+}
+$.fn.map=function(options){
+  var $this = this;
+  var settings = $.extend( {
+    'url'         : 'load',
+    'data'        : {city:"smallcity"},
+    type          : 'get',
+    dataType      : 'json',
+    success       : function(res){
+      $this.drawMap(res.su, "su", 0);
+      $this.drawMap(res.el, "el", 1);
+      $this.drawMap(res.pl, "pl", 1);
+      $("#me").append('&lt;span style="display:block;position:absolute;width:50%;height:4px;right:0px;top:50%;" /&gt;');
+      $("#me span").CreateBubblePopup({
+        align: 'right',manageMouseEvents:true,
+        innerHtml: '',
+        innerHtmlStyle:{ 
+            color:'#666666', 
+            'text-align':'left'
+          },
+        themeName: 	'azure',
+        themePath: 	'../../jquerybubblepopup-themes'
+      }, false);
+      $("#me span").FreezeBubblePopup();
+    }
+  }, options);
+  $.ajax(settings);
+  this.click(function(e){
+    if(window.moving) return;
+    $('#me').show();
+    var xd=Math.floor((e.pageX+$(this).scrollLeft())/bw1), yd=Math.floor((e.pageY+$(this).scrollTop())/bh1);
+    $("#me span").HideBubblePopup();
+    $.ajax({url:"find",data:{xd:xd,yd:yd},
+      dataType:"json",
+      success:function(data){
+        var res = data.res;
+        var i=0;
+        if(res &amp;&amp; !window.moving) {
+          window.moving=true;
+          if($.browser.msie) document.body.style.cursor="all-scroll";
+          else document.body.style.cursor="none";
+          var $map=$("#map"),rightMargin=$map.width()*0.7,leftMargin=$map.width()*0.3;
+          var bottomMargin=$map.height()*0.6,topMargin=$map.height()*0.4;
+          var inter = setInterval(function(){
+            var p=res.shift();
+            if(!p) {
+              //end of move
+              clearInterval(inter);
+              window.moving=false;
+              document.body.style.cursor="auto";
+              if(data.js) eval(data.js);
+              if(data.actions) {
+                $("#me span").ShowBubblePopup({
+                  align: 'right',manageMouseEvents:true,
+                  innerHtml: data.actions,
+                  innerHtmlStyle:{ 
+                      color:'#666666', 
+                      'text-align':'left'
+                    },
+                  themeName: 	'azure',
+                  themePath: 	'../../jquerybubblepopup-themes'
+                });
+                $("#me span").FreezeBubblePopup();
+              }
+              return;
+            }
+            var x=p[0]*bw1, y=p[1]*bh1-(1*bhz+50);
+            var scrLeft=$map.scrollLeft();
+            var scrTop=$map.scrollTop();
+            if((x-scrLeft)&gt;rightMargin) $map.scrollLeft(x-rightMargin);
+            if((x-scrLeft)&lt;leftMargin) $map.scrollLeft(x-leftMargin);
+            if((y+40-scrTop)&gt;bottomMargin) $map.scrollTop(y+40-bottomMargin);
+            if((y+40-scrTop)&lt;topMargin) $map.scrollTop(y+40-topMargin);
+            $("#me").css("left",x);
+            $("#me").css("top",y);
+            $("#me").css("z-index",(1000+(p[1]-0)));
+          },100);
+        }
+      }
+    });
+  });
+}
+
+function dina(map,i,code){
+  window.TXT="";
+  window.MAP=map;
+  window.MAP_I=i;
+  function cost(cost){
+    window.TXT+="&lt;h1&gt;Cost&lt;/h1&gt;:  &lt;b&gt;"+cost+"&lt;/b&gt;"
+  }
+  function nopass(){}
+  function enter(){}
+  eval(code);
+}
+
+function dina2(map,i,code,e){
+  window.TXT="";
+  window.MAP=map;
+  window.MAP_I=i;
+  window.MAP_E=$(e);
+  function cost(){
+  }
+  function nopass(){}
+  function enter(){}
+  eval(code);
+}
+function buy(){
+  $.ajax({url:"buy",dataType:"text",success:function(res){eval(res)}});
+  $("#me span").HideBubblePopup();
+}
+function removeEl(x,y){
+  $(".el[position="+x+"_"+y+"]");
+  $(".el[position="+x+"_"+y+"]").remove();
+}</file><file name="library/map.php" preprocess="" __ideNodeOpen="true">&lt;?php
+    global $city;
+
+//type,x,y,width,height
+$city = array(
+  "su" =&gt; array(
+/*    array("Stone",0,0,20,1,0,2),
+    array("Stone",0,1,15,2,-2,1),
+    array("Stone",0,1,5,2,-1,1),
+    array("Water",5,1,5,2,-1),
+    array("Plain",0,1,1,1),
+    array("Plain",1,1,1,1),
+    array("Stone",0,2,1,1),
+    array("Stone",1,2,1,1),
+    array("RampEast",2,1,1,1),
+    array("Stone",2,2,1,1,-1),*/
+
+<cuadra x="0" y="0" w="13" h="5"/>    array("Stone",0,5,13,1),
+
+  ),
+  "el" =&gt; array(
+    array("TreeTall",10,2),
+    array("House",5,3),
+    array("TreeTall",6,2),
+    array("TreeTall",6,1),
+    array("TreeTall",10,4),
+    array("TreeTall",6,4,3),
+  ),
+  "pl" =&gt; array(
+    array("CharacterBoy#me",$_SESSION["x"],$_SESSION["y"]),
+  ),
+);
+
+
+class mapfinder {
+  function find($xd, $yd){
+    global $city;
+    $map=array();
+    //Busca suelo caminable
+    foreach($city["su"] as $e){
+      if($e[0]=="Plain"){
+        for($x=$e[1];$x&lt;$e[1]+$e[3];$x++){
+          for($y=$e[2];$y&lt;$e[2]+$e[4];$y++){
+            if(!isset($map[$x])) $map[$x] = array();
+            $map[$x][$y]=1;
+          }
+        }
+      }
+    }
+    //Remueve objetos q bloqueen el paso
+    foreach($city["el"] as $e){
+      if($e[0]){
+        $w=$e[3]?$e[3]:1;
+        $h=$e[4]?$e[4]:1;
+        for($x=$e[1];$x&lt;$e[1]+$w;$x++){
+          for($y=$e[2];$y&lt;$e[2]+$h;$y++){
+            if(!isset($map[$x])) $map[$x] = array();
+            $map[$x][$y]=0;
+          }
+        }
+      }
+    }
+    $this-&gt;map=$map;
+    $this-&gt;xd=$xd;
+    $this-&gt;yd=$yd;
+    $this-&gt;min = 50;
+    $ruta = $this-&gt;find0($_SESSION["x"], $_SESSION["y"], array());
+    return $ruta;
+  }
+  function find0($x, $y, $d){
+    if(count($d)&gt;$this-&gt;min) return null;
+    $dd=array();
+    unset($this-&gt;map[$x][$y]);
+    if(($x==$this-&gt;xd)&amp;&amp;($y==$this-&gt;yd)) {$this-&gt;min=count($d);return $d;}
+    if(@$this-&gt;map[$x+1][$y]) {$ds=$d;$ds[]=array($x+1,$y);$dd[]=$this-&gt;find0($x+1,$y,$ds);}
+    if(@$this-&gt;map[$x-1][$y]) {$ds=$d;$ds[]=array($x-1,$y);$dd[]=$this-&gt;find0($x-1,$y,$ds);}
+    if(@$this-&gt;map[$x][$y+1]) {$ds=$d;$ds[]=array($x,$y+1);$dd[]=$this-&gt;find0($x,$y+1,$ds);}
+    if(@$this-&gt;map[$x][$y-1]) {$ds=$d;$ds[]=array($x,$y-1);$dd[]=$this-&gt;find0($x,$y-1,$ds);}
+    $min = -1; $minimo = null;
+    foreach($dd as $ddi)if($ddi){
+      if(($min==-1)||(count($ddi)&lt;$min)) {$minimo = $ddi;$min = count($ddi);}
+    }
+    return $minimo;
+  }
+}
+</file><file name="library/map.php" preprocess="" __ideNodeOpen="true">&lt;?php
+    global $city;
+//type,x,y,width,height
+
+
+
+<txtmap __ideNodeOpen="true">P|Plain
+H|Plain,House##nopass();enter();
+G|Grass
+T|Grass,TreeTall
+$|Plain,Letrero##cost(50);
+--
+p1|3,0;6,0
+--
+P  H  H  H  H  H  T T T T T
+PPPPPPPPPPPPPPPPPPPPPPPPPPPP
+P                         P
+P                         PP
+P                         P
+P P $ P P P P P P P P P P PP
+PPPPPPPPPPPPPPPPPPPPPPPPPPP
+  P         P       P
+ PP         P P P P PP
+  P P P P P PPPPPPPPP
+ PPPPPPPPPPPP    P
+       P         P
+      PP P P P P PP
+       PPPPPPPPPPP
+</txtmap>
+$city["pl"] = array(
+    array("CharacterBoy#me",$_SESSION["x"],$_SESSION["y"]),
+  );
+if(isset($_SESSION["owners"])) $city["ow"]=$_SESSION["owners"];
+if(isset($_SESSION["el"])) $city["el"]=$_SESSION["el"];
+
+
+class mapfinder {
+  function find($xd, $yd){
+    global $city;
+    $map=array();
+    $GLOBALS["MAP"]=&amp;$map;
+    //Busca suelo caminable
+    foreach($city["su"] as $e){
+      if($e[0]=="Plain"){
+        $w=$e[3]?$e[3]:1;
+        $h=$e[4]?$e[4]:1;
+        for($x=$e[1];$x&lt;$e[1]+$w;$x++){
+          for($y=$e[2];$y&lt;$e[2]+$h;$y++){
+            if(!isset($map[$x])) $map[$x] = array();
+            $map[$x][$y]=array("d"=&gt;10000);
+            if(array_search("$x,$y",$city["ow"]["p1"])!==false){
+              $map[$x][$y]["owner"]="p1";
+            }
+          }
+        }
+      }
+    }
+    //Remueve objetos q bloqueen el paso
+    foreach($city["el"] as $e){
+      if($e[0]){
+        $w=$e[3]?$e[3]:1;
+        $h=$e[4]?$e[4]:1;
+        for($x=$e[1];$x&lt;$e[1]+$w;$x++){
+          for($y=$e[2];$y&lt;$e[2]+$h;$y++){
+            if(!isset($map[$x])) $map[$x] = array();
+            list($class,$id,$code)=explode("#",$e[0]);
+            $GLOBALS["MAP_X"]=$x;
+            $GLOBALS["MAP_Y"]=$y;
+            if($code)eval($code.";");
+          }
+        }
+      }
+    }
+    $this-&gt;map=$map;
+    $this-&gt;xd=$xd;
+    $this-&gt;yd=$yd;
+    $this-&gt;min = 50;
+    if($this-&gt;map[$xd][$yd]) {
+      $actions = $this-&gt;map[$xd][$yd]["actions"];
+      if($this-&gt;map[$xd][$yd]["owner"]=="p1"){
+        $actions.=&lt;&lt;&lt;EOF
+&lt;button onclick='build()'&gt;Construir&lt;/button&gt;
+EOF;
+      }
+      $js = $this-&gt;map[$xd][$yd]["js"];
+      $ruta = $this-&gt;find0($_SESSION["x"], $_SESSION["y"], array());
+      return array("res"=&gt;$ruta,"actions"=&gt;$actions,"js"=&gt;$js);
+    }
+  }
+  function find0($x, $y, $d){
+    $cnt = count($d);
+    if($cnt&gt;$this-&gt;min) return null;
+    $dd=array();
+    $this-&gt;map[$x][$y]["d"]=$cnt;
+    if(($x==$this-&gt;xd)&amp;&amp;($y==$this-&gt;yd)) {$this-&gt;min=count($d);return $d;}
+    if(@$this-&gt;map[$x+1][$y] &amp;&amp; ($this-&gt;map[$x+1][$y]["d"]&gt;$cnt)) {$ds=$d;$ds[]=array($x+1,$y);$dd[]=$this-&gt;find0($x+1,$y,$ds);}
+    if(@$this-&gt;map[$x-1][$y] &amp;&amp; ($this-&gt;map[$x-1][$y]["d"]&gt;$cnt)) {$ds=$d;$ds[]=array($x-1,$y);$dd[]=$this-&gt;find0($x-1,$y,$ds);}
+    if(@$this-&gt;map[$x][$y+1] &amp;&amp; ($this-&gt;map[$x][$y+1]["d"]&gt;$cnt)) {$ds=$d;$ds[]=array($x,$y+1);$dd[]=$this-&gt;find0($x,$y+1,$ds);}
+    if(@$this-&gt;map[$x][$y-1] &amp;&amp; ($this-&gt;map[$x][$y-1]["d"]&gt;$cnt)) {$ds=$d;$ds[]=array($x,$y-1);$dd[]=$this-&gt;find0($x,$y-1,$ds);}
+    $min = -1; $minimo = null;
+    foreach($dd as $ddi)if($ddi){
+      if(($min==-1)||(count($ddi)&lt;$min)) {$minimo = $ddi;$min = count($ddi);}
+    }
+    return $minimo;
+  }
+}
+
+function cost(){
+  $GLOBALS["MAP"][$GLOBALS["MAP_X"]][$GLOBALS["MAP_Y"]]["actions"]=&lt;&lt;&lt;EOF
+&lt;button onclick='buy()'&gt;Comprar&lt;/button&gt;
+EOF;
+}
+
+function nopass(){
+  if(@$GLOBALS["MAP"][$GLOBALS["MAP_X"]][$GLOBALS["MAP_Y"]]["owner"]!="p1") {
+    unset($GLOBALS["MAP"][$GLOBALS["MAP_X"]][$GLOBALS["MAP_Y"]]);
+  }
+}
+
+function enter(){
+  $GLOBALS["MAP"][$GLOBALS["MAP_X"]][$GLOBALS["MAP_Y"]]["js"]=&lt;&lt;&lt;EOF
+$('#me').hide();
+EOF;
+}
+</file></application></root>

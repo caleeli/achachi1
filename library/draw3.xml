@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root __ideNodeOpen="true"><component name="draw3" transparent=""><file name="@{$target/*./*/}draw3.js" preprocess="" __ideNodeOpen="true">/**
+ * Draw3
+ */
+function draw3(dest,content,beforeOf){
+  var d=draw3.create([content],dest);
+  for(var i=0,l=d.length;i&lt;l;i++){
+    if(beforeOf) dest.insertBefore(d[i],beforeOf);
+    else dest.appendChild(d[i]);
+  }
+  return d;
+}
+/**
+ * Returns an Array of DOMNodes
+ */
+draw3.create=function(arr,dest0){
+  var dest=dest0;
+  var document=dest &amp;&amp; dest.ownerDocument?dest.ownerDocument:window.document;
+  var t,d=[];
+  var modeCreate=!(arr.length==1 &amp;&amp; this.getType(arr[0])=="String");
+  for(var i=0,l=arr.length;i&lt;l;i++){
+    t=this.getType(arr[i]);
+    if(t=="String" &amp;&amp; modeCreate){
+      if(arr[i]=="#text") {
+        if(this.getType(arr[i+1])=="String") dest=document.createTextNode(arr[i=i+1]);
+        if(this.getType(arr[i+2])=="String") dest=document.createTextNode(arr[i=i+2]);
+        d.push(dest);
+      }
+      else if(arr[i]=="#comment") {
+        if(this.getType(arr[i+1])=="String") dest=document.createComment(arr[i=i+1]);
+        if(this.getType(arr[i+2])=="String") dest=document.createComment(arr[i=i+2]);
+        d.push(dest);
+      }
+      else {
+        //The next String will be a TextNode
+        modeCreate=false;
+        var dest=document.createElement(arr[i]);
+        if(arr[i]=="style") dest.setAttribute("type", "text/css");
+        d.push(dest);
+      }
+    }
+    else if(t=="String" &amp;&amp; !modeCreate) {
+      dest=dest.appendChild(document.createTextNode(arr[i]));
+      modeCreate=true;
+    }
+    else if(t=="Node") {
+      //If Node is owned by a different Document it will be imported.
+      if(document===arr[i].ownerDocument) o=arr[i]; 
+      else o=this.create(this.reverse(arr[i]),dest);
+      if(modeCreate) d.push(o); else dest.appendChild(o);
+      dest=o;
+      modeCreate=true;
+    }
+    else if(t=="NodeList") {
+      var dest1=[];
+      for(var j=0,k=arr[i].length;j&lt;k;j++) {
+        //If Node is owned by a different Document it will be imported.
+        if(document===arr[i].item(j).ownerDocument) o=arr[i].item(j); 
+        else o=this.create(this.reverse(arr[i].item(j)),dest);
+        if(modeCreate) d.push(o); else dest.appendChild(o);
+        dest1.push(o);
+      }
+      dest=dest1;
+      dest1=null;
+      modeCreate=true;
+    }
+    else if(t=="Object") {
+      this.setAttributes(dest,arr[i]);
+    }
+    else if(t=="Array") {
+      if(modeCreate) d=d.concat(dest=this.create(arr[i],dest0));
+      else dest=draw3(dest,arr[i]);
+      modeCreate=true;
+    }
+  }
+  return d;
+}
+/**
+ * Set attributes of a DOMElement(o)
+ */
+draw3.setAttributes=function(o,atts){
+  if(this.getType(o)=="Array" || this.getType(o)=="NodeList") {
+    console.debug(o);
+    for(var i=0,l=o.length;i&lt;l;i++) {
+      console.debug(o[i]);
+      this.setAttributes(o[i],atts);
+    }
+    return;
+  }
+  for(a in atts){
+    if(a=="class") o.className=atts[a];
+    else if(typeof(atts[a])=="function") o[a]=atts[a];
+    else if(a=="style") {
+      var splitted = atts[a].split(';');
+      for (var i=0, len=splitted.length; i&lt;len; i++) {
+        var s=splitted[i].split(':');
+        if(s.length&gt;0){
+          for(var exp=/-([a-z])/; exp.test(s[0]); 
+             s[0]=s[0].replace(exp,RegExp.$1.toUpperCase())){};
+          if(s[0])eval("o.style."+s[0]+"='"+s[1]+"'");
+        }
+      }
+    }
+    else {
+      if(typeof(o.setAttribute)!="undefined") o.setAttribute(a,atts[a]);
+    }
+  }
+}
+/**
+ * Return the class of an Object(o)
+ */
+draw3.getType=function(o){
+  if(typeof(o)=="string") return "String";
+  if(o instanceof jQuery) return "Array";
+  if ( typeof Node === "object" ? o instanceof Node : 
+    typeof o === "object" &amp;&amp; typeof o.nodeType === "number" &amp;&amp; typeof o.nodeName==="string"
+  ) return "Node";
+  if (typeof o === "object" 
+    &amp;&amp; typeof o.length == 'number' 
+    &amp;&amp; typeof o.item == 'function'
+    &amp;&amp; typeof o.nextNode == 'function'
+    &amp;&amp; typeof o.reset == 'function'
+  ) return "NodeList";
+  return Object.prototype.toString.call(o).split(" ")[1].split("]")[0];
+}
+/**
+ * Convert DOM Node to a draw3 Array
+ */
+draw3.reverse=function(dom){
+  var r=[];
+  if(this.getType(dom)=="Node"){
+    var atts={},chs=[];
+    if(dom.attributes){
+      for(var i=0,l=dom.attributes.length;i&lt;l;i++){
+        atts[dom.attributes[i].nodeName]=dom.attributes[i].nodeValue;
+      }
+    }
+    if(dom.childNodes){
+      chs=chs.concat(this.reverse(dom.childNodes));
+    }
+    r.push(dom.nodeName,atts,chs);
+  } else if(this.getType(dom)=="NodeList"){
+    for(var j=0,k=dom.length;j&lt;k;j++) r=r.concat(this.reverse(dom.item(j)));
+  }
+  return r;
+}
+
+</file></component><component name="newComponent" transparent="">/** DRAW3 */
+function draw3(dest,a,beforeOf){
+  var bBeforeOf=beforeOf?true:false;
+  for(var i=0,l=a.length;i&lt;l;i+=3){
+    if(bBeforeOf) dest.insertBefore(drawCreate(a[i],a[i+1],a[i+2]),beforeOf);
+    else dest.appendChild(drawCreate(a[i],a[i+1],a[i+2]));
+  }
+}
+//This was used for capture style attrbiutes used in draw3
+function drawCreate(tag,atts,cnt){
+  var a;
+  if(tag=="#text") return document.createTextNode(cnt);
+  var o=document.createElement(tag);
+  if(tag=="style") o.setAttribute("type", "text/css"); 
+  for(a in atts){
+    var k=(atts["class"]?atts["class"]:"")+":"+atts[a];
+    if(a=="class") o.className=atts[a];
+    else if(typeof(atts[a])=="function") o[a]=atts[a];
+    else if((a=="style") &amp;&amp; ('\v'=='v')) {
+      //setAttributeStyle for IE
+      _setStyle(o,atts[a]);
+    }
+    else o.setAttribute(a,atts[a]);
+  }
+  if(typeof(cnt)=="string")
+    if(tag=="style"){
+      try{
+        o.innerHTML=cnt;
+      } catch (e) {
+        o.styleSheet.cssText=cnt;
+      }
+    }
+    else
+      o.appendChild(document.createTextNode(cnt));
+  else
+    for(var i=0,l=cnt.length;i&lt;l;i+=3){
+      o.appendChild(drawCreate(cnt[i],cnt[i+1],cnt[i+2]));
+    }
+  if(o.oncreate)o.oncreate();
+  return o;
+}
+//setAttribute('style','') for IE
+function rzCC(s){
+ for(var exp=/-([a-z])/; 
+     exp.test(s); 
+     s=s.replace(exp,RegExp.$1.toUpperCase())){};
+ return s;
+}
+function _setStyle(element, declaration) {
+ if (declaration.charAt(declaration.length-1)==';')
+   declaration = declaration.slice(0, -1);
+ var k, v;
+ var splitted = declaration.split(';');
+ for (var i=0, len=splitted.length; i&lt;len; i++) {
+    k = rzCC(splitted[i].split(':')[0]);
+    v = splitted[i].split(':')[1];
+    if(k)eval("element.style."+k+"='"+v+"'");
+ }
+}
+</component></root>

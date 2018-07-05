@@ -1,0 +1,387 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root><path path="output/mychat" main="output/mychat/index.php"><file name="index.php" preprocess="">&lt;html&gt;
+&lt;head&gt;
+&lt;script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.0/jquery.min.js"&gt;&lt;/script&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;script&gt;
+var abiertos={};
+function showWindow(to){
+  if(abiertos[to]){
+    abiertos[to].chatTo(to);
+    return;
+  }
+  var win;
+  if(!to) to = "";
+  var inter,wy,wx;
+  wy=50;
+  wx=(screen.width-400);
+  win=window.open("chat.php"+(to?("?to="+encodeURIComponent(to)):""),"chat"+(to?("_"+to):""),"alwaysRaised=yes,width=400,height="+(wy)+",top="+(screen.height-wy)+",left="+wx+",title="+username);
+  inter=setInterval(function(){
+    wy+=50;
+    if(wy&gt;=400){
+      wy=400;
+      clearInterval(inter);
+    }
+    win.resizeTo(400,wy);
+    win.moveTo(wx,(screen.height-wy));
+    win.focus();
+  },10);
+  if(to) abiertos[to]=win; else abiertos["___main___"]=win;
+}
+function getNotifications(){
+  $.ajax({
+    url:"server.php/notifications",
+    data:{
+    },
+    dataType:"text",
+    success:function(code){
+      eval(code);
+    }
+  });
+}
+function refreshOnline(){
+  login(username);
+  for(var i in abiertos){
+    if(abiertos[i] &amp;&amp; abiertos[i].username){
+      abiertos[i].login(abiertos[i].username);
+    }
+  }
+}
+function login(name){
+  $.ajax({
+    url:"server.php/login",
+    data:{
+      name:name
+    },
+    dataType:"json",
+    success:function(data){
+      setOnline(data);
+    }
+  });
+}
+function setOnline(online){
+  var $online = $("#online");
+  $online.html("");
+  for(var i=0,l=online.length;i&lt;l;i++) {
+    $online.append("&lt;div&gt;&lt;a href='javascript:showWindow(\""+online[i]+"\")'&gt;&lt;img src='/blueprint/blueprint/plugins/link-icons/icons/im.png' /&gt;"+online[i]+"&lt;/a&gt;&lt;/div&gt;");
+  }
+}
+
+&lt;?php
+session_start();
+if($_GET["username"]) {
+  $_SESSION["username"] = $_GET["username"];
+?&gt;
+var username=&lt;?= json_encode($_SESSION["username"]) ?&gt;;
+login(username);
+window.intervalo = setInterval(getNotifications,5000);
+&lt;?php
+}
+?&gt;
+&lt;/script&gt;
+&lt;form method="GET"&gt;
+Usuario: &lt;input name="username" /&gt;
+&lt;button type="submit"&gt;Login&lt;/button&gt;
+&lt;/form&gt;
+  		&lt;div style="border:1px solid black;height:160px"&gt;
+                  &lt;div class="title"&gt;En linea:&lt;/div&gt;
+                  &lt;div id="online"&gt;&lt;/div&gt;
+                &lt;/div&gt;
+&lt;/body&gt;
+&lt;/html&gt;</file><file name="chat.php" preprocess="">&lt;html&gt;
+&lt;head&gt;
+&lt;meta content="text/html;charset=utf-8" http-equiv="Content-Type"&gt;
+&lt;script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.0/jquery.min.js"&gt;&lt;/script&gt;
+&lt;style&gt;
+body,html{
+  margin:0px;
+  padding:0px;
+}
+textarea{
+  border:none;
+  width:100%;
+  height:100%;
+}
+.block1{
+  display:inline-block;
+  width:25%;
+}
+.block2{
+  display:inline-block;
+  width:50%;
+}
+.block3{
+  display:inline-block;
+  width:75%;
+}
+.block4{
+  display:inline-block;
+  width:10%;
+}
+&lt;/style&gt;
+&lt;script&gt;
+function login(name){
+  $.ajax({
+    url:"server.php/login",
+    data:{
+      name:name
+    },
+    dataType:"json",
+    success:function(data){
+      setOnline(data);
+    }
+  });
+}
+function setOnline(online){
+  $("#online").html("");
+  for(var i=0,l=online.length;i&lt;l;i++) {
+    $("#online").append("&lt;div&gt;"+online[i]+"&lt;/div&gt;");
+  }
+}
+$(function(){
+  login(window.name);
+  $("#texto").keypress(function(e){
+    if(e.keyCode==13 &amp;&amp; !e.shiftKey){
+      $.ajax({
+        url:"server.php/send",
+        data:{
+          name:window.name,
+          msg:$("#texto")[0].value
+        }
+      });
+    }
+  });
+});
+&lt;/script&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;div&gt;
+&lt;span class="block3" style="height:200px"&gt;
+&lt;div style="border:1px solid black;height:100%"&gt;
+En linea:
+&lt;div id="mensajes"&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/span&gt;&lt;span class="block1" style="height:200px"&gt;
+&lt;div style="border:1px solid black;height:100%"&gt;
+En linea:
+&lt;div id="online"&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/span&gt;
+&lt;/div&gt;
+&lt;span class="block3" style="height:100px"&gt;
+&lt;div style="border:1px solid black;height:100%"&gt;
+&lt;textarea id="texto"&gt;&lt;/textarea&gt;
+&lt;/div&gt;
+&lt;/span&gt;&lt;span class="block1" style="height:100px"&gt;
+&lt;div style="border:1px solid black;height:100%"&gt;
+&lt;textarea disabled="disabled"&gt;&lt;/textarea&gt;
+&lt;/div&gt;
+&lt;/span&gt;
+&lt;/body&gt;
+&lt;/html&gt;</file><file name="server.php" preprocess="">&lt;?php
+session_start();
+if(!isset($GLOBALS["server"]))$GLOBALS["server"]=array();
+class server {
+  function get($name){
+    if(isset($GLOBALS["server"][$name])) return $GLOBALS["server"][$name];
+    if(file_exists("data/$name")) {
+      return unserialize(file_get_contents("data/$name"));
+    }
+  }
+  function put($name,$data){
+    $GLOBALS["server"][$name]=$data;
+    file_put_contents("data/$name",serialize($data));
+  }
+}
+
+class chatServer {
+  function login($name){
+    $_SESSION["username"] = $name;
+    $online = server::get("online");
+    $notif_online = server::get("notif_online");
+    if(array_search($name, $online)===false) {
+      foreach($online as $n){
+        $notif_online[$n]=true;
+      }
+      server::put("notif_online",$notif_online);
+      $online[]=$name;
+    }
+    server::put("online",$online);
+    $i=array_search($name, $online);
+    array_splice($online, $i,1);
+    return $online;
+  }
+  function getOnlineUsers(){
+    return server::get("online");
+  }
+  function chatTo($name){
+    if(!isset($_SESSION["username"])) return;
+    $id = chatServer::getchatid($_SESSION["username"], $name);
+    $chat = server::get($id);
+    if(!isset($chat))$chat=array();
+    return $chat;
+  }
+  function send($msg,$to){
+    if(!isset($_SESSION["username"])) return;
+    $id = chatServer::getchatid($_SESSION["username"], $to);
+    $chat = server::get($id);
+    if(!isset($chat))$chat=array();
+    $c = array("n"=&gt;$_SESSION["username"], "c"=&gt;htmlentities($msg,ENT_NOQUOTES,'utf-8'));
+    $chat[] = $c;
+    $notifications = server::get("notifications");
+    if(!isset($notifications[$to])) $notifications[$to] = array();
+    if(array_search($_SESSION["username"], $notifications[$to])===false)$notifications[$to][]=$_SESSION["username"];
+    server::put("notifications", $notifications);
+    server::put($id, $chat);
+    return array($c);
+  }
+  function getchatid($a,$b){
+    if($a&lt;$b) return "chat_".md5("$a$b"); else return "chat_".md5("$b$a");
+  }
+  function notifications(){
+    $notifications = server::get("notifications");
+    $notif_online = server::get("notif_online");
+    if(isset($notifications[$_SESSION["username"]])) {
+      foreach($notifications[$_SESSION["username"]] as $n){
+        echo 'showWindow('.json_encode($n).');';
+      }
+      if($notif_online[$_SESSION["username"]]){
+        unset($notif_online[$_SESSION["username"]]);
+        echo 'refreshOnline();';
+      }
+      $notifications[$_SESSION["username"]]=array();
+      server::put("notifications", $notifications);
+      server::put("notif_online", $notif_online);
+    }
+    exit;
+  }
+}
+if(!EMPTY($_SERVER["PATH_INFO"])) {
+  $f=SUBSTR($_SERVER["PATH_INFO"],1);
+  $v = call_user_func_array(array("chatServer", $f), $_GET);
+  echo json_encode($v);
+}
+</file><file name="data/online" preprocess="">a:0:{}</file><file name="chat.php" preprocess="">&lt;?php
+session_start();
+?&gt;
+&lt;html&gt;
+&lt;head&gt;
+&lt;title&gt;&lt;?=$_GET["to"]?$_GET["to"]:"****"?&gt;&lt;/title&gt;
+&lt;meta content="text/html;charset=utf-8" http-equiv="Content-Type"&gt;
+&lt;script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.0/jquery.min.js"&gt;&lt;/script&gt;
+&lt;link rel="stylesheet" href="/blueprint/blueprint/screen.css" type="text/css" media="screen, projection"&gt;
+&lt;style&gt;
+textarea{
+  border:none;
+  width:100%;
+}
+.title{
+  background-color:black;
+  color:white;
+}
+&lt;/style&gt;
+&lt;script&gt;
+var username=&lt;?=json_encode($_SESSION["username"])?&gt;;
+var usernameTo=&lt;?=json_encode($_GET["to"])?&gt;;
+
+function login(name){
+  $.ajax({
+    url:"server.php/login",
+    data:{
+      name:name
+    },
+    dataType:"json",
+    success:function(data){
+      setOnline(data);
+    }
+  });
+}
+function chatTo(name){
+  window.usernameTo=name;
+  $.ajax({
+    url:"server.php/chatTo",
+    data:{
+      to:name
+    },
+    dataType:"json",
+    success:function(data){
+      setConversation(data);
+    }
+  });
+}
+function openChatTo(name){
+  opener.showWindow(name);
+  if(!usernameTo) close();
+}
+function setOnline(online){
+  var $online = $("#online");
+  $online.html("");
+  for(var i=0,l=online.length;i&lt;l;i++) {
+//    $online.append("&lt;div&gt;&lt;a href='javascript:chatTo(\""+online[i]+"\")'&gt;&lt;img src='/blueprint/blueprint/plugins/link-icons/icons/im.png' /&gt;"+online[i]+"&lt;/a&gt;&lt;/div&gt;");
+//    $online.append("&lt;div&gt;&lt;a href='?to="+encodeURIComponent(online[i])+"'&gt;&lt;img src='/blueprint/blueprint/plugins/link-icons/icons/im.png' /&gt;"+online[i]+"&lt;/a&gt;&lt;/div&gt;");
+    $online.append("&lt;div&gt;&lt;a href='javascript:openChatTo(\""+online[i]+"\")'&gt;&lt;img src='/blueprint/blueprint/plugins/link-icons/icons/im.png' /&gt;"+online[i]+"&lt;/a&gt;&lt;/div&gt;");
+  }
+}
+function setConversation(chat){
+  var $chat=$("#chat");
+  $chat.html("");
+  for(var i=0,l=chat.length;i&lt;l;i++) {
+    $chat.append("&lt;div&gt;&lt;b&gt;"+chat[i].n+":&lt;/b&gt;"+chat[i].c+"&lt;/div&gt;");
+  }
+  $chat.scrollTop(50000);
+}
+function addConversation(chat){
+  var $chat=$("#chat");
+  for(var i=0,l=chat.length;i&lt;l;i++) {
+    $chat.append("&lt;div&gt;&lt;b&gt;"+chat[i].n+":&lt;/b&gt;"+chat[i].c+"&lt;/div&gt;");
+  }
+  $chat.scrollTop(50000);
+}
+function send(){
+  if(!window.usernameTo) return;
+  $.ajax({
+    url:"server.php/send",
+    data:{
+      msg:$("#texto")[0].value,
+      to:window.usernameTo
+    },
+    dataType:"json",
+    success:function(data){
+      $("#texto")[0].value="";
+      addConversation(data);
+    }
+  });
+}
+$(function(){
+  login(window.username);
+  if(usernameTo)chatTo(usernameTo);
+  $("#texto").keypress(function(e){
+    if(e.keyCode==13 &amp;&amp; !e.shiftKey){
+      send();
+    }
+  });
+});
+&lt;/script&gt;
+&lt;/head&gt;
+&lt;body onunload="clearInterval(window.intervalo);opener.abiertos[usernameTo]=null;"&gt;
+  &lt;div class="container"&gt;
+  	&lt;div class="span-6"&gt;
+  		&lt;div style="border:1px solid black;height:160px"&gt;
+                  &lt;div class="title"&gt;&lt;?= @$_GET["to"] ?&gt;&lt;/div&gt;
+                  &lt;div id="chat" style="overflow:auto;height:140px"&gt;&lt;/div&gt;
+                &lt;/div&gt;
+  	&lt;/div&gt;
+  	&lt;div class="span-4 append-14 last"&gt;
+  		&lt;div style="border:1px solid black;height:160px"&gt;
+                  &lt;div class="title"&gt;En linea:&lt;/div&gt;
+                  &lt;div id="online"&gt;&lt;/div&gt;
+                &lt;/div&gt;
+  	&lt;/div&gt;
+  	&lt;div class="span-6"&gt;&lt;div style="border:1px solid black;"&gt;&lt;textarea id="texto" style="height:90px"&gt;&lt;/textarea&gt;&lt;/div&gt;&lt;/div&gt;
+  	&lt;div class="span-4 last"&gt;
+  		&lt;button type="button" onclick="send()" style="width:100%;height:90px;"&gt;Enviar&lt;/button&gt;
+  	&lt;/div&gt;
+  &lt;/div&gt;
+&lt;/body&gt;
+&lt;/html&gt;</file></path></root>

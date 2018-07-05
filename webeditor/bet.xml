@@ -1,0 +1,943 @@
+<?xml version="1.0" encoding="UTF-8"?><root __ideNodeOpen="true"><package name="components" type="" __ideNodeOpen="true"><php __ideNodeOpen="true">
+function procesaTipo($fields,$names,$defaults=array()){
+	$res = array();
+	$fields=explode("\n",trim($fields));
+	foreach($fields as $f){
+        $f = trim($f);
+        if(empty($f)) continue;
+		if(count($names)&gt;0) {
+			$f = explode(",",$f);
+			$r = new StdClass();
+			foreach($names as $i=&gt;$n){
+				$r-&gt;$n=!isset($f[$i]) || $f[$i]=="" ? @$defaults[$i] : $f[$i];
+                if(@is_numeric($defaults[$i])) $r-&gt;$n = 0 + $r-&gt;$n;
+        if($r-&gt;$n==="false") $r-&gt;$n=false;
+        if($r-&gt;$n==="true") $r-&gt;$n=true;
+			}
+		} else {
+			$r=$f;
+		}
+		$res[]=$r;
+	}
+	return $res;
+}
+
+</php><component name="body" transparent="" precode="" __ideNodeOpen="true">&lt;html&gt;
+&lt;head&gt;
+&lt;meta charset="UTF-8"&gt;
+&lt;meta name="viewport" content="user-scalable=0"&gt;
+&lt;link rel="stylesheet" type="text/css" href="../style/css"&gt;
+&lt;script src="../../jquery-1.11.0.min.js" type="text/javascript"&gt;&lt;/script&gt;
+&lt;script type="text/javascript"&gt;
+  $.fn.autoHeightContent=function(){
+    var fnResize=function(){
+      var $this=$(this);
+      var $content=$this.children(".content");
+      var pos=$content.position();
+      $content.css("height",$this.height()-pos.top);
+    };
+    this.each(fnResize);
+    //this.resize(fnResize);
+  }
+  $.fn.tabpanel=function(){
+    this.each(function(){
+      var $this=$(this);
+      var $panels=$this.children(".content").children(".panel");
+      $panels.hide();
+      var current=$this.attr("panel_current")*1;
+      var $panel=$($panels[current]);
+      var $tabbar=$this.children(".tabbar");
+      $tabbar.html("&lt;tr&gt;&lt;/tr&gt;");
+      $tabbarRow=$tabbar.find("tr");
+      $panels.each(function(index){
+        $tabbarRow.append('&lt;td&gt;&lt;div onclick="var $tabpanel=$(this).parents(\'.tabpanel:first\');$tabpanel.attr(\'panel_current\','+index+');$tabpanel.tabpanel();" class="tabtitle'+(index==current?' tabactive':'')+'"&gt;'+$(this).attr("title")+'&lt;/div&gt;&lt;/td&gt;');
+      });
+      //$this.children(".title").html($panel.attr("title"));
+      $panel.show();
+
+      $this.autoHeightContent();
+      $panel.autoHeightContent();
+//      var pos=$panel.children(".content").position();
+//      $panel.children(".content").css("height",$panel.height()-pos.top);
+      //FACEBOOK
+      if(typeof facebook!="undefined") $(".facebook_connected").addClass("online");
+      $panel.hide();
+      $panel.show("fast",function(){
+        $panel.children(".title").trigger("click");
+      });
+  
+    });
+  }
+
+  $.fn.fillTable=function(data,fnFormat,align){
+    var $this=$(this);
+    var $toolbar=$this.children(".toolbar");
+    $this.html("");
+    $this.append($toolbar);
+    var first=true;
+    var $container;
+    var $header=$("&lt;table cellspacing='0' cellpadding='0' border='0' width='100%'&gt;&lt;/table&gt;");
+    $this.append($header);
+    var $container0=$("&lt;div class='content'&gt;&lt;/div&gt;");
+    $container=$("&lt;table cellspacing='0' cellpadding='0' border='0' width='100%'&gt;&lt;/table&gt;");
+    $container0.append($container);
+    $this.append($container0);
+    $this.autoHeightContent();
+    for(var i in data){
+      var $row=$("&lt;tr&gt;&lt;/tr&gt;");
+      $container.append($row);
+      for(var c in data[i]){
+        var fn=typeof fnFormat[c]=="function"?fnFormat[c]:format.text;
+        var alignCell = typeof align[c]=="undefined" ? "center" : align[c];
+        if(first){
+          $row.append("&lt;th class='grid_header' align='"+alignCell+"'&gt;"+fn(data[i][c])+"&lt;/th&gt;");
+        } else {
+          $row.append("&lt;td class='"+(i%2? 'grid_even': 'grid_odd')+"' align='"+alignCell+"'&gt;"+fn(data[i][c],data[i])+"&lt;/td&gt;");
+        }
+      }
+      first=false;
+    }
+    var h=$this.children("thead").height();
+    var $td=$container.children().find("td");
+    var $th=$container.children().find("th");
+    var thw={};
+//window.thw=thw;
+    $this.find("th").each(function(index){thw[index]=$(this).width();});
+    $this.find("th").each(function(index){this.style.width=thw[index];});
+    $container.find("tr:eq(1) td").each(function(index){this.style.width=thw[index];});
+    $header.append($container.find("tr:eq(0)"));
+    $this.css("opacity","1");
+    //console.log($container.width());
+  }
+
+  $.fn.grid=function(){
+    this.each(function(){
+      var $this=$(this);
+      $this.css("opacity","0.7");
+//      var $table=$this.children("table:first");
+      $.ajax({
+        url:$this.attr("url"),
+        type:"get",
+        success:function(res){
+          try{
+            eval(res);
+          } catch(e){
+            $this.html(e);
+            console.log(e.stack);
+          }
+        }
+      });
+    });
+  };
+
+  $.fn.fillCombo=function(data,fnFormat,align){
+    var $this=$(this);
+    $this.html("");
+    for(var i in data){
+      var option=[];
+      for(var o in data[i]){
+        option.push(data[i][o]);
+      }
+      var $option=$("&lt;option value='"+option[0]+"'&gt;"+option[1]+"&lt;/option&gt;");
+      $this.append($option);
+    }
+    $this.css("opacity","1");
+  }
+
+  $.fn.combo=function(){
+    this.each(function(){
+      var $this=$(this);
+      $this.css("opacity","0.7");
+      $.ajax({
+        url:$this.attr("url"),
+        async:false,
+        type:"get",
+        success:function(res){
+          try{
+            eval(res);
+          } catch(e){
+            $this.html(e);
+            console.log(e.stack);
+          }
+        }
+      });
+    });
+  };
+
+  $.fn.fillForm=function(data,afterLoad){
+    var $this=$(this);
+    for(var a in data){
+      try{
+        $this.find("[name="+a+"]").val(data[a]);
+      } catch(e){
+        console.log(e);
+      }
+    }
+    if(typeof afterLoad=="function") afterLoad();
+    $this.css("opacity","1");
+  };
+
+  $.fn.form=function(afterLoad){
+    this.each(function(){
+      var $this=$(this);
+      $this.css("opacity","0.7");
+      $this.find(".combo").combo();
+      $.ajax({
+        url:$this.attr("url"),
+        type:"get",
+        success:function(res){
+          try{
+            eval(res);
+          } catch(e){
+            console.log(e.stack);
+          }
+        }
+      });
+    });
+  };
+  $.fn.subpanel=function(current,afterRender){
+    this.each(function(){
+      var $this=$(this);
+      $this.attr("current", current);
+      $this.children().hide();
+      $($this.children()[current]).show("fast", afterRender);
+    });
+  }
+
+$(function(){
+  $("body").css("font-size",$("body").width()/80 + "px");
+  $(".tabpanel").tabpanel();
+  //$(".tabpanel").autoHeightContent();
+
+  //$(".panel").autoHeightContent();
+
+
+  //$(".grid").grid();
+
+  $(".form").form();
+
+});
+var format={
+  text:function(txt){
+    return txt?txt:'';
+  },
+  date1:function(sDate) {
+    var inputFormat=new Date(sDate);
+    function pad(s) { return (s &lt; 10) ? '0' + s : s; }
+    var d = new Date(inputFormat);
+    return [pad(d.getDate()), pad(d.getMonth()+1)].join('/') + ' ' + 
+           [pad(d.getHours()), pad(d.getMinutes())].join(':');
+  },
+  apostar:function(value,rec){
+console.log(rec);
+    if(rec.resultado){
+      return "&lt;button type='button' onclick='verDetalles("+(-value)+")'&gt;ver detalles&lt;/button&gt;";
+    } else {
+      return value&lt;0 ? "&lt;button type='button' onclick='verDetalles("+(-value)+")'&gt;ver detalles&lt;/button&gt;" : "&lt;button type='button' onclick='verDetalles("+(-value)+")'&gt;ver detalles&lt;/button&gt;&lt;button type='button' onclick='apostar("+value+")'&gt;apostar&lt;/button&gt;";
+    }
+  }
+};
+function apostar(value){
+  $("#maintabpanel").attr("panel_current",3);
+  $("#maintabpanel").tabpanel();
+  window.nuevaApuesta=(function(value){return function(){
+    var $apuesta=$("#apuesta");
+    var $select=$apuesta.find("[name=partido_id]");
+    $select.val(value);
+    $select.trigger("change");
+  }})(value);
+}
+function verDetalles(partidoId){
+  var $this=$("#partidodetalle");
+  $.ajax({
+    url:"partidodetalle",
+    data:{partidoId:partidoId},
+    success:function(res){
+      eval(res);
+    }
+  });
+}
+&lt;/script&gt;
+&lt;/head&gt;
+&lt;body&gt;&lt;script src="../../facebook.js" type="text/javascript"&gt;&lt;/script&gt;@{node::content($_)}&lt;/body&gt;
+&lt;/html&gt;</component><component name="tabpanel" transparent="" precode="" __ideNodeOpen="true">&lt;div id="@{$name}" class="tabpanel" panel_current="@{@$current}" title="@{$title}"&gt;
+&lt;table class="tabbar" cellspacing="1" cellpadding="0" corder="0"&gt;&lt;tr&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;div class="content"&gt;@{node::content($_nodes["items"])}&lt;/div&gt;
+&lt;/div&gt;</component><component name="panel" transparent="" precode="" __ideNodeOpen="true">&lt;div class="panel" panel_current="@{@$current}" title="@{htmlentities($title,ENT_QUOTES)}"&gt;
+&lt;div class="title" onclick="@{htmlentities($onclick,ENT_QUOTES)}"&gt;@{$title}&lt;/div&gt;
+&lt;div class="content"&gt;@{node::content($_nodes["items"])}&lt;/div&gt;
+&lt;/div&gt;</component><component name="items" transparent="" precode="" __ideNodeOpen="true">@{node::content($_)}</component><component name="toolbar" transparent="" precode="" __ideNodeOpen="true">@{node::content($_)}</component><component name="grid" transparent="" precode="" __ideNodeOpen="true">&lt;div id="@{$name}" class="grid" url="../grid/@{$name}"&gt;
+&lt;div class="toolbar"&gt;@{@node::content($_nodes["toolbar"])}&lt;/div&gt;
+&lt;table cellspacing="0" cellpadding="0" border="0"&gt;&lt;/table&gt;
+&lt;/div&gt;<file name="grid/@{$name}.php" preprocess="" __ideNodeOpen="true">&lt;?php
+try{
+  require_once("myconexion.php");
+  $query="@{$query}";
+  $query = $conexion-&gt;prepare($query);
+  $query-&gt;execute();
+  $res=array();
+  $res[]=@{var_export(explode(",", $headers),true)};
+  while($r=$query-&gt;fetch(PDO::FETCH_OBJ)){
+    $res[]=$r;
+  }
+  echo '$this.fillTable(',json_encode($res),',{@{$format}},{@{$align}});';
+  echo 'console.log('.json_encode($query).');';
+}catch(Exception $e) {
+  $msg="Fail to connect to server. " . $e-&gt;message;
+  echo 'alert(',$msg,');';
+}</file></component><component name="form" transparent="" precode="" __ideNodeOpen="true">&lt;form id="@{$name}" class="form" action="@{$action}" onsubmit="var me=this;$(me).css('opacity',0.7);$(me).find('.error').html('');$.ajax({url:this.action,data:$(this).serialize(),success:function(res){$(me).css('opacity',1);try{eval(res)}catch(e){$(me).find('.error').html(e)}}});return false;" url="../form/@{$name}"&gt;
+&lt;table&gt;
+#{
+  $_fields=procesaTipo(node::content($_), array("name","label","type"), array("","","text"));
+  $_res=array();
+  foreach($_fields as $_f):
+    $_label="&lt;th&gt;".$_f-&gt;label."&lt;/th&gt;";
+    $_controls=array(
+      "text"=&gt;$_label."&lt;td&gt;&lt;input name='".$_f-&gt;name."'&gt;&lt;/td&gt;",
+      "button"=&gt;"&lt;th colspan='2'&gt;&lt;button type='submit' onclick='this.form.action=\"".$action.$_f-&gt;name."\";var me=this;this.form.aftersubmit=function()\x7b\x7d'&gt;".$_f-&gt;label."&lt;/button&gt;&lt;/th&gt;",
+      "bolsa"=&gt;"&lt;th colspan='2'&gt;&lt;input disabled class='bolsa' name='".$_f-&gt;name."'&gt;&lt;/th&gt;",
+      "label"=&gt;"&lt;th&gt;&lt;/th&gt;&lt;td&gt;".$_f-&gt;label."&lt;/td&gt;",
+      "combo"=&gt;$_label.'&lt;td&gt;&lt;select name="'.$_f-&gt;name.'" class="combo" url="../combo/'.$_f-&gt;name.'"&gt;&lt;/select&gt;&lt;/td&gt;',
+    );
+    $_res[]="&lt;tr&gt;".$_controls[$_f-&gt;type]."&lt;/tr&gt;";
+  endforeach;
+  return implode("\n", $_res);
+}
+&lt;/table&gt;
+&lt;div class="error"&gt;&lt;/div&gt;
+&lt;/form&gt;<file name="form/@{$name}.php" preprocess="" __ideNodeOpen="true">&lt;?php
+try{
+  require_once("myconexion.php");
+  $query = $conexion-&gt;prepare("@{$query}");
+  //echo "@{$query}";
+  $query-&gt;execute();
+  $res=$query-&gt;fetch(PDO::FETCH_OBJ);
+  echo '$this.fillForm(',json_encode($res),', afterLoad);';
+}catch(Exception $e) {
+  $msg="Fail to connect to server. " . $e-&gt;message;
+  echo 'throw new Exception(',$msg,');';
+}
+</file></component><component name="combo" transparent="" precode="" __ideNodeOpen="true"><file name="combo/@{$name}.php" preprocess="" __ideNodeOpen="true">&lt;?php
+try{
+  require_once("myconexion.php");
+  $query = $conexion-&gt;prepare("@{$query}");
+  $query-&gt;execute();
+  $res=array();
+  $res[]=array("","");
+  while($r=$query-&gt;fetch(PDO::FETCH_OBJ)){
+    $res[]=$r;
+  }
+  echo '$this.fillCombo(',json_encode($res),');';
+?&gt;
+@{node::content($_)}
+&lt;?php
+}catch(Exception $e) {
+  $msg="Fail to connect to server. " . $e-&gt;message;
+  echo 'alert(',$msg,');';
+}</file></component><component name="subpanel" transparent="" precode="" __ideNodeOpen="true">&lt;div class="subpanel" current="@{$current}"&gt;@{node::content($_)}&lt;/div&gt;</component></package><package name="cordoba" type="" __ideNodeOpen="true"><component name="runscript" transparent="" precode="" __ideNodeOpen="true"><php __ideNodeOpen="true">require_once(ACH_PATH.'/remotecmd.class.php');
+
+$cmd = @{var_export(node::content($_),true)};
+
+DV_RemoteCmd::call(str_replace("\n","\r\n",$cmd));
+</php></component><component name="cordova" transparent="" precode="" __ideNodeOpen="true"><runscript __ideNodeOpen="true">cd @{getcwd()}
+IF EXIST @{$path/*cordova*/} (
+  cd @{$path}
+  GOTO Construir
+)
+REM rmdir @{$path} /S /Q
+call @{$cordova_path} create @{$path} @{$domain_name/*com.example.hello*/} @{$name}
+cd @{$path}
+call @{$cordova_path} platform add android
+call @{$cordova_path} platforms ls
+:Construir
+xcopy "../@{$source/*mobile*/}" "www" /s /e
+call @{$cordova_path} build
+call @{$cordova_path} run android
+</runscript></component></package><path path="output/bet" main="" __ideNodeOpen="true"><file name="style/css.php" preprocess="" __ideNodeOpen="true">html{
+  margin:0px;
+  padding:0px;
+  width:100%;
+  height:100%;
+  overflow:hidden;
+}
+body{
+  font-size:12pt;
+  font-family:sans-serif;
+  margin:0px;
+  padding:0px;
+  width:100%;
+  height:100%;
+  background-color:#545454;
+  color:white;
+  overflow:hidden;
+}
+table,tr,td,select,input,button{
+  font:inherit;
+}
+.tabpanel{
+  width:100%;
+  height:100%;
+  position:relative;
+}
+.panel{
+  width:100%;
+  height:100%;
+  position:relative;
+}
+.panel .title{
+  width:100%;
+}
+.panel .item{
+  display:none;
+  width:100%;
+  height:100%;
+}
+.tabbar{
+  width:100%;
+  background-color:#066E4A;
+}
+.tabbar{
+  width:100%;
+  background-color:#066E4A;
+}
+.tabtitle{
+  border:1px solid #0A6344;
+  border-bottom:4px solid #0A6344;
+  padding: 8pt 4pt;
+  text-align:center;
+  cursor:pointer;
+}
+.tabactive{
+  border:1px outset #009F4A;
+  background-color:#277F61;
+  border-bottom:4px solid #FFE416;
+  font-weight:bold;
+  color:#FFE416;
+}
+.title{
+  border:1px outset #009F4A;
+  background-color:#277F61;
+  padding: 8pt 4pt;
+  text-align:center;
+  font-weight:bold;
+  font-size:200%;
+  color:#FFE416;
+}
+.grid {
+  height:100%;
+}
+.grid table {
+/*  border:1px outset gray;*/
+  border-radius:8px 8px 0px 0px;
+  overflow:hidden;
+}
+.grid .content{
+  border:1px outset gray;
+  border-radius:0px 0px 8px 8px;
+  overflow:auto;
+}
+.grid .content table {
+  border:none;
+  border-radius:0px;
+}
+.grid_header{
+  color:black;
+  background-color:#FFE416;
+  padding:1%;
+  border-bottom:1px solid gray;
+/*  text-align:left;*/
+}
+.grid_even{
+  color:black;
+  background-color:lightgray;
+  padding:1%;
+  border-bottom:1px solid gray;
+}
+.grid_odd{
+  color:black;
+  background-color:white;
+  padding:1%;
+  border-bottom:1px solid gray;
+}
+.content{
+/*  overflow-y:auto;
+  overflow-x:hidden;*/
+}
+.facebook_connected{
+  width:32px;
+  height:32px;
+  display:inline-block;
+  background-image:url("../../images/facebook-offline.png");
+}
+.facebook_connected.online{
+  background-image:url("../../images/facebook-online.png") !important;
+}
+
+.bolsa{
+  font-size:300%;
+  color:#FFE416;
+  border:none;
+  background-color:transparent;
+  width:100%;
+  text-align:center;
+}
+.error{
+  color: #FF4040;
+  font-weight: bold;
+}
+.subpanel{
+  height:100%;
+  text-align:center;
+}</file><file name="style.php" preprocess="" __ideNodeOpen="false">&lt;?php
+
+class style extends DV_Controller {
+  function cssAction(){
+    header("Content-type:text/html");
+  }
+}</file><file name="main/index.php" preprocess="" __ideNodeOpen="true"><body __ideNodeOpen="true"><tabpanel current="0" title="Main" __ideNodeOpen="true" name="maintabpanel"><items><panel title="Partidos" __ideNodeOpen="true" onclick="$(&quot;#partidos&quot;).grid();"><items><subpanel __ideNodeOpen="true" current="0"><grid name="partidos" query="select titulo,lugar,fechahora,(select count(*) from apuestas where apuestas.partido_id=partidos.id) apuestas,ifnull((select sum(aa.cuanto) from apuestas aa where aa.partido_id=partidos.id),0) bolsa, resultado, case (select count(*) from apuestas aa2 where aa2.partido_id=partidos.id and aa2.usuario_id=&quot;.$_SESSION[&quot;login&quot;]-&gt;id.&quot;) when 0 then id else -id end apostar from partidos order by fechahora" headers="Partido,Lugar,Fecha-Hora,Apuestas,Bolsa,Resultado," format="titulo:format.text,lugar:format.text,fechahora:format.date1,apuestas:format.text,bolsa:format.text,resultado:format.text,apostar:format.apostar" align="0:&quot;left&quot;,1:&quot;left&quot;,titulo:&quot;left&quot;,lugar:&quot;left&quot;,fechahora:&quot;center&quot;,apuestas:&quot;center&quot;,bolsa:&quot;right&quot;,resultado:&quot;center&quot;" __ideNodeOpen="false"/><grid name="partidodetalle" query="select usuarios.seudonimo, apuestas.apuesta, apuestas.cuanto from apuestas left join usuarios on (apuestas.usuario_id=usuarios.id) where partido_id=&quot;.$_SESSION[&quot;detallepartido_id&quot;].&quot; order by 2" headers="Quien apuesta,Resultado,Cuanto apuesta" format="seudonimo:format.text,apuesta:format.text,cuanto:format.text" align="0:&quot;left&quot;,1:&quot;center&quot;,2:&quot;right&quot;,seudonimo:&quot;left&quot;,apuesta:&quot;center&quot;,cuanto:&quot;right&quot;" __ideNodeOpen="true"><toolbar __ideNodeOpen="true">&lt;button type="button" onclick="$('#partidos').parent().subpanel(0);"&gt;Volver&lt;/button&gt;</toolbar></grid></subpanel></items></panel><panel title="Mis Apuestas" __ideNodeOpen="true" onclick="$(&quot;#apuestas&quot;).grid();"><items><grid name="apuestas" query="select titulo,lugar,fechahora,apuesta,cuanto,(select sum(aa.cuanto) from apuestas aa where aa.partido_id=apuestas.partido_id) bolsa from apuestas left join partidos on(apuestas.partido_id=partidos.id) where usuario_id=&quot;.$_SESSION[&quot;login&quot;]-&gt;id.&quot;" headers="Partido,Lugar,Fecha-Hora,Apuesta,Cuanto,Bolsa" format="titulo:format.text,lugar:format.text,fechahora:format.date1,apuestas:format.text,cuanto:format.text,bolsa:format.text" align="0:&quot;left&quot;,1:&quot;left&quot;,titulo:&quot;left&quot;,lugar:&quot;left&quot;,fechahora:&quot;center&quot;,apuestas:&quot;center&quot;,cuanto:&quot;right&quot;,bolsa:&quot;right&quot;"/></items></panel><panel title="Bolsa" __ideNodeOpen="true" onclick="$(&quot;#bolsa&quot;).form();"><items __ideNodeOpen="true"><form action="../settings/" name="bolsa" query="select ( (select sum(monto) from cargas where usuario_id=&quot;.$_SESSION[&quot;login&quot;]-&gt;id.&quot;) - (select sum(cuanto) from apuestas where usuario_id=&quot;.$_SESSION[&quot;login&quot;]-&gt;id.&quot;) ) bolsa" __ideNodeOpen="true">bolsa,Bolsa,bolsa
+</form>&lt;pre style="font:inherit"&gt;
+&lt;b&gt;COMO CARGAR TU BOLSA:&lt;/b&gt;
+
+&lt;b&gt;Desde Punto Tigo Money:&lt;/b&gt;
+
+Paso 1: Acude al Punto Tigo Money más cercano con tu  identificación.
+Paso 2: Llena tu formulario indicando el numero  TIGO de destino.
+Paso 3: Entrega el dinero al funcionario.
+Paso 4: Recibirás un comprobante de tu transacción de envío.
+
+En cuanto nos llegue la notificación tu bolsa se cargara con el monto enviado.
+(NOTA: Se descontara el monto cobrado por Tigo por la transferencia)
+
+
+&lt;b&gt;Envió  Marcando desde tu celular al *555#&lt;/b&gt;
+Desde tu celular (si eres usuario TIgo):
+
+Paso 1: Marca desde tu celular *555#
+Paso 2: Elige la opción # 1 de Envío de dinero.
+Paso 3: Ingresa el monto de dinero que quieres enviar.
+Paso 4: Ingresa el numero TIGO de destino al que quieres hacer el envío.
+Paso 5: Ingresa tu número PIN.
+Paso 6: Recibirás una notificación  indicando que tu envío fue realizado.
+
+En cuanto nos llegue la notificación tu bolsa se cargara con el monto enviado.
+(NOTA: Se descontara el monto cobrado por Tigo por la transferencia)
+&lt;/pre&gt;</items></panel><panel title="Apuesta" __ideNodeOpen="true" onclick="$(&quot;#apuesta&quot;).find(&quot;.error&quot;).html(&quot;&quot;);$(&quot;#apuesta&quot;).form(typeof window.nuevaApuesta==&quot;undefined&quot;?function(){} : window.nuevaApuesta);"><items __ideNodeOpen="true"><form action="../apuesta/" name="apuesta" query="select * from apuestas where 1=2" __ideNodeOpen="true">partido_id,Partido,combo
+,Resultado,label
+equipo1,Equipo 1,text
+equipo2,Equipo 2,text
+,Apuesta,label
+cuanto,Cuanto,text
+apostar,Apostar,button<combo name="partido_id" query="select id,titulo from partidos where resultado is null" __ideNodeOpen="true">  $this.unbind("change");
+  $this.change(function(){
+    var $this=$(this);
+    console.log(1);
+    var text=$this.find('option:selected').text();
+    $this.parents(".form:first").find("[name=equipo1]").parent().prev().html(text.split("-")[0]);
+    $this.parents(".form:first").find("[name=equipo2]").parent().prev().html(text.split("-")[1]);
+  });
+</combo></form></items></panel><panel title="&lt;img src=&quot;../../images/menu.png&quot;&gt;&lt;span class=&quot;facebook_connected&quot;&gt;&lt;/span&gt;" __ideNodeOpen="true" onclick="$(&quot;#settings&quot;).form();"><items __ideNodeOpen="true"><form action="../settings/" __ideNodeOpen="true" name="settings" query="select seudonimo from usuarios where id=&quot;.$_SESSION[&quot;login&quot;]-&gt;id.&quot;">seudonimo,Seudónimo,text
+celular,Nro. Celular,text
+,Usted podrá cargar su bolsa a través de un numero tigo.,label
+save,Guardar,button</form>&lt;button type="button" onclick="FB.logout()"&gt;logout&lt;/button&gt;</items></panel></items></tabpanel></body></file><file name="myconexion.php" preprocess="" __ideNodeOpen="true">&lt;?php
+session_start();
+$conexion = new PDO('mysql:host=localhost;port=3306;dbname=bet;charset=utf8', 'root', 'root', array( PDO::ATTR_PERSISTENT =&gt; false));
+
+</file><file name="login/facebook.php" preprocess="" __ideNodeOpen="true">&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+&lt;style&gt;
+body,html{
+  margin:0px;
+  padding:0px;
+  overflow:hidden;
+}
+&lt;/style&gt;
+&lt;title&gt;Polla Brasil&lt;/title&gt;
+&lt;meta charset="UTF-8"&gt;
+&lt;script src="../../jquery-1.11.0.min.js" type="text/javascript"&gt;&lt;/script&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;script&gt;
+  // This is called with the results from from FB.getLoginStatus().
+  function statusChangeCallback(response) {
+//    console.log('statusChangeCallback');
+//    console.log(response);
+    // The response object is returned with a status field that lets the
+    // app know the current login status of the person.
+    // Full docs on the response object can be found in the documentation
+    // for FB.getLoginStatus().
+    if (response.status === 'connected') {
+      // Logged into your app and Facebook.
+      testAPI(response.authResponse,response.status);
+    } else if (response.status === 'not_authorized') {
+      // The person is logged into Facebook, but not your app.
+      document.getElementById('status').innerHTML = 'Please log ' +
+        'into this app.';
+    } else {
+      // The person is not logged into Facebook, so we're not sure if
+      // they are logged into this app or not.
+      document.getElementById('status').innerHTML = 'Please log ' +
+        'into Facebook.';
+    }
+  }
+
+  // This function is called when someone finishes with the Login
+  // Button.  See the onlogin handler attached to it in the sample
+  // code below.
+  function checkLoginState() {
+//alert(check login"");
+    FB.getLoginStatus(function(response) {
+      statusChangeCallback(response);
+    });
+  }
+
+  window.fbAsyncInit = function() {
+  FB.init({
+    appId      : '510662519065389',
+    cookie     : true,  // enable cookies to allow the server to access 
+                        // the session
+    xfbml      : true,  // parse social plugins on this page
+    version    : 'v2.0' // use version 2.0
+  });
+
+  // Now that we've initialized the JavaScript SDK, we call 
+  // FB.getLoginStatus().  This function gets the state of the
+  // person visiting this page and can return one of three states to
+  // the callback you provide.  They can be:
+  //
+  // 1. Logged into your app ('connected')
+  // 2. Logged into Facebook, but not your app ('not_authorized')
+  // 3. Not logged into Facebook and can't tell if they are logged into
+  //    your app or not.
+  //
+  // These three cases are handled in the callback function.
+
+  FB.getLoginStatus(function(response) {
+    statusChangeCallback(response);
+  });
+
+  };
+
+  // Load the SDK asynchronously
+  (function(d, s, id) {
+    var js, fjs = d.getElementsByTagName(s)[0];
+    if (d.getElementById(id)) return;
+    js = d.createElement(s); js.id = id;
+    js.src = "//connect.facebook.net/en_US/sdk.js";
+    fjs.parentNode.insertBefore(js, fjs);
+  }(document, 'script', 'facebook-jssdk'));
+
+  // Here we run a very simple test of the Graph API after login is
+  // successful.  See statusChangeCallback() for when this call is made.
+  function testAPI(access, status) {
+//    console.log(access,'Welcome!  Fetching your information.... ');
+    FB.api('/me', function(response) {
+//      console.log(response, 'Successful login for: ' + response.name);
+      document.getElementById('status').innerHTML =
+        'Thanks for logging in, ' + response.name + '!';
+      $.ajax({
+        url:"register",
+        data:{userID:access.userID,accessToken:access.accessToken,perfil:JSON.stringify(response)},
+        success:function(res){
+          eval(res);
+        }
+      });
+    });
+  }
+  FB.Event.subscribe('auth.login', function () {
+      window.location = "http://pollabrasil.betsil.info/index.php/main/index";
+  });&lt;/script&gt;
+&lt;img src="../../images/login.jpg" style="border:none;width:100%;position:absolute;left:0px;"&gt;
+&lt;br /&gt;
+&lt;!--
+  Below we include the Login Button social plugin. This button uses
+  the JavaScript SDK to present a graphical Login button that triggers
+  the FB.login() function when clicked.
+--&gt;
+&lt;script&gt;
+function loginfb(fn,conf){
+  var appId='510662519065389';
+  var per="http://www.facebook.com/dialog/oauth/?client_id=" + appId + "&amp;response_type=code&amp;redirect_uri=" + encodeURIComponent(conf.redirect_uri) + "&amp;scope=" + conf.scope;
+  per="https://www.facebook.com/v2.0/dialog/oauth?scope=public_profile%2Cemail&amp;response_type=none&amp;redirect_uri="+encodeURIComponent(conf.redirect_uri)+"&amp;seen_revocable_perms_nux=false&amp;ref=LoginButton&amp;auth_type=&amp;state=f3654cc814&amp;app_id=510662519065389&amp;client_id=510662519065389&amp;display=touch";
+  window.location = per;
+}
+&lt;/script&gt;
+&lt;div style="position:absolute;top:45%;width:100%;left:0px;"&gt;
+&lt;center&gt;
+&lt;button type="button" onclick="loginfb(statusChangeCallback, {scope: 'public_profile,email' , redirect_uri: 'http://pollabrasil.betsil.info/index.php/main/index' , display : 'touch'})"&gt;FB Login&lt;/button&gt;
+
+&lt;fb:login-button display="touch" redirect="//pollabrasil.betsil.info/index.php/main/index" redirect_uri="//pollabrasil.betsil.info/index.php/main/index" scope="public_profile,email" onlogin="checkLoginState();"&gt;
+&lt;img src="../../images/ajax-loader.gif" &gt;
+&lt;/fb:login-button&gt;
+
+&lt;div id="status"&gt;
+&lt;/div&gt;
+&lt;/center&gt;
+&lt;/div&gt;
+&lt;/body&gt;
+&lt;/html&gt;</file><file name="login/verify.php" preprocess="" __ideNodeOpen="true">&lt;?php
+//ini_set("display_errors", "on" );error_reporting(E_ALL);
+
+function getUrl($url){
+
+  // Initialize session and set URL.
+  $ch = curl_init();
+  curl_setopt($ch, CURLOPT_URL, $url);
+  
+  // Set so curl_exec returns the result instead of outputting it.
+  curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+  //SKIP SSL_VER
+  curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+  
+//  curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+//  curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
+//  curl_setopt($ch, CURLOPT_CAINFO, getcwd() . "/certificados/facebook.graph_64.cer");
+
+  // Get the response and close the channel.
+  $response = curl_exec($ch);
+  curl_close($ch);
+
+  return $response;
+}
+class Security {
+
+  static function getAccessToken(){
+    $url = 'https://graph.facebook.com/oauth/access_token?client_id=510662519065389&amp;client_secret=0208bbbe4c0cf49fbb6e30e5c63d307a&amp;grant_type=client_credentials';
+    parse_str(getUrl($url));
+    return $access_token;
+  }
+  
+  static function verifyToken($inputToken, $userId){
+    //el servidor no permite la validacion.
+    return true;
+    $accessToken = Security::getAccessToken();
+    $url = 'https://graph.facebook.com/debug_token?input_token='.$inputToken.'&amp;access_token='.$accessToken;
+    $res= json_decode(getUrl($url));
+    if($res-&gt;data-&gt;is_valid &amp;&amp; $res-&gt;data-&gt;user_id==$userId){
+      return true;
+    } elseif(!empty($res-&gt;data-&gt;error)) {
+      throw new Exception($res-&gt;data-&gt;error-&gt;message);
+    }
+    return false;
+  }
+
+}
+try{
+  $valid = Security::verifyToken($_REQUEST['accessToken'], $_REQUEST['userID']);
+  if(!$valid) {
+    throw new Exception("Login no válido");
+  } else {
+    //echo "OK";
+  }
+} catch(Exception $e) {
+  echo "throw new Exception(".json_encode($e-&gt;getMessage()).")";
+  exit(0);
+}
+</file><file name="login/register.php" preprocess="" __ideNodeOpen="true">&lt;?php
+ini_set("display_errors","on");error_reporting(E_ALL);
+  require_once("login/verify.php");
+  require_once("myconexion.php");
+  
+  $query = $conexion-&gt;prepare("select * from usuarios where oauth_uid=:userID");
+  $query-&gt;bindParam(':userID', $_REQUEST["userID"]);
+  $query-&gt;execute();
+  $res=$query-&gt;fetch(PDO::FETCH_OBJ);
+
+  if(!$res) {
+    $query = $conexion-&gt;prepare("insert into usuarios(nombre,oauth_uid,email,seudonimo) values(:name,:userID,:email,:seudonimo)");
+    $perfil=json_decode($_REQUEST["perfil"]);
+    $query-&gt;bindParam(':userID', $_REQUEST["userID"]);
+    $query-&gt;bindParam(':email', $perfil-&gt;email);
+    $query-&gt;bindParam(':name', $perfil-&gt;name);
+    $query-&gt;bindParam(':seudonimo', $perfil-&gt;name);
+    $query-&gt;execute();
+
+    $query = $conexion-&gt;prepare("select * from usuarios where oauth_uid=:userID");
+    $query-&gt;bindParam(':userID', $_REQUEST["userID"]);
+    $query-&gt;execute();
+    $res=$query-&gt;fetch(PDO::FETCH_OBJ);
+  }
+
+  if($res){
+    $_SESSION["login"]=$res;
+    echo "top.location=window.location=".json_encode("../main/index");
+  } else {
+    throw new Exception("No se pudo registrar");
+  }
+</file><file name="settings/save.php" preprocess="" __ideNodeOpen="true">&lt;?php
+ini_set("display_errors","on");error_reporting(E_ALL);
+  //require_once("login/verify.php");
+  require_once("myconexion.php");
+  
+  if(!empty($_SESSION["login"]) &amp;&amp; !empty($_SESSION["login"]-&gt;id)) {
+    $query = $conexion-&gt;prepare("select * from usuarios where id!=:id and seudonimo=:seudonimo");
+    $query-&gt;bindParam(':id', $_SESSION["login"]-&gt;id);
+    $query-&gt;bindParam(':seudonimo', $_REQUEST["seudonimo"]);
+    $query-&gt;execute();
+    $res=$query-&gt;fetch(PDO::FETCH_OBJ);
+    if(!$res) {
+      $query = $conexion-&gt;prepare("update usuarios set seudonimo=:seudonimo where id=:id");
+      $query-&gt;bindParam(':id', $_SESSION["login"]-&gt;id);
+      $query-&gt;bindParam(':seudonimo', $_REQUEST["seudonimo"]);
+      $query-&gt;execute();
+    } else {
+      throw new Exception("Otra persona ya esta usando este seudónimo.");
+    }
+  }
+</file><file name="facebook.js" preprocess="" __ideNodeOpen="true">  function statusChangeCallback(response) {
+    console.log('statusChangeCallback');
+    console.log(response);
+    if (response.status === 'connected') {
+      // Logged into your app and Facebook.
+      //testAPI(response.authResponse,response.status);
+      window.facebook=response;
+      if(typeof $ !="undefined"){
+        $(".facebook_connected").addClass("online");
+      }
+    } else if (response.status === 'not_authorized') {
+
+    } else {
+    }
+  }
+
+  // This function is called when someone finishes with the Login
+  // Button.  See the onlogin handler attached to it in the sample
+  // code below.
+  function checkLoginState() {
+    FB.getLoginStatus(function(response) {
+      statusChangeCallback(response);
+    });
+  }
+
+  window.fbAsyncInit = function() {
+  FB.init({
+    appId      : '510662519065389',
+    cookie     : true,  // enable cookies to allow the server to access 
+                        // the session
+    xfbml      : true,  // parse social plugins on this page
+    version    : 'v2.0' // use version 2.0
+  });
+
+  // Now that we've initialized the JavaScript SDK, we call 
+  // FB.getLoginStatus().  This function gets the state of the
+  // person visiting this page and can return one of three states to
+  // the callback you provide.  They can be:
+  //
+  // 1. Logged into your app ('connected')
+  // 2. Logged into Facebook, but not your app ('not_authorized')
+  // 3. Not logged into Facebook and can't tell if they are logged into
+  //    your app or not.
+  //
+  // These three cases are handled in the callback function.
+
+  FB.getLoginStatus(function(response) {
+    statusChangeCallback(response);
+  });
+
+  };
+
+  // Load the SDK asynchronously
+  (function(d, s, id) {
+    var js, fjs = d.getElementsByTagName(s)[0];
+    if (d.getElementById(id)) return;
+    js = d.createElement(s); js.id = id;
+    js.src = "//connect.facebook.net/en_US/sdk.js";
+    fjs.parentNode.insertBefore(js, fjs);
+  }(document, 'script', 'facebook-jssdk'));
+
+  // Here we run a very simple test of the Graph API after login is
+  // successful.  See statusChangeCallback() for when this call is made.
+  function testAPI(access, status) {
+    console.log(access,'Welcome!  Fetching your information.... ');
+    FB.api('/me', function(response) {
+      console.log(response, 'Successful login for: ' + response.name);
+    });
+  }</file><file name="apuesta/apostar.php" preprocess="" __ideNodeOpen="true">&lt;?php
+ini_set("display_errors","on");error_reporting(E_ALL);
+  //require_once("login/verify.php");
+  require_once("myconexion.php");
+  
+  if(!empty($_SESSION["login"]) &amp;&amp; !empty($_SESSION["login"]-&gt;id)) {
+    $_REQUEST["partido_id"]=$_REQUEST["partido_id"]*1;
+    if($_REQUEST["partido_id"]&lt;1){ throw new Exception("Debe seleccionar un partido");}
+
+    $query = $conexion-&gt;prepare("select count(*) count from apuestas where partido_id=:partido_id and usuario_id=:usuario_id");
+    $query-&gt;bindParam(':usuario_id', $_SESSION["login"]-&gt;id);
+    $query-&gt;bindParam(':partido_id', $_REQUEST["partido_id"]);
+    $query-&gt;execute();
+    $res=$query-&gt;fetch(PDO::FETCH_OBJ);
+
+    if($res-&gt;count==0) {
+      $_REQUEST["cuanto"]=trim($_REQUEST["cuanto"]);
+      $_REQUEST["equipo1"]=trim($_REQUEST["equipo1"]);
+      $_REQUEST["equipo2"]=trim($_REQUEST["equipo2"]);
+      if(!enteroValido($_REQUEST["equipo1"])){ throw new Exception("El marcador ingresado no es válido");}
+      if(!enteroValido($_REQUEST["equipo2"])){ throw new Exception("El marcador ingresado no es válido");}
+      if(!enteroValido($_REQUEST["cuanto"]) &amp;&amp; $_REQUEST["cuanto"]*1&gt;0){ throw new Exception("La cantidad apostada no es válido");}
+      if($_REQUEST["cuanto"]&gt;200){ throw new Exception("Lo sentimos el límite de apuesta es de 200");}
+      $_REQUEST["cuanto"]=trim($_REQUEST["cuanto"])*1;
+      $_REQUEST["equipo1"]=trim($_REQUEST["equipo1"])*1;
+      $_REQUEST["equipo2"]=trim($_REQUEST["equipo2"])*1;
+      $apuesta=$_REQUEST["equipo1"]."-".$_REQUEST["equipo2"];
+      $query = $conexion-&gt;prepare("insert into apuestas(usuario_id,partido_id,apuesta,equipo1,equipo2,cuanto) values (:usuario_id,:partido_id,:apuesta,:equipo1,:equipo2,:cuanto)");
+      $query-&gt;bindParam(':usuario_id', $_SESSION["login"]-&gt;id);
+      $query-&gt;bindParam(':partido_id', $_REQUEST["partido_id"]);
+      $query-&gt;bindParam(':apuesta', $apuesta);
+      $query-&gt;bindParam(':equipo1', $_REQUEST["equipo1"]);
+      $query-&gt;bindParam(':equipo2', $_REQUEST["equipo2"]);
+      $query-&gt;bindParam(':cuanto', $_REQUEST["cuanto"]);
+      $query-&gt;execute();
+      echo "alert('Correcto. Su apuesta ya está registrada.'); me.reset();";
+    } else {
+      throw new Exception("Usted ya realizó una apuesta para este partido.");
+    }
+  }
+
+function enteroValido($value){
+  $value=trim($value);
+  return is_numeric($value) &amp;&amp; (floor($value)==$value*1) &amp;&amp; ($value*1&gt;=0);
+}</file><file name="main/partidodetalle.php" preprocess="" __ideNodeOpen="true">&lt;?php
+ini_set("display_errors","on");error_reporting(E_ALL);
+  //require_once("login/verify.php");
+  require_once("myconexion.php");
+  
+  if(!empty($_SESSION["login"]) &amp;&amp; !empty($_SESSION["login"]-&gt;id)) {
+    $_SESSION['detallepartido_id']=$_REQUEST['partidoId'];
+    echo '$("#partidodetalle").parents(".subpanel:first").subpanel(1, function(){$("#partidodetalle").grid();});';
+  }
+
+function enteroValido($value){
+  $value=trim($value);
+  return is_numeric($value) &amp;&amp; (floor($value)==$value*1) &amp;&amp; ($value*1&gt;=0);
+}</file><cordova1 domain_name="com.caleeli.pollabrasil" name="PollaBrasil" cordova_path="C:\Users\david\AppData\Roaming\npm\cordova.cmd" node_path="C:\Program Files\nodejs\node.exe" path="cordova" source="mobile" __ideNodeOpen="true"><file name="mobile/index.html" preprocess="" __ideNodeOpen="true">&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+&lt;style&gt;
+body,html{
+  margin:0px;
+  padding:0px;
+  overflow:hidden;
+}
+&lt;/style&gt;
+&lt;title&gt;Polla Brasil&lt;/title&gt;
+&lt;meta charset="UTF-8"&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;img src="loginhd.jpg" style="border:none;width:100%;position:absolute;left:0px;"&gt;
+&lt;img src="../../images/ajax-loader.gif"  style="border:none;position:absolute;left:49%;top:49%;"&gt;
+&lt;script type="text/javascript"&gt;
+window.location="http://pollabrasil.betsil.info/index.php/login/facebook";
+&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;</file></cordova1><file name="main.php" preprocess="" __ideNodeOpen="true">&lt;?php
+session_start();
+
+class Main extends DV_Controller {
+  function  indexAction(){
+    if(empty($_SESSION['login']) || empty($_SESSION['login']-&gt;id) || !$_SESSION['login']-&gt;id) {
+      header("location: ../login/facebook");
+      exit(0);
+    }
+  }
+}</file></path></root>

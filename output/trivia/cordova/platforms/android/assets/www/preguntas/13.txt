@@ -1,0 +1,3 @@
+var res={"pregunta":"\u00bfQu\u00e9 es la Biblia?","respuestas":["La Palabra inspirada por Dios","Un conjunto de libros historicos","Un libro adaptado del griego bibl\u00edon"],"correcta":"0","imagen":"img\/Gutenberg_Bible.jpg"};
+dibujaPregunta($pregunta,$respuestas,$imagen,res);
+

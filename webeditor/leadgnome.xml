@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root><path path="G:\tc\lead-gnome-ui\leadgnome-ui\app" main="" __ideNodeOpen="true"><include src="diagramPlugin.xml"/><package name="components" type="" __ideNodeOpen="true"><php __ideNodeOpen="true">function dataField($name, $value){
+  if(isset($value)){
+    return ' data-'.$name.'="'.htmlentities(var_export($value,true),ENT_NOQUOTES,'utf-8').'"';
+  }
+}
+function htmlField($name, $value){
+  if(isset($value)){
+    return ' '.$name.'="'.htmlentities($value,ENT_QUOTES,'utf-8').'"';
+  }
+}</php><component name="diagram" transparent="" precode=""/><component name="Tabs" transparent="" precode="" __ideNodeOpen="true"><file name="scripts/controllers/@{$name}Controller.js" preprocess="" __ideNodeOpen="true">/**
+ * Created by dcallizaya on @{Date('Y-m-d')}.
+ */
+'use strict';
+app.controller('@{$name}Controller',
+    function($scope,storeService){
+        var data = storeService.jsonRead("@{$dataSource}");
+        if(typeof data=="object" &amp;&amp; typeof data.idTab!="undefined"){
+            $scope.tabs = data.idTab;
+        }
+        $scope.setTab = function(idPanel){
+            var data = storeService.jsonRead("@{$dataSource}");
+            //$scope.tabs = data.idTab;
+            if(typeof data=="object"){
+                data.idTab = idPanel;
+                storeService.jsonWrite("@{$dataSource}",data);
+            }
+            $scope.tabs = idPanel;
+        };
+        $scope.isSet = function(idPanel){
+            return $scope.tabs === idPanel;
+        };
+    }
+);
+</file>&lt;section ng-controller = "@{$name}Controller"&gt;
+    &lt;ul class="nav nav-pills"&gt;
+#{
+    $_res=[];$_i=0;
+    foreach($_e-&gt;childNodes as $_ch):
+        $_i++;
+        @$_title=$_ch-&gt;getAttribute('title');
+        $_res[]='        &lt;li ng-class="'."\x7b".'active:isSet('.$_i.')'."\x7d".'"&gt;&lt;a href ng-click="setTab('.$_i.')"&gt;'.$_title.'&lt;/a&gt;&lt;/li&gt;';
+    endforeach;
+    return implode("\n", $_res);
+}
+    &lt;/ul&gt;
+#{
+    $_res=[];$_i=0;
+    foreach($_e-&gt;childNodes as $_ch):
+        $_con=$_[$_i][1];
+        $_i++;
+        @$_name=$_ch-&gt;getAttribute('name');
+        $_res[]='    &lt;div class="panel" ng-show="isSet('.$_i.')" ng-controller="'.$_name.'Controller"&gt;'."\n";
+        $_res[]=$_con;
+        $_res[]='    &lt;/div&gt;'."\n";
+    endforeach;
+    return implode("", $_res);
+}
+&lt;/section&gt;
+</component><component name="Table" transparent="" precode="" __ideNodeOpen="true">                &lt;!--Table Section--&gt;
+                &lt;div class="row"&gt;
+                    &lt;div loading-container-directive="tableParams.settings().$loading" class="col-sm-12"&gt;
+                        &lt;div id="@{$id/*table-report*/}" class="table-responsive "&gt;
+                            &lt;table ng-table="tableParams" class="table table-striped table-bordered" export-csv="csvSummary" pagination-top pagination-bottom&gt;
+                                &lt;tbody&gt;
+                                &lt;tr ng-repeat="@{$model} in $data"&gt;
+#{
+$_fields=json_decode($fields);
+$_res=[];
+foreach($_fields as $_field):
+    $_res[]='                                    &lt;td '.
+        dataField('title',@$_field-&gt;title).
+        dataField('sorteable',@$_field-&gt;sortable).
+        htmlField('class',@$_field-&gt;className).
+        htmlField('width',@$_field-&gt;width).'&gt;
+                                        '.@$_field-&gt;content.'
+                                    &lt;/td&gt;
+';
+endforeach;
+return implode("",$_res);
+}
+                                &lt;/tr&gt;
+                                &lt;tr style="border: 0"&gt;
+                                    &lt;td colspan="@{count(json_decode($fields))}"&gt;&amp;nbsp;&lt;/td&gt;
+                                &lt;/tr&gt;
+                                &lt;tr class="table-footer"&gt;
+#{
+$_fields=json_decode($fields);
+$_res=[];
+foreach($_fields as $_field):
+    $_res[]='                                    &lt;td'.
+        htmlField('class',@$_field-&gt;className).'&gt;
+                                        '.@$_field-&gt;footer.'
+                                    &lt;/td&gt;
+';
+endforeach;
+return implode("",$_res);
+}
+                                &lt;/tr&gt;
+                                &lt;/tbody&gt;
+                            &lt;/table&gt;
+                        &lt;/div&gt;
+                    &lt;/div&gt;
+                &lt;/div&gt;
+                &lt;!--End Table Section--&gt;
+</component><component name="container" transparent="" precode="" __ideNodeOpen="true">&lt;div class="spread-container"&gt;
+    &lt;div class="page-row-expanded"&gt;
+@{node::content($_)}
+    &lt;/div&gt;
+&lt;/div&gt;</component><component name="Tab" transparent="" precode="" __ideNodeOpen="true">@{node::content($_)}</component></package><diagram __ideNodeOpen="true"><!--{"diagram":{"zoom":1,"scrollTop":0,"scrollLeft":0},"dga3a7c2f25b0d40a2ae7ce275b591643a":"position: absolute; height: 22px; left: 336px; top: 161px; width: 127px;","dg2d5744ae7a664c90974459017b704326":"position: absolute; height: 157px; left: 243px; top: 74px; width: 344px;","dgdaf406a3b00745eb8ae6382fee5e4cd3":"position: absolute; height: 108px; left: 258px; top: 108px; width: 313px;","dg5c6c2381c97b48c6af20bcdb1bf18aee":"position: absolute; height: 61px; left: 294px; top: 135px; width: 261px;","dg0fc6174c5088436f9f94400a66544e79":"position: absolute; height: 206px; left: 186px; top: 41px; width: 482px;"}--><file __ideDiagramId="dg0fc6174c5088436f9f94400a66544e79" name="views/userPipeline.html" preprocess=""><container __ideDiagramId="dg2d5744ae7a664c90974459017b704326" name="userPipeline"><Tabs __ideDiagramId="dgdaf406a3b00745eb8ae6382fee5e4cd3" name="userPipeline" dataSource="user"><Tab __ideDiagramId="dg5c6c2381c97b48c6af20bcdb1bf18aee" name="userResults" title="Pipeline"><Table __ideDiagramId="dga3a7c2f25b0d40a2ae7ce275b591643a" id="table-report" model="user" fields="[{&quot;title&quot;:&quot;Lead Name&quot;,&quot;content&quot;:&quot;{{lead.name}}&quot;},{&quot;title&quot;:&quot;Company&quot;,&quot;content&quot;:&quot;{{lead.company}}&quot;},{&quot;title&quot;:&quot;Assigned to&quot;,&quot;content&quot;:&quot;{{lead.assigned_to}}&quot;},{&quot;title&quot;:&quot;Opportunity&quot;,&quot;content&quot;:&quot;{{lead.opportunity}}&quot;},{&quot;title&quot;:&quot;Won?&quot;,&quot;content&quot;:&quot;{{lead.won}}&quot;}]"></Table></Tab></Tabs></container></file></diagram></path></root>
